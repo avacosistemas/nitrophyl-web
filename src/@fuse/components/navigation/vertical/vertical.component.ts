@@ -9,6 +9,7 @@ import { FuseNavigationService } from '@fuse/components/navigation/navigation.se
 import { FuseScrollbarDirective } from '@fuse/directives/scrollbar/scrollbar.directive';
 import { FuseUtilsService } from '@fuse/services/utils/utils.service';
 import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
+import { NavegacionService } from 'app/core/services/navegacion.service';
 
 @Component({
     selector       : 'fuse-vertical-navigation',
@@ -69,7 +70,8 @@ export class FuseVerticalNavigationComponent implements OnChanges, OnInit, After
         private _router: Router,
         private _scrollStrategyOptions: ScrollStrategyOptions,
         private _fuseNavigationService: FuseNavigationService,
-        private _fuseUtilsService: FuseUtilsService
+        private _fuseUtilsService: FuseUtilsService,
+        private navegacionService: NavegacionService
     )
     {
         this._handleAsideOverlayClick = (): void => {
@@ -290,6 +292,7 @@ export class FuseVerticalNavigationComponent implements OnChanges, OnInit, After
      */
     ngOnInit(): void
     {
+        this.navigation = this.navegacionService.get()
         // Make sure the name input is not an empty string
         if ( this.name === '' )
         {

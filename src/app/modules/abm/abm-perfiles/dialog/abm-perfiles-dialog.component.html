@@ -1,0 +1,31 @@
+<div>
+    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+        <span fuseAlertTitle>Cambios realizados</span>
+    </fuse-alert>
+    <fuse-alert [type]="'error'" *ngIf="showError">
+        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
+    </fuse-alert>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Id</mat-label>
+        <input matInput disabled [(ngModel)]="data.row.id">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Nombre</mat-label>
+        <input matInput [(ngModel)]="data.row.name">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Habilitado</mat-label>
+        <input matInput disabled [(ngModel)]="data.row.enabled">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Código Rol</mat-label>
+        <input matInput disabled [(ngModel)]="data.row.role.code">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Nombre Rol</mat-label>
+        <input matInput disabled [(ngModel)]="data.row.role.name">
+    </mat-form-field>
+    <div class="text-center mt-2">
+        <button mat-raised-button color="primary" (click)="edit()">Editar</button>
+    </div>
+</div>
