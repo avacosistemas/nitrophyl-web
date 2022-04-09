@@ -1,8 +1,8 @@
-import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMUsuariosComponent } from './abm-usuarios.component';
-import { MatTableModule } from '@angular/material/table';
+import { ABMSharedModule } from '../abm-shared.module';
+import { ABMUsuariosDialog } from './dialog/abm-usuarios-dialog.component';
 
 const abmUsuariosRoutes: Route[] = [
     {
@@ -13,12 +13,12 @@ const abmUsuariosRoutes: Route[] = [
 
 @NgModule({
     declarations: [
-        ABMUsuariosComponent
+        ABMUsuariosComponent,
+        ABMUsuariosDialog
     ],
     imports     : [
         RouterModule.forChild(abmUsuariosRoutes),
-        CommonModule,
-        MatTableModule
+        ABMSharedModule
     ]
 })
 export class ABMUsuariosModule

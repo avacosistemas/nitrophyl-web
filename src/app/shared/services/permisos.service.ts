@@ -30,7 +30,7 @@ export class PermisosService {
         return this.http.get<RespuestaPermiso>(`${environment.server}permissions/${id}`)
     }
 
-    public updatePermiso(id: number, permiso: Permiso): Observable<any> {
+    public updatePermiso(permiso: Permiso, id: number): Observable<any> {
         return this.http.put<any>(`${environment.server}permissions/${id}`, permiso)
     }
 

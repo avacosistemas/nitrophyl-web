@@ -1,8 +1,7 @@
-import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
-import { MatTableModule } from '@angular/material/table';
 import { ABMRolesComponent } from './abm-roles.component';
+import { ABMSharedModule } from '../abm-shared.module';
 
 const abmRolesRoutes: Route[] = [
     {
@@ -17,8 +16,7 @@ const abmRolesRoutes: Route[] = [
     ],
     imports     : [
         RouterModule.forChild(abmRolesRoutes),
-        CommonModule,
-        MatTableModule
+        ABMSharedModule
     ]
 })
 export class ABMRolesModule

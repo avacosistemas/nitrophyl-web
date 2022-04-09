@@ -1,8 +1,8 @@
-import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
-import { MatTableModule } from '@angular/material/table';
 import { ABMPermisosComponent } from './abm-permisos.component';
+import { ABMSharedModule } from '../abm-shared.module';
+import { ABMPermisosDialog } from './dialog/abm-permisos-dialog.component';
 
 const abmPermisosRoutes: Route[] = [
     {
@@ -13,12 +13,12 @@ const abmPermisosRoutes: Route[] = [
 
 @NgModule({
     declarations: [
-        ABMPermisosComponent
+        ABMPermisosComponent,
+        ABMPermisosDialog
     ],
     imports     : [
         RouterModule.forChild(abmPermisosRoutes),
-        CommonModule,
-        MatTableModule
+        ABMSharedModule
     ]
 })
 export class ABMPermisosModule

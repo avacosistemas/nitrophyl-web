@@ -1,4 +1,4 @@
-<div>
+<div class="grid">
     <fuse-alert [type]="'success'" *ngIf="showSuccess">
         <span fuseAlertTitle>Cambios realizados</span>
     </fuse-alert>
@@ -25,7 +25,8 @@
         <mat-label>Nombre Rol</mat-label>
         <input matInput disabled [(ngModel)]="data.row.role.name">
     </mat-form-field>
-    <div class="text-center mt-2">
+    <div class="mt-2 flex justify-around">
+        <button mat-raised-button color="warn" (click)="delete()">Eliminar</button>
         <button mat-raised-button color="primary" (click)="edit()">Editar</button>
     </div>
 </div>

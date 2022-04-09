@@ -22,12 +22,10 @@ export class ABMPerfilesComponent implements OnInit
     ngOnInit(): void {
         this.perfilesService.getPerfiles().subscribe(d=>{
             this.perfiles = d.data;
-            console.log(d)
         })
     }
 
     openModal(row) {
-        console.log(row);
         const dialogRef = this.dialog.open(ABMPerfilesDialog, {
             width: '40%',
             data: {row: row},

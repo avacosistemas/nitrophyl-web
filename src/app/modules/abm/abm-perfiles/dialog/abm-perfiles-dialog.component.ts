@@ -34,4 +34,14 @@ import { PerfilesService } from "app/shared/services/perfiles.service";
         }
       })
     }
+
+    delete(){
+      this.perfilesService.deletePerfil(this.data.row.id).subscribe(res=>{
+        if (res.status == 'OK') {
+          this.showSuccess = true;
+        } else {
+          this.showError = true;
+        }
+      })
+    }
   }
