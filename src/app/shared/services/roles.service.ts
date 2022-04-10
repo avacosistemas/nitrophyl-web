@@ -21,16 +21,16 @@ export class RolesService {
         return this.http.get<Roles>(`${environment.server}roles/`)
     }
     
-    public postRol(rol: Rol): Observable<Rol> {
-        return this.http.post<Rol>(`${environment.server}roles/`, rol)
+    public postRol(rol: Rol): Observable<Respuesta> {
+        return this.http.post<Respuesta>(`${environment.server}roles/`, rol)
     }
 
     public getRolById(id: number): Observable<RolRespuesta> {
         return this.http.get<RolRespuesta>(`${environment.server}roles/${id}`)
     }
 
-    public updateRol(rol: Rol, id: number): Observable<Rol> {
-        return this.http.put<Rol>(`${environment.server}roles/${id}`, rol)
+    public updateRol(rol: Rol, id: number): Observable<Respuesta> {
+        return this.http.put<Respuesta>(`${environment.server}roles/${id}`, rol)
     }
 
     public deleteRol(id: number): Observable<Respuesta> {

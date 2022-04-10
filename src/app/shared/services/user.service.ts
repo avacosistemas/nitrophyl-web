@@ -1,7 +1,7 @@
 import { HttpBackend, HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { Respuesta } from "../../shared/models/respuesta.model";
-import { User, UserList } from "../models/user.model";
+import { User, UserList, UserResponse } from "../models/user.model";
 import { environment } from "environments/environment";
 import { Injectable } from "@angular/core";
 
@@ -27,8 +27,8 @@ export class UserService {
         return this.http.post<Respuesta>(`${environment.server}users/`, user)
     }
 
-    public getUserById(id: number): Observable<User> {
-        return this.http.get<User>(`${environment.server}users/${id}`)
+    public getUserById(id: number): Observable<UserResponse> {
+        return this.http.get<UserResponse>(`${environment.server}users/${id}`)
     }
 
     public updateUser(user: User, id: number): Observable<Respuesta> {

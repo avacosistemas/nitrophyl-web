@@ -31,3 +31,8 @@ export interface UserList {
     status: string,
     data: Array<User>
 }
+
+export interface UserResponse {
+    status: string,
+    data: User
+}

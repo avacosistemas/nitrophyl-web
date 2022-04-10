@@ -4,6 +4,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Permiso } from 'app/shared/models/permiso.model';
 import { PermisosService } from 'app/shared/services/permisos.service';
+import { ABMCrearPermisoDialog } from './dialog-crear/abm-permisos-crear-dialog.component';
 import { ABMPermisosDialog } from './dialog/abm-permisos-dialog.component';
 
 @Component({
@@ -25,11 +26,7 @@ export class ABMPermisosComponent implements OnInit {
     @ViewChild(MatSort, {static: true}) sort!: MatSort;
 
     ngOnInit(): void {
-        this.permisosService.getPermisos().subscribe(d=>{
-            this.permisos = d.data;
-            this.dataSource = new MatTableDataSource<Permiso>(this.permisos);
-            this.dataSource.sort = this.sort;
-        })
+        this.inicializar()
     }
 
     openModal(row) {
@@ -39,7 +36,24 @@ export class ABMPermisosComponent implements OnInit {
             data: {row: row},
         });
         dialogRef.afterClosed().subscribe(result => {
-            console.log('The dialog was closed');
+            this.inicializar()
           });
+    }
+
+    crearPermiso() {
+        const dialogRef = this.dialog.open(ABMCrearPermisoDialog, {
+            width: '40%',
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            this.inicializar()
+          });
+    }
+
+    inicializar() {
+        this.permisosService.getPermisos().subscribe(d=>{
+            this.permisos = d.data;
+            this.dataSource = new MatTableDataSource<Permiso>(this.permisos);
+            this.dataSource.sort = this.sort;
+        })
     }
 }

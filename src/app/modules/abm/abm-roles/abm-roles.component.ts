@@ -4,6 +4,7 @@ import { Rol } from 'app/shared/models/rol.model';
 import { PerfilesService } from 'app/shared/services/perfiles.service';
 import { RolesService } from 'app/shared/services/roles.service';
 import { forkJoin } from 'rxjs';
+import { ABMCrearRolDialog } from './dialog-crear/abm-roles-crear-dialog.component';
 import { ABMRolesDialog } from './dialog/abm-roles-dialog.component';
 
 @Component({
@@ -24,6 +25,35 @@ export class ABMRolesComponent implements OnInit
         public dialog: MatDialog) { }
 
     ngOnInit(): void {
+        this.inicializar()
+    }
+
+    openModal(row) {
+        console.log(row);
+        const dialogRef = this.dialog.open(ABMRolesDialog, {
+            width: '40%',
+            data: {row: row},
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            console.log('The dialog was closed');
+            this.inicializar();
+          });
+    }
+
+    crearRol() {
+        const dialogRef = this.dialog.open(ABMCrearRolDialog, {
+            width: '40%',
+            data: {row: "data"},
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            console.log('The dialog was closed');
+            this.inicializar();
+          });
+    }
+
+    inicializar() {
+        this.permisos = [];
+        this.permisosAMostrar = []
         forkJoin([this.rolesService.getRoles(), this.perfilesService.getPerfiles()]).subscribe(results => {
             this.permisos = results[0].data;
             let idPermisos: Array<Number> = [];
@@ -59,16 +89,5 @@ export class ABMRolesComponent implements OnInit
                 }
             })
         })
-    }
-
-    openModal(row) {
-        console.log(row);
-        const dialogRef = this.dialog.open(ABMRolesDialog, {
-            width: '250px',
-            data: {row: row},
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            console.log('The dialog was closed');
-          });
     }
 }

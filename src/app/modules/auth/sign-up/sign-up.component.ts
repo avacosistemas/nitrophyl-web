@@ -5,7 +5,6 @@ import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
 import { User } from 'app/shared/models/user.model';
-import { PerfilesService } from 'app/shared/services/perfiles.service';
 import { UserService } from 'app/shared/services/user.service';
 
 @Component({
@@ -32,8 +31,7 @@ export class AuthSignUpComponent implements OnInit
         private _authService: AuthService,
         private _formBuilder: FormBuilder,
         private _router: Router,
-        private userService: UserService,
-        private perfilesService: PerfilesService
+        private userService: UserService
     )
     {
     }
@@ -56,7 +54,6 @@ export class AuthSignUpComponent implements OnInit
                 agreements: ['', Validators.requiredTrue]
             }
         );
-        this.perfilesService.getPerfilById(1).subscribe(d=>console.log(d))
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -110,21 +107,32 @@ export class AuthSignUpComponent implements OnInit
         */
 
         //REGISTRO
-        this.perfilesService.getPerfilById(1).subscribe(data=>{
+        this.userService.getUserById(2).subscribe(data=>{
             let model: User = {
                 email: this.signUpForm.controls.email.value,
                 enabled: true,
-                id: 3,
+                id: 0,
                 lastname: this.signUpForm.controls.surname.value,
                 name: this.signUpForm.controls.name.value,
-                profiles: data.data,
+                profiles: data.data.profiles,
                 username: this.signUpForm.controls.username.value,
             };
-            console.log(model)
-            this.userService.postUser(model).subscribe(d=>console.log(d))
+            this.userService.postUser(model).subscribe(res => {
+                if(res.status = 'OK') {
+                    this.alert = {
+                        type   : 'success',
+                        message: 'New user created'
+                    };
+                } else {
+                    this.alert = {
+                        type   : 'error',
+                        message: 'Something went wrong, please try again.'
+                    };
+                }
+                this.showAlert = true;
+                this.signUpForm.enable();
+                this.signUpForm.reset();
+            })
         })
-        
-        //this.userService.postUser(model).subscribe(d=>console.log(d))
-        
     }
 }

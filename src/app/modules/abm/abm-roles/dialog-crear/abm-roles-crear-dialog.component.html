@@ -1,0 +1,36 @@
+<div class="grid">
+    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+        <span fuseAlertTitle>Rol creado</span>
+    </fuse-alert>
+    <fuse-alert [type]="'error'" *ngIf="showError">
+        <span fuseAlertTitle>No se pudo crear el rol</span>
+    </fuse-alert>
+    <form
+        class="mt-8"
+        [formGroup]="createRolForm">
+        <mat-form-field class="w-full">
+            <mat-label>Código</mat-label>
+            <input
+                id="code"
+                matInput
+                [formControlName]="'code'">
+            <mat-error class="mb-1" *ngIf="createRolForm.get('code').hasError('required')">
+                El código es requerido
+            </mat-error>
+        </mat-form-field>
+        <mat-form-field class="w-full">
+            <mat-label>Nombre</mat-label>
+            <input
+                id="name"
+                matInput
+                [formControlName]="'name'">
+            <mat-error class="mb-1" *ngIf="createRolForm.get('name').hasError('required')">
+                El nombre es requerido
+            </mat-error>
+        </mat-form-field>
+    </form>
+    <div class="mt-2 flex justify-around">
+        <button mat-raised-button color="warn" (click)="cancel()">Cancelar</button>
+        <button mat-raised-button color="primary" (click)="create()">Crear</button>
+    </div>
+</div>
