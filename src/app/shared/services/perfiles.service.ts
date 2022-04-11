@@ -2,6 +2,7 @@ import { HttpClient, HttpBackend } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "environments/environment";
 import { Observable } from "rxjs";
+import { Perfil } from "../models/perfil.model";
 
 
 @Injectable({
@@ -20,7 +21,7 @@ export class PerfilesService {
         return this.http.get<any>(`${environment.server}profiles/`)
     }
 
-    public postPerfil(perfil): Observable<any> {
+    public postPerfil(perfil: Perfil): Observable<any> {
         return this.http.post<any>(`${environment.server}profiles/`, perfil)
     }
 

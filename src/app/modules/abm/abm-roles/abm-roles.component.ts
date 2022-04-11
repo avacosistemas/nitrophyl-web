@@ -31,7 +31,7 @@ export class ABMRolesComponent implements OnInit
     openModal(row) {
         console.log(row);
         const dialogRef = this.dialog.open(ABMRolesDialog, {
-            width: '40%',
+            width: '60%',
             data: {row: row},
         });
         dialogRef.afterClosed().subscribe(result => {

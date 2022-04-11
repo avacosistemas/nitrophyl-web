@@ -3,6 +3,7 @@ import { Route, RouterModule } from '@angular/router';
 import { ABMPerfilesComponent } from './abm-perfiles.component';
 import { ABMPerfilesDialog } from './dialog/abm-perfiles-dialog.component';
 import { ABMSharedModule } from '../abm-shared.module';
+import { ABMCrearPerfilDialog } from './dialog-crear/abm-perfiles-crear-dialog.component';
 
 const abmPerfilesRoutes: Route[] = [
     {
@@ -14,7 +15,8 @@ const abmPerfilesRoutes: Route[] = [
 @NgModule({
     declarations: [
         ABMPerfilesComponent,
-        ABMPerfilesDialog
+        ABMPerfilesDialog,
+        ABMCrearPerfilDialog
     ],
     imports     : [
         RouterModule.forChild(abmPerfilesRoutes),
