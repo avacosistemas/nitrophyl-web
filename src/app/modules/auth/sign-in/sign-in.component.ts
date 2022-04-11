@@ -83,7 +83,7 @@ export class AuthSignInComponent implements OnInit
         }
 
         this.loginService.login(model).subscribe(res => {
-            const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
+            const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('usuarios') || '/usuarios';
             this._router.navigateByUrl(redirectURL);
         },
         err => {
