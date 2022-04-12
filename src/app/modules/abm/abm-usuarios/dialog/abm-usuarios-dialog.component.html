@@ -1,0 +1,58 @@
+<div class="grid">
+    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+        <span fuseAlertTitle>Cambios realizados</span>
+    </fuse-alert>
+    <fuse-alert [type]="'error'" *ngIf="showError">
+        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
+    </fuse-alert>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Id</mat-label>
+        <input matInput disabled [(ngModel)]="data.row.id">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Usuario</mat-label>
+        <input matInput [(ngModel)]="data.row.username">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Nombre</mat-label>
+        <input matInput [(ngModel)]="data.row.name">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Apellido</mat-label>
+        <input matInput [(ngModel)]="data.row.lastname">
+    </mat-form-field>
+    <mat-form-field class="fuse-mat-textarea">
+        <mat-label>Habilitado</mat-label>
+        <input matInput disabled [(ngModel)]="data.row.enabled">
+    </mat-form-field>
+    <div class="grid grid-cols-3 gap-4">
+        <div class="col-span-1">
+            <mat-form-field class="w-full">
+                <mat-label>Permisos Disponibles</mat-label>
+                <mat-select multiple (selectionChange)="onAddChange($event)" [disabled]="formDisabled">
+                    <mat-option *ngFor="let permiso of permisosDisponibles" [value]="permiso.id">
+                        {{ permiso.code }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+        <div class="col-span-1 text-center grid">
+            <button mat-raised-button (click)="add()" [disabled]="selected.length == 0">Agregar</button>
+            <button mat-raised-button (click)="remove()" [disabled]="selectedToRemove.length == 0">Quitar</button>
+        </div>
+        <div class="col-span-1">
+            <mat-form-field class="w-full">
+                <mat-label>Permisos Incluidos</mat-label>
+                <mat-select multiple (selectionChange)="onRemoveChange($event)">
+                    <mat-option *ngFor="let permiso of permisosIncluidos" [value]="permiso.id">
+                        {{ permiso.code }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
+    </div>
+    <div class="mt-2 flex justify-around">
+        <button mat-raised-button color="warn" (click)="delete()">Eliminar</button>
+        <button mat-raised-button color="primary" (click)="edit()">Editar</button>
+    </div>
+</div>

@@ -30,22 +30,24 @@
             <!-- Sign in form -->
             <form
                 class="mt-8"
-                [formGroup]="signInForm"
-                #signInNgForm="ngForm">
+                [formGroup]="loginForm"
+                #loginNgForm="ngForm">
 
-                <!-- Email field -->
+                <!-- Username field -->
                 <mat-form-field class="w-full">
-                    <mat-label>Email address</mat-label>
+                    <mat-label>Username</mat-label>
                     <input
-                        id="email"
+                        id="username"
                         matInput
-                        [formControlName]="'email'">
-                    <mat-error *ngIf="signInForm.get('email').hasError('required')">
-                        Email address is required
+                        [formControlName]="'username'">
+                    <mat-error *ngIf="loginForm.get('username').hasError('required')">
+                        Username is required
                     </mat-error>
-                    <mat-error *ngIf="signInForm.get('email').hasError('email')">
-                        Please enter a valid email address
-                    </mat-error>
+                    <!--
+                        <mat-error *ngIf="signInForm.get('email').hasError('email')">
+                            Please enter a valid username
+                        </mat-error>
+                    -->
                 </mat-form-field>
 
                 <!-- Password field -->
@@ -94,13 +96,13 @@
                     class="fuse-mat-button-large w-full mt-6"
                     mat-flat-button
                     [color]="'primary'"
-                    [disabled]="signInForm.disabled"
-                    (click)="signIn()">
-                    <span *ngIf="!signInForm.disabled">
+                    [disabled]="loginForm.disabled"
+                    (click)="login()">
+                    <span *ngIf="!loginForm.disabled">
                         Sign in
                     </span>
                     <mat-progress-spinner
-                        *ngIf="signInForm.disabled"
+                        *ngIf="loginForm.disabled"
                         [diameter]="24"
                         [mode]="'indeterminate'"></mat-progress-spinner>
                 </button>

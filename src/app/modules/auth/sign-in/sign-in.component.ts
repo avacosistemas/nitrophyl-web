@@ -4,6 +4,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
+import { UserLogin } from 'app/core/models/user-login.model';
+import { AutorizacionService } from 'app/core/services/autorizacion.service';
 
 @Component({
     selector     : 'auth-sign-in',
@@ -14,12 +16,15 @@ import { AuthService } from 'app/core/auth/auth.service';
 export class AuthSignInComponent implements OnInit
 {
     @ViewChild('signInNgForm') signInNgForm: NgForm;
+    @ViewChild('loginNgForm') loginNgForm: NgForm;
 
     alert: { type: FuseAlertType; message: string } = {
         type   : 'success',
         message: ''
     };
+
     signInForm: FormGroup;
+    loginForm: FormGroup;
     showAlert: boolean = false;
 
     /**
@@ -29,7 +34,8 @@ export class AuthSignInComponent implements OnInit
         private _activatedRoute: ActivatedRoute,
         private _authService: AuthService,
         private _formBuilder: FormBuilder,
-        private _router: Router
+        private _router: Router,
+        private loginService: AutorizacionService
     )
     {
     }
@@ -49,6 +55,11 @@ export class AuthSignInComponent implements OnInit
             password  : ['admin', Validators.required],
             rememberMe: ['']
         });
+        this.loginForm = this._formBuilder.group({
+            username     : ['', [Validators.required]],
+            password  : ['', Validators.required],
+            rememberMe: ['']
+        });
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -58,6 +69,36 @@ export class AuthSignInComponent implements OnInit
     /**
      * Sign in
      */
+    login() {
+        if ( this.loginForm.invalid ) {
+            return;
+        };
+
+        this.loginForm.disable();
+        this.showAlert = false;
+
+        let model: UserLogin = {
+            username: this.loginForm.controls.username.value,
+            password: this.loginForm.controls.password.value
+        }
+
+        this.loginService.login(model).subscribe(res => {
+            const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('usuarios') || '/usuarios';
+            this._router.navigateByUrl(redirectURL);
+        },
+        err => {
+            this.loginForm.enable();
+            this.loginNgForm.resetForm();
+            this.alert = {
+                type   : 'error',
+                message: 'Wrong email or password'
+            };
+            this.showAlert = true;
+        })
+
+        
+    }
+
     signIn(): void
     {
         // Return if the form is invalid

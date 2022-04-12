@@ -3,7 +3,8 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-    production: false
+    production: false,
+    server: 'http://nitrophyl-env.eba-uipv2mcj.us-east-1.elasticbeanstalk.com/'
 };
 
 /*

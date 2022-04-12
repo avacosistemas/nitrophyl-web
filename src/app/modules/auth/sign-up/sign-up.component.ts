@@ -4,6 +4,8 @@ import { Router } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
+import { User } from 'app/shared/models/user.model';
+import { UserService } from 'app/shared/services/user.service';
 
 @Component({
     selector     : 'auth-sign-up',
@@ -28,7 +30,8 @@ export class AuthSignUpComponent implements OnInit
     constructor(
         private _authService: AuthService,
         private _formBuilder: FormBuilder,
-        private _router: Router
+        private _router: Router,
+        private userService: UserService
     )
     {
     }
@@ -44,10 +47,10 @@ export class AuthSignUpComponent implements OnInit
     {
         // Create the form
         this.signUpForm = this._formBuilder.group({
-                name      : ['', Validators.required],
-                email     : ['', [Validators.required, Validators.email]],
-                password  : ['', Validators.required],
-                company   : [''],
+                name: ['', Validators.required],
+                surname: ['', Validators.required],
+                email: ['', [Validators.required, Validators.email]],
+                username : ['', Validators.required],
                 agreements: ['', Validators.requiredTrue]
             }
         );
@@ -75,6 +78,7 @@ export class AuthSignUpComponent implements OnInit
         this.showAlert = false;
 
         // Sign up
+        /*
         this._authService.signUp(this.signUpForm.value)
             .subscribe(
                 (response) => {
@@ -100,5 +104,35 @@ export class AuthSignUpComponent implements OnInit
                     this.showAlert = true;
                 }
             );
+        */
+
+        //REGISTRO
+        this.userService.getUserById(2).subscribe(data=>{
+            let model: User = {
+                email: this.signUpForm.controls.email.value,
+                enabled: true,
+                id: 0,
+                lastname: this.signUpForm.controls.surname.value,
+                name: this.signUpForm.controls.name.value,
+                profiles: data.data.profiles,
+                username: this.signUpForm.controls.username.value,
+            };
+            this.userService.postUser(model).subscribe(res => {
+                if(res.status = 'OK') {
+                    this.alert = {
+                        type   : 'success',
+                        message: 'New user created'
+                    };
+                } else {
+                    this.alert = {
+                        type   : 'error',
+                        message: 'Something went wrong, please try again.'
+                    };
+                }
+                this.showAlert = true;
+                this.signUpForm.enable();
+                this.signUpForm.reset();
+            })
+        })
     }
 }

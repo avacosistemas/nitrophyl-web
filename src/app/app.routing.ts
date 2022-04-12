@@ -3,6 +3,7 @@ import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 import { InitialDataResolver } from 'app/app.resolvers';
+import { ABMUsuariosComponent } from './modules/abm/abm-usuarios/abm-usuarios.component';
 
 // @formatter:off
 /* eslint-disable max-len */
@@ -61,6 +62,20 @@ export const appRoutes: Route[] = [
         },
         children   : [
             {path: 'home', loadChildren: () => import('app/modules/landing/home/home.module').then(m => m.LandingHomeModule)},
+        ]
+    },
+
+    {
+        path: '',
+        component  : LayoutComponent,
+        resolve    : {
+            initialData: InitialDataResolver,
+        },
+        children   : [
+            {path: 'usuarios', loadChildren: () => import('app/modules/abm/abm-usuarios/abm-usuarios.module').then(m => m.ABMUsuariosModule)},
+            {path: 'roles', loadChildren: () => import('app/modules/abm/abm-roles/abm-roles.module').then(m => m.ABMRolesModule)},
+            {path: 'permisos', loadChildren: () => import('app/modules/abm/abm-permisos/abm-permisos.module').then(m => m.ABMPermisosModule)},
+            {path: 'perfiles', loadChildren: () => import('app/modules/abm/abm-perfiles/abm-perfiles.module').then(m => m.ABMPerfilesModule)},
         ]
     },
 
