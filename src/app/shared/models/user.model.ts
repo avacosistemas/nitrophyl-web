@@ -1,10 +1,10 @@
 export interface User {
     email: string,
-    enabled: boolean, //true
-    id: number, //0
+    enabled: boolean,
+    id: number,
     lastname: string,
     name: string,
-    profiles: [ // traer de profiles
+    profiles: [
         {
         enabled: boolean,
         id: number,

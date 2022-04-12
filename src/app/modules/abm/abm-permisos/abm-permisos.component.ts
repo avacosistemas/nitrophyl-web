@@ -30,7 +30,6 @@ export class ABMPermisosComponent implements OnInit {
     }
 
     openModal(row) {
-        console.log(row);
         const dialogRef = this.dialog.open(ABMPermisosDialog, {
             width: '40%',
             data: {row: row},

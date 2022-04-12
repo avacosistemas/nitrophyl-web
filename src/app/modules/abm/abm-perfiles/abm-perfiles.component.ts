@@ -13,7 +13,7 @@ export class ABMPerfilesComponent implements OnInit
 {
     
     perfiles: Array<any> = [];
-    displayedColumns: string[] = ['id', 'name', 'enabled', 'roleCode', 'roleName']
+    displayedColumns: string[] = ['name', 'enabled', 'roleCode', 'roleName', 'roleId']
 
     constructor(
         private perfilesService: PerfilesService,
@@ -26,7 +26,7 @@ export class ABMPerfilesComponent implements OnInit
 
     openModal(row) {
         const dialogRef = this.dialog.open(ABMPerfilesDialog, {
-            width: '40%',
+            width: '60%',
             data: {row: row},
         });
         dialogRef.afterClosed().subscribe(result => {

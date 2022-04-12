@@ -11,8 +11,8 @@ import { ABMUsuariosDialog } from './dialog/abm-usuarios-dialog.component';
 })
 export class ABMUsuariosComponent implements OnInit
 {
-    usuarios:  Array<User> = [];
-    displayedColumns: string[] = ['nombre', 'apellido', 'usuario', 'email']
+    usuarios:  Array<any> = [];
+    displayedColumns: string[] = ['usuario', 'nombre', 'apellido', 'email', 'perfil']
 
     constructor(
         private userService: UserService,
@@ -20,17 +20,16 @@ export class ABMUsuariosComponent implements OnInit
 
     ngOnInit(): void {
         this.userService.getUsers().subscribe(d=>{
-            this.usuarios = d.data
+            this.usuarios = d.data;
         })
     }
 
     openModal(row) {
         const dialogRef = this.dialog.open(ABMUsuariosDialog, {
-            width: '40%',
+            width: '60%',
             data: {row: row},
         });
         dialogRef.afterClosed().subscribe(result => {
-            console.log('The dialog was closed');
           });
     }
 }

@@ -17,7 +17,7 @@ export class ABMRolesComponent implements OnInit
 
     permisos: Array<Rol> = [];
     permisosAMostrar = [];
-    displayedColumns: string[] = ['id', 'code', 'name', 'codePermission']
+    displayedColumns: string[] = ['code', 'name']
 
     constructor(
         private rolesService: RolesService,
@@ -29,13 +29,11 @@ export class ABMRolesComponent implements OnInit
     }
 
     openModal(row) {
-        console.log(row);
         const dialogRef = this.dialog.open(ABMRolesDialog, {
             width: '60%',
             data: {row: row},
         });
         dialogRef.afterClosed().subscribe(result => {
-            console.log('The dialog was closed');
             this.inicializar();
           });
     }
@@ -46,7 +44,6 @@ export class ABMRolesComponent implements OnInit
             data: {row: "data"},
         });
         dialogRef.afterClosed().subscribe(result => {
-            console.log('The dialog was closed');
             this.inicializar();
           });
     }
