@@ -15,7 +15,7 @@ import { ABMPermisosDialog } from './dialog/abm-permisos-dialog.component';
 export class ABMPermisosComponent implements OnInit {
     
     permisos: Array<Permiso> = [];
-    displayedColumns: string[] = ['id', 'code', 'description', 'enabled'];
+    displayedColumns: string[] = ['code', 'description', 'enabled'];
     dataSource: any;
 
     constructor(
