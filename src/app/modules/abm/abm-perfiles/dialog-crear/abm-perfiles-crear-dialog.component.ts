@@ -1,3 +1,4 @@
+import { SelectionModel } from "@angular/cdk/collections";
 import { Component, Inject, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -16,7 +17,7 @@ import { RolesService } from "app/shared/services/roles.service";
 export class ABMCrearPerfilDialog implements OnInit{
 
     roles: Array<Rol> = [];
-
+    displayedColumns: string[] = ['select', 'code', 'description']
     createPerfilForm: FormGroup;
 
     formDisabled: boolean = false;
@@ -30,6 +31,13 @@ export class ABMCrearPerfilDialog implements OnInit{
     permisos: Array<Permiso> = [];
     permisosDisponibles: Array<Permiso> = [];
     permisosIncluidos: Array<Permiso> = [];
+    searchPermisos: Array<Permiso> = [];
+    searchPermisosIncluidos: Array<Permiso> = [];
+    selection = new SelectionModel<Permiso>(true, []);
+    selectionIncluidos = new SelectionModel<Permiso>(true, []);
+    inputDisponibles: string = "";
+    inputIncluidos: string = "";
+
 
     constructor(
       private permisosService: PermisosService,
@@ -48,6 +56,7 @@ export class ABMCrearPerfilDialog implements OnInit{
       this.permisosService.getPermisos().subscribe(data => {
         this.permisos = data.data;
         this.permisosDisponibles = data.data;
+        this.searchPermisos = data.data;
       });
       this.rolesService.getRoles().subscribe(data => {
         this.roles = data.data;
@@ -104,7 +113,7 @@ export class ABMCrearPerfilDialog implements OnInit{
     add() {
       let index: Array<number> = [];
       this.permisosDisponibles.forEach(permiso => {
-        let busqueda = this.selected.find(id => id == permiso.id);
+        let busqueda = this.selection.selected.find(seleccionado => seleccionado.id == permiso.id);
         if(busqueda != undefined) {
           this.permisosIncluidos.push(permiso);
           index.push(this.permisosDisponibles.indexOf(permiso));
@@ -117,13 +126,18 @@ export class ABMCrearPerfilDialog implements OnInit{
           counter++;
         }
       })
-      this.selected = [];
+      this.searchPermisos = this.permisosDisponibles;
+      this.searchPermisos = [...this.searchPermisos];
+      this.searchPermisosIncluidos = this.permisosIncluidos;
+      this.searchPermisosIncluidos = [...this.searchPermisosIncluidos];
+      this.inputDisponibles = "";
+      this.selection.clear();
     }
 
     remove() {
       let index: Array<number> = [];
       this.permisosIncluidos.forEach(permiso => {
-        let busqueda = this.selectedToRemove.find(id => id == permiso.id);
+        let busqueda = this.selectionIncluidos.selected.find(seleccionado => seleccionado.id == permiso.id);
         if(busqueda != undefined) {
           this.permisosDisponibles.push(permiso);
           index.push(this.permisosIncluidos.indexOf(permiso));
@@ -136,6 +150,55 @@ export class ABMCrearPerfilDialog implements OnInit{
           counter++;
         }
       })
-      this.selectedToRemove = [];
+      this.searchPermisos = this.permisosDisponibles;
+      this.searchPermisos = [...this.searchPermisos];
+      this.searchPermisosIncluidos = this.permisosIncluidos;
+      this.searchPermisosIncluidos = [...this.searchPermisosIncluidos];
+      this.inputIncluidos = "";
+      this.selectionIncluidos.clear();
+    }
+
+    onKeyDisponibles(value) {
+      this.searchPermisos = this.search(value);
+    }
+
+    onKeyIncluidos(value) {
+      this.searchPermisosIncluidos = this.searchIncluidos(value)
+    }
+
+    search(value: string) { 
+      let filter = value.toLowerCase();
+      return this.permisosDisponibles.filter(option => option.code.toLowerCase().startsWith(filter));
+    }
+
+    searchIncluidos(value: string) {
+      let filter = value.toLowerCase();
+      return this.permisosIncluidos.filter(option => option.code.toLowerCase().startsWith(filter));
+    }
+
+    isAllSelected(id: number) {
+      if (id == 1) {
+        const numSelected = this.selection.selected.length;
+        const numRows = this.searchPermisos.length;
+        return numSelected === numRows;
+      } else {
+        const numSelected = this.selectionIncluidos.selected.length;
+        const numRows = this.searchPermisosIncluidos.length;
+        return numSelected === numRows;
+      }
+      
+    }
+
+    masterToggle(id: number) {
+      if (id == 1) {
+        this.isAllSelected(1) ?
+        this.selection.clear() :
+        this.searchPermisos.forEach(row => this.selection.select(row));
+      } else {
+        this.isAllSelected(2) ?
+        this.selectionIncluidos.clear() :
+        this.searchPermisosIncluidos.forEach(row => this.selectionIncluidos.select(row));
+      }
+      
     }
   }

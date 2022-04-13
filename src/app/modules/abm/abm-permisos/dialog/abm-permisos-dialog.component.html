@@ -6,10 +6,6 @@
         <span fuseAlertTitle>No se pudieron realizar los cambios</span>
     </fuse-alert>
     <mat-form-field class="fuse-mat-textarea">
-        <mat-label>Id</mat-label>
-        <input matInput disabled [(ngModel)]="data.row.id">
-    </mat-form-field>
-    <mat-form-field class="fuse-mat-textarea">
         <mat-label>Código</mat-label>
         <input matInput [(ngModel)]="data.row.code">
     </mat-form-field>
@@ -17,11 +13,12 @@
         <mat-label>Descripción</mat-label>
         <input matInput [(ngModel)]="data.row.description">
     </mat-form-field>
-    <mat-form-field class="fuse-mat-textarea">
-        <mat-label>Habilitado</mat-label>
-        <input matInput disabled [(ngModel)]="data.row.enabled">
-    </mat-form-field>
-    <div class="mt-2 flex justify-around">
+    <section class="fuse-mat-textarea">
+        <mat-checkbox [(ngModel)]="data.row.enabled">
+            Habilitado
+        </mat-checkbox>
+    </section>
+    <div class="mt-5 flex justify-around">
         <button mat-raised-button color="warn" (click)="delete()">Eliminar</button>
         <button mat-raised-button color="primary" (click)="edit()">Editar</button>
     </div>
