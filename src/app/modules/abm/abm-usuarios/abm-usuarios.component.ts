@@ -25,6 +25,7 @@ export class ABMUsuariosComponent implements OnInit
     }
 
     openModal(row) {
+        console.log(row)
         const dialogRef = this.dialog.open(ABMUsuariosDialog, {
             width: '90%',
             maxHeight: '100%',

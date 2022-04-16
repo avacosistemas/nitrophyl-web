@@ -1,25 +1,76 @@
-<div class="flex flex-col flex-auto min-w-0">
 
-    <!-- Main -->
-    <div class="flex-auto p-6 sm:p-10">
-        <button mat-raised-button color="primary" class="mb-2" (click)="crearRol()">Crear Rol</button>
 
-        <!-- CONTENT GOES HERE -->
-        <div class="h-400 min-h-400 max-h-400">
-            <table mat-table [dataSource]="permisosAMostrar" style="width: 100%;" class="border-2 rounded-2xl">
-                <ng-container matColumnDef="code">
-                    <th mat-header-cell *matHeaderCellDef> Código </th>
-                    <td mat-cell *matCellDef="let element"> {{element.code}} </td>
-                </ng-container>
-                <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
-                    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-                </ng-container>
-                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="openModal(row)"></tr>
-            </table>
+
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent">
+        <div class="flex-1 min-w-0">
+            <div>
+                <div class="hidden sm:flex flex-wrap items-center font-medium">
+                    <div>
+                        <a class="whitespace-nowrap text-primary-500">ABM</a>
+                    </div>
+                    <div class="flex items-center ml-1 whitespace-nowrap">
+                        <mat-icon role="img" class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color" aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="chevron-right" data-mat-icon-namespace="heroicons_solid">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                            </svg>
+                        </mat-icon>
+                        <span class="ml-1 text-secondary">Roles</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-2">
+                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">ABM Roles</h2>
+            </div>
         </div>
-
+        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+            <button mat-stroked-button="" class="mat-focus-indicator mat-stroked-button mat-button-base">
+                <span class="mat-button-wrapper">
+                    <mat-icon role="img" class="mat-icon notranslate icon-size-5 mr-2 mat-icon-no-color" aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="pencil-alt" data-mat-icon-namespace="heroicons_solid">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
+                            <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path>
+                            <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path>
+                        </svg>
+                    </mat-icon>
+                     Edit 
+                </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span class="mat-button-focus-overlay"></span>
+            </button>
+            <button mat-flat-button="" class="mat-focus-indicator ml-3 mat-flat-button mat-button-base mat-accent">
+                <span class="mat-button-wrapper">
+                    <mat-icon role="img" class="mat-icon notranslate icon-size-5 mr-2 mat-icon-no-color" aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="link" data-mat-icon-namespace="heroicons_solid">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
+                            <path fill-rule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clip-rule="evenodd"></path>
+                        </svg>
+                    </mat-icon>
+                     View 
+                </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span class="mat-button-focus-overlay"></span>
+            </button>
+        </div>
     </div>
-
+    <div class="flex flex-col flex-auto min-w-0">
+        <!-- Main -->
+        <div class="flex-auto p-6 sm:p-10">
+            <button mat-raised-button color="primary" class="mb-2" (click)="crearRol()">Crear Rol</button>
+            <!-- CONTENT GOES HERE -->
+            <div class="h-400 min-h-400 max-h-400">
+                <table mat-table [dataSource]="permisosAMostrar" style="width: 100%;" class="border-2 rounded-2xl">
+                    <ng-container matColumnDef="code">
+                        <th mat-header-cell *matHeaderCellDef> Código </th>
+                        <td mat-cell *matCellDef="let element"> {{element.code}} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef> Nombre </th>
+                        <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="openModal(row)"></tr>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+

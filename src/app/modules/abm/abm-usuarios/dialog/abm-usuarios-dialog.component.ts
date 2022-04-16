@@ -1,8 +1,8 @@
 import { SelectionModel } from "@angular/cdk/collections";
 import { Component, Inject, OnInit } from "@angular/core";
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { Permiso } from "app/shared/models/permiso.model";
-import { PermisosService } from "app/shared/services/permisos.service";
+import { Perfil } from "app/shared/models/perfil.model";
+import { PerfilesService } from "app/shared/services/perfiles.service";
 import { UserService } from "app/shared/services/user.service";
 
 @Component({
@@ -19,20 +19,20 @@ import { UserService } from "app/shared/services/user.service";
 
     formDisabled: boolean = false;
 
-    displayedColumns: string[] = ['select', 'code', 'description']
-
-    permisos: Array<Permiso> = [];
-    permisosDisponibles: Array<Permiso> = [];
-    permisosIncluidos: Array<Permiso> = [];
-    searchPermisos: Array<Permiso> = [];
-    searchPermisosIncluidos: Array<Permiso> = [];
-    selection = new SelectionModel<Permiso>(true, []);
-    selectionIncluidos = new SelectionModel<Permiso>(true, []);
+    displayedColumns: string[] = ['select', 'name']
+    
+    perfiles: Array<Perfil> = [];
+    perfilesDisponibles: Array<Perfil> = [];
+    perfilesIncluidos: Array<Perfil> = [];
+    searchPerfiles: Array<Perfil> = [];
+    searchPerfilesIncluidos: Array<Perfil> = [];
+    selection = new SelectionModel<Perfil>(true, []);
+    selectionIncluidos = new SelectionModel<Perfil>(true, []);
     inputDisponibles: string = "";
     inputIncluidos: string = "";
 
     constructor(
-      private permisosService: PermisosService,
+      private perfilesService: PerfilesService,
       private usuarioService: UserService,
       public dialogRef: MatDialogRef<ABMUsuariosDialog>,
       @Inject(MAT_DIALOG_DATA) public data,
@@ -48,7 +48,7 @@ import { UserService } from "app/shared/services/user.service";
 
     edit() {
       let model = this.data.row;
-      model.profiles[0].permissions = this.permisosIncluidos;
+      model.profiles = this.perfilesIncluidos;
       this.usuarioService.updateUser(model, this.data.row.id).subscribe(response => {
         if (response.status == 'OK') {
           this.showSuccess = true;
@@ -77,94 +77,94 @@ import { UserService } from "app/shared/services/user.service";
     }
 
     inicializar() {
-      this.permisosIncluidos = this.data.row.profiles[0].permissions;
-      this.searchPermisosIncluidos = this.permisosIncluidos;
-      this.permisosService.getPermisos().subscribe(d => {
-        this.permisos = d.data;
-        this.permisos.forEach(permiso => {
-          let busqueda = this.permisosIncluidos.find(permisoI => permisoI.id == permiso.id);
+      this.perfilesIncluidos = this.data.row.profiles;
+      this.searchPerfilesIncluidos = this.perfilesIncluidos;
+      this.perfilesService.getPerfiles().subscribe(d=>{
+        this.perfiles = d.data;
+        this.perfiles.forEach(perfil => {
+          let busqueda = this.perfilesIncluidos.find(perfilI => perfilI.id == perfil.id);
           if(busqueda == undefined) {
-            this.permisosDisponibles.push(permiso);
+            this.perfilesDisponibles.push(perfil);
           }
         });
-        this.searchPermisos = this.permisosDisponibles;
+        this.searchPerfiles = this.perfilesDisponibles;
       })
     }
 
     add() {
       let index: Array<number> = [];
-      this.permisosDisponibles.forEach(permiso => {
-        let busqueda = this.selection.selected.find(seleccionado => seleccionado.id == permiso.id);
+      this.perfilesDisponibles.forEach(perfil => {
+        let busqueda = this.selection.selected.find(seleccionado => seleccionado.id == perfil.id);
         if(busqueda != undefined) {
-          this.permisosIncluidos.push(permiso);
-          index.push(this.permisosDisponibles.indexOf(permiso));
+          this.perfilesIncluidos.push(perfil);
+          index.push(this.perfilesDisponibles.indexOf(perfil));
         }
       })
       let counter = 0;
       index.forEach(i => {
         if (index.length > 0) {
-          this.permisosDisponibles.splice((i - counter), 1);
+          this.perfilesDisponibles.splice((i - counter), 1);
           counter++;
         }
       })
-      this.searchPermisos = this.permisosDisponibles;
-      this.searchPermisos = [...this.searchPermisos];
-      this.searchPermisosIncluidos = this.permisosIncluidos;
-      this.searchPermisosIncluidos = [...this.searchPermisosIncluidos];
+      this.searchPerfiles = this.perfilesDisponibles;
+      this.searchPerfiles = [...this.searchPerfiles];
+      this.searchPerfilesIncluidos = this.perfilesIncluidos;
+      this.searchPerfilesIncluidos = [...this.searchPerfilesIncluidos];
       this.inputDisponibles = "";
       this.selection.clear();
     }
 
     remove() {
       let index: Array<number> = [];
-      this.permisosIncluidos.forEach(permiso => {
-        let busqueda = this.selectionIncluidos.selected.find(seleccionado => seleccionado.id == permiso.id);
+      this.perfilesIncluidos.forEach(perfil => {
+        let busqueda = this.selectionIncluidos.selected.find(seleccionado => seleccionado.id == perfil.id);
         if(busqueda != undefined) {
-          this.permisosDisponibles.push(permiso);
-          index.push(this.permisosIncluidos.indexOf(permiso));
+          this.perfilesDisponibles.push(perfil);
+          index.push(this.perfilesIncluidos.indexOf(perfil));
         }
       })
       let counter = 0;
       index.forEach(i => {
         if (index.length > 0) {
-          this.permisosIncluidos.splice((i - counter), 1);
+          this.perfilesIncluidos.splice((i - counter), 1);
           counter++;
         }
       })
-      this.searchPermisos = this.permisosDisponibles;
-      this.searchPermisos = [...this.searchPermisos];
-      this.searchPermisosIncluidos = this.permisosIncluidos;
-      this.searchPermisosIncluidos = [...this.searchPermisosIncluidos];
+      this.searchPerfiles = this.perfilesDisponibles;
+      this.searchPerfiles = [...this.searchPerfiles];
+      this.searchPerfilesIncluidos = this.perfilesIncluidos;
+      this.searchPerfilesIncluidos = [...this.searchPerfilesIncluidos];
       this.inputIncluidos = "";
       this.selectionIncluidos.clear();
     }
 
     onKeyDisponibles(value) {
-      this.searchPermisos = this.search(value);
+      this.searchPerfiles = this.search(value);
     }
 
     onKeyIncluidos(value) {
-      this.searchPermisosIncluidos = this.searchIncluidos(value)
+      this.searchPerfilesIncluidos = this.searchIncluidos(value)
     }
 
     search(value: string) { 
       let filter = value.toLowerCase();
-      return this.permisosDisponibles.filter(option => option.code.toLowerCase().startsWith(filter));
+      return this.perfilesDisponibles.filter(option => option.name.toLowerCase().startsWith(filter));
     }
 
     searchIncluidos(value: string) {
       let filter = value.toLowerCase();
-      return this.permisosIncluidos.filter(option => option.code.toLowerCase().startsWith(filter));
+      return this.perfilesIncluidos.filter(option => option.name.toLowerCase().startsWith(filter));
     }
 
     isAllSelected(id: number) {
       if (id == 1) {
         const numSelected = this.selection.selected.length;
-        const numRows = this.searchPermisos.length;
+        const numRows = this.searchPerfiles.length;
         return numSelected === numRows;
       } else {
         const numSelected = this.selectionIncluidos.selected.length;
-        const numRows = this.searchPermisosIncluidos.length;
+        const numRows = this.searchPerfilesIncluidos.length;
         return numSelected === numRows;
       }
       
@@ -174,11 +174,11 @@ import { UserService } from "app/shared/services/user.service";
       if (id == 1) {
         this.isAllSelected(1) ?
         this.selection.clear() :
-        this.searchPermisos.forEach(row => this.selection.select(row));
+        this.searchPerfiles.forEach(row => this.selection.select(row));
       } else {
         this.isAllSelected(2) ?
         this.selectionIncluidos.clear() :
-        this.searchPermisosIncluidos.forEach(row => this.selectionIncluidos.select(row));
+        this.searchPerfilesIncluidos.forEach(row => this.selectionIncluidos.select(row));
       }
       
     }

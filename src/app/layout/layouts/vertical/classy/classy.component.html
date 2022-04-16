@@ -12,11 +12,13 @@
     <ng-container fuseVerticalNavigationContentHeader>
         <div class="flex items-center w-full p-4 pl-6">
             <!-- Logo -->
-            <div class="flex items-center justify-center">
-                <img
+            <!--
+                <div class="flex items-center justify-center">
+                    <img
                     class="w-8"
                     src="assets/images/logo/logo.svg">
-            </div>
+                </div>
+            -->
             <!-- Components -->
             <div class="flex items-center ml-auto">
                 <notifications></notifications>
@@ -47,13 +49,16 @@
         </div>
     </ng-container>
     <!-- Navigation footer hook -->
-    <ng-container fuseVerticalNavigationContentFooter>
-        <div class="flex flex-0 items-center justify-center h-16 pr-6 pl-2 mt-2 mb-4 opacity-12">
-            <img
-                class="max-w-36"
-                src="assets/images/logo/logo-text-on-dark.svg">
-        </div>
-    </ng-container>
+    <!--
+        <ng-container fuseVerticalNavigationContentFooter>
+            <div class="flex flex-0 items-center justify-center h-16 pr-6 pl-2 mt-2 mb-4 opacity-12">
+                <img
+                    class="max-w-36"
+                    src="assets/images/logo/logo-text-on-dark.svg">
+            </div>
+        </ng-container>
+    -->
+    
 </fuse-vertical-navigation>
 
 <!-- Wrapper -->
@@ -69,17 +74,19 @@
         </button>
         <!-- Components -->
         <div class="flex items-center pl-2 ml-auto space-x-0.5 sm:space-x-2">
-            <languages></languages>
+            <!--<languages></languages>-->
             <fuse-fullscreen class="hidden md:block"></fuse-fullscreen>
-            <search [appearance]="'bar'"></search>
-            <shortcuts></shortcuts>
-            <messages></messages>
-            <button
-                class="lg:hidden"
-                mat-icon-button
-                (click)="quickChat.toggle()">
-                <mat-icon [svgIcon]="'heroicons_outline:chat-alt-2'"></mat-icon>
-            </button>
+            <!--
+                <search [appearance]="'bar'"></search>
+                <shortcuts></shortcuts>
+                <messages></messages>
+                <button
+                    class="lg:hidden"
+                    mat-icon-button
+                    (click)="quickChat.toggle()">
+                    <mat-icon [svgIcon]="'heroicons_outline:chat-alt-2'"></mat-icon>
+                </button>
+            -->
         </div>
     </div>
 
@@ -98,4 +105,5 @@
 </div>
 
 <!-- Quick chat -->
-<quick-chat #quickChat="quickChat"></quick-chat>
+<!--<quick-chat #quickChat="quickChat"></quick-chat>-->
+
