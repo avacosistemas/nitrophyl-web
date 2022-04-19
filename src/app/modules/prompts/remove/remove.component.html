@@ -1,0 +1,12 @@
+<div>
+    <div style="border-radius: 50%; background: pink; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
+        <mat-icon svgIcon="warning_amber" style="fill: red"></mat-icon>
+    </div>
+    <h1 style="font-weight: 600;" *ngIf="data.seccion == 'usuario'">¿Está seguro que desea eliminar el {{ data.seccion }} {{ data.data.username }} permanentemente? Esta acción no se
+     puede deshacer.</h1>
+    <h1 style="font-weight: 600;" *ngIf="data.seccion == 'cambios'">¿Está seguro que desea cerrar y no guardar los cambios realizados?</h1>
+    <mat-dialog-actions style="display: flex; justify-content: flex-end;">
+        <button mat-raised-button class="mr-2" (click)="close()">Cancelar</button>
+        <button mat-raised-button color="warn" (click)="save()">{{ data.boton }}</button>
+    </mat-dialog-actions>
+</div>

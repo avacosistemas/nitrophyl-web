@@ -1,29 +1,12 @@
+import { Perfil } from "./perfil.model"
+
 export interface User {
     email: string,
     enabled: boolean,
     id: number,
     lastname: string,
     name: string,
-    profiles: [
-        {
-        enabled: boolean,
-        id: number,
-        name: string,
-        permissions: [
-            {
-                code: string,
-                description: string,
-                enabled: boolean,
-                id: number
-            }
-        ],
-        role: {
-            code: string,
-            id: number,
-            name: string
-        }
-        }
-    ],
+    profiles: Array<Perfil>
     username: string
 }
 

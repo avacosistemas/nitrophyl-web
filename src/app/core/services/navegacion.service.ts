@@ -19,7 +19,7 @@ export class NavegacionService {
         {
             icon: "heroicons_outline:user-group",
             id: "usuarios",
-            link: "/usuarios",
+            link: "/usuarios/grid",
             title: "Usuarios",
             type: "basic"
         },
