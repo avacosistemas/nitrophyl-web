@@ -14,6 +14,7 @@ import { MatTableModule } from "@angular/material/table";
 import { FuseAlertModule } from "@fuse/components/alert";
 import { FuseScrollbarModule } from "@fuse/directives/scrollbar";
 import {MatTabsModule} from '@angular/material/tabs';
+import { ScrollingModule } from "@angular/cdk/scrolling";
 
 @NgModule({
     exports: [
@@ -32,7 +33,8 @@ import {MatTabsModule} from '@angular/material/tabs';
         FuseAlertModule,
         FuseScrollbarModule,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        ScrollingModule
     ]
 })
 

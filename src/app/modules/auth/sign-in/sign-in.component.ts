@@ -57,8 +57,7 @@ export class AuthSignInComponent implements OnInit
         });
         this.loginForm = this._formBuilder.group({
             username     : ['', [Validators.required]],
-            password  : ['', Validators.required],
-            rememberMe: ['']
+            password  : ['', Validators.required]
         });
     }
 
@@ -83,7 +82,7 @@ export class AuthSignInComponent implements OnInit
         }
 
         this.loginService.login(model).subscribe(res => {
-            const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('usuarios') || '/usuarios';
+            const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('usuarios') || '/usuarios/grid';
             this._router.navigateByUrl(redirectURL);
         },
         err => {

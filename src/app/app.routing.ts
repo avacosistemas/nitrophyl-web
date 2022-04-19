@@ -4,6 +4,7 @@ import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 import { InitialDataResolver } from 'app/app.resolvers';
 import { ABMUsuariosComponent } from './modules/abm/abm-usuarios/abm-usuarios.component';
+import { ABMUsuariosUserComponent } from './modules/abm/abm-usuarios/user/abm-usuarios-user.component';
 
 // @formatter:off
 /* eslint-disable max-len */

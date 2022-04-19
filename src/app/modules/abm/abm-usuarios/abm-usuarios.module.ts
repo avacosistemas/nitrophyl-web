@@ -2,19 +2,25 @@ import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMUsuariosComponent } from './abm-usuarios.component';
 import { ABMSharedModule } from '../abm-shared.module';
-import { ABMUsuariosDialog } from './dialog/abm-usuarios-dialog.component';
+import { ABMUsuariosUserComponent } from './user/abm-usuarios-user.component';
+import { ABMUsuariosGrillaComponent } from './grilla/abm-usuarios-grilla.component';
 
 const abmUsuariosRoutes: Route[] = [
     {
         path     : '',
-        component: ABMUsuariosComponent
+        component: ABMUsuariosComponent,
+        children: [
+            {path: 'user/:id', component: ABMUsuariosUserComponent},
+            {path: 'grid', component: ABMUsuariosGrillaComponent}
+        ]
     }
 ];
 
 @NgModule({
     declarations: [
         ABMUsuariosComponent,
-        ABMUsuariosDialog
+        ABMUsuariosUserComponent,
+        ABMUsuariosGrillaComponent
     ],
     imports     : [
         RouterModule.forChild(abmUsuariosRoutes),
