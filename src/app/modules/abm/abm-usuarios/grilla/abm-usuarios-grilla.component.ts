@@ -18,6 +18,7 @@ interface Data {
 
 export class ABMUsuariosGrillaComponent implements OnInit
 {
+    component = "Grilla";
     usuarios:  Array<any> = [];
     displayedColumns: string[] = ['usuario', 'nombre', 'apellido', 'email', 'perfil', 'acciones']
     data: Data;

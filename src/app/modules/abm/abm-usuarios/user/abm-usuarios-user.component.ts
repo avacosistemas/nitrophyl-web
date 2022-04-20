@@ -1,5 +1,5 @@
 import { SelectionModel } from "@angular/cdk/collections";
-import { Component } from "@angular/core";
+import { Component, OnDestroy } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -8,6 +8,8 @@ import { Perfil } from "app/shared/models/perfil.model";
 import { User } from "app/shared/models/user.model";
 import { PerfilesService } from "app/shared/services/perfiles.service";
 import { UserService } from "app/shared/services/user.service";
+import { Subscription } from "rxjs";
+import { ABMService } from "../abm-usuarios.service";
 
 @Component({
     selector: 'abm-usuarios-user',
@@ -15,7 +17,9 @@ import { UserService } from "app/shared/services/user.service";
     styleUrls: ['./abm-usuarios-user.component.scss']
 })
 
-export class ABMUsuariosUserComponent {
+export class ABMUsuariosUserComponent implements OnDestroy{
+
+  component = "User";
 
     mode: string;
 
@@ -49,18 +53,36 @@ export class ABMUsuariosUserComponent {
     inputDisponibles: string = "";
     inputIncluidos: string = "";
 
+    susTest: Subscription;
+
     constructor(
         public dialog: MatDialog,
         private router: Router,
         private activatedRoute: ActivatedRoute,
         private usuarioService: UserService,
-        private perfilesService: PerfilesService
-
-    ){}
+        private perfilesService: PerfilesService,
+        private abmService: ABMService
+    ) {
+      this.susTest = this.abmService.events.subscribe(
+        (data: any) => {
+          if(data == 1) {
+            this.close();
+          } else if(data == 2) {
+            this.edit();
+          } else if(data == 3) {
+            this.editContinue();
+          }
+        }
+      )
+    }
 
     ngOnInit(): void {
         this.inicializar()
-      }
+    }
+
+    ngOnDestroy(): void {
+      this.susTest.unsubscribe()
+    }
   
     edit() {
         let model = this.data;
@@ -77,30 +99,29 @@ export class ABMUsuariosUserComponent {
 
     editContinue() {
       let model = this.data;
-        model.profiles = this.perfilesIncluidos;
-        this.usuarioService.updateUser(model, this.data.id).subscribe(response => {
-          if (response.status == 'OK') {
-            this.showSuccess = true;
-          } else {
-            this.showError = true;
-          }
-        })
+      model.profiles = this.perfilesIncluidos;
+      this.usuarioService.updateUser(model, this.data.id).subscribe(response => {
+        if (response.status == 'OK') {
+          this.showSuccess = true;
+        } else {
+          this.showError = true;
+        }
+      })
     }
 
     close() {
-      if(this.controlGroup.pristine) {
-        //no se hicieron cambios
-        this.router.navigate(['/usuarios/grid'])
-      } else {
-        const dialogRef = this.dialog.open(RemoveDialogComponent, {
-          maxWidth: '50%',
-          data: {data: null, seccion: "cambios", boton: "Cerrar"},
-        });
-        dialogRef.afterClosed().subscribe(result => {
-          if(result) {
-            this.router.navigate(['/usuarios/grid']);
-          }
-        });
+        if(this.controlGroup.pristine) {
+          this.router.navigate(['/usuarios/grid'])
+        } else {
+          const dialogRef = this.dialog.open(RemoveDialogComponent, {
+            maxWidth: '50%',
+            data: {data: null, seccion: "cambios", boton: "Cerrar"},
+          });
+          dialogRef.afterClosed().subscribe(result => {
+            if(result) {
+              this.router.navigate(['/usuarios/grid']);
+            }
+          });
       }
     }
   
