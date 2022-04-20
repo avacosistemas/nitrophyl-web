@@ -1,12 +1,22 @@
 <div>
-    <div style="border-radius: 50%; background: pink; width: 2.5rem; height: 2.5rem; display: flex; align-items: center; justify-content: center;">
-        <mat-icon svgIcon="warning_amber" style="fill: red"></mat-icon>
+    <div class="w-full flex justify-between">
+        <div class="flex mt-3">
+            <div class="warning-icon">
+                <mat-icon svgIcon="heroicons_outline:exclamation"></mat-icon>
+            </div>
+            <h1 class="font-semibold mt-2 ml-2" *ngIf="data.seccion == 'usuario'">Eliminar {{ data.seccion }}</h1>
+            <h1 class="font-semibold mt-2 ml-2" *ngIf="data.seccion == 'cambios'">Descartar cambios usuario</h1>
+        </div>
+        <button mat-flat-button (click)="close()">
+            <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
+        </button>
     </div>
-    <h1 style="font-weight: 600;" *ngIf="data.seccion == 'usuario'">¿Está seguro que desea eliminar el {{ data.seccion }} {{ data.data.username }} permanentemente? Esta acción no se
-     puede deshacer.</h1>
-    <h1 style="font-weight: 600;" *ngIf="data.seccion == 'cambios'">¿Está seguro que desea cerrar y no guardar los cambios realizados?</h1>
+    <div class="ml-11 mr-15">
+        <h1 *ngIf="data.seccion == 'usuario'">¿Está seguro que desea eliminar el {{ data.seccion }} <b>{{ data.data.username }}</b> permanentemente? Esta acción no se
+            puede deshacer.</h1>
+           <h1 *ngIf="data.seccion == 'cambios'">¿Está seguro que desea cerrar y no guardar los cambios realizados?</h1>
+    </div>
     <mat-dialog-actions style="display: flex; justify-content: flex-end;">
-        <button mat-raised-button class="mr-2" (click)="close()">Cancelar</button>
-        <button mat-raised-button color="warn" (click)="save()">{{ data.boton }}</button>
+        <button mat-raised-button color="warn" class="mr-2" (click)="save()">{{ data.boton }}</button>
     </mat-dialog-actions>
 </div>

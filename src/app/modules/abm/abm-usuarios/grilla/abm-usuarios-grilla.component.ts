@@ -50,7 +50,7 @@ export class ABMUsuariosGrillaComponent implements OnInit
 
     delete(row) {
         const dialogRef = this.dialog.open(RemoveDialogComponent, {
-            maxWidth: '50%',
+            maxWidth: '40%',
             data: {data: row, seccion: "usuario", boton: "Eliminar"},
         });
         dialogRef.afterClosed().subscribe(result => {

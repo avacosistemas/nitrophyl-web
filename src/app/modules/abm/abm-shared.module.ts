@@ -15,10 +15,12 @@ import { FuseAlertModule } from "@fuse/components/alert";
 import { FuseScrollbarModule } from "@fuse/directives/scrollbar";
 import {MatTabsModule} from '@angular/material/tabs';
 import { ScrollingModule } from "@angular/cdk/scrolling";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @NgModule({
     exports: [
         CommonModule,
+        MatTooltipModule,
         MatTabsModule,
         MatIconModule,
         MatTableModule,
