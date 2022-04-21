@@ -53,7 +53,8 @@ export class ABMUsuariosUserComponent implements OnDestroy{
     inputDisponibles: string = "";
     inputIncluidos: string = "";
 
-    susTest: Subscription;
+    suscripcion: Subscription;
+    cambioPerfil: boolean = false;
 
     constructor(
         public dialog: MatDialog,
@@ -63,7 +64,7 @@ export class ABMUsuariosUserComponent implements OnDestroy{
         private perfilesService: PerfilesService,
         private abmService: ABMService
     ) {
-      this.susTest = this.abmService.events.subscribe(
+      this.suscripcion = this.abmService.events.subscribe(
         (data: any) => {
           if(data == 1) {
             this.close();
@@ -81,7 +82,7 @@ export class ABMUsuariosUserComponent implements OnDestroy{
     }
 
     ngOnDestroy(): void {
-      this.susTest.unsubscribe()
+      this.suscripcion.unsubscribe()
     }
   
     edit() {
@@ -110,7 +111,7 @@ export class ABMUsuariosUserComponent implements OnDestroy{
     }
 
     close() {
-        if(this.controlGroup.pristine) {
+        if(this.controlGroup.pristine && this.cambioPerfil == false) {
           this.router.navigate(['/usuarios/grid'])
         } else {
           const dialogRef = this.dialog.open(RemoveDialogComponent, {
@@ -157,6 +158,7 @@ export class ABMUsuariosUserComponent implements OnDestroy{
     }
   
     add() {
+        this.cambioPerfil = true;
         let index: Array<number> = [];
         this.perfilesDisponibles.forEach(perfil => {
           let busqueda = this.selection.selected.find(seleccionado => seleccionado.id == perfil.id);
@@ -181,6 +183,7 @@ export class ABMUsuariosUserComponent implements OnDestroy{
     }
   
     remove() {
+        this.cambioPerfil = true;
         let index: Array<number> = [];
         this.perfilesIncluidos.forEach(perfil => {
           let busqueda = this.selectionIncluidos.selected.find(seleccionado => seleccionado.id == perfil.id);
