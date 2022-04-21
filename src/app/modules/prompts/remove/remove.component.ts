@@ -4,6 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
 @Component({
     selector: 'remove-dialog',
     templateUrl: 'remove.component.html',
+    styleUrls: ['./remove.component.scss']
 })
 
 export class RemoveDialogComponent implements OnInit{

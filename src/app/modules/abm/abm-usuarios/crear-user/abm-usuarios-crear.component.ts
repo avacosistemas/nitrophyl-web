@@ -11,40 +11,31 @@ import { UserService } from "app/shared/services/user.service";
 import { Subscription } from "rxjs";
 import { ABMService } from "../abm-usuarios.service";
 
+
 @Component({
-    selector: 'abm-usuarios-user',
-    templateUrl: './abm-usuarios-user.component.html',
-    styleUrls: ['./abm-usuarios-user.component.scss']
+    selector: 'abm-usuarios-crear',
+    templateUrl: './abm-usuarios-crear.component.html',
+    styleUrls: ['./abm-usuarios-crear.component.scss']
 })
 
-export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
+export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
 
-  component = "User";
-
+    component = "Create";
     mode: string;
-
     showSuccess: boolean = false;
     showError: boolean = false;
-
     data: User;
-    
     selected: Array<number> = [];
     selectedToRemove: Array<number> = [];
-
     formDisabled: boolean = false;
-
     displayedColumns: string[] = ['select', 'name']
-
     controlGroup = new FormGroup({
       username: new FormControl(),
       name: new FormControl(),
       surname: new FormControl(),
       enabled: new FormControl(),
-      mail: new FormControl()
-    })
-    
-    
-    perfiles: Array<Perfil> = [];
+      email: new FormControl()
+    });
     perfilesDisponibles: Array<Perfil> = [];
     perfilesIncluidos: Array<Perfil> = [];
     searchPerfiles: Array<Perfil> = [];
@@ -53,7 +44,6 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
     selectionIncluidos = new SelectionModel<Perfil>(true, []);
     inputDisponibles: string = "";
     inputIncluidos: string = "";
-
     suscripcion: Subscription;
     cambioPerfil: boolean = false;
 
@@ -64,18 +54,16 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
         private usuarioService: UserService,
         private perfilesService: PerfilesService,
         private abmService: ABMService
-    ) {
-      this.suscripcion = this.abmService.events.subscribe(
-        (data: any) => {
-          if(data == 1) {
-            this.close();
-          } else if(data == 2) {
-            this.edit();
-          } else if(data == 3) {
-            this.editContinue();
-          }
-        }
-      )
+    ){
+        this.suscripcion = this.abmService.events.subscribe(
+            (data: any) => {
+              if(data == 1) {
+                this.close();
+              } else if(data == 4) {
+                this.save();
+              }
+            }
+          )
     }
 
     ngOnInit(): void {
@@ -85,30 +73,26 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
     ngOnDestroy(): void {
       this.suscripcion.unsubscribe()
     }
-  
-    edit() {
-        let model = this.data;
+
+    save() {
+        let model: User = {
+            email: this.controlGroup.controls.email.value,
+            enabled: this.controlGroup.controls.enabled.value,
+            id: 0,
+            lastname: this.controlGroup.controls.surname.value,
+            name: this.controlGroup.controls.name.value,
+            profiles: this.perfilesIncluidos,
+            username: this.controlGroup.controls.username.value
+        }
         model.profiles = this.perfilesIncluidos;
-        this.usuarioService.updateUser(model, this.data.id).subscribe(response => {
+        this.usuarioService.postUser(model).subscribe(response => {
           if (response.status == 'OK') {
             this.showSuccess = true;
+            this.router.navigate(['/usuarios/grid']);
           } else {
             this.showError = true;
           }
-          this.router.navigate(['/usuarios/grid'])
         })
-    }
-
-    editContinue() {
-      let model = this.data;
-      model.profiles = this.perfilesIncluidos;
-      this.usuarioService.updateUser(model, this.data.id).subscribe(response => {
-        if (response.status == 'OK') {
-          this.showSuccess = true;
-        } else {
-          this.showError = true;
-        }
-      })
     }
 
     close() {
@@ -141,21 +125,12 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
           this.mode = "View";
           this.controlGroup.disable();
         }
-        this.usuarioService.getUserById(this.activatedRoute.snapshot.params['id']).subscribe(d => {
-            this.data = d.data;
-            this.perfilesIncluidos = this.data.profiles;
-            this.searchPerfilesIncluidos = this.perfilesIncluidos;
-            this.perfilesService.getPerfiles().subscribe(d=>{
-                this.perfiles = d.data;
-                this.perfiles.forEach(perfil => {
-                    let busqueda = this.perfilesIncluidos.find(perfilI => perfilI.id == perfil.id);
-                    if(busqueda == undefined) {
-                        this.perfilesDisponibles.push(perfil);
-                    }
-                });
-                this.searchPerfiles = this.perfilesDisponibles;
-            });
-        });
+        this.perfilesService.getPerfiles().subscribe(d => {
+            this.perfilesIncluidos = [];
+            this.searchPerfilesIncluidos = [];
+            this.perfilesDisponibles = d.data;
+            this.searchPerfiles = this.perfilesDisponibles
+        })
     }
   
     add() {

@@ -18,6 +18,7 @@ interface Data {
 
 export class ABMUsuariosGrillaComponent implements OnInit
 {
+    component = "Grilla";
     usuarios:  Array<any> = [];
     displayedColumns: string[] = ['usuario', 'nombre', 'apellido', 'email', 'perfil', 'acciones']
     data: Data;
@@ -50,7 +51,7 @@ export class ABMUsuariosGrillaComponent implements OnInit
 
     delete(row) {
         const dialogRef = this.dialog.open(RemoveDialogComponent, {
-            maxWidth: '50%',
+            maxWidth: '40%',
             data: {data: row, seccion: "usuario", boton: "Eliminar"},
         });
         dialogRef.afterClosed().subscribe(result => {
