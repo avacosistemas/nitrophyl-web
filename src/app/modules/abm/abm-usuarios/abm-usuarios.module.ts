@@ -4,6 +4,7 @@ import { ABMUsuariosComponent } from './abm-usuarios.component';
 import { ABMSharedModule } from '../abm-shared.module';
 import { ABMUsuariosUserComponent } from './user/abm-usuarios-user.component';
 import { ABMUsuariosGrillaComponent } from './grilla/abm-usuarios-grilla.component';
+import { ABMUsuariosCrearComponent } from './crear-user/abm-usuarios-crear.component';
 
 const abmUsuariosRoutes: Route[] = [
     {
@@ -11,7 +12,8 @@ const abmUsuariosRoutes: Route[] = [
         component: ABMUsuariosComponent,
         children: [
             {path: 'user/:id', component: ABMUsuariosUserComponent},
-            {path: 'grid', component: ABMUsuariosGrillaComponent}
+            {path: 'grid', component: ABMUsuariosGrillaComponent},
+            {path: 'create', component: ABMUsuariosCrearComponent}
         ]
     }
 ];
@@ -20,7 +22,8 @@ const abmUsuariosRoutes: Route[] = [
     declarations: [
         ABMUsuariosComponent,
         ABMUsuariosUserComponent,
-        ABMUsuariosGrillaComponent
+        ABMUsuariosGrillaComponent,
+        ABMUsuariosCrearComponent
     ],
     imports     : [
         RouterModule.forChild(abmUsuariosRoutes),

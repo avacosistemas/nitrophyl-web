@@ -14,7 +14,11 @@
                 </div>
                 <mat-form-field class="fuse-mat-textarea">
                     <mat-icon svgIcon="mat_solid:mail" class="mr-3"></mat-icon>
-                    <input matInput formControlName="username" placeholder="Usuario" [(ngModel)]="data.username">
+                    <input matInput formControlName="mail" placeholder="E-Mail" [(ngModel)]="data.email">
+                </mat-form-field>
+                <mat-form-field class="fuse-mat-textarea">
+                    <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <input matInput formControlName="username" placeholder="Usuario" [(ngModel)]="data.name">
                 </mat-form-field>
                 <mat-form-field class="fuse-mat-textarea">
                     <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
@@ -48,7 +52,7 @@
                             <mat-label>Perfiles Disponibles</mat-label>
                             <input matInput (keyup)="onKeyDisponibles($event.target.value)" [(ngModel)]="inputDisponibles">
                         </mat-form-field>
-                        <div class="lista-permisos w-full" *ngIf="perfilesDisponibles.length > 0">
+                        <div class="lista-permisos w-full" *ngIf="perfilesDisponibles.length > 0" [class.mat-elevation-z8]="true">
                             <table mat-table [dataSource]="searchPerfiles" class="w-full">
                                 <ng-container matColumnDef="select">
                                     <th mat-header-cell *matHeaderCellDef>
@@ -84,7 +88,7 @@
                             <mat-label>Perfiles Incluidos</mat-label>
                             <input matInput (keyup)="onKeyIncluidos($event.target.value)" [(ngModel)]="inputIncluidos">
                         </mat-form-field>
-                        <div class="lista-permisos w-full" *ngIf="perfilesIncluidos.length > 0">
+                        <div class="lista-permisos w-full" *ngIf="perfilesIncluidos.length > 0" [class.mat-elevation-z8]="true">
                             <table mat-table [dataSource]="searchPerfilesIncluidos" class="w-full">
                                 <ng-container matColumnDef="select">
                                     <th mat-header-cell *matHeaderCellDef>

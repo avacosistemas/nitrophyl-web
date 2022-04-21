@@ -35,6 +35,9 @@ export class ABMUsuariosComponent implements OnInit
                 this.titulo = "Vista Usuario";
             }
         }
+        if(event.component == "Create") {
+            this.titulo = "Nuevo Usuario"
+        }
     }
 
     edit() {
@@ -50,6 +53,11 @@ export class ABMUsuariosComponent implements OnInit
     }
 
     create() {
-        //Crear usuario
+        this.usuariosService.setMode("Create")
+        this.router.navigate(['../usuarios/create']);
+    }
+
+    save() {
+        this.abmService.events.next(4)
     }
 }

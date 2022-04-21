@@ -28,6 +28,13 @@
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
+            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="titulo == 'Nuevo Usuario'">
+                <span class="mat-button-wrapper">
+                    Guardar 
+                </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span class="mat-button-focus-overlay"></span>
+            </button>
             <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="editContinue()" *ngIf="titulo == 'Edición Usuario'">
                 <span class="mat-button-wrapper">
                     Guardar y continuar 

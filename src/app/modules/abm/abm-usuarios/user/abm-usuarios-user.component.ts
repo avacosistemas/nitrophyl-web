@@ -1,5 +1,5 @@
 import { SelectionModel } from "@angular/cdk/collections";
-import { Component, OnDestroy } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -17,7 +17,7 @@ import { ABMService } from "../abm-usuarios.service";
     styleUrls: ['./abm-usuarios-user.component.scss']
 })
 
-export class ABMUsuariosUserComponent implements OnDestroy{
+export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
 
   component = "User";
 
@@ -39,7 +39,8 @@ export class ABMUsuariosUserComponent implements OnDestroy{
       username: new FormControl(),
       name: new FormControl(),
       surname: new FormControl(),
-      enabled: new FormControl()
+      enabled: new FormControl(),
+      mail: new FormControl()
     })
     
     
