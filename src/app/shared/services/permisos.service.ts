@@ -12,6 +12,8 @@ import { Respuesta } from "../models/respuesta.model";
 
 export class PermisosService {
 
+    private mode: string;
+
     constructor(
         private http: HttpClient,
         private handler: HttpBackend) {
@@ -36,5 +38,13 @@ export class PermisosService {
 
     public deletePermiso(id: number): Observable<Respuesta> {
         return this.http.delete<Respuesta>(`${environment.server}permissions/${id}`)
+    }
+
+    public getMode() {
+        return this.mode;
+    }
+
+    public setMode(mode: string) {
+        this.mode = mode;
     }
 }

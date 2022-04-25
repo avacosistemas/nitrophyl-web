@@ -36,10 +36,6 @@ export class ABMPerfilesGrillaComponent implements OnInit
         }
     }
 
-    crearPerfil() {
-        
-    }
-
     inicializar() {
         this.perfilesService.getPerfiles().subscribe(d=>{
             this.perfiles = d.data;
