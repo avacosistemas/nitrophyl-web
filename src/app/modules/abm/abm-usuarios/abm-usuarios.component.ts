@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from 'app/shared/services/user.service';
-import { ABMService } from './abm-usuarios.service';
+import { ABMUsuarioService } from './abm-usuarios.service';
 
 @Component({
     selector     : 'abm-usuarios',
@@ -16,7 +16,7 @@ export class ABMUsuariosComponent implements OnInit
 
     constructor(
         private usuariosService: UserService,
-        private abmService: ABMService,
+        private ABMUsuarioService: ABMUsuarioService,
         private router: Router
     ) { }
 
@@ -41,15 +41,15 @@ export class ABMUsuariosComponent implements OnInit
     }
 
     edit() {
-        this.abmService.events.next(2)
+        this.ABMUsuarioService.events.next(2)
     }
 
     editContinue() {
-        this.abmService.events.next(3)
+        this.ABMUsuarioService.events.next(3)
     }
 
     close() {
-        this.abmService.events.next(1)
+        this.ABMUsuarioService.events.next(1)
     }
 
     create() {
@@ -58,6 +58,6 @@ export class ABMUsuariosComponent implements OnInit
     }
 
     save() {
-        this.abmService.events.next(4)
+        this.ABMUsuarioService.events.next(4)
     }
 }

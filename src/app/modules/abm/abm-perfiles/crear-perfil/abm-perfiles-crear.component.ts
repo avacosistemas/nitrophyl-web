@@ -1,21 +1,28 @@
 import { SelectionModel } from "@angular/cdk/collections";
-import { Component, Inject, OnInit } from "@angular/core";
+import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialog } from "@angular/material/dialog";
+import { Router } from "@angular/router";
+import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
 import { Perfil } from "app/shared/models/perfil.model";
 import { Permiso } from "app/shared/models/permiso.model";
 import { Rol } from "app/shared/models/rol.model";
 import { PerfilesService } from "app/shared/services/perfiles.service";
 import { PermisosService } from "app/shared/services/permisos.service";
 import { RolesService } from "app/shared/services/roles.service";
+import { Subscription } from "rxjs";
+import { ABMPerfilService } from "../abm-perfiles.service";
 
 @Component({
-    selector: 'abm-perfiles-crear-dialog',
-    templateUrl: 'abm-perfiles-crear-dialog.component.html',
+    selector: 'abm-perfiles-crear',
+    templateUrl: 'abm-perfiles-crear.component.html',
+    styleUrls: ['./abm-perfiles-crear.component.scss']
   })
 
-export class ABMCrearPerfilDialog implements OnInit{
+export class ABMCrearPerfil implements OnInit, OnDestroy{
 
+
+  component = "Create";
     roles: Array<Rol> = [];
     displayedColumns: string[] = ['select', 'code', 'description']
     createPerfilForm: FormGroup;
@@ -37,18 +44,39 @@ export class ABMCrearPerfilDialog implements OnInit{
     selectionIncluidos = new SelectionModel<Permiso>(true, []);
     inputDisponibles: string = "";
     inputIncluidos: string = "";
+    cambioPermisos: boolean = false;
+    suscripcion: Subscription;
 
 
     constructor(
+      public dialog: MatDialog,
+      private router: Router,
       private permisosService: PermisosService,
       private perfilesService: PerfilesService,
       private rolesService: RolesService,
       private _formBuilder: FormBuilder,
-      public dialogRef: MatDialogRef<ABMCrearPerfilDialog>,
-      @Inject(MAT_DIALOG_DATA) public data,
-    ) {}
+      private ABMPerfilesService: ABMPerfilService
+    ) {
+      this.suscripcion = this.ABMPerfilesService.events.subscribe(
+        (data: any) => {
+          if(data == 1) {
+            this.close();
+          } else if (data == 4) {
+            this.create();
+          }
+        }
+      )
+    }
 
     ngOnInit(): void {
+      this.inicializar();
+    }
+
+    ngOnDestroy(): void {
+      this.suscripcion.unsubscribe();
+    }
+
+    inicializar() {
       this.createPerfilForm = this._formBuilder.group({
         name: ['', [Validators.required]],
         role: ['', [Validators.required]]
@@ -62,14 +90,22 @@ export class ABMCrearPerfilDialog implements OnInit{
         this.roles = data.data;
       })
     }
-  
-    onNoClick(): void {
-      this.dialogRef.close();
-    }
 
-    cancel() {
-      this.dialogRef.close();
+    close() {
+      if(this.createPerfilForm.pristine && this.cambioPermisos == false) {
+        this.router.navigate(['/perfiles/grid'])
+      } else {
+        const dialogRef = this.dialog.open(RemoveDialogComponent, {
+          maxWidth: '50%',
+          data: {data: null, seccion: "perfil", boton: "Cerrar"},
+        });
+        dialogRef.afterClosed().subscribe(result => {
+          if(result) {
+            this.router.navigate(['/perfiles/grid']);
+          }
+        });
     }
+  }
 
     create() {
       if (this.createPerfilForm.invalid) {
@@ -92,11 +128,12 @@ export class ABMCrearPerfilDialog implements OnInit{
         this.perfilesService.postPerfil(model).subscribe(res => {
           if (res.status == 'OK') {
             this.showSuccess = true;
+            this.router.navigate(['/perfiles/grid']);
           } else {
             this.showError = true;
           }
           this.createPerfilForm.enable();
-          this.formDisabled = true;
+          this.formDisabled = false;
           this.createPerfilForm.reset();
         })
       }
@@ -111,6 +148,7 @@ export class ABMCrearPerfilDialog implements OnInit{
     }
 
     add() {
+      this.cambioPermisos = true;
       let index: Array<number> = [];
       this.permisosDisponibles.forEach(permiso => {
         let busqueda = this.selection.selected.find(seleccionado => seleccionado.id == permiso.id);
@@ -135,6 +173,7 @@ export class ABMCrearPerfilDialog implements OnInit{
     }
 
     remove() {
+      this.cambioPermisos = true;
       let index: Array<number> = [];
       this.permisosIncluidos.forEach(permiso => {
         let busqueda = this.selectionIncluidos.selected.find(seleccionado => seleccionado.id == permiso.id);

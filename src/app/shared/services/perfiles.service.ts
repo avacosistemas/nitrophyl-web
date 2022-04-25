@@ -11,6 +11,8 @@ import { Perfil } from "../models/perfil.model";
 
 export class PerfilesService {
 
+    private mode: string;
+
     constructor(
         private http: HttpClient,
         private handler: HttpBackend) {
@@ -35,5 +37,13 @@ export class PerfilesService {
 
     public deletePerfil(id: number): Observable<any> {
         return this.http.delete<any>(`${environment.server}profiles/${id}`)
+    }
+
+    public getMode() {
+        return this.mode;
+    }
+
+    public setMode(mode: string) {
+        this.mode = mode;
     }
 }

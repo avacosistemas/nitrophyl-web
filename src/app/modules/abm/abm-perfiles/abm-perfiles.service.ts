@@ -4,6 +4,6 @@ import { EventEmitter, Injectable } from "@angular/core";
     providedIn: 'root'
 })
 
-export class ABMUsuarioService {
+export class ABMPerfilService {
     events = new EventEmitter<any>();
 }

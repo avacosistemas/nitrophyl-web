@@ -1,22 +1,29 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
-import { ABMPerfilesComponent } from './abm-perfiles.component';
-import { ABMPerfilesDialog } from './dialog/abm-perfiles-dialog.component';
 import { ABMSharedModule } from '../abm-shared.module';
-import { ABMCrearPerfilDialog } from './dialog-crear/abm-perfiles-crear-dialog.component';
+import { ABMPerfilesComponent } from './abm-perfiles.component';
+import { ABMPerfilesGrillaComponent } from './grilla/abm-perfiles-grilla.component';
+import { ABMCrearPerfil } from './crear-perfil/abm-perfiles-crear.component';
+import { ABMPerfilesPerfil } from './perfil/abm-perfiles-perfil.component';
 
 const abmPerfilesRoutes: Route[] = [
     {
         path     : '',
-        component: ABMPerfilesComponent
+        component: ABMPerfilesComponent,
+        children: [
+            {path: 'profile/:id', component: ABMPerfilesPerfil},
+            {path: 'grid', component: ABMPerfilesGrillaComponent},
+            {path: 'create', component: ABMCrearPerfil},
+        ]
     }
 ];
 
 @NgModule({
     declarations: [
         ABMPerfilesComponent,
-        ABMPerfilesDialog,
-        ABMCrearPerfilDialog
+        ABMPerfilesGrillaComponent,
+        ABMCrearPerfil,
+        ABMPerfilesPerfil
     ],
     imports     : [
         RouterModule.forChild(abmPerfilesRoutes),

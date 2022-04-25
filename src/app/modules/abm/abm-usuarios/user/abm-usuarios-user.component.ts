@@ -9,7 +9,7 @@ import { User } from "app/shared/models/user.model";
 import { PerfilesService } from "app/shared/services/perfiles.service";
 import { UserService } from "app/shared/services/user.service";
 import { Subscription } from "rxjs";
-import { ABMService } from "../abm-usuarios.service";
+import { ABMUsuarioService } from "../abm-usuarios.service";
 
 @Component({
     selector: 'abm-usuarios-user',
@@ -63,9 +63,9 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
         private activatedRoute: ActivatedRoute,
         private usuarioService: UserService,
         private perfilesService: PerfilesService,
-        private abmService: ABMService
+        private ABMUsuarioService: ABMUsuarioService
     ) {
-      this.suscripcion = this.abmService.events.subscribe(
+      this.suscripcion = this.ABMUsuarioService.events.subscribe(
         (data: any) => {
           if(data == 1) {
             this.close();

@@ -40,7 +40,7 @@ export class NavegacionService {
         {
             icon: "heroicons_outline:view-grid",
             id: "perfiles",
-            link: "/perfiles",
+            link: "/perfiles/grid",
             title: "Perfiles",
             type: "basic"
         },
