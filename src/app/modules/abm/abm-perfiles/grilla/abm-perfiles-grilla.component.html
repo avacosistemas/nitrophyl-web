@@ -1,0 +1,47 @@
+<div class="flex flex-col flex-auto min-w-0">
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <button mat-raised-button color="primary" class="mb-2" (click)="crearPerfil()">Crear Perfil</button>
+        <!-- CONTENT GOES HERE -->
+        <div class="h-400 min-h-400 max-h-400">
+            <table mat-table [dataSource]="perfiles" style="width: 100%;" class="border-2 rounded-2xl">
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
+                    <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                </ng-container>
+                <ng-container matColumnDef="enabled">
+                    <th mat-header-cell *matHeaderCellDef> Habilitado </th>
+                    <td mat-cell *matCellDef="let element"><span *ngIf="element.enabled">Si</span><span
+                            *ngIf="!element.enabled">No</span></td>
+                </ng-container>
+                <ng-container matColumnDef="roleCode">
+                    <th mat-header-cell *matHeaderCellDef> Código Rol </th>
+                    <td mat-cell *matCellDef="let element"> {{element.role.code}} </td>
+                </ng-container>
+                <ng-container matColumnDef="roleName">
+                    <th mat-header-cell *matHeaderCellDef> Nombre Rol </th>
+                    <td mat-cell *matCellDef="let element"> {{element.role.name}} </td>
+                </ng-container>
+                <ng-container matColumnDef="acciones">
+                    <th mat-header-cell *matHeaderCellDef></th>
+                    <td mat-cell *matCellDef="let row">
+                        <button>
+                            <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
+                                [routerLink]="['../profile', row.id]" (click)="openProfile(1)"></mat-icon>
+                        </button>
+                        <button>
+                            <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"
+                                [routerLink]="['../profile', row.id]" (click)="openProfile(2)"></mat-icon>
+                        </button>
+                        <button>
+                            <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(row)">
+                            </mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+    </div>
+</div>

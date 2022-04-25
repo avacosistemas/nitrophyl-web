@@ -1,62 +1,59 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { PerfilesService } from 'app/shared/services/perfiles.service';
 import { MatDialog } from '@angular/material/dialog';
+import { Perfil } from 'app/shared/models/perfil.model';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-import { User } from 'app/shared/models/user.model';
-import { UserService } from 'app/shared/services/user.service';
 
-
-interface Data {
-    row: User
-}
 @Component({
-    selector     : 'abm-usuarios-grilla',
-    templateUrl  : './abm-usuarios-grilla.component.html',
+    selector     : 'abm-perfiles-grilla',
+    templateUrl  : './abm-perfiles-grilla.component.html',
     encapsulation: ViewEncapsulation.None
 })
-
-
-
-export class ABMUsuariosGrillaComponent implements OnInit
+export class ABMPerfilesGrillaComponent implements OnInit
 {
     component = "Grilla";
-    usuarios:  Array<any> = [];
-    displayedColumns: string[] = ['usuario', 'nombre', 'apellido', 'email', 'perfil', 'acciones']
-    data: Data;
+    perfiles: Array<Perfil> = [];
+    displayedColumns: string[] = ['name', 'enabled', 'roleCode', 'roleName', 'acciones'];
     showSuccess = false;
     showError = false;
 
     constructor(
-        private usuarioService: UserService,
-        public dialog: MatDialog) { }
+        private perfilesService: PerfilesService,
+        public dialog: MatDialog
+    ) { }
 
     ngOnInit(): void {
-        this.inicializar();
+        this.inicializar()
     }
 
-    openUser(id: number) {
+    openProfile(id: number) {
         if(id == 1) {
             //Editar
-            this.usuarioService.setMode("Edit")
+            this.perfilesService.setMode("Edit")
         } else {
             //Ver
-            this.usuarioService.setMode("View")
+            this.perfilesService.setMode("View")
         }
     }
 
+    crearPerfil() {
+        
+    }
+
     inicializar() {
-        this.usuarioService.getUsers().subscribe(d=>{
-            this.usuarios = d.data;
+        this.perfilesService.getPerfiles().subscribe(d=>{
+            this.perfiles = d.data;
         })
     }
 
     delete(row) {
         const dialogRef = this.dialog.open(RemoveDialogComponent, {
             maxWidth: '40%',
-            data: {data: row.username, seccion: "usuario", boton: "Eliminar"},
+            data: {data: row.name, seccion: "perfil", boton: "Eliminar"},
         });
         dialogRef.afterClosed().subscribe(result => {
             if(result) {
-                this.usuarioService.deleteUser(row.id).subscribe(response => {
+                this.perfilesService.deletePerfil(row.id).subscribe(response => {
                     if (response.status == 'OK') {
                       this.showSuccess = true;
                     } else {
@@ -67,5 +64,4 @@ export class ABMUsuariosGrillaComponent implements OnInit
             }
         });
     }
-    
 }

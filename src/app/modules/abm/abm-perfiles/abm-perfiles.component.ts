@@ -1,53 +1,64 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Router } from '@angular/router';
 import { PerfilesService } from 'app/shared/services/perfiles.service';
-import { ABMPerfilesDialog } from './dialog/abm-perfiles-dialog.component';
-import { ABMCrearPerfilDialog } from './dialog-crear/abm-perfiles-crear-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { UserService } from 'app/shared/services/user.service';
+import { ABMPerfilService } from './abm-perfiles.service';
 
 @Component({
     selector     : 'abm-perfiles',
     templateUrl  : './abm-perfiles.component.html',
+    styleUrls: ['./abm-perfiles.component.scss'],
     encapsulation: ViewEncapsulation.None
 })
+
 export class ABMPerfilesComponent implements OnInit
 {
-    
-    perfiles: Array<any> = [];
-    displayedColumns: string[] = ['name', 'enabled', 'roleCode', 'roleName']
+    titulo: string = "";
 
     constructor(
         private perfilesService: PerfilesService,
-        public dialog: MatDialog
+        private ABMPerfilesService: ABMPerfilService,
+        private router: Router
     ) { }
 
     ngOnInit(): void {
-        this.inicializar()
     }
 
-    openModal(row) {
-        const dialogRef = this.dialog.open(ABMPerfilesDialog, {
-            width: '90%',
-            maxHeight: '100%',
-            data: {row: row},
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            this.inicializar()
-        });
+    componentAdded(event) {
+        if(event.component == "Grilla") {
+            this.titulo = "Consulta Perfiles"
+        }
+        if(event.component == "Perfil") {
+            if(this.perfilesService.getMode() == "Edit"){
+                this.titulo = "Edición Perfil";
+            }
+            if(this.perfilesService.getMode() == "View" || this.perfilesService.getMode() == undefined) {
+                this.titulo = "Vista Perfil";
+            }
+        }
+        if(event.component == "Create") {
+            this.titulo = "Nuevo Perfil"
+        }
     }
 
-    crearPerfil() {
-        const dialogRef = this.dialog.open(ABMCrearPerfilDialog, {
-            width: '90%',
-            maxHeight: '80%'
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            this.inicializar()
-        });
+    edit() {
+        this.ABMPerfilesService.events.next(2)
     }
 
-    inicializar() {
-        this.perfilesService.getPerfiles().subscribe(d=>{
-            this.perfiles = d.data;
-        })
+    editContinue() {
+        this.ABMPerfilesService.events.next(3)
+    }
+
+    close() {
+        this.ABMPerfilesService.events.next(1)
+    }
+
+    create() {
+        this.perfilesService.setMode("Create")
+        this.router.navigate(['../perfiles/create']);
+    }
+
+    save() {
+        this.ABMPerfilesService.events.next(4)
     }
 }
