@@ -162,38 +162,6 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
         }
     }
 
-    create() {
-        if (this.createPerfilForm.invalid) {
-            return;
-        }
-
-        this.createPerfilForm.disable();
-        this.formDisabled = true;
-
-        let busquedaRol = this.roles.find(rol => rol.id = this.createPerfilForm.controls.role.value);
-
-        if (busquedaRol != undefined) {
-            let model: Perfil = {
-                enabled: true,
-                id: 0,
-                name: this.createPerfilForm.controls.name.value,
-                permissions: this.permisosIncluidos,
-                role: busquedaRol
-            }
-            this.perfilesService.postPerfil(model).subscribe(res => {
-                if (res.status == 'OK') {
-                    this.showSuccess = true;
-                    this.router.navigate(['/perfiles/grid']);
-                } else {
-                    this.showError = true;
-                }
-                this.createPerfilForm.enable();
-                this.formDisabled = true;
-                this.createPerfilForm.reset();
-            })
-        }
-    }
-
     onAddChange(event) {
         this.selected = event.value
     }

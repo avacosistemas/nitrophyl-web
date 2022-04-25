@@ -1,58 +1,64 @@
 import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
-import { Permiso } from 'app/shared/models/permiso.model';
+import { Router } from '@angular/router';
 import { PermisosService } from 'app/shared/services/permisos.service';
-import { ABMCrearPermisoDialog } from './dialog-crear/abm-permisos-crear-dialog.component';
-import { ABMPermisosDialog } from './dialog/abm-permisos-dialog.component';
+import { ABMPermisoService } from './abm-permisos.service';
 
 @Component({
     selector     : 'abm-permisos',
     templateUrl  : './abm-permisos.component.html',
+    styleUrls: ['./abm-permisos.component.scss'],
     encapsulation: ViewEncapsulation.None
 })
 export class ABMPermisosComponent implements OnInit {
     
-    permisos: Array<Permiso> = [];
-    displayedColumns: string[] = ['code', 'description', 'enabled'];
-    dataSource: any;
+    titulo: string = "";
 
     constructor(
-        private permisosService: PermisosService,
-        public dialog: MatDialog
+        private router: Router,
+        private ABMPermisoService: ABMPermisoService,
+        private permisosService: PermisosService
     ) {}
 
-    @ViewChild(MatSort, {static: true}) sort!: MatSort;
-
     ngOnInit(): void {
-        this.inicializar()
+        
     }
 
-    openModal(row) {
-        const dialogRef = this.dialog.open(ABMPermisosDialog, {
-            width: '40%',
-            data: {row: row},
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            this.inicializar()
-          });
+    componentAdded(event) {
+        if(event.component == "Grilla") {
+            this.titulo = "Consulta Permisos"
+        }
+        if(event.component == "Permiso") {
+            if(this.permisosService.getMode() == "Edit"){
+                this.titulo = "Edición Permiso";
+            }
+            if(this.permisosService.getMode() == "View" || this.permisosService.getMode() == undefined) {
+                this.titulo = "Vista Permiso";
+            }
+        }
+        if(event.component == "Create") {
+            this.titulo = "Nuevo Permiso"
+        }
     }
 
-    crearPermiso() {
-        const dialogRef = this.dialog.open(ABMCrearPermisoDialog, {
-            width: '40%',
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            this.inicializar()
-          });
+    edit() {
+        this.ABMPermisoService.events.next(2)
     }
 
-    inicializar() {
-        this.permisosService.getPermisos().subscribe(d=>{
-            this.permisos = d.data;
-            this.dataSource = new MatTableDataSource<Permiso>(this.permisos);
-            this.dataSource.sort = this.sort;
-        })
+    editContinue() {
+        this.ABMPermisoService.events.next(3)
     }
+
+    close() {
+        this.ABMPermisoService.events.next(1)
+    }
+
+    create() {
+        this.permisosService.setMode("Create")
+        this.router.navigate(['../permisos/create']);
+    }
+
+    save() {
+        this.ABMPermisoService.events.next(4)
+    }
+
 }

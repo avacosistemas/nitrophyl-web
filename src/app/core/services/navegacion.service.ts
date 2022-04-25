@@ -33,7 +33,7 @@ export class NavegacionService {
         {
             icon: "heroicons_outline:key",
             id: "permisos",
-            link: "/permisos",
+            link: "/permisos/grid",
             title: "Permisos",
             type: "basic"
         },
