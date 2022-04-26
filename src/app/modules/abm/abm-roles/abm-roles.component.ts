@@ -1,90 +1,62 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { Rol } from 'app/shared/models/rol.model';
-import { PerfilesService } from 'app/shared/services/perfiles.service';
+import { Router } from '@angular/router';
 import { RolesService } from 'app/shared/services/roles.service';
-import { forkJoin } from 'rxjs';
-import { ABMCrearRolDialog } from './dialog-crear/abm-roles-crear-dialog.component';
-import { ABMRolesDialog } from './dialog/abm-roles-dialog.component';
+import { ABMRolService } from './abm-roles.service';
 
 @Component({
     selector     : 'abm-roles',
     templateUrl  : './abm-roles.component.html',
+    styleUrls: ['./abm-roles.component.scss'],
     encapsulation: ViewEncapsulation.None
 })
 export class ABMRolesComponent implements OnInit
 {
-
-    permisos: Array<Rol> = [];
-    permisosAMostrar = [];
-    displayedColumns: string[] = ['code', 'name']
+    titulo: string;
 
     constructor(
+        private router: Router,
         private rolesService: RolesService,
-        private perfilesService: PerfilesService,
-        public dialog: MatDialog) { }
+        private ABMRolService: ABMRolService) { }
 
     ngOnInit(): void {
-        this.inicializar()
+        
     }
 
-    openModal(row) {
-        const dialogRef = this.dialog.open(ABMRolesDialog, {
-            width: '60%',
-            data: {row: row},
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            this.inicializar();
-          });
+    componentAdded(event) {
+        if(event.component == "Grilla") {
+            this.titulo = "Consulta Roles"
+        }
+        if(event.component == "Rol") {
+            if(this.rolesService.getMode() == "Edit"){
+                this.titulo = "Edición Rol";
+            }
+            if(this.rolesService.getMode() == "View" || this.rolesService.getMode() == undefined) {
+                this.titulo = "Vista Rol";
+            }
+        }
+        if(event.component == "Create") {
+            this.titulo = "Nuevo Rol"
+        }
     }
 
-    crearRol() {
-        const dialogRef = this.dialog.open(ABMCrearRolDialog, {
-            width: '40%',
-            data: {row: "data"},
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            this.inicializar();
-          });
+    edit() {
+        this.ABMRolService.events.next(2)
     }
 
-    inicializar() {
-        this.permisos = [];
-        this.permisosAMostrar = []
-        forkJoin([this.rolesService.getRoles(), this.perfilesService.getPerfiles()]).subscribe(results => {
-            this.permisos = results[0].data;
-            let idPermisos: Array<Number> = [];
-            results[0].data.forEach(rol => {
-                idPermisos.push(rol.id)
-            })
-            idPermisos.forEach((id, index) => {
-                let busqueda = results[1].data.find(data => data.role.id == id);
-                if(busqueda != undefined) {
-                    this.permisosAMostrar[index] = {
-                        id: results[0].data[index].id,
-                        code: results[0].data[index].code,
-                        name: results[0].data[index].name,
-                        permissions: ""
-                    }
-                    let index2 = 0;
-                    busqueda.permissions.forEach(permission => {
-                        index2++;
-                        if(index2 < busqueda.permissions.length) {
-                            this.permisosAMostrar[index].permissions = this.permisosAMostrar[index].permissions + `${permission.id}, `
-                        } else {
-                            this.permisosAMostrar[index].permissions = this.permisosAMostrar[index].permissions + `${permission.id}`
-                        }
-                    })
-                    this.permisosAMostrar = [...this.permisosAMostrar]
-                } else {
-                    this.permisosAMostrar[index] = {
-                        id: results[0].data[index].id,
-                        code: results[0].data[index].code,
-                        name: results[0].data[index].name,
-                        permissions: ""
-                    }
-                }
-            })
-        })
+    editContinue() {
+        this.ABMRolService.events.next(3)
+    }
+
+    close() {
+        this.ABMRolService.events.next(1)
+    }
+
+    create() {
+        this.rolesService.setMode("Create")
+        this.router.navigate(['../roles/create']);
+    }
+
+    save() {
+        this.ABMRolService.events.next(4)
     }
 }
