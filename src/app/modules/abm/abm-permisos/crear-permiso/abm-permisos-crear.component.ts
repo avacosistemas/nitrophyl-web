@@ -1,15 +1,10 @@
-import { SelectionModel } from "@angular/cdk/collections";
-import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
-import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
+import { Component, OnDestroy, OnInit } from "@angular/core";
+import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { ActivatedRoute, Router } from "@angular/router";
+import {  Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Perfil } from "app/shared/models/perfil.model";
 import { Permiso } from "app/shared/models/permiso.model";
-import { Rol } from "app/shared/models/rol.model";
-import { PerfilesService } from "app/shared/services/perfiles.service";
 import { PermisosService } from "app/shared/services/permisos.service";
-import { RolesService } from "app/shared/services/roles.service";
 import { Subscription } from "rxjs";
 import { ABMPermisoService } from "../abm-permisos.service";
 
@@ -33,7 +28,6 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
 
 
     constructor(
-        private activatedRoute: ActivatedRoute,
         public dialog: MatDialog,
         private router: Router,
         private permisosService: PermisosService,

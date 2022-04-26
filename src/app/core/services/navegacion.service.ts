@@ -26,7 +26,7 @@ export class NavegacionService {
         {
             icon: "heroicons_outline:flag",
             id: "roles",
-            link: "/roles",
+            link: "/roles/grid",
             title: "Roles",
             type: "basic"
         },

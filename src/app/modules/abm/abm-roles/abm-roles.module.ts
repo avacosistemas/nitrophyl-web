@@ -2,21 +2,28 @@ import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMRolesComponent } from './abm-roles.component';
 import { ABMSharedModule } from '../abm-shared.module';
-import { ABMRolesDialog } from './dialog/abm-roles-dialog.component';
-import { ABMCrearRolDialog } from './dialog-crear/abm-roles-crear-dialog.component';
+import { ABMRolesGrillaComponent } from './grilla/abm-roles-grilla.component';
+import { ABMCrearRol } from './crear-rol/abm-roles-crear.component';
+import { ABMRolesRol } from './rol/abm-roles-rol.component';
 
 const abmRolesRoutes: Route[] = [
     {
         path     : '',
-        component: ABMRolesComponent
+        component: ABMRolesComponent,
+        children: [
+            { path: 'grid', component: ABMRolesGrillaComponent },
+            { path: 'create', component: ABMCrearRol },
+            { path: 'role/:id', component: ABMRolesRol }
+        ]
     }
 ];
 
 @NgModule({
     declarations: [
         ABMRolesComponent,
-        ABMRolesDialog,
-        ABMCrearRolDialog
+        ABMRolesGrillaComponent,
+        ABMRolesRol,
+        ABMCrearRol
     ],
     imports     : [
         RouterModule.forChild(abmRolesRoutes),

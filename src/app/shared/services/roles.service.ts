@@ -10,6 +10,8 @@ import { Rol, Roles, RolRespuesta } from "../models/rol.model";
 })
 
 export class RolesService {
+
+    private mode: string;
     
     constructor(
         private http: HttpClient,
@@ -35,5 +37,13 @@ export class RolesService {
 
     public deleteRol(id: number): Observable<Respuesta> {
         return this.http.delete<Respuesta>(`${environment.server}roles/${id}`)
+    }
+
+    public getMode() {
+        return this.mode;
+    }
+
+    public setMode(mode: string) {
+        this.mode = mode;
     }
 }
