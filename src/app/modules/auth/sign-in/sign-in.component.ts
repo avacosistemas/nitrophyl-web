@@ -83,6 +83,11 @@ export class AuthSignInComponent implements OnInit
 
         this.loginService.login(model).subscribe(res => {
             const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('usuarios') || '/usuarios/grid';
+            let userModel = {
+                name: `${res.name} ${res.lastname}`,
+                email: res.email
+            }
+            this.loginService.setUser(userModel);
             this._router.navigateByUrl(redirectURL);
         },
         err => {

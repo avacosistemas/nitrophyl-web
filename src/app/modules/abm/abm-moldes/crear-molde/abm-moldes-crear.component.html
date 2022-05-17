@@ -1,0 +1,68 @@
+<div class="flex flex-col w-full">
+    <mat-tab-group class="mt-2 col-span-12 grid-rows-1">
+        <mat-tab label="Datos del Molde">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+                <div>
+                    <h1 class="text-2xl font-semibold mb-2">Molde</h1>
+                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+                        <span fuseAlertTitle>Cambios realizados</span>
+                    </fuse-alert>
+                    <fuse-alert [type]="'error'" *ngIf="showError">
+                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
+                    </fuse-alert>
+                </div>
+                <form
+                    class="mt-8"
+                    [formGroup]="moldeForm">
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <input
+                            id="code"
+                            matInput
+                            [formControlName]="'code'"
+                            placeholder="Código">
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('required')">
+                            El código es requerido
+                        </mat-error>
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('maxlength')">
+                            Máximo 30 caracteres
+                        </mat-error>
+                    </mat-form-field>
+                    <div class="w-full mb-3">
+                        <mat-label class="ml-3">Estado: </mat-label>
+                        <mat-radio-group aria-label="Select an option" formControlName="status">
+                            <mat-radio-button [value]='true' [checked]="true" class="ml-5">Activo</mat-radio-button>
+                            <mat-radio-button [value]='false' class="ml-5">Inactivo</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <input
+                            id="name"
+                            matInput
+                            [formControlName]="'name'"
+                            placeholder="Nombre">
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('required')">
+                            El nombre es requerido
+                        </mat-error>
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('maxlength')">
+                            Máximo 100 caracteres
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:comment" class="mr-3"></mat-icon>
+                        <textarea matInput id="observations" [formControlName]="'observations'" placeholder="Observaciones" cols="30" rows="3"></textarea>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:location_on" class="mr-3"></mat-icon>
+                        <textarea matInput id="location" [formControlName]="'location'" placeholder="Ubicación" cols="30" rows="3"></textarea>
+                    </mat-form-field>
+                </form>
+            </div>
+        </mat-tab>
+        <mat-tab label="Bocas" disabled>
+        </mat-tab>
+        <mat-tab label="Dimensiones" disabled="">
+        </mat-tab>
+    </mat-tab-group>
+</div>

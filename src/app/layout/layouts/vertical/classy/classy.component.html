@@ -23,6 +23,9 @@
             <div class="flex items-center ml-auto">
                 <notifications></notifications>
                 <user [showAvatar]="false"></user>
+                <button mat-icon-button (click)="signOut()">
+                    <mat-icon [svgIcon]="'heroicons_outline:logout'"></mat-icon>
+                </button>
             </div>
         </div>
         <!-- User -->

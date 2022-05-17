@@ -4,7 +4,8 @@
 
 export const environment = {
     production: false,
-    server: 'http://nitrophyl-env.eba-uipv2mcj.us-east-1.elasticbeanstalk.com/'
+    //server: 'http://nitrophyl-env.eba-uipv2mcj.us-east-1.elasticbeanstalk.com/'
+    server: 'http://gestion-pc:8080/ws-rest-authentication/'
 };
 
 /*

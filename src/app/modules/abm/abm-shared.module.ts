@@ -13,9 +13,10 @@ import { MatSortModule } from "@angular/material/sort";
 import { MatTableModule } from "@angular/material/table";
 import { FuseAlertModule } from "@fuse/components/alert";
 import { FuseScrollbarModule } from "@fuse/directives/scrollbar";
-import {MatTabsModule} from '@angular/material/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatRadioModule }  from '@angular/material/radio';
 
 @NgModule({
     exports: [
@@ -32,6 +33,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
         MatDialogModule,
         MatMenuModule,
         MatCheckboxModule,
+        MatRadioModule,
         FuseAlertModule,
         FuseScrollbarModule,
         FormsModule,

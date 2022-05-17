@@ -3,33 +3,30 @@
     <div class="flex-auto p-6 sm:p-10">
         <!-- CONTENT GOES HERE -->
         <div class="h-400 min-h-400 max-h-400">
-            <table mat-table [dataSource]="permisos" style="width: 100%;" class="border-2 rounded-2xl">
+            <table mat-table [dataSource]="moldes" style="width: 100%;" class="border-2 rounded-2xl">
                 <ng-container matColumnDef="code">
                     <th mat-header-cell *matHeaderCellDef> Código </th>
-                    <td mat-cell *matCellDef="let element"> {{element.code}} </td>
+                    <td mat-cell *matCellDef="let element"> {{element.codigo}} </td>
                 </ng-container>
-                <ng-container matColumnDef="description">
-                    <th mat-header-cell *matHeaderCellDef> Descripción </th>
-                    <td mat-cell *matCellDef="let element"> {{element.description}} </td>
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
+                    <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
                 </ng-container>
-                <ng-container matColumnDef="enabled">
-                    <th mat-header-cell *matHeaderCellDef> Habilitado </th>
-                    <td mat-cell *matCellDef="let element"> <span *ngIf="element.enabled">Si</span><span *ngIf="!element.enabled">No</span></td>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef> Estado </th>
+                    <td mat-cell *matCellDef="let element"><span *ngIf="element.estado">Activo</span><span
+                            *ngIf="!element.estado">Inactivo</span></td>
                 </ng-container>
                 <ng-container matColumnDef="acciones">
                     <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let row" class="text-right">
                         <button>
                             <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
-                                [routerLink]="['../permission', row.id]" (click)="openPermission(1)"></mat-icon>
+                                [routerLink]="['../molde', row.id]" (click)="openProfile(1)"></mat-icon>
                         </button>
                         <button>
                             <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"
-                                [routerLink]="['../permission', row.id]" (click)="openPermission(2)"></mat-icon>
-                        </button>
-                        <button>
-                            <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(row)">
-                            </mat-icon>
+                                [routerLink]="['../molde', row.id]" (click)="openProfile(2)"></mat-icon>
                         </button>
                     </td>
                 </ng-container>
@@ -37,7 +34,5 @@
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
         </div>
-
     </div>
-
 </div>

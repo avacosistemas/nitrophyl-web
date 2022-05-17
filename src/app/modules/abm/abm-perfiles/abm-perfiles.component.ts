@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { PerfilesService } from 'app/shared/services/perfiles.service';
 import { UserService } from 'app/shared/services/user.service';
@@ -11,17 +11,22 @@ import { ABMPerfilService } from './abm-perfiles.service';
     encapsulation: ViewEncapsulation.None
 })
 
-export class ABMPerfilesComponent implements OnInit
+export class ABMPerfilesComponent implements OnInit, AfterContentChecked
 {
     titulo: string = "";
 
     constructor(
         private perfilesService: PerfilesService,
         private ABMPerfilesService: ABMPerfilService,
-        private router: Router
+        private router: Router,
+        private cdref: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
+    }
+
+    ngAfterContentChecked(): void {
+        this.cdref.detectChanges()
     }
 
     componentAdded(event) {

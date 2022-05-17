@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { PermisosService } from 'app/shared/services/permisos.service';
 import { ABMPermisoService } from './abm-permisos.service';
@@ -9,18 +9,23 @@ import { ABMPermisoService } from './abm-permisos.service';
     styleUrls: ['./abm-permisos.component.scss'],
     encapsulation: ViewEncapsulation.None
 })
-export class ABMPermisosComponent implements OnInit {
+export class ABMPermisosComponent implements OnInit, AfterContentChecked {
     
     titulo: string = "";
 
     constructor(
         private router: Router,
         private ABMPermisoService: ABMPermisoService,
-        private permisosService: PermisosService
+        private permisosService: PermisosService,
+        private cdref: ChangeDetectorRef
     ) {}
 
     ngOnInit(): void {
         
+    }
+
+    ngAfterContentChecked(): void {
+        this.cdref.detectChanges()
     }
 
     componentAdded(event) {

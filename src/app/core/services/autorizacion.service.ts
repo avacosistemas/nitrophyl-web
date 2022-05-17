@@ -9,6 +9,12 @@ import { UserLogin } from "../models/user-login.model";
 })
 
 export class AutorizacionService {
+    private loggedUser = {
+        id: '',
+        name: '',
+        email: ''
+    }
+
     constructor(
         private http: HttpClient,
         private handler: HttpBackend) {
@@ -21,5 +27,13 @@ export class AutorizacionService {
 
     public getToken(): Observable<any> {
         return this.http.get<any>(`${environment.server}auth/`)
+    }
+
+    public setUser(user) {
+        this.loggedUser = user;
+    }
+
+    public getUser() {
+        return this.loggedUser;
     }
 }
