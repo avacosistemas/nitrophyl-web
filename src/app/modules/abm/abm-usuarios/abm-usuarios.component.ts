@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from 'app/shared/services/user.service';
 import { ABMUsuarioService } from './abm-usuarios.service';
@@ -10,17 +10,22 @@ import { ABMUsuarioService } from './abm-usuarios.service';
     encapsulation: ViewEncapsulation.None
 })
 
-export class ABMUsuariosComponent implements OnInit
+export class ABMUsuariosComponent implements OnInit, AfterContentChecked
 {
     titulo: string = "";
 
     constructor(
         private usuariosService: UserService,
         private ABMUsuarioService: ABMUsuarioService,
-        private router: Router
+        private router: Router,
+        private cdref: ChangeDetectorRef
     ) { }
 
     ngOnInit(): void {
+    }
+
+    ngAfterContentChecked(): void {
+        this.cdref.detectChanges()
     }
 
     componentAdded(event) {

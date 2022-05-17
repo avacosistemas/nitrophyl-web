@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { RolesService } from 'app/shared/services/roles.service';
 import { ABMRolService } from './abm-roles.service';
@@ -9,17 +9,22 @@ import { ABMRolService } from './abm-roles.service';
     styleUrls: ['./abm-roles.component.scss'],
     encapsulation: ViewEncapsulation.None
 })
-export class ABMRolesComponent implements OnInit
+export class ABMRolesComponent implements OnInit, AfterContentChecked
 {
     titulo: string;
 
     constructor(
         private router: Router,
         private rolesService: RolesService,
-        private ABMRolService: ABMRolService) { }
+        private ABMRolService: ABMRolService,
+        private cdref: ChangeDetectorRef) { }
 
     ngOnInit(): void {
         
+    }
+
+    ngAfterContentChecked(): void {
+        this.cdref.detectChanges()
     }
 
     componentAdded(event) {

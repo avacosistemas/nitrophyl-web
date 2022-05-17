@@ -41,7 +41,6 @@ export class ABMRolesGrillaComponent {
     }
 
     delete(row) {
-        console.log(row)
         const dialogRef = this.dialog.open(RemoveDialogComponent, {
             maxWidth: '40%',
             data: {data: row.name, seccion: "rol", boton: "Eliminar"},

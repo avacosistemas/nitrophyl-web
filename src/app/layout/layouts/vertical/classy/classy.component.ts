@@ -7,6 +7,7 @@ import { Navigation } from 'app/core/navigation/navigation.types';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { User } from 'app/core/user/user.types';
 import { UserService } from 'app/core/user/user.service';
+import { AutorizacionService } from 'app/core/services/autorizacion.service';
 
 @Component({
     selector     : 'classy-layout',
@@ -29,7 +30,8 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
         private _navigationService: NavigationService,
         private _userService: UserService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
-        private _fuseNavigationService: FuseNavigationService
+        private _fuseNavigationService: FuseNavigationService,
+        private loginService: AutorizacionService
     )
     {
     }
@@ -63,11 +65,17 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
             });
 
         // Subscribe to the user service
+
+        /*
         this._userService.user$
             .pipe((takeUntil(this._unsubscribeAll)))
             .subscribe((user: User) => {
                 this.user = user;
             });
+        */
+
+        this.user = this.loginService.getUser()
+        
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$
@@ -108,5 +116,10 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
             // Toggle the opened status
             navigation.toggle();
         }
+    }
+
+    signOut(): void
+    {
+        this._router.navigate(['/sign-out']);
     }
 }

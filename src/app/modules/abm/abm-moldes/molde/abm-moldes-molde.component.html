@@ -1,0 +1,185 @@
+<div class="flex flex-col w-full">
+    <mat-tab-group class="mt-2 col-span-12 grid-rows-1" (selectedTabChange)="tabChange($event)">
+        <mat-tab label="Datos del Molde">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+                <div>
+                    <h1 class="text-2xl font-semibold mb-2">Molde</h1>
+                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+                        <span fuseAlertTitle>Cambios realizados</span>
+                    </fuse-alert>
+                    <fuse-alert [type]="'error'" *ngIf="showError">
+                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
+                    </fuse-alert>
+                </div>
+                <form
+                    class="mt-8"
+                    [formGroup]="moldeForm">
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <input
+                            id="codigo"
+                            matInput
+                            [formControlName]="'codigo'"
+                            placeholder="Código">
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
+                            El código es requerido
+                        </mat-error>
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
+                            Máximo 30 caracteres
+                        </mat-error>
+                    </mat-form-field>
+                    <div class="w-full mb-3">
+                        <mat-label class="ml-3">Estado: </mat-label>
+                        <mat-radio-group aria-label="Select an option" formControlName="estado">
+                            <mat-radio-button [value]='true' [checked]="true" class="ml-5">Activo</mat-radio-button>
+                            <mat-radio-button [value]='false' class="ml-5">Inactivo</mat-radio-button>
+                        </mat-radio-group>
+                    </div>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <input
+                            id="name"
+                            matInput
+                            [formControlName]="'nombre'"
+                            placeholder="Nombre">
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
+                            El nombre es requerido
+                        </mat-error>
+                        <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('maxlength')">
+                            Máximo 100 caracteres
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:comment" class="mr-3"></mat-icon>
+                        <input
+                            id="observations"
+                            matInput
+                            [formControlName]="'observaciones'"
+                            placeholder="Observaciones">
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:location_on" class="mr-3"></mat-icon>
+                        <input
+                            id="location"
+                            matInput
+                            [formControlName]="'ubicacion'"
+                            placeholder="Ubicación">
+                    </mat-form-field>
+                </form>
+            </div>
+        </mat-tab>
+        <mat-tab label="Bocas">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+                <div>
+                    <h1 class="text-2xl font-semibold mb-2">Bocas</h1>
+                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+                        <span fuseAlertTitle>Cambios realizados</span>
+                    </fuse-alert>
+                    <fuse-alert [type]="'error'" *ngIf="showError">
+                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
+                    </fuse-alert>
+                </div>
+                <div class="flex justify-around" [formGroup]="bocaForm" *ngIf="mode == 'Edit'">
+                    <mat-form-field class="min-w-[25%]">
+                        <input
+                            id="boca"
+                            matInput
+                            placeholder="Número de Boca"
+                            formControlName="boca">
+                    </mat-form-field>
+                    <mat-form-field class="min-w-[25%]">
+                        <mat-select id="estado" placeholder="Estado" formControlName="estado">
+                            <mat-option *ngFor="let estado of estados" [value]="estado">
+                                {{ estado }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <button mat-flat-button color="primary" (click)="addBoca()">Agregar</button>
+                </div>
+                <div>
+                    <table mat-table [dataSource]="bocas" style="width: 100%;" class="border-2 rounded-2xl">
+                        <ng-container matColumnDef="boca">
+                            <th mat-header-cell *matHeaderCellDef> Boca </th>
+                            <td mat-cell *matCellDef="let element"> {{element.nroBoca}} </td>
+                        </ng-container>
+                        <ng-container matColumnDef="estado">
+                            <th mat-header-cell *matHeaderCellDef> Estado </th>
+                            <td mat-cell *matCellDef="let element">
+                                <mat-select [(value)]="element.estado" class="border-2 rounded align-middle h-full p-2" [disabled]="mode == 'View'">
+                                    <mat-option [value]='true'>Activa</mat-option>
+                                    <mat-option [value]='false'>Inactiva</mat-option>
+                                </mat-select>
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="acciones">
+                            <th mat-header-cell *matHeaderCellDef></th>
+                            <td mat-cell *matCellDef="let row" class="text-right">
+                                <button *ngIf="mode == 'Edit'">
+                                    <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="deleteBoca(row)">
+                                    </mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsBocas"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsBocas;"></tr>
+                    </table>
+                </div>
+            </div>
+        </mat-tab>
+        <mat-tab label="Dimensiones">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+                <div>
+                    <h1 class="text-2xl font-semibold mb-2">Dimensiones</h1>
+                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+                        <span fuseAlertTitle>Cambios realizados</span>
+                    </fuse-alert>
+                    <fuse-alert [type]="'error'" *ngIf="showError">
+                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
+                    </fuse-alert>
+                </div>
+                <div class="flex justify-around" [formGroup]="dimensionForm" *ngIf="mode == 'Edit'">
+                    <mat-form-field class="min-w-[25%]">
+                        <mat-select id="dimension" placeholder="Estado" formControlName="dimension">
+                            <mat-option *ngFor="let dimension of dimensionesSelect" [value]="dimension">
+                                {{ dimension }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <mat-form-field class="min-w-[25%]">
+                        <input
+                            id="valor"
+                            matInput
+                            placeholder="Valor en mm"
+                            formControlName="valor">
+                    </mat-form-field>
+                    <button mat-flat-button color="primary" (click)="addDimension()">Agregar</button>
+                </div>
+                <div>
+                    <table mat-table [dataSource]="dimensiones" style="width: 100%;" class="border-2 rounded-2xl">
+                        <ng-container matColumnDef="dimension">
+                            <th mat-header-cell *matHeaderCellDef> Dimension </th>
+                            <td mat-cell *matCellDef="let element"> {{element.tipoDimension}} </td>
+                        </ng-container>
+                        <ng-container matColumnDef="valor">
+                            <th mat-header-cell *matHeaderCellDef> Valor en mm </th>
+                            <td mat-cell *matCellDef="let element">
+                                <input type="number" matInput [(ngModel)]="element.valor" [disabled]="mode == 'View'">
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="acciones">
+                            <th mat-header-cell *matHeaderCellDef></th>
+                            <td mat-cell *matCellDef="let row" class="text-right">
+                                <button *ngIf="mode == 'Edit'">
+                                    <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="deleteDimension(row)">
+                                    </mat-icon>
+                                </button>
+                            </td>
+                        </ng-container>
+                        <tr mat-header-row *matHeaderRowDef="displayedColumnsDimensiones"></tr>
+                        <tr mat-row *matRowDef="let row; columns: displayedColumnsDimensiones;"></tr>
+                    </table>
+                </div>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</div>

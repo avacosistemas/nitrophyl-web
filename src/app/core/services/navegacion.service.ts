@@ -44,6 +44,13 @@ export class NavegacionService {
             title: "Perfiles",
             type: "basic"
         },
+        {
+            icon: "heroicons_outline:book-open",
+            id: "moldes",
+            link: "/moldes/grid",
+            title: "Moldes",
+            type: "basic"
+        },
     ]
 
     public get() {

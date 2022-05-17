@@ -55,10 +55,6 @@ export class ABMCrearRol implements OnInit, OnDestroy{
         this.suscripcion.unsubscribe();
     }
 
-    create2() {
-        console.log(this.rolForm.invalid)
-    }
-
     create() {
         this.showError = false;
         this.showErrorCode = false;
