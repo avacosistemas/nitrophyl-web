@@ -2,12 +2,9 @@
     <div class="w-full w-auto p-16 rounded-2xl shadow bg-card" style="max-width:fit-content;">
         <div class="w-full max-w-80 w-80 mx-auto mx-0">
             <!-- Logo -->
-            <div class="w-12">
-                <img src="assets/images/logo/logo.svg">
-            </div>
-
+            
             <!-- Title -->
-            <div class="mt-8 text-4xl font-extrabold tracking-tight leading-tight">Sign in</div>
+            <div class="mt-8 text-4xl font-extrabold tracking-tight leading-tight" style="background-color: #94a3; text-align: center;"><img src="assets/images/logo/200-logo-nitro.png"></div>
 
             <!-- Alert -->
             <fuse-alert
@@ -28,13 +25,13 @@
 
                 <!-- Username field -->
                 <mat-form-field class="w-full">
-                    <mat-label>Username</mat-label>
+                    <mat-label>Usuario</mat-label>
                     <input
                         id="username"
                         matInput
                         [formControlName]="'username'">
                     <mat-error *ngIf="loginForm.get('username').hasError('required')">
-                        Username is required
+                        El Usuario es requerido.
                     </mat-error>
                     <!--
                         <mat-error *ngIf="signInForm.get('email').hasError('email')">
@@ -45,7 +42,7 @@
 
                 <!-- Password field -->
                 <mat-form-field class="w-full">
-                    <mat-label>Password</mat-label>
+                    <mat-label>Contraseña</mat-label>
                     <input
                         id="password"
                         matInput
@@ -67,7 +64,7 @@
                             [svgIcon]="'heroicons_solid:eye-off'"></mat-icon>
                     </button>
                     <mat-error>
-                        Password is required
+                        La contraseña es requerida.
                     </mat-error>
                 </mat-form-field>
 
@@ -75,7 +72,7 @@
                 <div class="inline-flex items-end justify-between w-full mt-1.5">
                     <a
                         class="text-md font-medium text-primary-500 hover:underline"
-                        [routerLink]="['/forgot-password']">Forgot password?
+                        [routerLink]="['/forgot-password']">¿Olvidaste tu contraseña?
                     </a>
                 </div>
 
@@ -87,7 +84,7 @@
                     [disabled]="loginForm.disabled"
                     (click)="login()">
                     <span *ngIf="!loginForm.disabled">
-                        Sign in
+                        Ingresar
                     </span>
                     <mat-progress-spinner
                         *ngIf="loginForm.disabled"
@@ -143,7 +140,7 @@
                         class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
                         src="assets/images/avatars/male-16.jpg">
                 </div>
-                <div class="ml-4 font-medium tracking-tight text-gray-400">More than 17k people joined us, it's your turn</div>
+                
             </div>
         </div>
     </div>

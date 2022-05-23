@@ -139,7 +139,7 @@
                 </div>
                 <div class="flex justify-around" [formGroup]="dimensionForm" *ngIf="mode == 'Edit'">
                     <mat-form-field class="min-w-[25%]">
-                        <mat-select id="dimension" placeholder="Estado" formControlName="dimension">
+                        <mat-select id="dimension" placeholder="Dimensión" formControlName="dimension">
                             <mat-option *ngFor="let dimension of dimensionesSelect" [value]="dimension">
                                 {{ dimension }}
                             </mat-option>
