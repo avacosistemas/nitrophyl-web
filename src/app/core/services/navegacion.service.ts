@@ -69,12 +69,14 @@ export class NavegacionService {
         {
             icon: "heroicons_outline:cube-transparent",
             id: "piezas",
+            link: "/piezas/grid",
             title: "Piezas",
             type: "basic"
         },
         {
             icon: "heroicons_outline:cube",
             id: "productos",
+            link: "/productos/grid",
             title: "Prouctos",
             type: "basic"
         },

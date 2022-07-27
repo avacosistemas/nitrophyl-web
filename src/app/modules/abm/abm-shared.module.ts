@@ -17,10 +17,12 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatRadioModule }  from '@angular/material/radio';
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
 
 @NgModule({
     exports: [
         CommonModule,
+        MatAutocompleteModule,
         MatTooltipModule,
         MatTabsModule,
         MatIconModule,

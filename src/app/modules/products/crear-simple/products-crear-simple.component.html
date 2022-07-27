@@ -1,0 +1,53 @@
+<div class="flex flex-col w-full">
+    <mat-tab-group class="mt-2 col-span-12 grid-rows-1">
+        <mat-tab label="Producto simple">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+                <div>
+                    <h1 class="text-2xl font-semibold mb-2">Producto</h1>
+                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
+                        <span fuseAlertTitle>Cambios realizados</span>
+                    </fuse-alert>
+                    <fuse-alert [type]="'error'" *ngIf="showError">
+                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
+                    </fuse-alert>
+                    <fuse-alert [type]="'error'" *ngIf="showErrorCode">
+                        <span fuseAlertTitle>El código ingresado ya existe</span>
+                    </fuse-alert>
+                    <fuse-alert [type]="'error'" *ngIf="showErrorName">
+                        <span fuseAlertTitle>El nombre de rol ingresado ya existe</span>
+                    </fuse-alert>
+                </div>
+                <form class="mt-8" [formGroup]="productoSimpleForm">
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <input id="codigoPieza" matInput [formControlName]="'codigoPieza'" placeholder="Código Producto">
+                        <mat-error class="mb-1" *ngIf="productoSimpleForm.get('codigoPieza').hasError('required')">
+                            El código es requerido
+                        </mat-error>
+                        <mat-error class="mb-1" *ngIf="productoSimpleForm.get('codigoPieza').hasError('maxlength')">
+                            El campo Código permite hasta 30 caracteres máximo.
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <input id="codigoInterno" matInput [formControlName]="'codigoInterno'" placeholder="Código Interno">
+                        <mat-error class="mb-1" *ngIf="productoSimpleForm.get('codigoInterno').hasError('required')">
+                            El código es requerido
+                        </mat-error>
+                        <mat-error class="mb-1" *ngIf="productoSimpleForm.get('codigoInterno').hasError('maxlength')">
+                            El campo Código permite hasta 30 caracteres máximo.
+                        </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-full">
+                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <input id="nombre" matInput [formControlName]="'nombre'" placeholder="Nombre">
+                        <mat-error class="mb-1" *ngIf="productoSimpleForm.get('nombre').hasError('required')">
+                            El nombre es requerido
+                        </mat-error>
+                    </mat-form-field>
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
+                </form>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</div>
