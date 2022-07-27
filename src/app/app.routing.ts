@@ -78,6 +78,8 @@ export const appRoutes: Route[] = [
             {path: 'permisos', loadChildren: () => import('app/modules/abm/abm-permisos/abm-permisos.module').then(m => m.ABMPermisosModule)},
             {path: 'perfiles', loadChildren: () => import('app/modules/abm/abm-perfiles/abm-perfiles.module').then(m => m.ABMPerfilesModule)},
             {path: 'moldes', loadChildren: () => import('app/modules/abm/abm-moldes/abm-moldes.module').then(m => m.ABMMoldesModule)},
+            {path: 'piezas', loadChildren: () => import('app/modules/parts/parts.module').then(m => m.PartsModule)},
+            {path: 'productos', loadChildren: () => import('app/modules/products/products.module').then(m => m.ProductsModule)},
         ]
     },
 
