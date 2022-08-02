@@ -30,7 +30,6 @@ export class ProductsGrillaComponent implements OnInit {
   ngOnInit(): void {
     localStorage.removeItem("navPiezas");
     this.productsService.getProducts().subscribe(d => {
-      console.log(d.data)
       this.products = d.data;
       this.productsBackup = this.products;
     });
