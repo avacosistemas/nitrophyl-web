@@ -5,6 +5,7 @@ import { Part } from 'app/shared/models/part.model';
 import { PartsService } from 'app/shared/services/parts.service';
 import { Subscription } from 'rxjs';
 import { PartsEventService } from '../parts-event.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-parts-crear-simple',
@@ -17,18 +18,18 @@ export class PartsCrearSimpleComponent implements OnInit, OnDestroy {
   parteSimpleForm: FormGroup;
   suscripcion: Subscription;
   saved: boolean = false;
-  showSuccess: boolean = false;
-  showError: boolean = false;
   showErrorCode: boolean = false;
   showErrorName: boolean = false;
   mode: string = "";
   buttonAction: string = "";
   id: number = null;
+  disableButton: boolean = true;
 
   constructor(
     private _formBuilder: FormBuilder,
     private partsService: PartsService,
     private partsEventService: PartsEventService,
+    private snackBar: MatSnackBar,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -47,9 +48,12 @@ export class PartsCrearSimpleComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.parteSimpleForm.valueChanges.subscribe(x => {
+      this.disableButton = false;
+    });
     this.buttonAction = "Guardar";
     this.mode = this.partsEventService.getMode();
-    if(this.mode == null) {
+    if (this.mode == null) {
       this.mode = "View";
     };
     this.inicializar();
@@ -63,6 +67,7 @@ export class PartsCrearSimpleComponent implements OnInit, OnDestroy {
     if(this.route.snapshot.params.id != undefined) {
       this.id = this.route.snapshot.params.id;
       this.saved = true;
+      this.partsEventService.viewEvents.next(5);
       this.partsService.getParts().subscribe(d => {
         let busqueda = d.data.find(pieza => pieza.id == this.id);
         this.parteSimpleForm.patchValue({
@@ -87,15 +92,11 @@ export class PartsCrearSimpleComponent implements OnInit, OnDestroy {
     } else if (nav.length == 0) {
       this.router.navigate(['/piezas/grid']);
     } else {
-      this.router.navigate([`/piezas/createComposed/${nav[nav.length - 1].id}`]);
-      this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
-      this.router.navigate([`/piezas/createComposed/${nav[nav.length - 1].id}`]));
+      this.router.navigateByUrl(`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`);
     }
   }
 
   save() {
-    this.showSuccess = false;
-    this.showError = false;
     this.parteSimpleForm.markAllAsTouched();
     if(!this.parteSimpleForm.valid) {
       return;
@@ -111,16 +112,36 @@ export class PartsCrearSimpleComponent implements OnInit, OnDestroy {
     };
     if (this.saved == true) {
       this.partsService.updateSimplePart(model, this.id).subscribe(d => {
-        this.showSuccess = true;
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
+        //this.openErrorSnackBar(err.error.message, "X");
       });
     } else {
       this.buttonAction = "Guardar";
       this.partsService.createSimplePart(model).subscribe(d => {
         this.id = d.data.id;
-        this.showSuccess = true;
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+        this.partsEventService.viewEvents.next(5);
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
+        //this.openErrorSnackBar(err.error.message, "X");
       });
       this.saved = true;
     }
   }
+
+  openSnackBar(message: string, action: string, className: string) {
+    this.snackBar.open(message, action, {
+      duration: 5000,
+      panelClass: className
+    });
+  };
 
 }

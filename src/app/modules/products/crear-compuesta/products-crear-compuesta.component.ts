@@ -10,6 +10,8 @@ import { ProductsService } from 'app/shared/services/products.service';
 import { Observable, Subscription } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { ProductsEventService } from '../products-event.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Location } from '@angular/common'
 
 @Component({
   selector: 'app-products-crear-compuesta',
@@ -26,14 +28,13 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
   suscripcion: Subscription;
   saved: boolean = false;
   mode: string = "";
-  showSuccess: boolean = false;
-  showError: boolean = false;
   buttonAction: string = "";
   id: number = null;
   tiposPiezas: Array<string> = ['SIMPLE', 'COMPUESTA'];
   listaPiezas: Array<Part> = [];
   listaPiezasPorTipo: Array<Part> = [];
   listaPiezasFiltradas: Observable<Part[]>;
+  disableButton: boolean = true;
 
   constructor(
     private _formBuilder: FormBuilder,
@@ -41,8 +42,10 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
     private productsService: ProductsService,
     private partsEventService: PartsEventService,
     private productsEventService: ProductsEventService,
+    private snackBar: MatSnackBar,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private location: Location
   ) {
     this.productoCompuestoForm = this._formBuilder.group({
       codigoPieza: ['', [Validators.required, Validators.maxLength(30)]],
@@ -63,6 +66,9 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.productoCompuestoForm.valueChanges.subscribe(x => {
+      this.disableButton = false;
+    });
     this.buttonAction = "Guardar";
     this.mode = this.productsEventService.getMode();
     if(this.mode == null) {
@@ -84,6 +90,7 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
     });
     if(this.route.snapshot.params.id != undefined) {
       this.id = this.route.snapshot.params.id;
+      this.productsEventService.viewEvents.next(8);
       if(nav != null) {
         if(nav[nav.length - 1].id == this.id) {
           this.mode = nav[nav.length - 1].mode;
@@ -131,14 +138,13 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
       this.router.navigate(['/productos/grid']);
     } else {
       nav[nav.length - 1].id;
-      this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
-      this.router.navigate([`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`]));
+      //this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
+      //this.router.navigate([`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`]));
+      this.router.navigateByUrl(`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`);
     }
   }
 
   save() {
-    this.showSuccess = false;
-    this.showError = false;
     this.productoCompuestoForm.markAllAsTouched();
     if(!this.productoCompuestoForm.valid) {
       return;
@@ -156,16 +162,29 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
       this.productsService.updateComposedProduct(model, this.id).subscribe(d => {
         this.mode = "Edit";
         this.extendedFormCheck();
-        this.showSuccess = true;
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
+        //this.openErrorSnackBar(err.error.message, "X");
       });
     } else {
       this.buttonAction = "Guardar";
       this.productsService.createComposedProduct(model).subscribe(d => {
-        this.showSuccess = true;
         this.id = d.data.id;
         this.saved = true;
         this.mode = "Edit";
         this.extendedFormCheck();
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+        this.productsEventService.viewEvents.next(8);
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
+        //this.openErrorSnackBar(err.error.message, "X");
       });
     }
   }
@@ -177,9 +196,11 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
 
   createComposedPart() {
     this.setNav();
+    //this.router.navigate([`/piezas/createComposed`]);
+    //this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
+    //this.router.navigate([`/piezas/createComposed`]));
+    this.location.replaceState(`/piezas/createComposed/${this.id}`);
     this.router.navigate([`/piezas/createComposed`]);
-    this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
-    this.router.navigate([`/piezas/createComposed`]));
   }
 
   typeSelectChange(event) {
@@ -248,5 +269,12 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
     this.parts = [...this.parts];
     this.productsService.removePartFromComposedProduct(this.id, row.id).subscribe(d => {});
   }
+
+  openSnackBar(message: string, action: string, className: string) {
+    this.snackBar.open(message, action, {
+      duration: 5000,
+      panelClass: className
+    });
+  };
 
 }

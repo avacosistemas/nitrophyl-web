@@ -18,6 +18,7 @@ import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatTooltipModule } from "@angular/material/tooltip";
 import { MatRadioModule }  from '@angular/material/radio';
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 @NgModule({
     exports: [
@@ -36,6 +37,7 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete";
         MatMenuModule,
         MatCheckboxModule,
         MatRadioModule,
+        MatSnackBarModule,
         FuseAlertModule,
         FuseScrollbarModule,
         FormsModule,

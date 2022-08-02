@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { PartsService } from 'app/shared/services/parts.service';
 import { PartsEventService } from '../parts-event.service';
 
@@ -11,18 +12,39 @@ export class PartsGrillaComponent implements OnInit {
 
   component = "Grilla";
   parts = [];
+  partsBackup = [];
   displayedColumns: string[] = ['code', 'type', 'acciones'];
+  searchForm: FormGroup;
 
   constructor(
     private partsService: PartsService,
-    private partsEventService: PartsEventService
-  ) { }
+    private partsEventService: PartsEventService,
+    private _formBuilder: FormBuilder
+  ) {
+    this.searchForm = this._formBuilder.group({
+      codigo: [''],
+      tipo: ['']
+    });
+  }
 
   ngOnInit(): void {
     localStorage.removeItem("navPiezas");
     this.partsService.getParts().subscribe(d => {
       this.parts = d.data;
+      this.partsBackup = this.parts;
     })
+  }
+
+  search() {
+    let searchProducts = [];
+    if(this.searchForm.controls.tipo.value == 'SIMPLE') {
+      searchProducts = this.partsBackup.filter(p => p.tipo == 'SIMPLE');
+    } else if (this.searchForm.controls.tipo.value == 'COMPUESTA') {
+      searchProducts = this.partsBackup.filter(p => p.tipo == 'COMPUESTA');
+    } else {
+      searchProducts = this.partsBackup;
+    };
+    this.parts = searchProducts.filter(element => element.codigoPieza.toLowerCase().includes(this.searchForm.controls.codigo.value.toLowerCase()));
   }
 
   openPart(id: number) {

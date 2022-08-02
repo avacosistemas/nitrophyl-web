@@ -6,6 +6,8 @@ import { PartsService } from 'app/shared/services/parts.service';
 import { Observable, Subscription } from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
 import { PartsEventService } from '../parts-event.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-parts-crear-compuesta',
@@ -21,21 +23,22 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
   suscripcion: Subscription;
   saved: boolean = false;
   mode: string = "";
-  showSuccess: boolean = false;
-  showError: boolean = false;
   buttonAction: string = "";
   id: number = null;
   tiposPiezas: Array<string> = ['SIMPLE', 'COMPUESTA'];
   listaPiezas: Array<Part> = [];
   listaPiezasPorTipo: Array<Part> = [];
   listaPiezasFiltradas: Observable<Part[]>;
+  disableButton: boolean = true;
 
   constructor(
     private _formBuilder: FormBuilder,
     private partsService: PartsService,
     private partsEventService: PartsEventService,
+    private snackBar: MatSnackBar,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private location: Location
   ) {
     this.piezaCompuestaForm = this._formBuilder.group({
       codigoPieza: ['', [Validators.required, Validators.maxLength(30)]],
@@ -56,6 +59,9 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.piezaCompuestaForm.valueChanges.subscribe(x => {
+      this.disableButton = false;
+    });
     this.buttonAction = "Guardar";
     this.mode = this.partsEventService.getMode();
     if(this.mode == null) {
@@ -78,6 +84,7 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
     });
     if(this.route.snapshot.params.id != undefined) {
       this.id = this.route.snapshot.params.id;
+      this.partsEventService.viewEvents.next(6);
       if(nav != null) {
         if(nav[nav.length - 1].id == this.id) {
           this.mode = nav[nav.length - 1].mode;
@@ -125,8 +132,7 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
       this.router.navigate(['/piezas/grid']);
     } else {
       nav[nav.length - 1].id;
-      this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
-      this.router.navigate([`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`]));
+      this.router.navigateByUrl(`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`);
     }
   }
 
@@ -148,6 +154,13 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
       this.partsService.updateComposedPart(model, this.id).subscribe(d => {
         this.mode = "Edit";
         this.extendedFormCheck();
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
+        //this.openErrorSnackBar(err.error.message, "X");
       });
     } else {
       this.buttonAction = "Guardar";
@@ -156,6 +169,14 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
         this.saved = true;
         this.mode = "Edit";
         this.extendedFormCheck();
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+        this.partsEventService.viewEvents.next(6);
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
+        //this.openErrorSnackBar(err.error.message, "X");
       });
     }
   }
@@ -167,10 +188,8 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
 
   createComposedPart() {
     this.setNav();
-    let nav = JSON.parse(localStorage.getItem("navPiezas"));
+    this.location.replaceState(`/piezas/createComposed/${this.id}`);
     this.router.navigate([`/piezas/createComposed`]);
-    this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
-    this.router.navigate([`/piezas/createComposed`]));
   }
 
   typeSelectChange(event) {
@@ -239,4 +258,11 @@ export class PartsCrearCompuestaComponent implements OnInit, OnDestroy {
     this.parts = [...this.parts];
     this.partsService.removePartFromComposedPart(this.id, row.id).subscribe(d => {});
   }
+
+  openSnackBar(message: string, action: string, className: string) {
+    this.snackBar.open(message, action, {
+      duration: 5000,
+      panelClass: className
+    });
+  };
 }
