@@ -4,12 +4,6 @@
             <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
                 <div>
                     <h1 class="text-2xl font-semibold mb-2">Producto</h1>
-                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
-                        <span fuseAlertTitle>Cambios realizados</span>
-                    </fuse-alert>
-                    <fuse-alert [type]="'error'" *ngIf="showError">
-                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
-                    </fuse-alert>
                 </div>
                 <form class="mt-8" [formGroup]="productoCompuestoForm">
                     <mat-form-field class="w-full">
@@ -39,7 +33,7 @@
                             El nombre es requerido
                         </mat-error>
                     </mat-form-field>
-                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [disabled]="disableButton" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
                 </form>
                 <form class="mt-8" [formGroup]="piezaCompuestaExtendidaForm">
                     <div class="flex space-x-4">
@@ -65,17 +59,18 @@
                               </mat-option>
                             </mat-autocomplete>
                         </mat-form-field>
-                        <div class="w-15">
+                        <div class="w-1/7">
                             <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full" [disabled]="mode == 'View' || id == null" (click)="addPart()">
-                                <mat-icon svgIcon="heroicons_solid:plus"></mat-icon>
+                                <mat-icon svgIcon="heroicons_solid:plus"></mat-icon> Agregar
                             </button>
                         </div>
-                        <div class="w-1/5">
+                        <div class="w-1/5"></div>
+                        <div class="w-1/7">
                             <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full" [disabled]="mode == 'View' || id == null" (click)="createSimplePart()">
                                 Crear Simple
                             </button>
                         </div>
-                        <div class="w-1/5">
+                        <div class="w-1/7">
                             <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full" [disabled]="mode == 'View' || id == null" (click)="createComposedPart()">
                                 Crear Compuesta
                             </button>

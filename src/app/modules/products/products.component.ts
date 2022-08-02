@@ -30,6 +30,10 @@ export class ProductsComponent implements OnInit, OnDestroy, AfterContentChecked
         2 - Nuevo producto simple
         3 - Nuevo producto compuesto
         4 - Volver
+        5 - Modificar pieza simple
+        6 - Modificar pieza compuesta
+        7 - Modificar producto simple
+        8 - Modificar producto compuesto
         */
         if (data == 0) {
           //Guardar pieza simple
@@ -41,6 +45,18 @@ export class ProductsComponent implements OnInit, OnDestroy, AfterContentChecked
           //Nueva pieza compuesta
         } else if (data == 4) {
           //Volver
+        } else if (data == 5) {
+          //Modificar pieza simple
+          this.titulo = "Modificar pieza simple"
+        } else if (data == 6) {
+          //Modificar pieza compuesta
+          this.titulo = "Modificar pieza compuesta"
+        } else if (data == 7) {
+          //Modificar producto simple
+          this.titulo = "Modificar producto simple"
+        } else if (data == 8) {
+          //Modificar producto compuesto
+          this.titulo = "Modificar producto compuesto"
         }
       }
     )

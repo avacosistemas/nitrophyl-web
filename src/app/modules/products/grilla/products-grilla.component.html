@@ -2,7 +2,26 @@
     <!-- Main -->
     <div class="flex-auto p-6 sm:p-10">
         <!-- CONTENT GOES HERE -->
-        <div class="h-400 min-h-400 max-h-400">
+        <div>
+            <form [formGroup]="searchForm">
+                <div class="flex" style="justify-content: space-around;">
+                    <mat-form-field appearance="fill" class="w-1/3">
+                        <input matInput placeholder="Código de pieza" [formControlName]="'codigo'">
+                    </mat-form-field>
+                    <mat-form-field appearance="fill" class="w-1/3">
+                        <mat-select [formControlName]="'tipo'">
+                            <mat-option value="TODAS">TODAS</mat-option>
+                            <mat-option value="SIMPLE">SIMPLE</mat-option>
+                            <mat-option value="COMPUESTA">COMPUESTA</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    <div class="w-1/7">
+                        <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-1.5 w-full" (click)="search()">
+                            <mat-icon svgIcon="heroicons_outline:search"></mat-icon>
+                        </button>
+                    </div>
+                </div>
+            </form>
             <table mat-table [dataSource]="products" style="width: 100%;" class="border-2 rounded-2xl">
                 <ng-container matColumnDef="code">
                     <th mat-header-cell *matHeaderCellDef> Código </th>

@@ -5,6 +5,7 @@ import { Product } from 'app/shared/models/product.model';
 import { ProductsService } from 'app/shared/services/products.service';
 import { Subscription } from 'rxjs';
 import { ProductsEventService } from '../products-event.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-products-crear-simple',
@@ -17,18 +18,18 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
   productoSimpleForm: FormGroup;
   suscripcion: Subscription;
   saved: boolean = false;
-  showSuccess: boolean = false;
-  showError: boolean = false;
   showErrorCode: boolean = false;
   showErrorName: boolean = false;
   mode: string = "";
   buttonAction: string = "";
   id: number = null;
+  disableButton: boolean = true;
 
   constructor(
     private _formBuilder: FormBuilder,
     private productsService: ProductsService,
     private productsEventService: ProductsEventService,
+    private snackBar: MatSnackBar,
     private router: Router,
     private route: ActivatedRoute
   ) {
@@ -47,6 +48,9 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.productoSimpleForm.valueChanges.subscribe(x => {
+      this.disableButton = false;
+    });
     this.buttonAction = "Guardar";
     this.mode = this.productsEventService.getMode();
     if(this.mode == null) {
@@ -63,6 +67,7 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
     if(this.route.snapshot.params.id != undefined) {
       this.id = this.route.snapshot.params.id;
       this.saved = true;
+      this.productsEventService.viewEvents.next(7);
       this.productsService.getProducts().subscribe(d => {
         let busqueda = d.data.find(pieza => pieza.id == this.id);
         this.productoSimpleForm.patchValue({
@@ -87,15 +92,11 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
     } else if (nav.length == 0) {
       this.router.navigate(['/productos/grid']);
     } else {
-      this.router.navigate([`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`]);
-      this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
-      this.router.navigate([`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`]));
+      this.router.navigateByUrl(`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`);
     }
   }
 
   save() {
-    this.showSuccess = false;
-    this.showError = false;
     this.productoSimpleForm.markAllAsTouched();
     if(!this.productoSimpleForm.valid) {
       return;
@@ -111,16 +112,34 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
     };
     if (this.saved == true) {
       this.productsService.updateSimpleProduct(model, this.id).subscribe(d => {
-        this.showSuccess = true;
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
       });
     } else {
       this.buttonAction = "Guardar";
       this.productsService.createSimpleProduct(model).subscribe(d => {
         this.id = d.data.id;
-        this.showSuccess = true;
+        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.disableButton = true;
+        this.productsEventService.viewEvents.next(7);
+      },
+      err => {
+        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
+        console.log(err.error.message);
       });
       this.saved = true;
     }
   }
+
+  openSnackBar(message: string, action: string, className: string) {
+    this.snackBar.open(message, action, {
+      duration: 5000,
+      panelClass: className
+    });
+  };
 
 }

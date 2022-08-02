@@ -4,18 +4,6 @@
             <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
                 <div>
                     <h1 class="text-2xl font-semibold mb-2">Pieza</h1>
-                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
-                        <span fuseAlertTitle>Cambios realizados</span>
-                    </fuse-alert>
-                    <fuse-alert [type]="'error'" *ngIf="showError">
-                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
-                    </fuse-alert>
-                    <fuse-alert [type]="'error'" *ngIf="showErrorCode">
-                        <span fuseAlertTitle>El código ingresado ya existe</span>
-                    </fuse-alert>
-                    <fuse-alert [type]="'error'" *ngIf="showErrorName">
-                        <span fuseAlertTitle>El nombre de rol ingresado ya existe</span>
-                    </fuse-alert>
                 </div>
                 <form class="mt-8" [formGroup]="parteSimpleForm">
                     <mat-form-field class="w-full">
@@ -45,7 +33,7 @@
                             El nombre es requerido
                         </mat-error>
                     </mat-form-field>
-                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [disabled]="disableButton" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
                 </form>
             </div>
         </mat-tab>
