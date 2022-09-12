@@ -207,7 +207,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         this.pristineBocas = false;
         let item: Boca = {
             nroBoca: this.bocaForm.controls.boca.value,
-            estado: this.bocaForm.controls.estado.value == "Activo"
+            estado: this.bocaForm.controls.estado.value == "Activa"
         }
         this.bocas.push(item);
         this.bocas = [...this.bocas];
