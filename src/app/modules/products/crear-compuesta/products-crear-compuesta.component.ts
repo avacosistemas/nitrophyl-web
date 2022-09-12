@@ -232,6 +232,7 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
     this.piezaCompuestaExtendidaForm.markAllAsTouched();
     let find = this.listaPiezasPorTipo.find(pieza => pieza.codigoPieza == this.piezaCompuestaExtendidaForm.controls.listaPiezas.value);
     if(find == undefined) {
+      this.openSnackBar("Debe seleccionar una pieza válida", "X", "yellow-snackbar");
       return;
     }
     let busqueda = this.listaPiezas.find(pieza => pieza.codigoPieza == this.piezaCompuestaExtendidaForm.controls.listaPiezas.value);
