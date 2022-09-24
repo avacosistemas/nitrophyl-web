@@ -82,6 +82,14 @@ export class ProductsCrearCompuestaComponent implements OnInit, OnDestroy {
     this.suscripcion.unsubscribe();
   }
 
+  ngAfterViewInit() {
+    let top = document.getElementById('top');
+    if (top !== null) {
+      top.scrollIntoView();
+      top = null;
+    }
+}
+
   inicializar() {
     this.piezaCompuestaExtendidaForm.disable();
     let nav = JSON.parse(localStorage.getItem("navPiezas"));

@@ -1,37 +1,56 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
+import { ImgModalDialogComponent } from "app/modules/prompts/img-modal/img-modal.component";
+import { PDFModalDialogComponent } from "app/modules/prompts/pdf-modal/pdf-modal.component";
 import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Boca, Dimension } from "app/shared/models/molde.model";
+import { Boca, Dimension, Fotos, Planos } from "app/shared/models/molde.model";
 import { MoldesService } from "app/shared/services/moldes.service";
 import { Subscription } from "rxjs";
 import { ABMMoldeService } from "../abm-moldes-service";
+import * as FileSaver from "file-saver";
 
 @Component({
     selector: 'abm-moldes-molde',
-    templateUrl: './abm-moldes-molde.component.html'
+    templateUrl: './abm-moldes-molde.component.html',
+    styleUrls: ['./abm-moldes-molde.component.scss']
 })
 
 export class ABMMoldesMolde implements OnInit, OnDestroy{
     component: string = "Molde";
     mode: string;
-    showSuccess: boolean = false;
-    showError: boolean = false;
     suscripcion: Subscription;
     moldeForm: FormGroup;
     bocaForm: FormGroup;
     dimensionForm: FormGroup;
-    displayedColumnsBocas: string[] = ['boca', 'estado', 'acciones'];
+    displayedColumnsBocas: string[] = ['boca', 'estado', 'descripcion', 'acciones'];
     displayedColumnsDimensiones: string[] = ['dimension', 'valor', 'acciones'];
+    displayedColumnsPlanos: string[] = ['nombre', 'version', 'fecha', 'acciones'];
+    displayedColumnsFotos: string[] = ['nombre', 'version', 'fecha', 'acciones'];
+    planos: Array<Planos> = [
+        {nombre: "Plano 1", version: "1", fecha: "10-09-2022"},
+        {nombre: "Plano 2", version: "2", fecha: "13-09-2022"},
+        {nombre: "Plano 3", version: "1", fecha: "12-09-2022"}
+    ];
+    fotos: Array<Fotos> = [
+        {nombre: "Foto 1", version: "1", fecha: "10-09-2022"},
+        {nombre: "Foto 2", version: "2", fecha: "13-09-2022"},
+        {nombre: "Foto 3", version: "1", fecha: "12-09-2022"}
+    ];
     bocas: Array<Boca> =  [];
     dimensiones: Array<Dimension> = [];
-    estados = ['Activa', 'Inactiva'];
+    estados = ['Activa', 'Inactiva', 'En Reparación'];
     dimensionesSelect = ['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO'];
     currentTab: number = 0;
     pristineBocas: boolean = true;
     pristineDimensiones: boolean = true;
     currentId: number;
+
+    filesTestPlano;
+    filesTestPlanoBlob;
+    filesTestFoto;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -39,7 +58,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         private router: Router,
         private moldesService: MoldesService,
         private _formBuilder: FormBuilder,
-        private ABMoldesService: ABMMoldeService
+        private ABMoldesService: ABMMoldeService,
+        private snackBar: MatSnackBar
     ){
         this.moldeForm = this._formBuilder.group({
             codigo: [null, [Validators.required, Validators.maxLength(30)]],
@@ -51,6 +71,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         this.bocaForm = this._formBuilder.group({
             boca: [null, [Validators.required]],
             estado: [null, [Validators.required]],
+            descripcion: [null, [Validators.maxLength(100)]],
         });
         this.dimensionForm = this._formBuilder.group({
             dimension: [null, [Validators.required]],
@@ -75,21 +96,37 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         this.suscripcion.unsubscribe();
     }
 
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
+    }
+
     tabChange(event) {
-        this.showSuccess = false;
-        this.showError = false;
         this.currentTab = event.index;
-        //0 - Datos del Molde
-        if(event.index == 0) {
-            this.ABMoldesService.viewEvents.next(0);
-        }
-        //1 - Bocas
-        if(event.index == 1) {
-            this.ABMoldesService.viewEvents.next(1);
-        }
-        //2 - Dimensiones
-        if(event.index == 2) {
-            this.ABMoldesService.viewEvents.next(2);
+        switch (event.index) {
+            case 0:
+                //0 - Datos del Molde
+                this.ABMoldesService.viewEvents.next("Guardar Molde");
+                break;
+            case 1:
+                //1 - Bocas
+                this.ABMoldesService.viewEvents.next("Guardar Bocas");
+                break;
+            case 2:
+                //2 - Dimensiones
+                this.ABMoldesService.viewEvents.next("Guardar Dimensiones");
+                break;
+            case 3:
+                //3 - Planos
+                this.ABMoldesService.viewEvents.next("Subir Plano");
+                break;
+            case 4:
+                //4 - Fotos
+                this.ABMoldesService.viewEvents.next("Subir Foto");
+                break;
         }
     }
 
@@ -110,14 +147,22 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
     }
 
     edit() {
-        if (this.currentTab == 0) {
-            this.editMolde();
-        }
-        if (this.currentTab == 1) {
-            this.editBocas();
-        }
-        if (this.currentTab == 2) {
-            this.editDimensiones();
+        switch (this.currentTab) {
+            case 0:
+                this.editMolde();
+                break;
+            case 1:
+                this.editBocas();
+                break;
+            case 2:
+                this.editDimensiones();
+                break;
+            case 3:
+                this.uploadPlano();
+                break;
+            case 4:
+                this.uploadFoto();
+                break;
         }
     }
 
@@ -128,37 +173,34 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         let model = this.moldeForm.value;
         this.moldesService.updateMolde(this.currentId, model).subscribe(res => {
             if(res.status == "OK") {
-                this.showSuccess = true;
                 this.moldeForm.markAsPristine();
+                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
             } else {
-                this.showError = true;
+                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
             }
         })
     }
 
     editBocas() {
-        this.showError = false;
-        this.showSuccess = false;
         let model: Array<Boca> = [];
         this.bocas.forEach(boca => {
             model.push({
                 estado: boca.estado,
-                nroBoca: Number(boca.nroBoca)
+                nroBoca: Number(boca.nroBoca),
+                descripcion: boca.descripcion
             })
         })
         this.moldesService.updateMoldeBocas(this.currentId, model).subscribe(res => {
             if(res.status == "OK") {
-                this.showSuccess = true;
                 this.pristineBocas = true;
+                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
             } else {
-                this.showError = true;
+                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
             }
         })
     }
 
     editDimensiones() {
-        this.showError = false;
-        this.showSuccess = false;
         let model: Array<Dimension> = [];
         this.dimensiones.forEach(dimension => {
             model.push({
@@ -168,10 +210,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         })
         this.moldesService.updateMoldeDimensiones(this.currentId, model).subscribe(res => {
             if(res.status == "OK") {
-                this.showSuccess = true;
                 this.pristineDimensiones = true;
+                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
             } else {
-                this.showError = true;
+                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
             }
         })
     }
@@ -197,7 +239,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         });
         this.moldesService.getMoldeDimensiones(this.currentId).subscribe(d => {
             this.dimensiones = d.data;
-        })
+        });
+        this.ABMoldesService.viewEvents.next("Guardar Molde");
     }
     
     addBoca() {
@@ -207,7 +250,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         this.pristineBocas = false;
         let item: Boca = {
             nroBoca: this.bocaForm.controls.boca.value,
-            estado: this.bocaForm.controls.estado.value == "Activa"
+            estado: this.bocaForm.controls.estado.value,
+            descripcion: this.bocaForm.controls.descripcion.value
         }
         this.bocas.push(item);
         this.bocas = [...this.bocas];
@@ -239,4 +283,86 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         this.dimensiones.splice(this.dimensiones.indexOf(row), 1);
         this.dimensiones = [...this.dimensiones]
     }
+
+    openPlano(row) {
+        console.log(row);
+        const dialogRef = this.dialog.open(PDFModalDialogComponent, {
+            maxWidth: '75%',
+            data: { src: this.filesTestPlano, title: row.nombre }
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                console.log(result);
+            }
+        });
+    }
+
+    downloadPlano(row) {
+        console.log(row);
+        FileSaver.saveAs(this.filesTestPlanoBlob, row.nombre);
+    }
+
+    openFoto(row) {
+        console.log(row);
+        const dialogRef = this.dialog.open(ImgModalDialogComponent, {
+            maxWidth: '75%',
+            data: { src: this.filesTestFoto, imgType: "blob", imgAlt: "imagen", title: row.nombre}
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                console.log(result);
+            }
+        });
+    }
+
+    downloadFoto(row) {
+        console.log(row);
+        FileSaver.saveAs(this.filesTestFoto, row.nombre);
+    }
+
+    uploadPlano() {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = _ => {
+            let files = Array.from(input.files);
+            console.log(files); //File Array
+            console.log(input.files); //FileList
+            this.filesTestPlanoBlob = files[0];
+            //POST del plano
+            //GET a lista de planos
+            function changeFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                });
+            };
+            changeFile(files[0]).then((base64: string): any => {
+                this.filesTestPlano = base64;
+            })
+        };
+        input.click();
+    }
+
+    uploadFoto() {
+        let input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = _ => {
+            let files = Array.from(input.files);
+            console.log(files); //File Array
+            console.log(input.files); //FileList
+            //POST del Foto
+            //GET a lista de Fotos
+            this.filesTestFoto = files[0];
+        };
+        input.click();
+    }
+
+    openSnackBar(message: string, action: string, className: string) {
+        this.snackBar.open(message, action, {
+            duration: 5000,
+            panelClass: className
+        });
+    };
 }

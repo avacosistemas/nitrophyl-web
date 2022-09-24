@@ -14,7 +14,8 @@ export interface ResponseMolde {
 
 export interface Boca {
     estado: boolean,
-    nroBoca: number
+    nroBoca: number,
+    descripcion: string
 }
 
 export interface ResponseBoca {
@@ -30,4 +31,26 @@ export interface Dimension {
 export interface ResponseDimension {
     status: string,
     data: Array<Dimension>
+}
+
+export interface Planos {
+    nombre: string,
+    version: string,
+    fecha: string,
+    data?: any
+}
+
+export interface Fotos {
+    nombre: string,
+    version: string,
+    fecha: string,
+    data?: any
+}
+
+export interface MoldeRegistro {
+    comentarios: string,
+    fechaHora: string,
+    id: number,
+    idMolde: number,
+    tipo: string
 }

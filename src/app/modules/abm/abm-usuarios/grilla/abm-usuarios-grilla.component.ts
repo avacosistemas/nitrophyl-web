@@ -33,6 +33,14 @@ export class ABMUsuariosGrillaComponent implements OnInit
         this.inicializar();
     }
 
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
+    }
+
     openUser(id: number) {
         if(id == 1) {
             //Editar

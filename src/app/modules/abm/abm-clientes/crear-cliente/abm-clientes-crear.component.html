@@ -1,0 +1,131 @@
+<div class="flex flex-col w-full" id="top">
+    <mat-tab-group class="mt-2 col-span-12 grid-rows-1">
+        <mat-tab label="Carga cliente">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+                <div>
+                    <h1 class="text-2xl font-semibold mb-2">Cliente</h1>
+                </div>
+                <form [formGroup]="clienteForm">
+                    <div class="row flex gap-3 justify-around">
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Razón Social</mat-label>
+                            <input
+                                id="razonSocial"
+                                matInput
+                                [formControlName]="'razonSocial'"
+                                placeholder="Razón Social">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('razonSocial').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Mail</mat-label>
+                            <input
+                                id="mail"
+                                matInput
+                                [formControlName]="'mail'"
+                                placeholder="Mail">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('mail').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
+                            <mat-label>CUIT</mat-label>
+                            <input
+                                id="cuit"
+                                matInput
+                                [formControlName]="'cuit'"
+                                placeholder="CUIT">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('cuit').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Dirección</mat-label>
+                            <input
+                                id="direccion"
+                                matInput
+                                [formControlName]="'direccion'"
+                                placeholder="Dirección">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('direccion').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                    </div>
+                    <div class="row flex gap-3 justify-around">
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Código Postal</mat-label>
+                            <input
+                                id="codigoPostal"
+                                matInput
+                                [formControlName]="'codigoPostal'"
+                                placeholder="Código Postal">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('codigoPostal').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Localidad</mat-label>
+                            <input
+                                id="localidad"
+                                matInput
+                                [formControlName]="'localidad'"
+                                placeholder="Localidad">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('localidad').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Celular</mat-label>
+                            <input
+                                id="celular"
+                                matInput
+                                [formControlName]="'celular'"
+                                placeholder="Celular">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('celular').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Teléfono</mat-label>
+                            <input
+                                id="telefono"
+                                matInput
+                                [formControlName]="'telefono'"
+                                placeholder="Teléfono">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefono').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                    </div>
+                    <div class="row flex gap-3 justify-around">
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Página</mat-label>
+                            <input
+                                id="pagina"
+                                matInput
+                                [formControlName]="'pagina'"
+                                placeholder="Página">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('pagina').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
+                            <mat-label>Ingresos Brutos</mat-label>
+                            <input
+                                id="ingresosBrutos"
+                                matInput
+                                [formControlName]="'ingresosBrutos'"
+                                placeholder="Ingresos Brutos">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('ingresosBrutos').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <div class="w-1/4"></div>
+                        <div class="w-1/4"></div>
+                    </div>
+                </form>
+            </div>
+        </mat-tab>
+    </mat-tab-group>
+</div>

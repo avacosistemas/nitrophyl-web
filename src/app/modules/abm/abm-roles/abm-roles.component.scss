@@ -1,6 +1,6 @@
 .content-scroll {
-    flex-shrink: 1; 
-    flex-grow: 1; 
-    position: relative; 
-    overflow-y:scroll;
+    display:Flex;
+   flex-direction:column;
+   flex-wrap:wrap;
+   overflow-y: scroll;
 }

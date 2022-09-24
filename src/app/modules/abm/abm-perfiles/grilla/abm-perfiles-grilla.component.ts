@@ -26,6 +26,14 @@ export class ABMPerfilesGrillaComponent implements OnInit
         this.inicializar()
     }
 
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
+    }
+
     openProfile(id: number) {
         if(id == 1) {
             //Editar

@@ -2,6 +2,7 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
 import { Perfil } from "app/shared/models/perfil.model";
@@ -22,8 +23,6 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
 
     component = "Create";
     mode: string;
-    showSuccess: boolean = false;
-    showError: boolean = false;
     data: User;
     selected: Array<number> = [];
     selectedToRemove: Array<number> = [];
@@ -53,7 +52,8 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
         private activatedRoute: ActivatedRoute,
         private usuarioService: UserService,
         private perfilesService: PerfilesService,
-        private ABMUsuarioService: ABMUsuarioService
+        private ABMUsuarioService: ABMUsuarioService,
+        private snackBar: MatSnackBar
     ){
         this.suscripcion = this.ABMUsuarioService.events.subscribe(
             (data: any) => {
@@ -74,6 +74,14 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
       this.suscripcion.unsubscribe()
     }
 
+    ngAfterViewInit() {
+      let top = document.getElementById('top');
+      if (top !== null) {
+        top.scrollIntoView();
+        top = null;
+      }
+  }
+
     save() {
         let model: User = {
             email: this.controlGroup.controls.email.value,
@@ -87,10 +95,10 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
         model.profiles = this.perfilesIncluidos;
         this.usuarioService.postUser(model).subscribe(response => {
           if (response.status == 'OK') {
-            this.showSuccess = true;
+            this.openSnackBar("Cambios realizados", "X", "green-snackbar");
             this.router.navigate(['/usuarios/grid']);
           } else {
-            this.showError = true;
+            this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
           }
         })
     }
@@ -226,4 +234,11 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
         }
         
     }
+
+    openSnackBar(message: string, action: string, className: string) {
+      this.snackBar.open(message, action, {
+          duration: 5000,
+          panelClass: className
+      });
+    };
 }

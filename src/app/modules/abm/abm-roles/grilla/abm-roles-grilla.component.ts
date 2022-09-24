@@ -26,6 +26,14 @@ export class ABMRolesGrillaComponent {
         this.inicializar()
     }
 
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
+    }
+
     inicializar() {
         this.rolesService.getRoles().subscribe(d => this.roles = d.data)
     }

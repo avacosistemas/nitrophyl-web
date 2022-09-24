@@ -1,16 +1,10 @@
 
-<div class="flex flex-col w-full">
+<div class="flex flex-col w-full" id="top">
     <mat-tab-group class="mt-2 col-span-12 grid-rows-1">
         <mat-tab label="Usuario">
             <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8" [formGroup]="controlGroup">
                 <div>
                     <h1 class="text-2xl font-semibold mb-2">Usuario</h1>
-                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
-                        <span fuseAlertTitle>Cambios realizados</span>
-                    </fuse-alert>
-                    <fuse-alert [type]="'error'" *ngIf="showError">
-                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
-                    </fuse-alert>
                 </div>
                 <mat-form-field class="fuse-mat-textarea">
                     <mat-icon svgIcon="mat_solid:mail" class="mr-3"></mat-icon>
@@ -39,12 +33,6 @@
             <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
                 <div>
                     <h1 class="text-2xl font-semibold mb-2">Perfiles Asociados</h1>
-                    <fuse-alert [type]="'success'" *ngIf="showSuccess">
-                        <span fuseAlertTitle>Cambios realizados</span>
-                    </fuse-alert>
-                    <fuse-alert [type]="'error'" *ngIf="showError">
-                        <span fuseAlertTitle>No se pudieron realizar los cambios</span>
-                    </fuse-alert>
                 </div>
                 <div class="grid grid-cols-5 gap-4 max-h-96">
                     <div class="col-span-2">

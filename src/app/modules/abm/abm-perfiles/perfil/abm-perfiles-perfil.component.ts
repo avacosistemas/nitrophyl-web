@@ -2,6 +2,7 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
 import { Perfil } from "app/shared/models/perfil.model";
@@ -26,17 +27,10 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
     roles: Array<Rol> = [];
     displayedColumns: string[] = ['select', 'code', 'description']
     createPerfilForm: FormGroup;
-
     formDisabled: boolean = false;
-
     data: Perfil;
-
-    showSuccess: boolean = false;
-    showError: boolean = false;
-
     selected: Array<number> = [];
     selectedToRemove: Array<number> = [];
-
     permisos: Array<Permiso> = [];
     permisosDisponibles: Array<Permiso> = [];
     permisosIncluidos: Array<Permiso> = [];
@@ -49,7 +43,6 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
     cambioPermisos: boolean = false;
     suscripcion: Subscription;
 
-
     constructor(
         private activatedRoute: ActivatedRoute,
         public dialog: MatDialog,
@@ -58,7 +51,8 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
         private perfilesService: PerfilesService,
         private rolesService: RolesService,
         private _formBuilder: FormBuilder,
-        private ABMPerfilesService: ABMPerfilService
+        private ABMPerfilesService: ABMPerfilService,
+        private snackBar: MatSnackBar
     ) {
         this.createPerfilForm = this._formBuilder.group({
             name: ['', [Validators.required]],
@@ -83,6 +77,14 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         this.suscripcion.unsubscribe();
+    }
+
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
     }
 
     inicializar() {
@@ -128,12 +130,12 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
             model.role = busqueda;
             this.perfilesService.updatePerfil(model, model.id).subscribe(res => {
                 if (res.status == 'OK') {
-                    this.showSuccess = true;
+                    this.openSnackBar("Cambios realizados", "X", "green-snackbar");
                     if(!continuar) {
                         this.router.navigate(['/perfiles/grid']);
                     }
                 } else {
-                    this.showError = true;
+                    this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
                 }
                 this.createPerfilForm.enable();
                 this.formDisabled = false;
@@ -263,4 +265,11 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
         }
 
     }
+
+    openSnackBar(message: string, action: string, className: string) {
+        this.snackBar.open(message, action, {
+            duration: 5000,
+            panelClass: className
+        });
+    };
 }

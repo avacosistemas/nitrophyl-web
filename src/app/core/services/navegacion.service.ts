@@ -80,6 +80,13 @@ export class NavegacionService {
             title: "Prouctos",
             type: "basic"
         },
+        {
+            icon: "heroicons_outline:briefcase",
+            id: "clientes",
+            link: "/clientes/grid",
+            title: "Clientes",
+            type: "basic"
+        },
     ]
 
     public get() {

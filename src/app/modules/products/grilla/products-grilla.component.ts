@@ -35,6 +35,14 @@ export class ProductsGrillaComponent implements OnInit {
     });
   }
 
+  ngAfterViewInit() {
+    let top = document.getElementById('top');
+    if (top !== null) {
+      top.scrollIntoView();
+      top = null;
+    }
+}
+
   search() {
     let searchProducts = [];
     if(this.searchForm.controls.tipo.value == 'SIMPLE') {
