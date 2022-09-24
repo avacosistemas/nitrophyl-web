@@ -28,6 +28,14 @@ export class ABMPermisosGrillaComponent {
         this.inicializar()
     }
 
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
+    }
+
     openPermission(id: number) {
         if(id == 1) {
             //Editar

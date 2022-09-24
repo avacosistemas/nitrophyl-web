@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import {  Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
 import { Permiso } from "app/shared/models/permiso.model";
@@ -16,13 +17,7 @@ import { ABMPermisoService } from "../abm-permisos.service";
 export class ABMCrearPermiso implements OnInit, OnDestroy {
 
     component = "Create";
-
-    showSuccess: boolean = false;
-    showError: boolean = false;
-    showCodeError: boolean = false;
-
     suscripcion: Subscription;
-
     permisoForm: FormGroup;
     permisos: Array<Permiso>;
 
@@ -32,7 +27,8 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
         private router: Router,
         private permisosService: PermisosService,
         private _formBuilder: FormBuilder,
-        private ABMPermisoService: ABMPermisoService
+        private ABMPermisoService: ABMPermisoService,
+        private snackBar: MatSnackBar
     ) {
         this.permisoForm = this._formBuilder.group({
             code: ['', [Validators.required, Validators.maxLength(50)]],
@@ -57,10 +53,15 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
         this.suscripcion.unsubscribe();
     }
 
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
+    }
+
     create() {
-        this.showCodeError = false;
-        this.showError = false;
-        this.showSuccess = false;
         if (this.permisoForm.invalid) {
             return;
         }
@@ -75,15 +76,15 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
         if(busqueda == undefined) {
             this.permisosService.postPermiso(model).subscribe(res => {
                 if (res.status == 'OK') {
-                    this.showSuccess = true;
+                    this.openSnackBar("Cambios realizados", "X", "green-snackbar");
                     this.router.navigate(['/permisos/grid']);
                 } else {
-                    this.showError = true;
+                    this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
                 }
                 this.permisoForm.enable();
             });
         } else {
-            this.showCodeError = true;
+            this.openSnackBar("El código ingresado ya existe", "X", "red-snackbar");
             this.permisoForm.enable();
         }
     }
@@ -103,4 +104,11 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
             });
         }
     }
+
+    openSnackBar(message: string, action: string, className: string) {
+        this.snackBar.open(message, action, {
+            duration: 5000,
+            panelClass: className
+        });
+    };
 }

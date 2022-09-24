@@ -1,5 +1,5 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { Router } from "@angular/router";
+import { ActivatedRoute, Router } from "@angular/router";
 import { MoldesService } from "app/shared/services/moldes.service";
 import { Subscription } from "rxjs";
 import { ABMMoldeService } from "./abm-moldes-service";
@@ -14,22 +14,18 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
     titulo: string = "";
     suscripcion: Subscription;
     botonEdicion: string = "";
+    moldeTitulo: string = null;
 
     constructor(
+        private activatedRoute: ActivatedRoute,
         private moldesService: MoldesService,
         private ABMMoldesService: ABMMoldeService,
         private router: Router,
         private cdref: ChangeDetectorRef
     ) {
         this.suscripcion = this.ABMMoldesService.viewEvents.subscribe(
-            (data: any) => {
-                if (data == 0) {
-                    this.botonEdicion = "Guardar Molde"
-                } else if (data == 1) {
-                    this.botonEdicion = "Guardar bocas"
-                } else if (data == 2) {
-                    this.botonEdicion = "Guardar dimensiones"
-                }
+            (data: string) => {
+                this.botonEdicion = data;
             }
         )
     }
@@ -48,9 +44,11 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
 
     componentAdded(event) {
         if (event.component == "Grilla") {
-            this.titulo = "Consulta Moldes"
+            this.titulo = "Consulta Moldes";
+            this.moldeTitulo = null;
         }
         if (event.component == "Molde") {
+            this.moldeTitulo = null;
             if (this.moldesService.getMode() == "Edit") {
                 this.titulo = "Edición Molde";
             }
@@ -59,7 +57,15 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
             }
         }
         if (event.component == "Create") {
+            this.moldeTitulo = null;
             this.titulo = "Nuevo Molde"
+        }
+        if(event.component == "Ingresos / Egresos") {
+            this.titulo = "...";
+            this.moldesService.getMoldeById(this.activatedRoute.snapshot.children[0].params['id']).subscribe(d => {
+                this.moldeTitulo = "Ingresos / Egresos";
+                this.titulo = d.data.nombre;
+            });
         }
     }
 
@@ -78,5 +84,9 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
 
     save() {
         this.ABMMoldesService.events.next(4)
+    }
+
+    ingresoEgreso() {
+        this.ABMMoldesService.events.next(5)
     }
 }

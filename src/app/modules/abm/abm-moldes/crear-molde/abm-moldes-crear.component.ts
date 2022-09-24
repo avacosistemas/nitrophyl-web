@@ -15,8 +15,6 @@ import { ABMMoldeService } from "../abm-moldes-service";
 
 export class ABMMoldesCrear implements OnInit, OnDestroy{
     component: string = "Create";
-    showSuccess: boolean = false;
-    showError: boolean = false;
     suscripcion: Subscription;
     moldeForm: FormGroup;
 
@@ -47,11 +45,18 @@ export class ABMMoldesCrear implements OnInit, OnDestroy{
     }
 
     ngOnInit(): void {
-
     }
 
     ngOnDestroy(): void {
         this.suscripcion.unsubscribe();
+    }
+
+    ngAfterViewInit() {
+        let top = document.getElementById('top');
+        if (top !== null) {
+          top.scrollIntoView();
+          top = null;
+        }
     }
 
     close() {

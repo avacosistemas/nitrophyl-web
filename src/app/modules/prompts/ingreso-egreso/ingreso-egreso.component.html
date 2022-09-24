@@ -1,0 +1,22 @@
+<form mat-dialog-content>
+  <mat-form-field appearance="fill" style="width: 100%;">
+    <mat-label>Comentarios</mat-label>
+    <textarea matInput [(ngModel)]="comments" [ngModelOptions]="{standalone: true}" rows="10" cols="100"></textarea>
+  </mat-form-field>
+</form>
+<div mat-dialog-actions>
+    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" cdkFocusInitial [mat-dialog-close]="comments">
+        <span class="mat-button-wrapper">
+            Aceptar
+        </span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        <span class="mat-button-focus-overlay"></span>
+    </button>
+    <button mat-flat-button="" class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()">
+        <span class="mat-button-wrapper">
+            Cancelar
+        </span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        <span class="mat-button-focus-overlay"></span>
+    </button>
+</div>

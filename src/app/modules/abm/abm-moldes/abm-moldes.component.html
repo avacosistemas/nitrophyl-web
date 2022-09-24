@@ -35,6 +35,13 @@
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
+            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="ingresoEgreso()" *ngIf="moldeTitulo == 'Ingresos / Egresos'">
+                <span class="mat-button-wrapper">
+                    {{ botonEdicion }}
+                </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span class="mat-button-focus-overlay"></span>
+            </button>
             <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()" *ngIf="titulo != 'Consulta Moldes'">
                 <span class="mat-button-wrapper">
                     Cerrar 
@@ -49,6 +56,7 @@
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
+            
         </div>
     </div>
     <div class="content-scroll">

@@ -3,8 +3,6 @@ import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 import { InitialDataResolver } from 'app/app.resolvers';
-import { ABMUsuariosComponent } from './modules/abm/abm-usuarios/abm-usuarios.component';
-import { ABMUsuariosUserComponent } from './modules/abm/abm-usuarios/user/abm-usuarios-user.component';
 
 // @formatter:off
 /* eslint-disable max-len */
@@ -80,6 +78,7 @@ export const appRoutes: Route[] = [
             {path: 'moldes', loadChildren: () => import('app/modules/abm/abm-moldes/abm-moldes.module').then(m => m.ABMMoldesModule)},
             {path: 'piezas', loadChildren: () => import('app/modules/parts/parts.module').then(m => m.PartsModule)},
             {path: 'productos', loadChildren: () => import('app/modules/products/products.module').then(m => m.ProductsModule)},
+            {path: 'clientes', loadChildren: () => import('app/modules/abm/abm-clientes/abm-clientes.module').then(m => m.ABMClientesModule)},
         ]
     },
 

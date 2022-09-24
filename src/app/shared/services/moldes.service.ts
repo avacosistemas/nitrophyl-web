@@ -2,7 +2,7 @@ import { HttpClient, HttpBackend } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "environments/environment";
 import { Observable } from "rxjs";
-import { Boca, Dimension, Molde, ResponseBoca, ResponseDimension } from "../models/molde.model";
+import { Boca, Dimension, Molde, MoldeRegistro, ResponseBoca, ResponseDimension } from "../models/molde.model";
 import { Perfil } from "../models/perfil.model";
 
 
@@ -36,9 +36,13 @@ export class MoldesService {
         return this.http.put<any>(`${environment.server}molde/${id}`, molde)
     }
 
-    //public deleteMolde(id: number): Observable<any> {
-    //    return this.http.delete<any>(`${environment.server}molde/${id}`)
-    //}
+    public getMoldeRegistro(id: number): Observable<any> {
+        return this.http.get<any>(`${environment.server}molde/registro/${id}`)
+    }
+
+    public addMoldeRegistro(id: number, moldeRegistro: MoldeRegistro): Observable<any> {
+        return this.http.post<any>(`${environment.server}molde/registro/${id}`, moldeRegistro)
+    }
 
     public getMoldeBocas(id: number): Observable<ResponseBoca> {
         return this.http.get<ResponseBoca>(`${environment.server}molde/boca/${id}`)
