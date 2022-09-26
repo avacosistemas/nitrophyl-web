@@ -65,7 +65,6 @@ export class ABMMoldesGrillaComponent implements OnInit {
 
     inicializar() {
         this.moldesService.getMoldes().subscribe(d=>{
-            console.log(d.data)
             this.moldes = d.data;
             this.moldesBackup = this.moldes;
         })

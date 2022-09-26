@@ -2,7 +2,7 @@ import { HttpClient, HttpBackend } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "environments/environment";
 import { Observable } from "rxjs";
-import { Boca, Dimension, Molde, MoldeRegistro, ResponseBoca, ResponseDimension } from "../models/molde.model";
+import { Boca, CargaArchivo, Dimension, Molde, MoldeRegistro, ResponseBoca, ResponseDimension } from "../models/molde.model";
 import { Perfil } from "../models/perfil.model";
 
 
@@ -58,6 +58,30 @@ export class MoldesService {
 
     public updateMoldeDimensiones(id: number, dimensiones: Array<Dimension>): Observable<ResponseDimension> {
         return this.http.put<ResponseDimension>(`${environment.server}molde/dimensiones/${id}`, dimensiones)
+    }
+
+    public getFotos(idMolde: number): Observable<any> {
+        return this.http.get<any>(`${environment.server}molde/foto/${idMolde}`)
+    }
+
+    public postFoto(foto: CargaArchivo): Observable<any> {
+        return this.http.post<any>(`${environment.server}molde/foto/`, foto)
+    }
+
+    public getFotoById() {
+
+    }
+
+    public getPlanos(idMolde: number): Observable<any> {
+        return this.http.get<any>(`${environment.server}molde/plano/${idMolde}`)
+    }
+
+    public postPlano(plano: CargaArchivo): Observable<any> {
+        return this.http.post<any>(`${environment.server}molde/plano/`, plano)
+    }
+
+    public getPlanoById() {
+
     }
 
     public getMode() {

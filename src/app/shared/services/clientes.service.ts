@@ -2,7 +2,7 @@ import { HttpClient, HttpBackend } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { environment } from "environments/environment";
 import { Observable } from "rxjs";
-import { Cliente, Contacto } from "../models/cliente.model";
+import { Cliente, Contacto, ResponseCliente, ResponseClientes, ResponseContacto, ResponseContactos } from "../models/cliente.model";
 import { Boca, Dimension, Molde, MoldeRegistro, ResponseBoca, ResponseDimension } from "../models/molde.model";
 
 
@@ -20,8 +20,8 @@ export class ClientesService {
             this.http = new HttpClient(handler)
     }
 
-    public getClientes(): Observable<any> { //listado clientes
-        return this.http.get<any>(`${environment.server}cliente/`)
+    public getClientes(): Observable<ResponseClientes> { //listado clientes
+        return this.http.get<ResponseClientes>(`${environment.server}cliente/`)
     }
 
     public createCliente(cliente: Cliente): Observable<any> { //crear cliente
@@ -32,16 +32,16 @@ export class ClientesService {
         return this.http.put<any>(`${environment.server}cliente/${id}`, cliente)
     }
 
-    public getClienteById(id: number): Observable<any> { //cliente por id
-        return this.http.get<any>(`${environment.server}cliente/${id}`)
+    public getClienteById(id: number): Observable<ResponseCliente> { //cliente por id
+        return this.http.get<ResponseCliente>(`${environment.server}cliente/${id}`)
     }
 
-    public getContactos(id: number): Observable<any> { //listado contactos
-        return this.http.get<any>(`${environment.server}cliente/${id}/contacto`)
+    public getContactos(id: number): Observable<ResponseContactos> { //listado contactos
+        return this.http.get<ResponseContactos>(`${environment.server}cliente/${id}/contacto`)
     }
 
-    public getContactoById(id: number): Observable<any> { //contacto por id
-        return this.http.get<any>(`${environment.server}cliente/contacto/${id}`)
+    public getContactoById(id: number): Observable<ResponseContacto> { //contacto por id
+        return this.http.get<ResponseContacto>(`${environment.server}cliente/contacto/${id}`)
     }
 
     public createContacto(id: number, contacto: Contacto): Observable<any> { //crear contacto
@@ -50,6 +50,10 @@ export class ClientesService {
 
     public updateContacto(id: number, contacto: Contacto): Observable<any> { //actualizar contacto
         return this.http.put<any>(`${environment.server}cliente/contacto/${id}`, contacto)
+    }
+
+    public deleteContacto(idContacto: number): Observable<any> {
+        return this.http.delete<any>(`${environment.server}cliente/contacto/${idContacto}`)
     }
 
     public getMode() {

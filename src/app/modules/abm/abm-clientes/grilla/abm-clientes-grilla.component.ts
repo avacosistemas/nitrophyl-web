@@ -1,6 +1,7 @@
 import { animate, state, style, transition, trigger } from "@angular/animations";
 import { Component, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
 import { Cliente } from "app/shared/models/cliente.model";
 import { ClientesService } from "app/shared/services/clientes.service";
@@ -99,9 +100,11 @@ export class ABMClientesGrillaComponent implements OnInit {
     constructor(
         private clientesService: ClientesService,
         private formBuilder: FormBuilder,
-        private router: Router
+        private router: Router,
+        private snackBar: MatSnackBar
     ) {
         this.clienteForm = this.formBuilder.group({
+            id: [null],
             razonSocial: [null, [Validators.required]],
             mail: [null, [Validators.required]],
             cuit: [null, [Validators.required]],
@@ -128,12 +131,14 @@ export class ABMClientesGrillaComponent implements OnInit {
     }
 
     inicializar() {
-        //GET grilla clientes
+        this.clientesService.getClientes().subscribe(d => {
+            this.dataSource = d.data;
+        })
     }
 
     expandRow(element) {
-        console.log(element);
         this.clienteForm.patchValue({
+            id: element.id,
             razonSocial: element.razonSocial,
             mail: element.mail,
             cuit: element.cuit,
@@ -149,13 +154,33 @@ export class ABMClientesGrillaComponent implements OnInit {
     }
 
     updateCliente() {
-        console.log(this.clienteForm.value)
+        this.clienteForm.markAllAsTouched();
+        if(!this.clienteForm.valid) {
+            return;
+        }
+        let model: Cliente = {
+            ...this.clienteForm.getRawValue(),
+        };
+        this.clientesService.updateCliente(model.id, model).subscribe(d => {
+            if(d.status == "OK") {
+                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+            } else {
+                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+            }
+        },
+        err => {
+            this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+        })
     }
 
     verContacto(element) {
-        console.log(element.id);
-        //Abrir contactos con id de cliente
         this.router.navigateByUrl(`/clientes/${element.id}/grid-contactos`);
-
     }
+
+    openSnackBar(message: string, action: string, className: string) {
+        this.snackBar.open(message, action, {
+            duration: 5000,
+            panelClass: className
+        });
+    };
 }
