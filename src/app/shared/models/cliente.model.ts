@@ -20,3 +20,23 @@ export interface Contacto {
     mail: string,
     telefono: string
 }
+
+export interface ResponseClientes {
+    status: string,
+    data: Array<Cliente>
+}
+
+export interface ResponseCliente {
+    status: string,
+    data: Cliente
+}
+
+export interface ResponseContactos {
+    status: string,
+    data: Array<Contacto>
+}
+
+export interface ResponseContacto {
+    status: string,
+    data: Contacto
+}

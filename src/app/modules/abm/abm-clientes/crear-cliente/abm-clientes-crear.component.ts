@@ -2,6 +2,7 @@ import { animate, state, style, transition, trigger } from "@angular/animations"
 import { AfterViewInit, Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
 import { Cliente } from "app/shared/models/cliente.model";
@@ -27,6 +28,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         private ABMClientesService: ABMClientesService,
         public dialog: MatDialog,
         private router: Router,
+        private snackBar: MatSnackBar
     ) {
         this.clienteForm = this.formBuilder.group({
             razonSocial: [null, [Validators.required]],
@@ -52,7 +54,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
     }
 
     ngOnInit(): void {
-        this.inicializar()
+        
     }
 
     ngAfterViewInit() {
@@ -67,13 +69,25 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         this.suscripcion.unsubscribe()
     }
 
-    inicializar() {
-        //GET grilla clientes
-    }
-
     create() {
-        console.log(this.clienteForm.value);
         this.clienteForm.markAllAsTouched();
+        if(!this.clienteForm.valid) {
+            return;
+        };
+        let model: Cliente = {
+            ...this.clienteForm.getRawValue(),
+            id: 0
+        };
+        this.clientesService.createCliente(model).subscribe(d => {
+            if(d.status == "OK") {
+                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+            } else {
+                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+            }
+        },
+        err => {
+            this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+        })
     }
 
     verContacto() {
@@ -95,4 +109,11 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             });
         }
     }
+
+    openSnackBar(message: string, action: string, className: string) {
+        this.snackBar.open(message, action, {
+            duration: 5000,
+            panelClass: className
+        });
+    };
 }
