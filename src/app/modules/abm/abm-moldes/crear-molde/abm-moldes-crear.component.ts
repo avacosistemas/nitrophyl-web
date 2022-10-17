@@ -28,7 +28,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy{
     ){
         this.moldeForm = this._formBuilder.group({
             code: [null, [Validators.required, Validators.maxLength(30)]],
-            status: [true, [Validators.required]],
+            status: ['ACTIVO', [Validators.required]],
             name: [null, [Validators.required, Validators.maxLength(100)]],
             observations: [null],
             location: [null]
