@@ -21,11 +21,11 @@
                         <mat-form-field class="w-1/4">
                             <mat-label>Mail</mat-label>
                             <input
-                                id="mail"
+                                id="email"
                                 matInput
-                                [formControlName]="'mail'"
+                                [formControlName]="'email'"
                                 placeholder="Mail">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('mail').hasError('required')">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('email').hasError('required')">
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
@@ -43,11 +43,11 @@
                         <mat-form-field class="w-1/4">
                             <mat-label>Dirección</mat-label>
                             <input
-                                id="direccion"
+                                id="domicilio"
                                 matInput
-                                [formControlName]="'direccion'"
+                                [formControlName]="'domicilio'"
                                 placeholder="Dirección">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('direccion').hasError('required')">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('domicilio').hasError('required')">
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
@@ -78,22 +78,22 @@
                         <mat-form-field class="w-1/4">
                             <mat-label>Celular</mat-label>
                             <input
-                                id="celular"
+                                id="telefonoCelular"
                                 matInput
-                                [formControlName]="'celular'"
+                                [formControlName]="'telefonoCelular'"
                                 placeholder="Celular">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('celular').hasError('required')">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefonoCelular').hasError('required')">
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
                         <mat-form-field class="w-1/4">
                             <mat-label>Teléfono</mat-label>
                             <input
-                                id="telefono"
+                                id="telefonoFijo"
                                 matInput
-                                [formControlName]="'telefono'"
+                                [formControlName]="'telefonoFijo'"
                                 placeholder="Teléfono">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefono').hasError('required')">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefonoFijo').hasError('required')">
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
@@ -102,11 +102,11 @@
                         <mat-form-field class="w-1/4">
                             <mat-label>Página</mat-label>
                             <input
-                                id="pagina"
+                                id="webSite"
                                 matInput
-                                [formControlName]="'pagina'"
+                                [formControlName]="'webSite'"
                                 placeholder="Página">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('pagina').hasError('required')">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('webSite').hasError('required')">
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>

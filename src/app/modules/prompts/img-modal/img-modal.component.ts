@@ -26,6 +26,8 @@ export class ImgModalDialogComponent implements OnInit{
                 let url = reader.result;
                 this.imgSrc = url;
             };
+        } else if(this.data.imgType == "array") {
+            this.imgSrc = 'data:image/' + this.data.imgExtension + ';base64,' + this.data.src
         } else {
             return;
         }

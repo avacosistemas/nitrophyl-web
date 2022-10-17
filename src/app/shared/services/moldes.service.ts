@@ -68,8 +68,8 @@ export class MoldesService {
         return this.http.post<any>(`${environment.server}molde/foto/`, foto)
     }
 
-    public getFotoById() {
-
+    public downloadFoto(idMoldeFoto: number): Observable<any> {
+        return this.http.post<any>(`${environment.server}molde/foto/descargar/${idMoldeFoto}`, null)
     }
 
     public getPlanos(idMolde: number): Observable<any> {
@@ -80,8 +80,8 @@ export class MoldesService {
         return this.http.post<any>(`${environment.server}molde/plano/`, plano)
     }
 
-    public getPlanoById() {
-
+    public downloadPlano(idMoldePlano: number): Observable<any> {
+        return this.http.post<any>(`${environment.server}molde/plano/descargar/${idMoldePlano}`, null)
     }
 
     public getMode() {

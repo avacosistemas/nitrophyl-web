@@ -22,9 +22,9 @@
                     <div class="w-full mb-3">
                         <mat-label class="ml-3">Tipo: </mat-label>
                         <mat-radio-group aria-label="Select an option" formControlName="tipo">
-                            <mat-radio-button [value]='1' class="ml-5">Compras</mat-radio-button>
-                            <mat-radio-button [value]='2' class="ml-5">Contaduría</mat-radio-button>
-                            <mat-radio-button [value]='3' class="ml-5">Calidad</mat-radio-button>
+                            <mat-radio-button [value]='"COMPRAS"' class="ml-5">Compras</mat-radio-button>
+                            <mat-radio-button [value]='"CONTADURIA"' class="ml-5">Contaduría</mat-radio-button>
+                            <mat-radio-button [value]='"CALIDAD"' class="ml-5">Calidad</mat-radio-button>
                         </mat-radio-group>
                         <mat-error class="mb-1" *ngIf="contactoFrom.get('tipo').hasError('required') && !contactoFrom.get('tipo').pristine">
                             El tipo es requerido
@@ -33,11 +33,11 @@
                     <mat-form-field class="w-full">
                         <mat-icon svgIcon="heroicons_solid:mail" class="mr-3"></mat-icon>
                         <input
-                            id="mail"
+                            id="email"
                             matInput
-                            [formControlName]="'mail'"
+                            [formControlName]="'email'"
                             placeholder="Mail">
-                        <mat-error class="mb-1" *ngIf="contactoFrom.get('mail').hasError('required')">
+                        <mat-error class="mb-1" *ngIf="contactoFrom.get('email').hasError('required')">
                             El mail es requerido
                         </mat-error>
                     </mat-form-field>

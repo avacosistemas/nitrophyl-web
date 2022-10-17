@@ -37,9 +37,10 @@ export class ABMClientesContactoComponent implements OnInit, OnDestroy {
     ) {
         this.contactoFrom = this.formBuilder.group({
             id: [null],
+            idCliente: [null],
             tipo: [null, [Validators.required]],
             nombre: [null, [Validators.required]],
-            mail: [null, [Validators.required]],
+            email: [null, [Validators.required]],
             telefono: [null, [Validators.required]]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
@@ -75,20 +76,15 @@ export class ABMClientesContactoComponent implements OnInit, OnDestroy {
         this.clientesService.getContactoById(this.contactoId).subscribe(d => {
             this.contactoFrom.patchValue({
                 id: this.contactoId,
+                idCliente: this.clienteId,
                 tipo: d.data.tipo,
                 nombre: d.data.nombre,
-                mail: d.data.mail,
+                email: d.data.email,
                 telefono: d.data.telefono
             })
         },
         err => {
-            this.contactoFrom.patchValue({
-                id: this.contactoId,
-                tipo: 2,
-                nombre: "Contacto 6",
-                mail: "contacto6@mail.com",
-                telefono: 3413111111
-            })
+            console.log(err)
         });
         this.clientesService.getClienteById(this.clienteId).subscribe(d => {
             this.ABMClientesService.viewEvents.next(d.data.razonSocial);

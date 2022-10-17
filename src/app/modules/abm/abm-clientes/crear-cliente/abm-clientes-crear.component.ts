@@ -32,14 +32,14 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
     ) {
         this.clienteForm = this.formBuilder.group({
             razonSocial: [null, [Validators.required]],
-            mail: [null, [Validators.required]],
+            email: [null, [Validators.required]],
             cuit: [null, [Validators.required]],
-            direccion: [null, [Validators.required]],
+            domicilio: [null, [Validators.required]],
             codigoPostal: [null, [Validators.required]],
             localidad: [null, [Validators.required]],
-            celular: [null, [Validators.required]],
-            telefono: [null, [Validators.required]],
-            pagina: [null, [Validators.required]],
+            telefonoCelular: [null, [Validators.required]],
+            telefonoFijo: [null, [Validators.required]],
+            webSite: [null, [Validators.required]],
             ingresosBrutos: [null, [Validators.required]]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
@@ -81,6 +81,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         this.clientesService.createCliente(model).subscribe(d => {
             if(d.status == "OK") {
                 this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+                this.router.navigateByUrl(`/clientes/grid`);
             } else {
                 this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
             }

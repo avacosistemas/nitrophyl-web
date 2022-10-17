@@ -10,44 +10,6 @@ import { ClientesService } from "app/shared/services/clientes.service";
 import { Subscription } from "rxjs";
 import { ABMClientesService } from "../abm-clientes.service";
 
-const ELEMENT_DATA: Contacto[] = [
-    {
-        id: 1,
-        tipo: "Compras",
-        nombre: "Contacto 1",
-        mail: 'contacto1@mail.com',
-        telefono: '3411111111',
-    },
-    {
-        id: 2,
-        tipo: "Compras",
-        nombre: "Contacto 2",
-        mail: 'contacto2@mail.com',
-        telefono: '3411111111',
-    },
-    {
-        id: 3,
-        tipo: "Contaduría",
-        nombre: "Contacto 3",
-        mail: 'contacto3@mail.com',
-        telefono: '3411111111',
-    },
-    {
-        id: 4,
-        tipo: "Calidad",
-        nombre: "Contacto 4",
-        mail: 'contacto4@mail.com',
-        telefono: '3411111111',
-    },
-    {
-        id: 5,
-        tipo: "Compras",
-        nombre: "Contacto 5",
-        mail: 'contacto5@mail.com',
-        telefono: '3411111111',
-    },
-];
-
 @Component({
     selector: 'abm-clientes-grilla-contactos',
     templateUrl: './abm-clientes-grilla-contactos.component.html',
@@ -57,7 +19,7 @@ const ELEMENT_DATA: Contacto[] = [
 export class ABMClientesGrillaContactosComponent implements OnInit, OnDestroy {
 
     component = "GrillaContactos";
-    clientes = ELEMENT_DATA;
+    clientes;
     displayedColumns: string[] = ['name', 'type', 'mail', 'phone', 'acciones'];
     clienteId: number;
     suscripcion: Subscription;
