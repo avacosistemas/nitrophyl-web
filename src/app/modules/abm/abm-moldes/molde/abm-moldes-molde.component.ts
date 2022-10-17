@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from "@angular/router";
 import { ImgModalDialogComponent } from "app/modules/prompts/img-modal/img-modal.component";
 import { PDFModalDialogComponent } from "app/modules/prompts/pdf-modal/pdf-modal.component";
 import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Boca, Dimension, Fotos, Planos } from "app/shared/models/molde.model";
+import { Boca, CargaArchivo, Dimension, Fotos, Planos } from "app/shared/models/molde.model";
 import { MoldesService } from "app/shared/services/moldes.service";
 import { Subscription } from "rxjs";
 import { ABMMoldeService } from "../abm-moldes-service";
@@ -29,16 +29,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
     displayedColumnsDimensiones: string[] = ['dimension', 'valor', 'acciones'];
     displayedColumnsPlanos: string[] = ['nombre', 'version', 'fecha', 'acciones'];
     displayedColumnsFotos: string[] = ['nombre', 'version', 'fecha', 'acciones'];
-    planos: Array<Planos> = [
-        {nombre: "Plano 1", version: "1", fecha: "10-09-2022"},
-        {nombre: "Plano 2", version: "2", fecha: "13-09-2022"},
-        {nombre: "Plano 3", version: "1", fecha: "12-09-2022"}
-    ];
-    fotos: Array<Fotos> = [
-        {nombre: "Foto 1", version: "1", fecha: "10-09-2022"},
-        {nombre: "Foto 2", version: "2", fecha: "13-09-2022"},
-        {nombre: "Foto 3", version: "1", fecha: "12-09-2022"}
-    ];
+    planos: Array<Planos> = [];
+    fotos: Array<Fotos> = [];
     bocas: Array<Boca> =  [];
     dimensiones: Array<Dimension> = [];
     estados = ['Activa', 'Inactiva', 'En Reparación'];
@@ -240,6 +232,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         this.moldesService.getMoldeDimensiones(this.currentId).subscribe(d => {
             this.dimensiones = d.data;
         });
+        this.moldesService.getPlanos(this.currentId).subscribe(d => {
+            this.planos = d.data;
+        });
+        this.moldesService.getFotos(this.currentId).subscribe(d => {
+            this.fotos = d.data;
+        })
         this.ABMoldesService.viewEvents.next("Guardar Molde");
     }
     
@@ -286,38 +284,89 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
 
     openPlano(row) {
         console.log(row);
-        const dialogRef = this.dialog.open(PDFModalDialogComponent, {
-            maxWidth: '75%',
-            data: { src: this.filesTestPlano, title: row.nombre }
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                console.log(result);
+        let name = row.nombreArchivo.split('.');
+        this.moldesService.downloadPlano(row.id).subscribe(d => {
+            if (name[name.length - 1] == "pdf") {
+                const dialogRef = this.dialog.open(PDFModalDialogComponent, {
+                    maxWidth: '75%',
+                    data: { src: d.data.archivo, title: d.data.nombreArchivo }
+                });
+                dialogRef.afterClosed().subscribe(result => {
+                    if (result) {
+                        console.log(result);
+                    }
+                });
+            } else {
+                const dialogRef = this.dialog.open(ImgModalDialogComponent, {
+                    maxWidth: '75%',
+                    data: { src: d.data.archivo, imgType: "array", imgAlt: "imagen", title: d.data.nombreArchivo, imgExtension: name[name.length - 1] }
+                });
+                dialogRef.afterClosed().subscribe(result => {
+                    if (result) {
+                        console.log(result);
+                    }
+                });
             }
-        });
+        })
     }
 
     downloadPlano(row) {
         console.log(row);
-        FileSaver.saveAs(this.filesTestPlanoBlob, row.nombre);
+        let name = row.nombreArchivo.split('.');
+        this.moldesService.downloadPlano(row.id).subscribe(d => {
+            if(name[name.length - 1] == "pdf") {
+                let url = 'data:application/pdf;base64,' + d.data.archivo;
+                var byteString = atob(url.split(',')[1]);
+                var ab = new ArrayBuffer(byteString.length);
+                var ia = new Uint8Array(ab);
+
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                FileSaver.saveAs(new Blob([ab], { type: 'application/pdf' }), row.nombreArchivo)
+            } else {
+                let url = 'data:image/' + name[name.length - 1] + ';base64,' + d.data.archivo;
+                var byteString = atob(url.split(',')[1]);
+                var ab = new ArrayBuffer(byteString.length);
+                var ia = new Uint8Array(ab);
+
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                FileSaver.saveAs(new Blob([ab], { type: 'image/' + name[name.length - 1] }), row.nombreArchivo)
+            }
+        })
     }
 
     openFoto(row) {
         console.log(row);
-        const dialogRef = this.dialog.open(ImgModalDialogComponent, {
-            maxWidth: '75%',
-            data: { src: this.filesTestFoto, imgType: "blob", imgAlt: "imagen", title: row.nombre}
-        });
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                console.log(result);
-            }
-        });
+        this.moldesService.downloadFoto(row.id).subscribe(d => {
+            let name = d.data.nombreArchivo.split('.');
+            const dialogRef = this.dialog.open(ImgModalDialogComponent, {
+                maxWidth: '75%',
+                data: { src: d.data.archivo, imgType: "array", imgAlt: "imagen", title: d.data.nombreArchivo, imgExtension: name[name.length - 1]}
+            });
+            dialogRef.afterClosed().subscribe(result => {
+                if (result) {
+                    console.log(result);
+                }
+            });
+        })
     }
 
     downloadFoto(row) {
-        console.log(row);
-        FileSaver.saveAs(this.filesTestFoto, row.nombre);
+        let name = row.nombreArchivo.split('.');
+        this.moldesService.downloadFoto(row.id).subscribe(d => {
+            let url = 'data:image/' + name[name.length - 1] + ';base64,' + d.data.archivo;
+            var byteString = atob(url.split(',')[1]);
+            var ab = new ArrayBuffer(byteString.length);
+            var ia = new Uint8Array(ab);
+
+            for (var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+            FileSaver.saveAs(new Blob([ab], { type: 'image/' + name[name.length - 1] }), row.nombreArchivo)
+        })
     }
 
     uploadPlano() {
@@ -340,7 +389,18 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
             };
             changeFile(files[0]).then((base64: string): any => {
                 this.filesTestPlano = base64;
-            })
+                let model: CargaArchivo = {
+                    idMolde: Number(this.currentId),
+                    nombreArchivo: files[0].name,
+                    archivo: base64.split(',')[1]
+                };
+                this.moldesService.postPlano(model).subscribe(d => {
+                    console.log(d);
+                    this.moldesService.getPlanos(this.currentId).subscribe(d => {
+                        this.planos = d.data;
+                    });
+                })
+            });
         };
         input.click();
     }
@@ -355,6 +415,27 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
             //POST del Foto
             //GET a lista de Fotos
             this.filesTestFoto = files[0];
+            function changeFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.readAsDataURL(file);
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = error => reject(error);
+                });
+            };
+            changeFile(files[0]).then((base64: string): any => {
+                let model: CargaArchivo = {
+                    idMolde: Number(this.currentId),
+                    nombreArchivo: files[0].name,
+                    archivo: base64.split(',')[1]
+                };
+                this.moldesService.postFoto(model).subscribe(d => {
+                    console.log(d);
+                    this.moldesService.getFotos(this.currentId).subscribe(d => {
+                        this.fotos = d.data;
+                    })
+                })
+            });
         };
         input.click();
     }

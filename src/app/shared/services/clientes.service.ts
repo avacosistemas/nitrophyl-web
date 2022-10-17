@@ -21,7 +21,7 @@ export class ClientesService {
     }
 
     public getClientes(): Observable<ResponseClientes> { //listado clientes
-        return this.http.get<ResponseClientes>(`${environment.server}cliente/`)
+        return this.http.get<ResponseClientes>(`${environment.server}clientes/`)
     }
 
     public createCliente(cliente: Cliente): Observable<any> { //crear cliente
@@ -45,7 +45,7 @@ export class ClientesService {
     }
 
     public createContacto(id: number, contacto: Contacto): Observable<any> { //crear contacto
-        return this.http.post<any>(`${environment.server}cliente/${id}/contacto`, contacto)
+        return this.http.post<any>(`${environment.server} /cliente/${id}/contacto`, contacto)
     }
 
     public updateContacto(id: number, contacto: Contacto): Observable<any> { //actualizar contacto

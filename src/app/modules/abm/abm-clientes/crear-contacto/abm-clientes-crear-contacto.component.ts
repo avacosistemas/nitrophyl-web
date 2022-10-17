@@ -36,9 +36,10 @@ export class ABMClientesCrearContactoComponent implements OnInit, OnDestroy {
     ) {
         this.contactoFrom = this.formBuilder.group({
             id: [null],
+            idCliente: [null],
             tipo: [null, [Validators.required]],
             nombre: [null, [Validators.required]],
-            mail: [null, [Validators.required]],
+            email: [null, [Validators.required]],
             telefono: [null, [Validators.required]]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
@@ -86,6 +87,9 @@ export class ABMClientesCrearContactoComponent implements OnInit, OnDestroy {
         let model: Contacto = {
             ...this.contactoFrom.getRawValue()
         };
+        model.id = 0;
+        model.idCliente = this.clienteId;
+        console.log(model)
         this.clientesService.createContacto(this.clienteId, model).subscribe(d => {
             if(d.status == "OK") {
                 this.openSnackBar("Cambios realizados", "X", "green-snackbar");

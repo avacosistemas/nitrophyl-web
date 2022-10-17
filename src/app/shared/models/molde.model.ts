@@ -58,6 +58,5 @@ export interface MoldeRegistro {
 export interface CargaArchivo {
     idMolde: number,
     nombreArchivo: string,
-    extensionArchivo: string,
     archivo: any
 }

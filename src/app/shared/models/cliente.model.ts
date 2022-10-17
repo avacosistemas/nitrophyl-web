@@ -1,23 +1,24 @@
 export interface Cliente {
     id: number,
     razonSocial: string;
-    mail: string;
+    email: string;
     cuit: number;
-    direccion: string;
+    domicilio: string;
     codigoPostal: string;
     localidad: string;
-    telefono: string;
-    celular: string;
-    pagina: string;
+    telefonoFijo: string;
+    telefonoCelular: string;
+    webSite: string;
     ingresosBrutos: string;
     contacto?: any
 }
 
 export interface Contacto {
     id: number,
+    idCliente: number,
     tipo: string,
     nombre: string,
-    mail: string,
+    email: string,
     telefono: string
 }
 

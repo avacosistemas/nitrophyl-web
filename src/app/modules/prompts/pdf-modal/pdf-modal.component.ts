@@ -17,7 +17,7 @@ export class PDFModalDialogComponent implements OnInit{
     ){}
 
     ngOnInit(): void {
-        this.pdfSrc = this.data.src;
+        this.pdfSrc = 'data:application/pdf;base64,' + this.data.src;
     }
 
     save() {
