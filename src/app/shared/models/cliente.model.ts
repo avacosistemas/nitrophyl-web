@@ -6,10 +6,11 @@ export interface Cliente {
     domicilio: string;
     codigoPostal: string;
     localidad: string;
+    provincia: any;
     telefonoFijo: string;
     telefonoCelular: string;
     webSite: string;
-    ingresosBrutos: string;
+    ingresosBrutos: number;
     contacto?: any
 }
 
