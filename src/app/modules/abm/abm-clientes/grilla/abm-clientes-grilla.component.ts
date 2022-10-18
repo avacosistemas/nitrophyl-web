@@ -26,6 +26,7 @@ export class ABMClientesGrillaComponent implements OnInit {
     columnsToDisplay = ['razonSocial', 'mail', 'cuit'];
     columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
     expandedElement: Cliente | null;
+    provincias = [];
 
 
 
@@ -65,7 +66,11 @@ export class ABMClientesGrillaComponent implements OnInit {
     inicializar() {
         this.clientesService.getClientes().subscribe(d => {
             this.dataSource = d.data;
-        })
+        });
+        this.clientesService.getProvincias().subscribe(d => {
+            console.log(d.data);
+            this.provincias = d.data;
+        });
     }
 
     expandRow(element) {

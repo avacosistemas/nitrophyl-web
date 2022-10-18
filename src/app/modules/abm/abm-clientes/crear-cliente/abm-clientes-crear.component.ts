@@ -19,6 +19,11 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
     clienteForm: FormGroup;
     component: string = "CreateCliente";
     suscripcion: Subscription;
+    provincias = [];
+    ingresosBrutos = [
+        {id: 1, name: "Régimen General"},
+        {id: 2, name: "Régimen Simplificado"}
+    ];
 
 
 
@@ -37,6 +42,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             domicilio: [null, [Validators.required]],
             codigoPostal: [null, [Validators.required]],
             localidad: [null, [Validators.required]],
+            provincia: [null, [Validators.required]],
             telefonoCelular: [null, [Validators.required]],
             telefonoFijo: [null, [Validators.required]],
             webSite: [null, [Validators.required]],
@@ -54,7 +60,9 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
     }
 
     ngOnInit(): void {
-        
+        this.clientesService.getProvincias().subscribe(d => {
+            this.provincias = d.data;
+        })
     }
 
     ngAfterViewInit() {
