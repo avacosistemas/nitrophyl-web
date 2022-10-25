@@ -56,6 +56,10 @@ export class ClientesService {
         return this.http.delete<any>(`${environment.server}cliente/contacto/${idContacto}`)
     }
 
+    public getProvincias(): Observable<any> {
+        return this.http.get<any>(`${environment.server}provincias/`)
+    }
+
     public getMode() {
         return this.mode;
     }

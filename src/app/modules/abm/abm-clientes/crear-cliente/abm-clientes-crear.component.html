@@ -76,6 +76,15 @@
                                 </mat-error>
                         </mat-form-field>
                         <mat-form-field class="w-1/4">
+                            <mat-label>Provincia</mat-label>
+                            <mat-select [formControlName]="'provincia'" placeholder='Provincia'>
+                                <mat-option *ngFor="let provincia of provincias" [value]="provincia.codigo">{{provincia.nombre}}</mat-option>
+                            </mat-select>
+                            <mat-error class="mb-1" *ngIf="clienteForm.get('provincia').hasError('required')">
+                                La provincia es requerida
+                            </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/4">
                             <mat-label>Celular</mat-label>
                             <input
                                 id="telefonoCelular"
@@ -86,6 +95,8 @@
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
+                    </div>
+                    <div class="row flex gap-3 justify-around">
                         <mat-form-field class="w-1/4">
                             <mat-label>Teléfono</mat-label>
                             <input
@@ -97,8 +108,6 @@
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
-                    </div>
-                    <div class="row flex gap-3 justify-around">
                         <mat-form-field class="w-1/4">
                             <mat-label>Página</mat-label>
                             <input
@@ -112,16 +121,13 @@
                         </mat-form-field>
                         <mat-form-field class="w-1/4">
                             <mat-label>Ingresos Brutos</mat-label>
-                            <input
-                                id="ingresosBrutos"
-                                matInput
-                                [formControlName]="'ingresosBrutos'"
-                                placeholder="Ingresos Brutos">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('ingresosBrutos').hasError('required')">
-                                    El código es requerido
-                                </mat-error>
+                            <mat-select [formControlName]="'ingresosBrutos'" placeholder='Ingresos Brutos'>
+                                <mat-option *ngFor="let ingreso of ingresosBrutos" [value]="ingreso.id">{{ingreso.name}}</mat-option>
+                            </mat-select>
+                            <mat-error class="mb-1" *ngIf="clienteForm.get('ingresosBrutos').hasError('required')">
+                                Los ingresos brutos son requeridos
+                            </mat-error>
                         </mat-form-field>
-                        <div class="w-1/4"></div>
                         <div class="w-1/4"></div>
                     </div>
                 </form>
