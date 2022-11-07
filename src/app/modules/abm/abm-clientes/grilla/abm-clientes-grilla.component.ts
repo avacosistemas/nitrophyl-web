@@ -27,8 +27,10 @@ export class ABMClientesGrillaComponent implements OnInit {
     columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
     expandedElement: Cliente | null;
     provincias = [];
-
-
+    ingresosBrutos = [
+        {id: 1, name: "Régimen General"},
+        {id: 2, name: "Régimen Simplificado"}
+    ];
 
     constructor(
         private clientesService: ClientesService,
@@ -46,6 +48,7 @@ export class ABMClientesGrillaComponent implements OnInit {
             localidad: [null, [Validators.required]],
             telefonoCelular: [null, [Validators.required]],
             telefonoFijo: [null, [Validators.required]],
+            provincia: [null, [Validators.required]],
             webSite: [null, [Validators.required]],
             ingresosBrutos: [null, [Validators.required]]
         });
@@ -85,7 +88,8 @@ export class ABMClientesGrillaComponent implements OnInit {
             telefonoCelular: element.telefonoCelular,
             telefonoFijo: element.telefonoFijo,
             webSite: element.webSite,
-            ingresosBrutos: element.ingresosBrutos
+            ingresosBrutos: element.ingresosBrutos,
+            provincia: element.provincia
         })
         this.expandedElement = this.expandedElement === element ? null : element;
     }

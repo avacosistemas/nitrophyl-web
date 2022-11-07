@@ -23,6 +23,11 @@ export class ABMClientesGrillaContactosComponent implements OnInit, OnDestroy {
     displayedColumns: string[] = ['name', 'type', 'mail', 'phone', 'acciones'];
     clienteId: number;
     suscripcion: Subscription;
+    provincias = [];
+    ingresosBrutos = [
+        {id: 1, name: "Régimen General"},
+        {id: 2, name: "Régimen Simplificado"}
+    ];
 
 
 
@@ -44,7 +49,10 @@ export class ABMClientesGrillaContactosComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this.inicializar()
+        this.inicializar();
+        this.clientesService.getProvincias().subscribe(d => {
+            this.provincias = d.data;
+        });
     }
 
     ngOnDestroy(): void {

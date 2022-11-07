@@ -45,7 +45,7 @@ export class ClientesService {
     }
 
     public createContacto(id: number, contacto: Contacto): Observable<any> { //crear contacto
-        return this.http.post<any>(`${environment.server} /cliente/${id}/contacto`, contacto)
+        return this.http.post<any>(`${environment.server}cliente/${id}/contacto`, contacto)
     }
 
     public updateContacto(id: number, contacto: Contacto): Observable<any> { //actualizar contacto
