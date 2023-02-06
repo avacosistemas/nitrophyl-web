@@ -46,11 +46,10 @@ export class ABMClientesGrillaComponent implements OnInit {
             domicilio: [null, [Validators.required]],
             codigoPostal: [null, [Validators.required]],
             localidad: [null, [Validators.required]],
-            telefonoCelular: [null, [Validators.required]],
-            telefonoFijo: [null, [Validators.required]],
             provincia: [null, [Validators.required]],
-            webSite: [null, [Validators.required]],
-            ingresosBrutos: [null, [Validators.required]]
+            webSite: [null],
+            observacionesCobranzas: [null],
+            observacionesEntrega: [null]
         });
     }
 
@@ -71,7 +70,6 @@ export class ABMClientesGrillaComponent implements OnInit {
             this.dataSource = d.data;
         });
         this.clientesService.getProvincias().subscribe(d => {
-            console.log(d.data);
             this.provincias = d.data;
         });
     }
@@ -85,11 +83,10 @@ export class ABMClientesGrillaComponent implements OnInit {
             domicilio: element.domicilio,
             codigoPostal: element.codigoPostal,
             localidad: element.localidad,
-            telefonoCelular: element.telefonoCelular,
-            telefonoFijo: element.telefonoFijo,
             webSite: element.webSite,
-            ingresosBrutos: element.ingresosBrutos,
             provincia: element.provincia
+            //Agregar Observaciones cobranza
+            //Agregar Observaciones entrega
         })
         this.expandedElement = this.expandedElement === element ? null : element;
     }

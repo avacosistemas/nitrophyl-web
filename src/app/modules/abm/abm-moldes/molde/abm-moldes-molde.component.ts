@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
@@ -11,6 +11,7 @@ import { MoldesService } from "app/shared/services/moldes.service";
 import { Subscription } from "rxjs";
 import { ABMMoldeService } from "../abm-moldes-service";
 import * as FileSaver from "file-saver";
+import { ABMMoldesModalComponent } from "../modal/abm-moldes-modal.component";
 
 @Component({
     selector: 'abm-moldes-molde',
@@ -43,6 +44,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
     filesTestPlano;
     filesTestPlanoBlob;
     filesTestFoto;
+
+    bocaGridForm: FormGroup = new FormGroup({});
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -179,7 +182,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
             model.push({
                 estado: boca.estado,
                 nroBoca: Number(boca.nroBoca),
-                descripcion: boca.descripcion
+                descripcion: this.bocaGridForm.get(`control-${boca.nroBoca}-${boca.descripcion}`).value
             })
         })
         this.moldesService.updateMoldeBocas(this.currentId, model).subscribe(res => {
@@ -215,7 +218,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
         if(this.mode == undefined || this.mode == "View") {
             this.mode = "View";
             this.moldeForm.disable();
-        }
+            this.bocaGridForm.disable();
+        };
         this.currentId = this.activatedRoute.snapshot.params['id'];
         this.moldesService.getMoldeById(this.currentId).subscribe(d => {
             this.moldeForm.patchValue({
@@ -227,7 +231,16 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
             })
         });
         this.moldesService.getMoldeBocas(this.currentId).subscribe(d => {
+            console.log(d.data)
             this.bocas = d.data;
+            if(this.bocas.length > 0) {
+                this.bocas.forEach(b => {
+                    this.bocaGridForm.addControl(`control-${b.nroBoca}-${b.descripcion}`, new FormControl(b.descripcion, Validators.maxLength(100)));
+                });
+                if(this.mode == "View") {
+                    this.bocaGridForm.disable();
+                };
+            }
         });
         this.moldesService.getMoldeDimensiones(this.currentId).subscribe(d => {
             this.dimensiones = d.data;
@@ -250,7 +263,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
             nroBoca: this.bocaForm.controls.boca.value,
             estado: this.bocaForm.controls.estado.value,
             descripcion: this.bocaForm.controls.descripcion.value
-        }
+        };
+        this.bocaGridForm.addControl(`control-${item.nroBoca}-${item.descripcion}`, new FormControl(item.descripcion, Validators.maxLength(100)));
         this.bocas.push(item);
         this.bocas = [...this.bocas];
         this.bocaForm.reset()
@@ -271,9 +285,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
     }
 
     deleteBoca(row) {
+        console.log(row);
         this.pristineBocas = false;
         this.bocas.splice(this.bocas.indexOf(row), 1);
-        this.bocas = [...this.bocas]
+        this.bocas = [...this.bocas];
+        this.bocaGridForm.removeControl(`control-${row.nroBoca}-${row.descripcion}`);
     }
 
     deleteDimension(row) {
@@ -370,74 +386,33 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
     }
 
     uploadPlano() {
-        let input = document.createElement('input');
-        input.type = 'file';
-        input.onchange = _ => {
-            let files = Array.from(input.files);
-            console.log(files); //File Array
-            console.log(input.files); //FileList
-            this.filesTestPlanoBlob = files[0];
-            //POST del plano
-            //GET a lista de planos
-            function changeFile(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = error => reject(error);
+        const dialogRef = this.dialog.open(ABMMoldesModalComponent, {
+            maxWidth: '70%',
+            width: '50%',
+            data: { data: null, seccion: "molde", boton: "Cerrar", archivo: "pdf", id: this.currentId},
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.moldesService.getPlanos(this.currentId).subscribe(d => {
+                    this.planos = d.data;
                 });
-            };
-            changeFile(files[0]).then((base64: string): any => {
-                this.filesTestPlano = base64;
-                let model: CargaArchivo = {
-                    idMolde: Number(this.currentId),
-                    nombreArchivo: files[0].name,
-                    archivo: base64.split(',')[1]
-                };
-                this.moldesService.postPlano(model).subscribe(d => {
-                    console.log(d);
-                    this.moldesService.getPlanos(this.currentId).subscribe(d => {
-                        this.planos = d.data;
-                    });
-                })
-            });
-        };
-        input.click();
+            }
+        });
     }
 
     uploadFoto() {
-        let input = document.createElement('input');
-        input.type = 'file';
-        input.onchange = _ => {
-            let files = Array.from(input.files);
-            console.log(files); //File Array
-            console.log(input.files); //FileList
-            //POST del Foto
-            //GET a lista de Fotos
-            this.filesTestFoto = files[0];
-            function changeFile(file) {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => resolve(reader.result);
-                    reader.onerror = error => reject(error);
+        const dialogRef = this.dialog.open(ABMMoldesModalComponent, {
+            maxWidth: '70%',
+            width: '50%',
+            data: { data: null, seccion: "molde", boton: "Cerrar", archivo: "imagen", id: this.currentId },
+        });
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.moldesService.getFotos(this.currentId).subscribe(d => {
+                    this.fotos = d.data;
                 });
-            };
-            changeFile(files[0]).then((base64: string): any => {
-                let model: CargaArchivo = {
-                    idMolde: Number(this.currentId),
-                    nombreArchivo: files[0].name,
-                    archivo: base64.split(',')[1]
-                };
-                this.moldesService.postFoto(model).subscribe(d => {
-                    console.log(d);
-                    this.moldesService.getFotos(this.currentId).subscribe(d => {
-                        this.fotos = d.data;
-                    })
-                })
-            });
-        };
-        input.click();
+            }
+        });
     }
 
     openSnackBar(message: string, action: string, className: string) {

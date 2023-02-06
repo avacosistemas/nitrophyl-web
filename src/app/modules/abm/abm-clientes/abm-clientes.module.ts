@@ -7,6 +7,7 @@ import { ABMClientesCrearComponent } from './crear-cliente/abm-clientes-crear.co
 import { ABMClientesGrillaContactosComponent } from './grilla-contactos/abm-clientes-grilla-contactos.component';
 import { ABMClientesGrillaComponent } from './grilla/abm-clientes-grilla.component';
 import { ABMClientesContactoComponent } from './contacto/abm-clientes-contacto.component';
+import { NgxMaskModule, IConfig } from 'ngx-mask';
 
 const abmUsuariosRoutes: Route[] = [
     {
@@ -22,6 +23,10 @@ const abmUsuariosRoutes: Route[] = [
     }
 ];
 
+const maskConfig: Partial<IConfig> = {
+    showMaskTyped: true,
+};
+
 @NgModule({
     declarations: [
         ABMClientesComponent,
@@ -33,7 +38,8 @@ const abmUsuariosRoutes: Route[] = [
     ],
     imports     : [
         RouterModule.forChild(abmUsuariosRoutes),
-        ABMSharedModule
+        ABMSharedModule,
+        NgxMaskModule.forRoot(maskConfig),
     ]
 })
 export class ABMClientesModule

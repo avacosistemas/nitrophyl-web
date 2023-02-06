@@ -25,6 +25,9 @@
                             <mat-radio-button [value]='"COMPRAS"' class="ml-5">Compras</mat-radio-button>
                             <mat-radio-button [value]='"CONTADURIA"' class="ml-5">Contaduría</mat-radio-button>
                             <mat-radio-button [value]='"CALIDAD"' class="ml-5">Calidad</mat-radio-button>
+                            <mat-radio-button [value]='"EXPEDICION"' class="ml-5">Expendición</mat-radio-button>
+                            <mat-radio-button [value]='"INGENIERIA"' class="ml-5">Ingeniería</mat-radio-button>
+                            <mat-radio-button [value]='"OTROS"' class="ml-5">Otros</mat-radio-button>
                         </mat-radio-group>
                         <mat-error class="mb-1" *ngIf="contactoFrom.get('tipo').hasError('required') && !contactoFrom.get('tipo').pristine">
                             El tipo es requerido

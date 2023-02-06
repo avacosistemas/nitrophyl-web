@@ -35,7 +35,8 @@
                                 id="cuit"
                                 matInput
                                 [formControlName]="'cuit'"
-                                placeholder="CUIT">
+                                placeholder="CUIT"
+                                mask="00-00000000-0">
                                 <mat-error class="mb-1" *ngIf="clienteForm.get('cuit').hasError('required')">
                                     El código es requerido
                                 </mat-error>
@@ -85,30 +86,6 @@
                             </mat-error>
                         </mat-form-field>
                         <mat-form-field class="w-1/4">
-                            <mat-label>Celular</mat-label>
-                            <input
-                                id="telefonoCelular"
-                                matInput
-                                [formControlName]="'telefonoCelular'"
-                                placeholder="Celular">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefonoCelular').hasError('required')">
-                                    El código es requerido
-                                </mat-error>
-                        </mat-form-field>
-                    </div>
-                    <div class="row flex gap-3 justify-around">
-                        <mat-form-field class="w-1/4">
-                            <mat-label>Teléfono</mat-label>
-                            <input
-                                id="telefonoFijo"
-                                matInput
-                                [formControlName]="'telefonoFijo'"
-                                placeholder="Teléfono">
-                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefonoFijo').hasError('required')">
-                                    El código es requerido
-                                </mat-error>
-                        </mat-form-field>
-                        <mat-form-field class="w-1/4">
                             <mat-label>Página</mat-label>
                             <input
                                 id="webSite"
@@ -119,16 +96,30 @@
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/4">
-                            <mat-label>Ingresos Brutos</mat-label>
-                            <mat-select [formControlName]="'ingresosBrutos'" placeholder='Ingresos Brutos'>
-                                <mat-option *ngFor="let ingreso of ingresosBrutos" [value]="ingreso.id">{{ingreso.name}}</mat-option>
-                            </mat-select>
-                            <mat-error class="mb-1" *ngIf="clienteForm.get('ingresosBrutos').hasError('required')">
-                                Los ingresos brutos son requeridos
-                            </mat-error>
+                    </div>
+                    <div class="row flex gap-3 justify-around">
+                        <mat-form-field class="w-1/2">
+                            <mat-label>Observaciones Cobranzas</mat-label>
+                            <textarea
+                                id="observacionesCobranzas"
+                                matInput
+                                [formControlName]="'observacionesCobranzas'"
+                                placeholder="Observaciones Cobranzas"></textarea>
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('observacionesCobranzas').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
                         </mat-form-field>
-                        <div class="w-1/4"></div>
+                        <mat-form-field class="w-1/2">
+                            <mat-label>Observaciones Entrega</mat-label>
+                            <textarea
+                                id="observacionesEntrega"
+                                matInput
+                                [formControlName]="'observacionesEntrega'"
+                                placeholder="Observaciones Entrega"></textarea>
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('observacionesEntrega').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
                     </div>
                 </form>
             </div>

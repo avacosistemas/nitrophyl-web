@@ -1,3 +1,8 @@
 .mat-cell {
     padding: 8px 8px 8px 0;
-  }
+}
+
+.mat-column-descripcion {
+  flex: 0 0 50% !important;
+  width: 50% !important;
+}

@@ -43,10 +43,9 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             codigoPostal: [null, [Validators.required]],
             localidad: [null, [Validators.required]],
             provincia: [null, [Validators.required]],
-            telefonoCelular: [null, [Validators.required]],
-            telefonoFijo: [null, [Validators.required]],
-            webSite: [null, [Validators.required]],
-            ingresosBrutos: [null, [Validators.required]]
+            webSite: [null],
+            observacionesCobranzas: [null],
+            observacionesEntrega: [null]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
             (data: any) => {
@@ -97,10 +96,6 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         err => {
             this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
         })
-    }
-
-    verContacto() {
-        console.log();
     }
 
     close() {

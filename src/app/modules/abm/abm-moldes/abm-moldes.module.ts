@@ -5,6 +5,7 @@ import { ABMMoldesComponent } from './abm-moldes.component';
 import { ABMMoldesCrear } from './crear-molde/abm-moldes-crear.component';
 import { ABMMoldesGrillaComponent } from './grilla/abm-moldes-grilla.component.';
 import { ABMMoldesIngresosEgresosComponent } from './ingresos-egresos/abm-moldes-ingresos-egresos.component';
+import { ABMMoldesModalComponent } from './modal/abm-moldes-modal.component';
 import { ABMMoldesMolde } from './molde/abm-moldes-molde.component';
 
 const abmUsuariosRoutes: Route[] = [
@@ -26,7 +27,8 @@ const abmUsuariosRoutes: Route[] = [
         ABMMoldesGrillaComponent,
         ABMMoldesMolde,
         ABMMoldesCrear,
-        ABMMoldesIngresosEgresosComponent
+        ABMMoldesIngresosEgresosComponent,
+        ABMMoldesModalComponent
     ],
     imports     : [
         RouterModule.forChild(abmUsuariosRoutes),
