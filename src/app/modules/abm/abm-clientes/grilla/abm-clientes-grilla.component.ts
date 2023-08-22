@@ -84,9 +84,9 @@ export class ABMClientesGrillaComponent implements OnInit {
             codigoPostal: element.codigoPostal,
             localidad: element.localidad,
             webSite: element.webSite,
-            provincia: element.provincia
-            //Agregar Observaciones cobranza
-            //Agregar Observaciones entrega
+            provincia: element.provincia,
+            observacionesCobranzas: element.observacionesCobranzas,
+            observacionesEntrega: element.observacionesEntrega
         })
         this.expandedElement = this.expandedElement === element ? null : element;
     }

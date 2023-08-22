@@ -37,14 +37,16 @@ export interface Planos {
     nombre: string,
     version: string,
     fecha: string,
-    data?: any
+    data?: any,
+    descripcion: string
 }
 
 export interface Fotos {
     nombre: string,
     version: string,
     fecha: string,
-    data?: any
+    data?: any,
+    descripcion: string
 }
 
 export interface MoldeRegistro {

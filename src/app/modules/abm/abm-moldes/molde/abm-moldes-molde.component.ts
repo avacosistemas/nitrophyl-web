@@ -28,8 +28,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy{
     dimensionForm: FormGroup;
     displayedColumnsBocas: string[] = ['boca', 'estado', 'descripcion', 'acciones'];
     displayedColumnsDimensiones: string[] = ['dimension', 'valor', 'acciones'];
-    displayedColumnsPlanos: string[] = ['nombre', 'version', 'fecha', 'acciones'];
-    displayedColumnsFotos: string[] = ['nombre', 'version', 'fecha', 'acciones'];
+    displayedColumnsPlanos: string[] = ['nombre', 'descripcion', 'version', 'fecha', 'acciones'];
+    displayedColumnsFotos: string[] = ['nombre', 'descripcion', 'version', 'fecha', 'acciones'];
     planos: Array<Planos> = [];
     fotos: Array<Fotos> = [];
     bocas: Array<Boca> =  [];

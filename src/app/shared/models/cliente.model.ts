@@ -7,10 +7,9 @@ export interface Cliente {
     codigoPostal: string;
     localidad: string;
     provincia: any;
-    telefonoFijo: string;
-    telefonoCelular: string;
     webSite: string;
-    ingresosBrutos: number;
+    observacionesCobranzas: string;
+    observacionesEntrega: string;
     contacto?: any
 }
 
