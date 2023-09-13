@@ -32,7 +32,6 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   public materialsFail: boolean = false;
   public materials$: IMaterial[] | undefined;
 
-  public formulasFail: boolean = false;
   public formulas$: IFormula[] | undefined;
   public displayedColumns: string[] = ['formula', 'material', 'actions'];
 
@@ -73,7 +72,6 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       this._formulas.getFormulas().pipe(
         catchError((err: any) => {
           console.error(error, 'this._formulas.getFormulas() ', err);
-          this.formulasFail = true;
           return of([]);
         })
       ),
