@@ -9,13 +9,13 @@ import { environment } from 'environments/environment';
 import {
   IFormula,
   IFormulaResponse,
-  IMaterialResponse,
-} from '../models/formula.model';
+  IFormulasResponse,
+} from '../models/formula.interface';
 
 @Injectable({
   providedIn: 'root',
 })
-export class FormulaService {
+export class FormulasService {
   private url: string = `${environment.server}formula`;
   private mode: string = '';
 
@@ -26,10 +26,15 @@ export class FormulaService {
     this.http = new HttpClient(handler);
   }
 
-  public getFormulas(body?: IFormula): Observable<IFormulaResponse> {
+  public get(
+    body?: IFormula
+  ): Observable<IFormulaResponse | IFormulasResponse> {
     let url: string;
 
-    if (!body) return this.http.get<any>(`${this.url}`);
+    if (!body) return this.http.get<IFormulasResponse>(`${this.url}`);
+
+    if (body.id)
+      return this.http.get<IFormulaResponse>(`${this.url}/${body.id}`);
 
     if (body.nombre && body.idMaterial) {
       url = `${this.url}?nombre=${body.nombre}&idMaterial=${body.idMaterial}`;
@@ -38,15 +43,7 @@ export class FormulaService {
       if (body.idMaterial) url = `${this.url}?idMaterial=${body.idMaterial}`;
     }
 
-    return this.http.get<IFormulaResponse>(`${url}`);
-  }
-
-  public getFormula(id: number): Observable<IFormulaResponse> {
-    return this.http.get<IFormulaResponse>(`${this.url}/${id}`);
-  }
-
-  public getMaterials(): Observable<IMaterialResponse> {
-    return this.http.get<IMaterialResponse>(`${environment.server}material`);
+    return this.http.get<IFormulasResponse>(`${url}`);
   }
 
   public post(body: IFormula): Observable<IFormulaResponse> {
@@ -57,7 +54,7 @@ export class FormulaService {
     return this.http.put<IFormulaResponse>(`${this.url}/${body.id}`, body);
   }
 
-  public getMode() {
+  public getMode(): string {
     return this.mode;
   }
 

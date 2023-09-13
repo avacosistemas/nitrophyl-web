@@ -2,22 +2,18 @@ import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 
 // * Services.
-import { FormulaService } from 'app/shared/services/formula.service';
+import { FormulasService } from 'app/shared/services/formulas.service';
+import { MaterialsService } from 'app/shared/services/materials.service';
 
 // * Interfaces.
-
-// * Forms.
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   IFormula,
-  IFormulaResponse,
-  IMaterial,
-  IMaterialResponse,
-} from 'app/shared/models/formula.model';
+  IFormulasResponse,
+} from 'app/shared/models/formula.interface';
+import { IMaterialsResponse } from 'app/shared/models/material.interface';
 
-// import { MatDialog } from '@angular/material/dialog';
-// import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-// import { Molde } from 'app/shared/models/molde.model';
+// * Forms.
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 @Component({
   selector: 'app-formulas',
@@ -30,17 +26,18 @@ export class FormulasComponent implements OnInit, AfterViewInit {
 
   public form: FormGroup;
   public materialsFail: boolean = false;
-  public materials$: IMaterial[] | undefined;
+  public materials$: IFormula[] | undefined;
 
   public formulas$: IFormula[] | undefined;
-  public displayedColumns: string[] = ['formula', 'material', 'actions'];
+  public displayedColumns: string[] = ['name', 'material', 'actions'];
 
   public showSuccess: boolean = false;
   public showError: boolean = false;
   public panelOpenState: boolean = false;
 
   constructor(
-    private _formulas: FormulaService,
+    private _formulas: FormulasService,
+    private _materials: MaterialsService,
     private formBuilder: FormBuilder
   ) {
     this.setForm();
@@ -59,24 +56,27 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   }
 
   private loadData(): void {
-    let error: string = 'ABMFormulaGrillaComponent. ngOnInit => loadData: ';
+    let error: string = 'FormulasComponent => loadData: ';
     forkJoin([
-      this._formulas.getMaterials().pipe(
+      this._materials.get().pipe(
         catchError((err: any) => {
-          console.error(error, 'this._formulas.getMaterials() ', err);
+          console.error(error, 'this._materials.get() ', err);
           this.materialsFail = true;
           this.form.controls.material.disable();
           return of([]);
         })
       ),
-      this._formulas.getFormulas().pipe(
+      this._formulas.get().pipe(
         catchError((err: any) => {
-          console.error(error, 'this._formulas.getFormulas() ', err);
+          console.error(error, 'this._formulas.get() ', err);
           return of([]);
         })
       ),
     ]).subscribe({
-      next: ([materials, formulas]: [IMaterialResponse, IFormulaResponse]) => {
+      next: ([materials, formulas]: [
+        IMaterialsResponse,
+        IFormulasResponse
+      ]) => {
         this.materials$ = materials.data;
         this.formulas$ = formulas.data;
         this.formulasBackUp$ = formulas.data;
@@ -100,26 +100,26 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   }
 
   public search(): void {
-    if (!this.form.controls.nombre.value && !this.form.controls.material.value)
+    if (!this.form.controls.name.value && !this.form.controls.material.value)
       this.formulas$ = this.formulasBackUp$;
 
-    if (this.form.controls.nombre.value && this.form.controls.material.value)
-      this.compareAll();
+    if (this.form.controls.name.value && this.form.controls.material.value)
+      this.compare();
 
-    if (this.form.controls.nombre.value && !this.form.controls.material.value)
+    if (this.form.controls.name.value && !this.form.controls.material.value)
       this.compareFormulas();
 
-    if (!this.form.controls.nombre.value && this.form.controls.material.value)
+    if (!this.form.controls.name.value && this.form.controls.material.value)
       this.compareMaterials();
   }
 
-  private compareAll(): void {
+  private compare(): void {
     this.formulas$ = this.formulasBackUp$.filter(
       (formula) =>
         formula.idMaterial === this.form.controls.material.value &&
         formula.nombre
           ?.toLowerCase()
-          .includes(this.form.controls.nombre.value.toLowerCase())
+          .includes(this.form.controls.name.value.toLowerCase())
     );
   }
 
@@ -127,7 +127,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     this.formulas$ = this.formulasBackUp$.filter((formula: IFormula) =>
       formula.nombre
         ?.toLowerCase()
-        .includes(this.form.controls.nombre.value.toLowerCase())
+        .includes(this.form.controls.name.value.toLowerCase())
     );
   }
 
@@ -138,15 +138,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     );
   }
 
-  private getFormulas(body?: IFormula): void {
-    this._formulas.getFormulas(body).subscribe({
-      next: (res: IFormulaResponse) => (this.formulas$ = res.data),
-      error: (err: any) => console.error('getFormulas(): ', err),
-      complete: () => {},
-    });
-  }
-
   private setForm(): void {
-    this.form = this.formBuilder.group({ nombre: [null], material: [null] });
+    this.form = this.formBuilder.group({ name: [null], material: [null] });
   }
 }

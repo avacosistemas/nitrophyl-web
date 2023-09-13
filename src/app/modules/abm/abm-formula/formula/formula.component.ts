@@ -3,19 +3,28 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, of, Subscription } from 'rxjs';
 
 // * Services.
-import { FormulaService } from 'app/shared/services/formula.service';
+import { FormulasService } from 'app/shared/services/formulas.service';
+import { MaterialsService } from 'app/shared/services/materials.service';
+
+// * Interfaces.
+import {
+  IFormula,
+  IFormulaResponse,
+} from 'app/shared/models/formula.interface';
+import {
+  IMaterial,
+  IMaterialsResponse,
+} from 'app/shared/models/material.interface';
 
 // * Forms.
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
+// * Materials.
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+// * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-import {
-  IFormula,
-  IFormulaResponse,
-  IMaterial,
-  IMaterialResponse,
-} from 'app/shared/models/formula.model';
 
 @Component({
   selector: 'app-formula',
@@ -34,10 +43,12 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public component: string = 'Mode';
 
   constructor(
-    private _formulas: FormulaService,
+    private _materials: MaterialsService,
+    private _formulas: FormulasService,
     private activeRoute: ActivatedRoute,
     private dialog: MatDialog,
     private formBuilder: FormBuilder,
+    private snackBar: MatSnackBar,
     private router: Router
   ) {
     if (!this._formulas.getMode()) this.router.navigate(['/formulas/grid']);
@@ -69,26 +80,23 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadData(): void {
     let error: string = 'FormulaComponent. ngOnInit => loadData: ';
     forkJoin([
-      this._formulas.getMaterials().pipe(
+      this._materials.get().pipe(
         catchError((err: any) => {
           console.error(error, 'this._formulas.getMaterials() ', err);
           this.materialsFail = true;
           return of([]);
         })
       ),
-      this._formulas.getFormula(this.id).pipe(
+      this._formulas.get({ id: this.id }).pipe(
         catchError((err: any) => {
           console.error(error, 'this._formulas.getFormulas() ', err);
           return of([]);
         })
       ),
     ]).subscribe({
-      next: ([materials, formula]: [IMaterialResponse, IFormulaResponse]) => {
-        let data = Array.isArray(formula.data)
-          ? (formula.data as IFormula[])
-          : [formula.data as IFormula];
-        this.form.controls.nombre.setValue(data[0].nombre);
-        this.formula$ = data[0];
+      next: ([materials, formula]: [IMaterialsResponse, IFormulaResponse]) => {
+        this.form.controls.name.setValue(formula.data.nombre);
+        this.formula$ = formula.data;
         if (this.materialsFail) {
           this.materials$ = [
             {
@@ -101,7 +109,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           this.materials$ = materials.data;
         }
         this.materials$ = [...this.materials$];
-        this.form.controls.material.setValue(data[0].idMaterial);
+        this.form.controls.material.setValue(formula.data.idMaterial);
       },
       error: (err: any) => console.error(error, err),
       complete: () => {},
@@ -145,8 +153,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private getMaterials(): void {
     let error: string = 'FormulaComponent => getMaterials(): ';
-    this._formulas.getMaterials().subscribe({
-      next: (res: IMaterialResponse) => (this.materials$ = res.data),
+    this._materials.get().subscribe({
+      next: (res: IMaterialsResponse) => (this.materials$ = res.data),
       error: (err) => {
         this.form.controls.material.disable();
         this.materialsFail = true;
@@ -158,14 +166,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private getFormula(): void {
     let error: string = 'FormulaComponent => getFormula(): ';
-    this._formulas.getFormula(this.id).subscribe({
-      next: (res: IFormulaResponse) => {
-        if (res.status === 'OK') {
-          let data = Array.isArray(res.data)
-            ? (res.data as IFormula[])
-            : [res.data as IFormula];
-          this.form.controls.nombre.setValue(data[0].nombre);
-          this.form.controls.material.setValue(data[0].material);
+    this._formulas.get({ id: this.id }).subscribe({
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.form.controls.name.setValue(formula.data.nombre);
+          this.form.controls.material.setValue(formula.data.material);
         }
       },
       error: (err: any) => console.error(error, err),
@@ -176,20 +181,21 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   private postFormula(): void {
     let error: string = 'FormulaComponent => postFormula(): ';
     let body: IFormula = {
-      nombre: this.form.controls.nombre.value,
+      nombre: this.form.controls.name.value,
       idMaterial: this.form.controls.material.value,
     };
     this._formulas.post(body).subscribe({
-      next: (res: IFormulaResponse) => {
-        if (res.status === 'OK') {
-          let data = Array.isArray(res.data)
-            ? (res.data as IFormula[])
-            : [res.data as IFormula];
-          this._formulas.setMode('View');
-          this.router.navigate([`/formulas/view/${data[0].id}`]);
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.openSnackBar(true);
+          this._formulas.setMode('Edit');
+          this.router.navigate([`/formulas/edit/${formula.data.id}`]);
         }
       },
-      error: (err) => console.error(error, err),
+      error: (err) => {
+        this.openSnackBar(false);
+        console.error(error, err);
+      },
       complete: () => {},
     });
   }
@@ -198,33 +204,34 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     let error: string = 'FormulaComponent => putFormula(): ';
     let body: IFormula = {
       id: this.formula$.id,
-      nombre: this.form.controls.nombre.value,
+      nombre: this.form.controls.name.value,
       idMaterial: this.form.controls.material.value,
       material: this.formula$.material,
     };
     this._formulas.put(body).subscribe({
-      next: (res: IFormulaResponse) => {
-        if (res.status === 'OK') {
-          let data = Array.isArray(res.data)
-            ? (res.data as IFormula[])
-            : [res.data as IFormula];
-          this._formulas.setMode('View');
-          this.router.navigate([`/formulas/view/${data[0].id}`]);
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.openSnackBar(true);
+          this._formulas.setMode('Edit');
+          this.router.navigate([`/formulas/edit/${formula.data.id}`]);
         }
       },
-      error: (err) => console.error(error, err),
+      error: (err) => {
+        this.openSnackBar(false);
+        console.error(error, err);
+      },
       complete: () => {},
     });
   }
 
   private setForm(): void {
     this.form = this.formBuilder.group({
-      nombre: [
+      name: [
         { value: null, disabled: this.mode === 'View' },
         Validators.compose([
           Validators.required,
           Validators.minLength(3),
-          Validators.maxLength(30),
+          Validators.maxLength(100),
         ]),
       ],
       material: [
@@ -238,6 +245,17 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.suscripcion = this._formulas.events.subscribe((data: any) => {
       if (data === 1) this.close();
       if (data === 3) this.create();
+    });
+  }
+
+  private openSnackBar(option: boolean): void {
+    let message: string = option
+      ? 'Cambios realizados.'
+      : 'No se pudieron realizar los cambios.';
+    let css: string = option ? 'green' : 'red';
+    this.snackBar.open(message, 'X', {
+      duration: 5000,
+      panelClass: `${css}-snackbar`,
     });
   }
 }

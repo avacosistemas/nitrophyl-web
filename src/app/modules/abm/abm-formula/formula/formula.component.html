@@ -7,12 +7,15 @@
     <form class="mt-4" [formGroup]="form">
       <mat-form-field class="w-full">
         <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
-        <input matInput [formControlName]="'nombre'" placeholder="Nombre">
-        <mat-error class="mb-1" *ngIf="form.get('nombre').hasError('required')">
+        <input matInput [formControlName]="'name'" placeholder="Nombre" required minlength="3" maxlength="100">
+        <mat-error class="mb-1" *ngIf="form.get('name').hasError('required')">
           El nombre es requerido.
         </mat-error>
-        <mat-error class="mb-1" *ngIf="form.get('nombre').hasError('maxlength')">
-          Máximo 30 caracteres.
+        <mat-error class="mb-1" *ngIf="form.get('name').hasError('maxlength')">
+          Mínimo 3 caracteres.
+        </mat-error>
+        <mat-error class="mb-1" *ngIf="form.get('name').hasError('maxlength')">
+          Máximo 100 caracteres.
         </mat-error>
       </mat-form-field>
 

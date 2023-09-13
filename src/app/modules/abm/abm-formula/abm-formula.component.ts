@@ -2,14 +2,11 @@ import {
   AfterContentChecked,
   ChangeDetectorRef,
   Component,
-  OnDestroy,
-  OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
 
 // * Services.
-import { FormulaService } from 'app/shared/services/formula.service';
+import { FormulasService } from 'app/shared/services/formulas.service';
 
 @Component({
   selector: 'abm-formula',
@@ -20,7 +17,7 @@ export class ABMFormulaComponent implements AfterContentChecked {
   public title: string = '';
 
   constructor(
-    private _formulas: FormulaService,
+    private _formulas: FormulasService,
     private router: Router,
     private cdref: ChangeDetectorRef
   ) {}
