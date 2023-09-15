@@ -66,7 +66,7 @@ export class NavegacionService {
       type: 'basic',
     },
     {
-      icon: 'heroicons_outline:beaker',
+      icon: 'heroicons_outline:calculator',
       id: 'maquinas',
       link: '/maquinas/grid',
       title: 'Máquinas',
