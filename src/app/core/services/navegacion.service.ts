@@ -62,10 +62,12 @@ export class NavegacionService {
     {
       icon: 'heroicons_outline:beaker',
       id: 'formulas',
+      link: '/formulas/grid',
       title: 'Fórmulas',
       type: 'basic',
     },
     {
+
       icon: 'heroicons_outline:calculator',
       id: 'maquinas',
       link: '/maquinas/grid',

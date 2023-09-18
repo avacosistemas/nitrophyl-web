@@ -1,0 +1,39 @@
+<div class="flex flex-col w-full" id="top">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8">
+    <div>
+      <h1 class="text-2xl font-semibold mb-2"> Fórmula </h1>
+    </div>
+
+    <form class="mt-4" [formGroup]="form">
+      <mat-form-field class="w-full">
+        <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
+        <input matInput [formControlName]="'name'" placeholder="Nombre" required minlength="3" maxlength="100">
+        <mat-error class="mb-1" *ngIf="form.get('name').hasError('required')">
+          El nombre es requerido.
+        </mat-error>
+        <mat-error class="mb-1" *ngIf="form.get('name').hasError('maxlength')">
+          Mínimo 3 caracteres.
+        </mat-error>
+        <mat-error class="mb-1" *ngIf="form.get('name').hasError('maxlength')">
+          Máximo 100 caracteres.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-full">
+        <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
+        <mat-select [formControlName]="'material'" *ngIf="mode === 'Create' || mode === 'Edit'; else viewMode"
+          [placeholder]="(!materials$ && !materialsFail) ? 'Materiales: Cargando...' : ((!materials$ && materialsFail) ? 'No se ha podido cargar la lista de materiales' : 'Materiales')">
+          <mat-option *ngFor="let material of materials$" [value]="material.id">
+            {{ material.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-error class="mb-1" *ngIf="form.get('material').hasError('required')">
+          El material es requerido.
+        </mat-error>
+        <ng-template #viewMode>
+          <input matInput [formControlName]="'material'" placeholder="Material">
+        </ng-template>
+      </mat-form-field>
+    </form>
+  </div>
+</div>

@@ -173,12 +173,19 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'formulas',
+        loadChildren: () =>
+          import('app/modules/abm/abm-formula/abm-formula.module').then(
+            (m) => m.ABMFormulaModule
+          ),
+      },
+{
         path: 'maquinas',
         loadChildren: () =>
           import('app/modules/abm/abm-machines/abm-machine.module').then(
             (m) => m.ABMMachineModule
           ),
-      },
+      }
     ],
   },
 
