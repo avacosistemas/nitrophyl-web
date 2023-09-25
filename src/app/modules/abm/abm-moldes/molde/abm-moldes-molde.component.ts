@@ -541,7 +541,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     if (!this.clientForm.get('client').value) return;
     let selectedClient = this.clientForm.get('client').value;
     let exists = this.clients.some(
-      (client: any) => client.id === selectedClient.id
+      (client: any) => client.idCliente === selectedClient.id
     );
     if (exists) {
       this.openSnackBar(
