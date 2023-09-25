@@ -1,8 +1,20 @@
 .mat-cell {
-    padding: 8px 8px 8px 0;
+  padding: 8px 8px 8px 0;
 }
 
 .mat-column-descripcion {
   flex: 0 0 50% !important;
   width: 50% !important;
+}
+
+.form-client {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.form-client__btn {
+  width: max-content;
 }
