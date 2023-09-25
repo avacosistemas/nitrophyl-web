@@ -122,7 +122,7 @@ export class MoldesService {
     this.mode = mode;
   }
 
-  public getClients(id: number): any {
+  public getClients(id: number): Observable<any> {
     return this.http.get<any>(`${this.url}molde/clientes/${id}`);
   }
 

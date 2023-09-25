@@ -324,8 +324,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     // Obtiene la lista de clientes asociados al molde.
     this._molds
       .getClients(this.currentId)
-      .subscribe((res: any) => (this.clients$ = res.data));
-
+      .subscribe((res: any) => (this.clients = res.data));
     this.ABMoldesService.viewEvents.next('Guardar Molde');
   }
 
@@ -553,7 +552,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.clients.push(selectedClient);
       this.clients = [...this.clients];
       this.pristineClient = false;
-      this.openSnackBar('Cliente asociado al molde.', 'X', 'green-snackbar');
     }
   }
 
@@ -567,7 +565,9 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   private setClients(): void {
-    let body = this.clients.map((client: any) => client.id);
+    let body = this.clients.map((client: any) => ({ idCliente: client.id }));
+    console.log(body);
+
     this._molds.putClient(this.currentId, body).subscribe({
       next: (res: any) => {
         if (res.status == 'OK') {
