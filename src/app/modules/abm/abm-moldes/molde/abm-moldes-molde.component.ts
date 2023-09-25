@@ -325,6 +325,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this._molds
       .getClients(this.currentId)
       .subscribe((res: any) => (this.clients = res.data));
+
     this.ABMoldesService.viewEvents.next('Guardar Molde');
   }
 
