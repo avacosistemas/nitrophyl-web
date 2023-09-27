@@ -76,7 +76,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   public clientForm: FormGroup;
   public clients$: Array<any> = [];
   public clients: Array<any> = [];
-  public displayedColumnsClients: string[] = ['id', 'razonSocial', 'acciones'];
+  public displayedColumnsClients: string[] = [
+    'idCliente',
+    'nombre',
+    'acciones',
+  ];
   public pristineClient: boolean = true;
 
   constructor(
@@ -550,7 +554,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         'red-snackbar'
       );
     } else {
-      this.clients.push(selectedClient);
+      this.clients.push({
+        idCliente: this.clientForm.get('client').value.id,
+        nombre: this.clientForm.get('client').value.razonSocial,
+      });
+      this.clients.sort((a, b) => a.idCliente - b.idCliente);
       this.clients = [...this.clients];
       this.pristineClient = false;
     }
@@ -566,8 +574,9 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   private setClients(): void {
-    let body = this.clients.map((client: any) => ({ idCliente: client.id }));
-    console.log(body);
+    let body = this.clients.map((client: any) => ({
+      idCliente: client.idCliente,
+    }));
 
     this._molds.putClient(this.currentId, body).subscribe({
       next: (res: any) => {
