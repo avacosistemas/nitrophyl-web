@@ -5,6 +5,8 @@ export interface IFormula {
   nombre?: string;
   idMaterial?: number;
   material?: string;
+  version?: number;
+  fecha?: string;
 }
 
 export type IFormulasResponse = IResponse<IFormula[]>;

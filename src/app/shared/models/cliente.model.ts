@@ -1,5 +1,6 @@
 export interface Cliente {
     id: number,
+    nombre: string;
     razonSocial: string;
     email: string;
     cuit: number;

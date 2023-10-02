@@ -48,6 +48,7 @@ export class ABMClientesGrillaComponent implements OnInit {
             localidad: [null, [Validators.required]],
             provincia: [null, [Validators.required]],
             webSite: [null],
+            nombre:  [null, [Validators.required]],
             observacionesCobranzas: [null],
             observacionesEntrega: [null]
         });
@@ -77,6 +78,7 @@ export class ABMClientesGrillaComponent implements OnInit {
     expandRow(element) {
         this.clienteForm.patchValue({
             id: element.id,
+            nombre: element.nombre,
             razonSocial: element.razonSocial,
             email: element.email,
             cuit: element.cuit,

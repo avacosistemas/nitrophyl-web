@@ -29,7 +29,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   public materials$: IFormula[] | undefined;
 
   public formulas$: IFormula[] | undefined;
-  public displayedColumns: string[] = ['name', 'material', 'actions'];
+  public displayedColumns: string[] = ['name', 'material', 'fecha', 'version', 'actions'];
 
   public showSuccess: boolean = false;
   public showError: boolean = false;

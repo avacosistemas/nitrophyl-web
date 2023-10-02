@@ -556,7 +556,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     } else {
       this.clients.push({
         idCliente: this.clientForm.get('client').value.id,
-        nombre: this.clientForm.get('client').value.razonSocial,
+        nombre: this.clientForm.get('client').value.nombre,
       });
       this.clients.sort((a, b) => a.idCliente - b.idCliente);
       this.clients = [...this.clients];

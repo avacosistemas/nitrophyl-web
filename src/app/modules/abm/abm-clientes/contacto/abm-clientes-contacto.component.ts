@@ -87,7 +87,7 @@ export class ABMClientesContactoComponent implements OnInit, OnDestroy {
             console.log(err)
         });
         this.clientesService.getClienteById(this.clienteId).subscribe(d => {
-            this.ABMClientesService.viewEvents.next(d.data.razonSocial);
+            this.ABMClientesService.viewEvents.next(d.data.nombre);
         },
         err => {
             this.ABMClientesService.viewEvents.next("Nombre Cliente");

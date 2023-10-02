@@ -12,7 +12,7 @@ import { IMaterialsResponse } from '../models/material.interface';
   providedIn: 'root',
 })
 export class MaterialsService {
-  private url: string = `${environment.server}material`;
+  private url: string = `${environment.server}material?idx=nombre&asc=true`;
 
   constructor(private http: HttpClient, private handler: HttpBackend) {
     this.http = new HttpClient(handler);

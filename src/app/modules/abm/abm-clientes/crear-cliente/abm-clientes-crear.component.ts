@@ -44,6 +44,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             localidad: [null, [Validators.required]],
             provincia: [null, [Validators.required]],
             webSite: [null],
+            nombre:  [null, [Validators.required]],
             observacionesCobranzas: [null],
             observacionesEntrega: [null]
         });
