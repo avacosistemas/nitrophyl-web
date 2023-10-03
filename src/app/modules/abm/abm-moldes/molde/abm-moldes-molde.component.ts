@@ -16,6 +16,7 @@ import {
   CargaArchivo,
   Dimension,
   Fotos,
+  Molde,
   Planos,
 } from 'app/shared/models/molde.model';
 import { MoldesService } from 'app/shared/services/moldes.service';
@@ -99,6 +100,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       nombre: [null, [Validators.required, Validators.maxLength(100)]],
       observaciones: [null],
       ubicacion: [null],
+      client: [null, [Validators.required]],
     });
     this.bocaForm = this._formBuilder.group({
       boca: [null, [Validators.required]],
@@ -216,10 +218,28 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   editMolde() {
-    if (this.moldeForm.invalid) {
-      return;
-    }
-    let model = this.moldeForm.value;
+    if (this.moldeForm.invalid) return;
+
+    let client: any;
+
+    this.moldeForm.controls.client.value !== 0
+      ? (client = this.clients$.find((element: any) => {
+          return element.id === this.moldeForm.controls.client.value;
+        }))
+      : (client = { id: 0, nombre: 'Nitro-Phyl' });
+
+    let model: Molde = {
+      codigo: this.moldeForm.controls.codigo.value,
+      estado: this.moldeForm.controls.estado.value,
+      nombre: this.moldeForm.controls.nombre.value,
+      observaciones: this.moldeForm.controls.observaciones.value,
+      ubicacion: this.moldeForm.controls.ubicacion.value,
+      idClienteDuenio: client.id,
+      clienteDuenio: client.nombre,
+      propio: client.id === 0,
+      id: 0,
+    };
+
     this._molds.updateMolde(this.currentId, model).subscribe((res) => {
       if (res.status == 'OK') {
         this.moldeForm.markAsPristine();
@@ -299,6 +319,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         nombre: d.data.nombre,
         observaciones: d.data.observaciones,
         ubicacion: d.data.ubicacion,
+        client: d.data.idClienteDuenio,
       });
     });
     this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
