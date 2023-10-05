@@ -37,7 +37,7 @@
           <mat-form-field class="w-full">
             <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
             <mat-select formControlName="client" placeholder="Propietario">
-              <mat-option [value]="0"> Nitro-phyl </mat-option>
+              <mat-option [value]="-1"> Nitrophyl </mat-option>
               <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
             </mat-select>
             <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">

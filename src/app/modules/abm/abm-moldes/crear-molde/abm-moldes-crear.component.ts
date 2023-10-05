@@ -83,16 +83,12 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     }
   }
 
-  create() {
+  public create(): void {
     if (this.moldeForm.invalid) return;
 
-    let client: any;
-
-    this.moldeForm.controls.client.value !== 0
-      ? (client = this.clients$.find((element: any) => {
-          return element.id === this.moldeForm.controls.client.value;
-        }))
-      : (client = { id: 0, nombre: 'Nitro-Phyl' });
+    let client: any = this.clients$.find((element: any) => {
+      return element.id === this.moldeForm.controls.client.value;
+    });
 
     let model: Molde = {
       codigo: this.moldeForm.controls.code.value,
@@ -100,9 +96,9 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       nombre: this.moldeForm.controls.name.value,
       observaciones: this.moldeForm.controls.observations.value,
       ubicacion: this.moldeForm.controls.location.value,
-      idClienteDuenio: client.id,
-      clienteDuenio: client.nombre,
-      propio: client.id === 0,
+      idClienteDuenio: client ? client.id : null,
+      clienteDuenio: client ? client.nombre : null,
+      propio: client ? false : true,
       id: 0,
     };
 

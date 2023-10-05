@@ -220,13 +220,9 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   editMolde() {
     if (this.moldeForm.invalid) return;
 
-    let client: any;
-
-    this.moldeForm.controls.client.value !== 0
-      ? (client = this.clients$.find((element: any) => {
-          return element.id === this.moldeForm.controls.client.value;
-        }))
-      : (client = { id: 0, nombre: 'Nitro-Phyl' });
+    let client: any = this.clients$.find((element: any) => {
+      return element.id === this.moldeForm.controls.client.value;
+    });
 
     let model: Molde = {
       codigo: this.moldeForm.controls.codigo.value,
@@ -234,10 +230,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       nombre: this.moldeForm.controls.nombre.value,
       observaciones: this.moldeForm.controls.observaciones.value,
       ubicacion: this.moldeForm.controls.ubicacion.value,
-      idClienteDuenio: client.id,
-      clienteDuenio: client.nombre,
-      propio: client.id === 0,
-      id: 0,
+      idClienteDuenio: client ? client.id : null,
+      clienteDuenio: client ? client.nombre : null,
+      propio: client ? false : true,
+      id: this.currentId,
     };
 
     this._molds.updateMolde(this.currentId, model).subscribe((res) => {
@@ -319,7 +315,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         nombre: d.data.nombre,
         observaciones: d.data.observaciones,
         ubicacion: d.data.ubicacion,
-        client: d.data.idClienteDuenio,
+        client: d.data.idClienteDuenio === null ? -1 : d.data.idClienteDuenio,
       });
     });
     this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
