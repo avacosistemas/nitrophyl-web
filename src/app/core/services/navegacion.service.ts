@@ -17,9 +17,76 @@ export class NavegacionService {
         */
 
     {
+      icon: 'mat_solid:biotech',
+      id: 'laboratorio',
+      title: 'Laboratorio',
+      type: 'collapsable',
+      children: [
+        {
+          icon: 'heroicons_outline:beaker',
+          id: 'formulas',
+          link: '/formulas/grid',
+          title: 'Fórmulas',
+          type: 'basic',
+        },
+        {
+    
+          icon: 'heroicons_outline:calculator',
+          id: 'maquinas',
+          link: '/maquinas/grid',
+          title: 'Máquinas',
+          type: 'basic',
+        }
+      ]
+    },
+    {
+      icon: 'heroicons_outline:briefcase',
+      id: 'administracion',
+      title: 'Administración',
+      type: 'collapsable',
+      children: [
+        {
+          icon: 'heroicons_solid:identification',
+          id: 'clientes',
+          link: '/clientes/grid',
+          title: 'Clientes',
+          type: 'basic',
+        }
+      ]
+    },
+    {
+      icon: 'mat_solid:engineering',
+      id: 'produccion',
+      title: 'Producción',
+      type: 'collapsable',
+      children: [
+        {
+          icon: 'mat_solid:app_registration',
+          id: 'moldes',
+          link: '/moldes/grid',
+          title: 'Moldes',
+          type: 'basic',
+        },
+        {
+          icon: 'heroicons_outline:cube-transparent',
+          id: 'piezas',
+          link: '/piezas/grid',
+          title: 'Piezas',
+          type: 'basic',
+        },
+        {
+          icon: 'heroicons_outline:cube',
+          id: 'productos',
+          link: '/productos/grid',
+          title: 'Prouctos',
+          type: 'basic',
+        },
+      ]
+    },
+    {
       icon: 'heroicons_outline:cog',
       id: 'security',
-      title: 'Security',
+      title: 'Seguridad',
       type: 'collapsable',
       children: [
         {
@@ -52,49 +119,8 @@ export class NavegacionService {
         },
       ],
     },
-    {
-      icon: 'heroicons_outline:book-open',
-      id: 'moldes',
-      link: '/moldes/grid',
-      title: 'Moldes',
-      type: 'basic',
-    },
-    {
-      icon: 'heroicons_outline:beaker',
-      id: 'formulas',
-      link: '/formulas/grid',
-      title: 'Fórmulas',
-      type: 'basic',
-    },
-    {
-
-      icon: 'heroicons_outline:calculator',
-      id: 'maquinas',
-      link: '/maquinas/grid',
-      title: 'Máquinas',
-      type: 'basic',
-    },
-    {
-      icon: 'heroicons_outline:cube-transparent',
-      id: 'piezas',
-      link: '/piezas/grid',
-      title: 'Piezas',
-      type: 'basic',
-    },
-    {
-      icon: 'heroicons_outline:cube',
-      id: 'productos',
-      link: '/productos/grid',
-      title: 'Prouctos',
-      type: 'basic',
-    },
-    {
-      icon: 'heroicons_outline:briefcase',
-      id: 'clientes',
-      link: '/clientes/grid',
-      title: 'Clientes',
-      type: 'basic',
-    },
+    
+    
   ];
 
   public get() {
