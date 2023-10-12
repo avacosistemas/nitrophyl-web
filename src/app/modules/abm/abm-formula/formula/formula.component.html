@@ -5,13 +5,21 @@
     </div>
 
     <form class="mt-4" [formGroup]="form">
+      <div class="flex gap-6" *ngIf="mode === 'Edit'">
+        <mat-form-field class="w-full">
+          <input matInput [formControlName]="'version'">
+        </mat-form-field>
+        <mat-form-field class="w-full">
+          <input matInput [formControlName]="'date'">
+        </mat-form-field>
+      </div>
       <mat-form-field class="w-full">
         <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
-        <input matInput [formControlName]="'name'" placeholder="Nombre" required minlength="3" maxlength="100">
+        <input matInput [formControlName]="'name'" placeholder="Nombre">
         <mat-error class="mb-1" *ngIf="form.get('name').hasError('required')">
           El nombre es requerido.
         </mat-error>
-        <mat-error class="mb-1" *ngIf="form.get('name').hasError('maxlength')">
+        <mat-error class="mb-1" *ngIf="form.get('name').hasError('minlength')">
           Mínimo 3 caracteres.
         </mat-error>
         <mat-error class="mb-1" *ngIf="form.get('name').hasError('maxlength')">
@@ -37,11 +45,11 @@
 
       <mat-form-field class="w-full">
         <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
-        <input matInput [formControlName]="'norma'" placeholder="Norma" required minlength="3" maxlength="100">
+        <input matInput [formControlName]="'norma'" placeholder="Norma">
         <mat-error class="mb-1" *ngIf="form.get('norma').hasError('required')">
           La norma es requerida.
         </mat-error>
-        <mat-error class="mb-1" *ngIf="form.get('norma').hasError('maxlength')">
+        <mat-error class="mb-1" *ngIf="form.get('norma').hasError('minlength')">
           Mínimo 3 caracteres.
         </mat-error>
         <mat-error class="mb-1" *ngIf="form.get('norma').hasError('maxlength')">

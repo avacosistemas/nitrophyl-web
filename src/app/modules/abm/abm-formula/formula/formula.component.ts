@@ -95,6 +95,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       ),
     ]).subscribe({
       next: ([materials, formula]: [IMaterialsResponse, IFormulaResponse]) => {
+        this.form.controls.version.setValue(formula.data.version);
+        this.form.controls.date.setValue(formula.data.fecha);
         this.form.controls.name.setValue(formula.data.nombre);
         this.form.controls.norma.setValue(formula.data.norma);
         this.formula$ = formula.data;
@@ -170,9 +172,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this._formulas.get({ id: this.id }).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
+          this.form.controls.version.setValue(formula.data.version);
+          this.form.controls.date.setValue(formula.data.fecha);
           this.form.controls.name.setValue(formula.data.nombre);
           this.form.controls.material.setValue(formula.data.material);
-          this.form.controls.norma.setValue(formula.data.norma);
         }
       },
       error: (err: any) => console.error(error, err),
@@ -211,13 +214,16 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       idMaterial: this.form.controls.material.value,
       material: this.formula$.material,
       norma: this.form.controls.norma.value,
+      // version: this.form.controls.version.value,
+      // fecha: this.form.controls.date.value,
     };
     this._formulas.put(body).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
           this.openSnackBar(true);
           this._formulas.setMode('Edit');
-          this.router.navigate([`/formulas/edit/${formula.data.id}`]);
+          // this.router.navigate([`/formulas/edit/${formula.data.id}`]);
+          this.router.navigate([`/formulas/grid`]);
         }
       },
       error: (err) => {
@@ -230,8 +236,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private setForm(): void {
     this.form = this.formBuilder.group({
+      version: [{ value: null, disabled: this.mode === 'Edit' }],
+      date: [{ value: null, disabled: this.mode === 'Edit' }],
       name: [
-        { value: null, disabled: this.mode === 'View' },
+        { value: null, disabled: this.mode === 'Edit' },
         Validators.compose([
           Validators.required,
           Validators.minLength(3),
@@ -239,11 +247,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         ]),
       ],
       material: [
-        { value: null, disabled: this.mode === 'View' },
+        { value: null, disabled: this.mode === 'Edit' },
         Validators.required,
       ],
       norma: [
-        { value: null, disabled: this.mode === 'View' },
+        null,
         Validators.compose([
           Validators.required,
           Validators.minLength(3),
