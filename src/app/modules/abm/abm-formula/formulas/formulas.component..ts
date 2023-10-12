@@ -29,7 +29,13 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   public materials$: IFormula[] | undefined;
 
   public formulas$: IFormula[] | undefined;
-  public displayedColumns: string[] = ['name', 'material', 'fecha', 'version', 'actions'];
+  public displayedColumns: string[] = [
+    'name',
+    'material',
+    'fecha',
+    'version',
+    'actions',
+  ];
 
   public showSuccess: boolean = false;
   public showError: boolean = false;
@@ -139,6 +145,10 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   }
 
   private setForm(): void {
-    this.form = this.formBuilder.group({ name: [null], material: [null] });
+    this.form = this.formBuilder.group({
+      name: [null],
+      material: [null],
+      norma: [null],
+    });
   }
 }

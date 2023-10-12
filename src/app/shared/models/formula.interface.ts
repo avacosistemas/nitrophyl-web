@@ -7,6 +7,7 @@ export interface IFormula {
   material?: string;
   version?: number;
   fecha?: string;
+  norma?: string;
 }
 
 export type IFormulasResponse = IResponse<IFormula[]>;

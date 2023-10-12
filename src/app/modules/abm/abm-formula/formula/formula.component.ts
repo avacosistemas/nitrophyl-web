@@ -96,6 +96,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     ]).subscribe({
       next: ([materials, formula]: [IMaterialsResponse, IFormulaResponse]) => {
         this.form.controls.name.setValue(formula.data.nombre);
+        this.form.controls.norma.setValue(formula.data.norma);
         this.formula$ = formula.data;
         if (this.materialsFail) {
           this.materials$ = [
@@ -171,6 +172,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         if (formula.status === 'OK') {
           this.form.controls.name.setValue(formula.data.nombre);
           this.form.controls.material.setValue(formula.data.material);
+          this.form.controls.norma.setValue(formula.data.norma);
         }
       },
       error: (err: any) => console.error(error, err),
@@ -183,6 +185,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     let body: IFormula = {
       nombre: this.form.controls.name.value,
       idMaterial: this.form.controls.material.value,
+      norma: this.form.controls.norma.value,
     };
     this._formulas.post(body).subscribe({
       next: (formula: IFormulaResponse) => {
@@ -207,6 +210,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       nombre: this.form.controls.name.value,
       idMaterial: this.form.controls.material.value,
       material: this.formula$.material,
+      norma: this.form.controls.norma.value,
     };
     this._formulas.put(body).subscribe({
       next: (formula: IFormulaResponse) => {
@@ -237,6 +241,14 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       material: [
         { value: null, disabled: this.mode === 'View' },
         Validators.required,
+      ],
+      norma: [
+        { value: null, disabled: this.mode === 'View' },
+        Validators.compose([
+          Validators.required,
+          Validators.minLength(3),
+          Validators.maxLength(100),
+        ]),
       ],
     });
   }
