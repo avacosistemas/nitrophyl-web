@@ -35,10 +35,15 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   private formula$: IFormula;
   private id: number;
 
+  // * mode: Edit.
   public mode: string;
   public form: FormGroup;
   public materialsFail: boolean = false;
   public materials$: IMaterial[] | undefined;
+
+  // * mode: Test.
+  public machines$: IFormula[] | undefined;
+  public displayedColumns: string[] = ['name'];
 
   public component: string = 'Mode';
 
@@ -53,7 +58,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     if (!this._formulas.getMode()) this.router.navigate(['/formulas/grid']);
     this.mode = this._formulas.getMode();
-    if (this.mode === 'Edit' || this.mode === 'View')
+    if (this.mode === 'Edit' || this.mode === 'View' || this.mode === 'Test')
       this.activeRoute.paramMap.subscribe(
         (param: any) => (this.id = param.get('id'))
       );
@@ -72,9 +77,19 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       case 'Edit':
         this.loadData();
         break;
+      case 'Test':
+        this.getMachines();
+        break;
       default:
         break;
     }
+  }
+
+  private getMachines(): void {
+    // /configuracionPrueba/formula/{idFormula}
+    this._formulas.getMachines(this.id).subscribe((res: any) => {
+      console.log(res);
+    });
   }
 
   private loadData(): void {

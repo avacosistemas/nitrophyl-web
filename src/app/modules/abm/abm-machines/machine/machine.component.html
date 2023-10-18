@@ -1,5 +1,6 @@
 <div class="flex flex-col w-full" id="top">
-  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8"
+    *ngIf="mode === 'Edit' || mode === 'Create' || mode === 'View'">
     <div>
       <h1 class="text-2xl font-semibold mb-2"> Máquina </h1>
     </div>
@@ -32,5 +33,38 @@
         </ng-template>
       </mat-form-field>
     </form>
+  </div>
+
+  <div class="border-2 bg-white border-gray-200 rounded-2xl m-8 p-8 pb-4" *ngIf="mode === 'Test'">
+    <form [formGroup]="formTest" class="flex justify-between items-center gap-4">
+      <mat-form-field class="w-full">
+        <input matInput [formControlName]="'test'" placeholder="Prueba">
+      </mat-form-field>
+      <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mb-3"
+        (click)="add()">
+        <span class="mat-button-wrapper"> Agregar </span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        <span class="mat-button-focus-overlay"></span>
+      </button>
+    </form>
+  </div>
+
+  <div class="m-8 mt-0" *ngIf="mode === 'Test'">
+    <table mat-table [dataSource]="tests$" class="border-2 rounded-2xl w-full">
+      <ng-container matColumnDef="test">
+        <th mat-header-cell *matHeaderCellDef> Nombre </th>
+        <td mat-cell *matCellDef="let element"> {{ element }} </td>
+      </ng-container>
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="text-right"> Acciones </th>
+        <td mat-cell *matCellDef="let row" class="text-right">
+          <button>
+            <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar" (click)="trash(row)"></mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
   </div>
 </div>

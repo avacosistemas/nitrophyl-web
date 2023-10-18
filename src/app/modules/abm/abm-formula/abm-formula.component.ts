@@ -8,19 +8,26 @@ import { Router } from '@angular/router';
 // * Services.
 import { FormulasService } from 'app/shared/services/formulas.service';
 
+// * Forms.
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
 @Component({
   selector: 'abm-formula',
   templateUrl: './abm-formula.component.html',
   styleUrls: ['./abm-formula.component.scss'],
 })
 export class ABMFormulaComponent implements AfterContentChecked {
+  public formTest: FormGroup;
   public title: string = '';
 
   constructor(
     private _formulas: FormulasService,
     private router: Router,
+    private formBuilder: FormBuilder,
     private cdref: ChangeDetectorRef
-  ) {}
+  ) {
+    this.setForm();
+  }
 
   public ngAfterContentChecked(): void {
     this.cdref.detectChanges();
@@ -38,7 +45,10 @@ export class ABMFormulaComponent implements AfterContentChecked {
           this.title = 'Consultar Fórmula';
           break;
         case 'Edit':
-          this.title = 'Editar Fórmula';
+          this.title = 'Crear Nueva Versión';
+          break;
+        case 'Test':
+          this.title = 'Pruebas Fórmula';
           break;
         default:
           break;
@@ -61,5 +71,18 @@ export class ABMFormulaComponent implements AfterContentChecked {
 
   public save(): void {
     this._formulas.events.next(3);
+  }
+
+  public test(): void {
+    if (this.formTest.invalid) {
+      return;
+    }
+    this._formulas.events.next(4);
+  }
+
+  private setForm(): void {
+    this.formTest = this.formBuilder.group({
+      machine: [null, Validators.required],
+    });
   }
 }

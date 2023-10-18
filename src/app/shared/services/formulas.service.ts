@@ -46,6 +46,12 @@ export class FormulasService {
     return this.http.get<IFormulasResponse>(`${url}`);
   }
 
+  public getMachines(id: number): Observable<any> {
+    return this.http.get<any>(
+      `${environment.server}configuracionPrueba/formula/${id}`
+    );
+  }
+
   public post(body: IFormula): Observable<IFormulaResponse> {
     return this.http.post<IFormulaResponse>(`${this.url}`, body);
   }

@@ -52,6 +52,17 @@ export class MachinesService {
     return this.http.put<IMachineResponse>(`${this.url}/${body.id}`, body);
   }
 
+  public getTest(id: number): Observable<any> {
+    return this.http.get<any>(`${this.url}/prueba/${id}`);
+  }
+
+  public setTest(body: any): Observable<any> {
+    return this.http.put<any>(
+      `${this.url}/prueba/${body.idMaquina}`,
+      body.moldeClientesListadoDTOs
+    );
+  }
+
   public getMode() {
     return this.mode;
   }

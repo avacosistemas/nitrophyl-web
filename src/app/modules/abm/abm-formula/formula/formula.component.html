@@ -1,5 +1,6 @@
 <div class="flex flex-col w-full" id="top">
-  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8">
+  <!-- mode: Edit || Create. -->
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8" *ngIf="mode === 'Edit' || mode === 'Create'">
     <div>
       <h1 class="text-2xl font-semibold mb-2"> Fórmula </h1>
     </div>
@@ -57,5 +58,18 @@
         </mat-error>
       </mat-form-field>
     </form>
+
+  </div>
+
+  <!-- mode: Test. -->
+  <div class="flex-auto p-6 sm:p-10">
+    <table mat-table [dataSource]="machines$" class="border-2 rounded-2xl mt-5 w-full">
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef> Maquina </th>
+        <td mat-cell *matCellDef="let element"> {{ element.nombre }} </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
   </div>
 </div>

@@ -40,6 +40,9 @@ export class ABMMachineComponent implements AfterContentChecked {
         case 'Edit':
           this.title = 'Editar Máquina';
           break;
+        case 'Test':
+          this.title = 'Pruebas';
+          break;
         default:
           break;
       }

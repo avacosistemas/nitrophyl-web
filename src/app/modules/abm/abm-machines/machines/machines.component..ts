@@ -54,6 +54,9 @@ export class MachinesComponent implements OnInit, AfterViewInit {
       case 2:
         this._machines.setMode('View');
         break;
+      case 3:
+        this._machines.setMode('Test');
+        break;
       default:
         break;
     }

@@ -18,6 +18,7 @@ const routes: Route[] = [
       { path: 'create', component: FormulaComponent },
       { path: 'view/:id', component: FormulaComponent },
       { path: 'edit/:id', component: FormulaComponent },
+      { path: 'test/:id', component: FormulaComponent },
     ],
   },
 ];

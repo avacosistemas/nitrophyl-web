@@ -67,6 +67,12 @@
             </button> -->
 
             <button>
+              <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ensayo" [routerLink]="['../test', row.id]"
+                (click)="mode(3)">
+              </mat-icon>
+            </button>
+
+            <button>
               <mat-icon svgIcon="mat_solid:copy_all" matTooltip="Nueva Versión" [routerLink]="['../edit', row.id]"
                 (click)="mode(1)">
               </mat-icon>

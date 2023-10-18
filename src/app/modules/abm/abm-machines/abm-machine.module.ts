@@ -18,6 +18,7 @@ const routes: Route[] = [
       { path: 'create', component: MachineComponent },
       { path: 'view/:id', component: MachineComponent },
       { path: 'edit/:id', component: MachineComponent },
+      { path: 'test/:id', component: MachineComponent },
     ],
   },
 ];

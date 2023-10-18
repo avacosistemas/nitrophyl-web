@@ -32,9 +32,26 @@
     </div>
 
     <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
+      <form [formGroup]="formTest" *ngIf="title === 'Pruebas Fórmula'">
+        <mat-form-field class="mr-4 mt-4">
+          <mat-select [formControlName]="'machine'" placeholder="Maquina">
+            <mat-option> Test </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </form>
+
+      <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="test()"
+        *ngIf="title === 'Pruebas Fórmula'">
+        <span class="mat-button-wrapper"> Agregar </span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        <span class="mat-button-focus-overlay"></span>
+      </button>
+
       <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()"
-        *ngIf="title === 'Crear Fórmula' || title === 'Editar Fórmula'">
-        <span class="mat-button-wrapper"> Guardar Fórmula </span>
+        *ngIf="title === 'Crear Fórmula' || title === 'Crear Nueva Versión'">
+        <span class="mat-button-wrapper">
+          {{ title === 'Crear Fórmula' ? 'Guardar Fórmula' : title === 'Crear Nueva Versión' ? 'Guardar Versión' : '' }}
+        </span>
         <span matripple="" class="mat-ripple mat-button-ripple"></span>
         <span class="mat-button-focus-overlay"></span>
       </button>

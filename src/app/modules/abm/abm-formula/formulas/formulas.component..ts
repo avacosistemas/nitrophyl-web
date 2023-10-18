@@ -100,6 +100,9 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       case 2:
         this._formulas.setMode('View');
         break;
+      case 3:
+        this._formulas.setMode('Test');
+        break;
       default:
         break;
     }
