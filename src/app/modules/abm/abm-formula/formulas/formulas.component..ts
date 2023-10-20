@@ -32,6 +32,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   public displayedColumns: string[] = [
     'name',
     'material',
+    'norma',
     'fecha',
     'version',
     'actions',
@@ -59,6 +60,16 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       top.scrollIntoView();
       top = null;
     }
+  }
+
+  public version(name: string): number {
+    const filteredFormulas = this.formulas$.filter(
+      (formula: any) => formula.nombre === name
+    );
+    if (filteredFormulas.length > 0)
+      return Math.max(...filteredFormulas.map((formula) => formula.version));
+
+    return 0;
   }
 
   private loadData(): void {

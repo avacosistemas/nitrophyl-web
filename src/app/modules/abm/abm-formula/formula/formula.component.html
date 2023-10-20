@@ -14,6 +14,7 @@
           <input matInput [formControlName]="'date'">
         </mat-form-field>
       </div>
+
       <mat-form-field class="w-full">
         <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
         <input matInput [formControlName]="'name'" placeholder="Nombre">
@@ -30,7 +31,7 @@
 
       <mat-form-field class="w-full">
         <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
-        <mat-select [formControlName]="'material'" *ngIf="mode === 'Create' || mode === 'Edit'; else viewMode"
+        <mat-select [formControlName]="'material'"
           [placeholder]="(!materials$ && !materialsFail) ? 'Materiales: Cargando...' : ((!materials$ && materialsFail) ? 'No se ha podido cargar la lista de materiales' : 'Materiales')">
           <mat-option *ngFor="let material of materials$" [value]="material.id">
             {{ material.nombre }}
@@ -39,9 +40,6 @@
         <mat-error class="mb-1" *ngIf="form.get('material').hasError('required')">
           El material es requerido.
         </mat-error>
-        <ng-template #viewMode>
-          <input matInput [formControlName]="'material'" placeholder="Material">
-        </ng-template>
       </mat-form-field>
 
       <mat-form-field class="w-full">

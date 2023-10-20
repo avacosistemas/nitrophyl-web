@@ -49,6 +49,10 @@
           <th mat-header-cell *matHeaderCellDef> Material </th>
           <td mat-cell *matCellDef="let element"> {{ element.material }} </td>
         </ng-container>
+        <ng-container matColumnDef="norma">
+          <th mat-header-cell *matHeaderCellDef> Norma </th>
+          <td mat-cell *matCellDef="let element"> {{ element.norma }} </td>
+        </ng-container>
         <ng-container matColumnDef="version">
           <th mat-header-cell *matHeaderCellDef> Versión </th>
           <td mat-cell *matCellDef="let element"> {{ element.version }} </td>
@@ -66,17 +70,19 @@
               </mat-icon>
             </button> -->
 
-            <button>
-              <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ensayo" [routerLink]="['../test', row.id]"
-                (click)="mode(3)">
+            <button class="mr-2" (click)="mode(3)">
+              <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Configurar pruebas"
+                [routerLink]="['../test', row.id]">
               </mat-icon>
             </button>
 
-            <button>
-              <mat-icon svgIcon="mat_solid:copy_all" matTooltip="Nueva Versión" [routerLink]="['../edit', row.id]"
-                (click)="mode(1)">
+            <button *ngIf="row.version === version(row.nombre); else noVersion" (click)="mode(1)">
+              <mat-icon svgIcon="mat_solid:copy_all" matTooltip="Nueva Versión" [routerLink]="['../edit', row.id]">
               </mat-icon>
             </button>
+            <ng-template #noVersion>
+              <span class="min-w-6 min-h-4 inline-block"></span>
+            </ng-template>
           </td>
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

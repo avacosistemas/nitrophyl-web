@@ -99,11 +99,15 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.mode = this._formulas.getMode();
 
-    if (this.mode === 'Edit' || this.mode === 'View' || this.mode === 'Test') {
+    if (
+      this.mode === 'Edit' ||
+      this.mode === 'Create' ||
+      this.mode === 'Test'
+    ) {
       this.activeRoute.paramMap.subscribe(
         (param: any) => (this.id = param.get('id'))
       );
-      if (this.mode === 'Edit' || 'Create') this.setForm();
+      if (this.mode === 'Edit' || this.mode === 'Create') this.setForm();
       if (this.mode === 'Test')
         this.formTest = this.formBuilder.group({
           condition: null,
@@ -189,18 +193,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     if (top !== null) {
       top.scrollIntoView();
       top = null;
-    }
-  }
-
-  handleTransitionEnd(event: Event) {
-    console.log('hola');
-
-    if (event.target instanceof HTMLElement) {
-      const visibility = event.target.style.visibility;
-
-      if (visibility === 'visible') {
-        console.log('El elemento ahora es visible');
-      }
     }
   }
 
