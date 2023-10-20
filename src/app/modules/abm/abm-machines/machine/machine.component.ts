@@ -113,6 +113,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.save = false;
     this.tests$.push(this.formTest.controls.test.value);
     this.tests$ = [...this.tests$];
+    this.formTest.controls.test.reset();
   }
 
   public trash(row: any): void {
