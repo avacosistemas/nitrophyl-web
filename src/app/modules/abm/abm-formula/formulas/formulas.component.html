@@ -70,15 +70,13 @@
               </mat-icon>
             </button> -->
 
-            <button class="mr-2" (click)="mode(3)">
-              <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Configurar pruebas"
-                [routerLink]="['../test', row.id]">
-              </mat-icon>
+            <button class="mr-2" (click)="mode(3)" [routerLink]="['../test', row.id]" matTooltip="Configurar pruebas">
+              <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
             </button>
 
-            <button *ngIf="row.version === version(row.nombre); else noVersion" (click)="mode(1)">
-              <mat-icon svgIcon="mat_solid:copy_all" matTooltip="Nueva Versión" [routerLink]="['../edit', row.id]">
-              </mat-icon>
+            <button *ngIf="row.version === version(row.nombre); else noVersion" (click)="mode(1)"
+              matTooltip="Nueva Versión" [routerLink]="['../edit', row.id]">
+              <mat-icon svgIcon="mat_solid:copy_all"></mat-icon>
             </button>
             <ng-template #noVersion>
               <span class="min-w-6 min-h-4 inline-block"></span>
