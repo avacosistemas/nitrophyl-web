@@ -52,6 +52,10 @@ export class FormulasService {
     );
   }
 
+  public getTests(id: number): Observable<any> {
+    return this.http.get<any>(`${environment.server}configuracionPrueba/${id}`);
+  }
+
   public post(body: IFormula): Observable<IFormulaResponse> {
     return this.http.post<IFormulaResponse>(`${this.url}`, body);
   }

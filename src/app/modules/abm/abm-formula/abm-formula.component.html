@@ -31,21 +31,24 @@
       </div>
     </div>
 
-    <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
-      <form [formGroup]="formTest" *ngIf="title === 'Pruebas Fórmula'">
-        <mat-form-field class="mr-4 mt-4">
-          <mat-select [formControlName]="'machine'" placeholder="Maquina">
-            <mat-option> Test </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </form>
+    <div class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2">
+      <ng-container *ngIf="!addMachineTest">
+        <form [formGroup]="formTest" *ngIf="title === 'Pruebas Fórmula'" class="mr-4 w-2/5">
+          <mat-form-field class="mt-4 w-full">
+            <mat-select [formControlName]="'machine'" disableOptionCentering
+              [placeholder]="status ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
+              <mat-option *ngFor="let machine of machines$" [value]="machine">{{ machine.nombre }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </form>
 
-      <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="test()"
-        *ngIf="title === 'Pruebas Fórmula'">
-        <span class="mat-button-wrapper"> Agregar </span>
-        <span matripple="" class="mat-ripple mat-button-ripple"></span>
-        <span class="mat-button-focus-overlay"></span>
-      </button>
+        <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+          (click)="addMachine()" *ngIf="title === 'Pruebas Fórmula'" [disabled]="status">
+          <span class="mat-button-wrapper"> Agregar </span>
+          <span matripple="" class="mat-ripple mat-button-ripple"></span>
+          <span class="mat-button-focus-overlay"></span>
+        </button>
+      </ng-container>
 
       <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()"
         *ngIf="title === 'Crear Fórmula' || title === 'Crear Nueva Versión'">

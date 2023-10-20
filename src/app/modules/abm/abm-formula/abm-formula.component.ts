@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 
 // * Services.
 import { FormulasService } from 'app/shared/services/formulas.service';
+import { MachinesService } from 'app/shared/services/machines.service';
 
 // * Forms.
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -17,11 +18,17 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./abm-formula.component.scss'],
 })
 export class ABMFormulaComponent implements AfterContentChecked {
-  public formTest: FormGroup;
   public title: string = '';
+
+  // * Test mode:
+  public status: boolean = false;
+  public addMachineTest: boolean = false;
+  public formTest: FormGroup;
+  public machines$: any = [];
 
   constructor(
     private _formulas: FormulasService,
+    private _machines: MachinesService,
     private router: Router,
     private formBuilder: FormBuilder,
     private cdref: ChangeDetectorRef
@@ -48,12 +55,30 @@ export class ABMFormulaComponent implements AfterContentChecked {
           this.title = 'Crear Nueva Versión';
           break;
         case 'Test':
-          this.title = 'Pruebas Fórmula';
+          this.configTest();
           break;
         default:
           break;
       }
     }
+  }
+
+  private configTest(): void {
+    this.machines$ = [];
+    this.formTest.controls.machine.reset();
+    this.title = 'Pruebas Fórmula';
+    let error: string = 'abm-formula.component.ts => componentAdded => ';
+    this._machines.get().subscribe({
+      next: (res: any) => {
+        this.machines$ = [...res.data];
+      },
+      error: (err: any) => {
+        console.error(error, err);
+        this.formTest.disable();
+        this.status = true;
+      },
+      complete: () => {},
+    });
   }
 
   public create(): void {
@@ -73,11 +98,12 @@ export class ABMFormulaComponent implements AfterContentChecked {
     this._formulas.events.next(3);
   }
 
-  public test(): void {
+  public addMachine(): void {
     if (this.formTest.invalid) {
       return;
     }
-    this._formulas.events.next(4);
+    let machine: any = this.formTest.controls.machine.value;
+    this._formulas.events.next([4, machine.id, machine.nombre]);
   }
 
   private setForm(): void {
