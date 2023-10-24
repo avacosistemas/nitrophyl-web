@@ -69,6 +69,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   // * mode: Test.
   private idMachine: number; // ID Maquina.
   public drawerOpened: boolean = false; // fuse-drawer [opened].
+  // ! public conditionsEditable: boolean = false; // Condiciones editables.
   public machine: string = ''; // Título.
   public formTest: FormGroup; // Formulario de pruebas.
 
@@ -79,7 +80,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public displayedColumnsParams: string[] = ['name', 'min', 'max'];
 
   public conditions$: string[] = []; // Condiciones asociadas a una maquina.
-  public displayedColumnsConditions: string[] = ['condition', 'value'];
+  public displayedColumnsConditions: string[] = [
+    'condition',
+    'value',
+    'actions',
+  ];
 
   // Modo.
   public component: string = 'Mode';
@@ -134,16 +139,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       default:
         break;
     }
-  }
-
-  public addCondition(): void {
-    let condition: string | undefined = this.formTest.controls.condition.value;
-
-    if (!condition || this.conditions$.includes(condition)) return;
-
-    this.formTest.addControl(`${condition}.value`, new FormControl(null));
-    this.conditions$.push(condition);
-    this.conditions$ = [...this.conditions$];
   }
 
   public saveTest(): void {
@@ -228,14 +223,31 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formTest.disable();
         this.machine = res.data.maquina;
         this.drawerOpened = !this.drawerOpened;
+        this.displayedColumnsConditions = ['condition', 'value'];
       },
       error: (err: any) => console.error(error, err),
       complete: () => {},
     });
   }
 
-  toggleDrawerOpen(): void {
+  public toggleDrawerOpen(): void {
     this.drawerOpened = !this.drawerOpened;
+  }
+
+  public deleteCondition(row: any): void {
+    this.formTest.removeControl(row);
+    this.conditions$ = this.conditions$.filter((x) => x !== row);
+  }
+
+  public addCondition(): void {
+    let condition: string | undefined = this.formTest.controls.condition.value;
+
+    if (!condition || this.conditions$.includes(condition)) return;
+
+    this.formTest.addControl(`${condition}.value`, new FormControl(null));
+    this.conditions$.push(condition);
+    this.conditions$ = [...this.conditions$];
+    this.formTest.controls.condition.setValue(null);
   }
 
   private postMachine(body: ITest): void {
