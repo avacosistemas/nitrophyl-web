@@ -300,7 +300,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this._configTest.post(body).subscribe({
       next: () => {
         this.getMachines();
-        this.changeDrawer(false);
+        this.drawer.close();
+        this._formulas.work(false);
         this.openSnackBar(true);
       },
       error: (err: any) => {
