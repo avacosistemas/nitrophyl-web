@@ -13,6 +13,16 @@ import { MachinesService } from 'app/shared/services/machines.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
+export interface ITestTitle {
+  fecha: Date;
+  id: number;
+  idMaterial: number;
+  material: string;
+  nombre: string;
+  norma: string;
+  version: number;
+}
+
 @Component({
   selector: 'abm-formula',
   templateUrl: './abm-formula.component.html',
@@ -25,8 +35,11 @@ export class ABMFormulaComponent implements AfterContentChecked {
   public title: string = '';
 
   // * Test mode:
+  public testMode: boolean = false;
   public status: boolean = false;
   public addMachineTest: boolean = false;
+  public testTitle: string = '';
+  public testObj: any = {};
   public formTest: FormGroup;
   public machines$: any = [];
 
@@ -74,7 +87,9 @@ export class ABMFormulaComponent implements AfterContentChecked {
   private configTest(): void {
     this.machines$ = [];
     this.formTest.controls.machine.reset();
-    this.title = 'Pruebas Fórmula';
+    this.testObj = this._formulas.getTestTitle();
+    this.title = 'Test';
+    this.addMachineTest = true;
     let error: string = 'abm-formula.component.ts => componentAdded => ';
     this._machines.get().subscribe({
       next: (res: any) => {

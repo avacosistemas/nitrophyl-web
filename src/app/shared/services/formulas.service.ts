@@ -12,12 +12,25 @@ import {
   IFormulasResponse,
 } from '../models/formula.interface';
 
+export interface ITestTitle {
+  fecha: Date;
+  id: number;
+  idMaterial: number;
+  material: string;
+  nombre: string;
+  norma: string;
+  version: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
 export class FormulasService {
   private url: string = `${environment.server}formula`;
   private mode: string = '';
+
+  // * Test mode:
+  private testTitle: ITestTitle | undefined;
   private action = new Subject<boolean>();
   public actions$ = this.action.asObservable();
 
@@ -30,6 +43,14 @@ export class FormulasService {
 
   public work(option: boolean): void {
     this.action.next(option);
+  }
+
+  public setTestTitle(test: ITestTitle): void {
+    this.testTitle = test;
+  }
+
+  public getTestTitle(): ITestTitle | undefined {
+    return this.testTitle;
   }
 
   public get(

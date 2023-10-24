@@ -103,7 +103,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     });
   }
 
-  public mode(option: number): void {
+  public mode(option: number, row: any): void {
     switch (option) {
       case 1:
         this._formulas.setMode('Edit');
@@ -112,6 +112,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
         this._formulas.setMode('View');
         break;
       case 3:
+        this._formulas.setTestTitle(row);
         this._formulas.setMode('Test');
         break;
       default:

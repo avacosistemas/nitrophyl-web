@@ -20,20 +20,39 @@
             </mat-icon>
 
             <span class="ml-1 text-secondary"> Fórmulas </span>
+
+            <ng-container *ngIf="title === 'Test'">
+              <mat-icon role="img" class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color"
+                aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="chevron-right"
+                data-mat-icon-namespace="heroicons_solid">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%"
+                  width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
+                  <path fill-rule="evenodd"
+                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    clip-rule="evenodd">
+                  </path>
+                </svg>
+              </mat-icon>
+
+              <span class="ml-1 text-secondary">{{ testObj.nombre }}</span>
+            </ng-container>
           </div>
         </div>
       </div>
 
       <div class="mt-2">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
-          {{ title }}
+          {{ title === 'Test' ? 'Pruebas ' + testObj.nombre : title }}
         </h2>
+        <h3 *ngIf="title === 'Test'">
+          {{ testObj.material }} - {{ testObj.norma }} - {{ testObj.fecha }} - V {{ testObj.version }}
+        </h3>
       </div>
     </div>
 
     <div class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2">
-      <ng-container *ngIf="!addMachineTest">
-        <form [formGroup]="formTest" *ngIf="title === 'Pruebas Fórmula'" class="mr-4 w-2/5">
+      <ng-container *ngIf="title === 'Test'">
+        <form [formGroup]="formTest" class="mr-4 w-3/5">
           <mat-form-field class="mt-4 w-full">
             <mat-select [formControlName]="'machine'"
               [placeholder]="status ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
@@ -43,7 +62,7 @@
         </form>
 
         <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-          (click)="addMachine()" *ngIf="title === 'Pruebas Fórmula'" [disabled]="status || action">
+          (click)="addMachine()" [disabled]="status || action">
           <span class="mat-button-wrapper"> Agregar </span>
           <span matripple="" class="mat-ripple mat-button-ripple"></span>
           <span class="mat-button-focus-overlay"></span>
