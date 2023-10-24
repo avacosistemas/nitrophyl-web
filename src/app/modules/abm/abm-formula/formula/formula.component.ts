@@ -168,6 +168,20 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         );
         return;
+      } else if (
+        controls[param + '.min'].value !== null &&
+        controls[param + '.max'].value !== null &&
+        controls[param + '.min'].value > controls[param + '.max'].value
+      ) {
+        this.snackBar.open(
+          `El valor mínimo del parametro '${param}' no puede ser mayor al valor máximo.`,
+          'X',
+          {
+            duration: 5000,
+            panelClass: 'red-snackbar',
+          }
+        );
+        return;
       } else {
         body.parametros.push({
           nombre: param,
@@ -200,6 +214,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public close(): void {
+    if (this.mode === 'Test') {
+      this.router.navigate(['/formulas/grid']);
+      return;
+    }
     if (this.form.pristine == true) {
       this.router.navigate(['/formulas/grid']);
     } else {
@@ -264,13 +282,14 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this._configTest.post(body).subscribe({
       next: (res: any) => {
         this.getMachines();
+        this.toggleDrawerOpen();
         this.openSnackBar(true);
       },
       error: (err: any) => {
         console.error(error, err);
         this.openSnackBar(false);
       },
-      complete: () => this.toggleDrawerOpen(),
+      complete: () => {},
     });
   }
 
@@ -318,6 +337,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this._machines.getTest(id).subscribe({
       next: (res: any) => {
         this.params$ = [];
+
         for (let param of res.data) {
           this.formTest.addControl(
             `${param}.min`,
@@ -331,12 +351,41 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
             )
           );
           this.params$.push(param);
+          this.configureValidators(param);
         }
+
         this.params$ = [...this.params$];
+
         this.toggleDrawerOpen();
       },
       error: (err: any) => console.error(error, err),
       complete: () => {},
+    });
+  }
+
+  private configureValidators(param: string): void {
+    let controls = this.formTest.controls;
+
+    controls[param + '.max'].valueChanges.subscribe((value: null | number) => {
+      if (value) {
+        let min: number | null = controls[param + '.min'].value;
+        if (min && min > value) {
+          controls[param + '.max'].setErrors({ max: true });
+        } else {
+          controls[param + '.max'].setErrors(null);
+        }
+      }
+    });
+
+    controls[param + '.min'].valueChanges.subscribe((value: null | number) => {
+      if (value) {
+        let max: null | number = controls[param + '.max'].value;
+        if (max && max < value) {
+          controls[param + '.min'].setErrors({ max: true });
+        } else {
+          controls[param + '.min'].setErrors(null);
+        }
+      }
     });
   }
 
