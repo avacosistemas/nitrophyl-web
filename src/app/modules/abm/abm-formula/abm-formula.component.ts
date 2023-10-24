@@ -122,11 +122,10 @@ export class ABMFormulaComponent implements AfterContentChecked {
   }
 
   public addMachine(): void {
-    if (this.formTest.invalid) {
-      return;
-    }
-    let machine: any = this.formTest.controls.machine.value;
-    this._formulas.events.next([4, machine.id, machine.nombre]);
+    if (this.formTest.invalid) return;
+    let machine: any = this.formTest.controls.machine;
+    this._formulas.events.next([4, machine.value.id, machine.value.nombre]);
+    machine.reset();
   }
 
   private setForm(): void {

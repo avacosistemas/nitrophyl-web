@@ -1,10 +1,9 @@
 import {
   AfterViewInit,
   Component,
-  ElementRef,
   OnDestroy,
   OnInit,
-  Renderer2,
+  ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, of, Subscription } from 'rxjs';
@@ -39,6 +38,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { MatDrawer } from '@angular/material/sidenav';
 
 export interface ITest {
   idFormula: number;
@@ -89,6 +89,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public conditions$: string[] = []; // Condiciones asociadas a una maquina.
   public displayedColumnsConditions: string[] = [];
 
+  @ViewChild('drawer') drawer: MatDrawer;
+
   public component: string = 'Mode';
 
   constructor(
@@ -100,9 +102,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     private dialog: MatDialog,
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
-    private router: Router,
-    private renderer: Renderer2,
-    private el: ElementRef
+    private router: Router
   ) {
     if (!this._formulas.getMode()) this.router.navigate(['/formulas/grid']);
 
@@ -143,6 +143,16 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         break;
       default:
         break;
+    }
+  }
+
+  public changeDrawer(option: boolean): void {
+    if (option) {
+      this.drawer.open();
+      this._formulas.work(true);
+    } else {
+      this.drawer.close();
+      this._formulas.work(false);
     }
   }
 
@@ -247,16 +257,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.machine = res.data.maquina;
         this.displayedColumnsConditions = ['condition', 'value'];
         this.selectedIndex = 0;
-        this.toggleDrawerOpen();
+        this.changeDrawer(true);
       },
       error: (err: any) => console.error(error, err),
       complete: () => {},
     });
-  }
-
-  public toggleDrawerOpen(): void {
-    this.drawerOpened = !this.drawerOpened;
-    this._formulas.work(this.drawerOpened);
   }
 
   public deleteCondition(row: any): void {
@@ -278,9 +283,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   private postMachine(body: ITest): void {
     let error: string = 'formula.component.ts => postTest() => ';
     this._configTest.post(body).subscribe({
-      next: (res: any) => {
+      next: () => {
         this.getMachines();
-        this.toggleDrawerOpen();
+        this.changeDrawer(false);
         this.openSnackBar(true);
       },
       error: (err: any) => {
@@ -358,7 +363,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.params$ = [...this.params$];
         this.selectedIndex = 0;
 
-        this.toggleDrawerOpen();
+        this.changeDrawer(true);
       },
       error: (err: any) => console.error(error, err),
       complete: () => {},

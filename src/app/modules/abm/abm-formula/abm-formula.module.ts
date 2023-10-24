@@ -10,7 +10,8 @@ import { FormulasComponent } from './formulas/formulas.component.';
 import { FormulaComponent } from './formula/formula.component';
 
 // * Fuse sidebar.
-import { FuseDrawerModule } from '@fuse/components/drawer';
+// import { FuseDrawerModule } from '@fuse/components/drawer';
+import { MatSidenavModule } from '@angular/material/sidenav';
 
 const routes: Route[] = [
   {
@@ -28,6 +29,6 @@ const routes: Route[] = [
 
 @NgModule({
   declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent],
-  imports: [RouterModule.forChild(routes), ABMSharedModule, FuseDrawerModule],
+  imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule],
 })
 export class ABMFormulaModule {}
