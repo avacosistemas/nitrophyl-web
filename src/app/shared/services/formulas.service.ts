@@ -1,6 +1,6 @@
 import { HttpClient, HttpBackend } from '@angular/common/http';
 import { EventEmitter, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 // * Environment.
 import { environment } from 'environments/environment';
@@ -18,12 +18,18 @@ import {
 export class FormulasService {
   private url: string = `${environment.server}formula`;
   private mode: string = '';
+  private action = new Subject<boolean>();
+  public actions$ = this.action.asObservable();
 
   public events = new EventEmitter<any>();
   public viewEvents = new EventEmitter<any>();
 
   constructor(private http: HttpClient, private handler: HttpBackend) {
     this.http = new HttpClient(handler);
+  }
+
+  public work(option: boolean): void {
+    this.action.next(option);
   }
 
   public get(

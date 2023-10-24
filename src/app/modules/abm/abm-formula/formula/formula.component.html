@@ -61,8 +61,7 @@
 
 <!-- mode: Test. -->
 <div class="relative flex w-full overflow-hidden" *ngIf="mode === 'Test'">
-  <fuse-drawer #drawer [name]="'machinesTest'" [opened]="drawerOpened" [mode]="'over'" [position]="'right'"
-    class="min-w-1/2">
+  <fuse-drawer [name]="'machinesTest'" [opened]="drawerOpened" [mode]="'over'" [position]="'right'" class="min-w-1/2">
     <div class="p-4 w-full">
       <div class="flex w-full p-4 row gap-3 justify-between items-baseline">
         <h1 class="text-2xl font-semibold mb-2 ml-4">{{ machine }}</h1>
@@ -156,7 +155,7 @@
     </div>
   </fuse-drawer>
 
-  <div class="flex-auto bg-gray-100 p-4" (click)="drawerOpened = false">
+  <div class="flex-auto bg-gray-100 p-4">
     <div class="flex-auto p-6 sm:p-10">
       <table mat-table [dataSource]="machines$" class="border-2 rounded-2xl w-full">
         <ng-container matColumnDef="name">

@@ -11,6 +11,7 @@ import { MachinesService } from 'app/shared/services/machines.service';
 
 // * Forms.
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'abm-formula',
@@ -18,6 +19,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
   styleUrls: ['./abm-formula.component.scss'],
 })
 export class ABMFormulaComponent implements AfterContentChecked {
+  private action$: Subscription;
+  public action: boolean = false;
+
   public title: string = '';
 
   // * Test mode:
@@ -33,6 +37,10 @@ export class ABMFormulaComponent implements AfterContentChecked {
     private formBuilder: FormBuilder,
     private cdref: ChangeDetectorRef
   ) {
+    this.action$ = this._formulas.actions$.subscribe((option: boolean) => {
+      option ? this.formTest.disable() : this.formTest.enable();
+      this.action = option;
+    });
     this.setForm();
   }
 

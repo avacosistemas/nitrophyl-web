@@ -43,7 +43,7 @@
         </form>
 
         <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-          (click)="addMachine()" *ngIf="title === 'Pruebas Fórmula'" [disabled]="status">
+          (click)="addMachine()" *ngIf="title === 'Pruebas Fórmula'" [disabled]="status || action">
           <span class="mat-button-wrapper"> Agregar </span>
           <span matripple="" class="mat-ripple mat-button-ripple"></span>
           <span class="mat-button-focus-overlay"></span>
@@ -60,7 +60,7 @@
       </button>
 
       <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base"
-        (click)="close()" *ngIf="title !== 'Consultar Fórmulas'">
+        (click)="close()" *ngIf="title !== 'Consultar Fórmulas'" [disabled]="action">
         <span class="mat-button-wrapper"> Cerrar </span>
         <span matripple="" class="mat-ripple mat-button-ripple"></span>
         <span class="mat-button-focus-overlay"></span>
