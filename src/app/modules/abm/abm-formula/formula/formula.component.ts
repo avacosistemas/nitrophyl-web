@@ -76,6 +76,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   // * mode: Test.
   private idMachine: number; // ID Maquina.
   public drawerOpened: boolean = false; // fuse-drawer [opened].
+  public selectedIndex: number = 0;
   public machine: string = ''; // Título.
   public formTest: FormGroup; // Formulario de pruebas.
 
@@ -86,11 +87,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public displayedColumnsParams: string[] = ['name', 'min', 'max'];
 
   public conditions$: string[] = []; // Condiciones asociadas a una maquina.
-  public displayedColumnsConditions: string[] = [
-    'condition',
-    'value',
-    'actions',
-  ];
+  public displayedColumnsConditions: string[] = [];
 
   public component: string = 'Mode';
 
@@ -249,6 +246,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formTest.disable();
         this.machine = res.data.maquina;
         this.displayedColumnsConditions = ['condition', 'value'];
+        this.selectedIndex = 0;
         this.toggleDrawerOpen();
       },
       error: (err: any) => console.error(error, err),
@@ -336,7 +334,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     let error: string = 'formula.component.ts => getMachines() => ';
     this._machines.getTest(id).subscribe({
       next: (res: any) => {
+        this.formTest.enable();
+        this.displayedColumnsConditions = ['condition', 'value', 'actions'];
         this.params$ = [];
+        this.conditions$ = [];
 
         for (let param of res.data) {
           this.formTest.addControl(
@@ -355,6 +356,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         }
 
         this.params$ = [...this.params$];
+        this.selectedIndex = 0;
 
         this.toggleDrawerOpen();
       },

@@ -74,7 +74,7 @@
       </div>
 
       <form [formGroup]="formTest">
-        <mat-tab-group>
+        <mat-tab-group [(selectedIndex)]="selectedIndex">
           <mat-tab label="Pruebas">
             <table mat-table [dataSource]="params$" class="border-2 rounded-2xl w-full">
               <!-- Columna de nombres -->
