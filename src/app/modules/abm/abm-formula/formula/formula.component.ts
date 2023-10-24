@@ -6,7 +6,7 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, forkJoin, of, Subscription } from 'rxjs';
+import { catchError, combineLatest, forkJoin, of, Subscription } from 'rxjs';
 
 // * Services.
 import { FormulasService } from 'app/shared/services/formulas.service';
@@ -29,6 +29,7 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  PatternValidator,
   Validators,
 } from '@angular/forms';
 
@@ -150,6 +151,17 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     if (option) {
       this.drawer.open();
       this._formulas.work(true);
+    } else if (this.formTest.enabled) {
+      const dialog = this.dialog.open(RemoveDialogComponent, {
+        maxWidth: '50%',
+        data: { data: null, seccion: 'formulas', boton: 'Cerrar' },
+      });
+      dialog.afterClosed().subscribe((res: boolean) => {
+        if (res) {
+          this.drawer.close();
+          this._formulas.work(false);
+        }
+      });
     } else {
       this.drawer.close();
       this._formulas.work(false);
@@ -251,11 +263,14 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     let error: string = 'formula.component.ts => getTest() => ';
     this._configTest.get(id).subscribe({
       next: (res: any) => {
-        this.setParams(res.data.parametros);
-        this.setConditions(res.data.condiciones);
+        this.displayedColumnsConditions = ['condition', 'value'];
+        this.formTest = this.formBuilder.group({});
+        this.formTest = this.formBuilder.group({
+          condition: null,
+        });
+        this.setValues(res.data.parametros, res.data.condiciones);
         this.formTest.disable();
         this.machine = res.data.maquina;
-        this.displayedColumnsConditions = ['condition', 'value'];
         this.selectedIndex = 0;
         this.changeDrawer(true);
       },
@@ -307,7 +322,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private setParams(params: IParams[]): void {
+  private setValues(
+    params: [{ id: number; nombre: string; minimo: number; maximo: number }],
+    conditions: [{ id: number; nombre: string; valor: number }]
+  ): void {
     this.params$ = [];
     for (let param of params) {
       this.formTest.addControl(
@@ -321,9 +339,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.params$.push(param.nombre);
     }
     this.params$ = [...this.params$];
-  }
 
-  private setConditions(conditions: IConditions[]): void {
     this.conditions$ = [];
     for (let condition of conditions) {
       this.formTest.addControl(
@@ -340,22 +356,17 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this._machines.getTest(id).subscribe({
       next: (res: any) => {
         this.formTest.enable();
+        this.formTest = this.formBuilder.group({});
+        this.formTest = this.formBuilder.group({
+          condition: null,
+        });
         this.displayedColumnsConditions = ['condition', 'value', 'actions'];
         this.params$ = [];
         this.conditions$ = [];
 
         for (let param of res.data) {
-          this.formTest.addControl(
-            `${param}.min`,
-            new FormControl(null, Validators.pattern(/^\d+(\.\d{1,4})?$/))
-          );
-          this.formTest.addControl(
-            `${param}.max`,
-            new FormControl(
-              null,
-              Validators.compose([Validators.pattern(/^\d+(\.\d{1,4})?$/)])
-            )
-          );
+          this.formTest.addControl(`${param}.min`, new FormControl(null));
+          this.formTest.addControl(`${param}.max`, new FormControl(null));
           this.params$.push(param);
           this.configureValidators(param);
         }
@@ -372,25 +383,41 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private configureValidators(param: string): void {
     let controls = this.formTest.controls;
+    const pattern: RegExp = /^\d+(\.\d{1,4})?$/;
 
-    controls[param + '.max'].valueChanges.subscribe((value: null | number) => {
+    controls[param + '.min'].valueChanges.subscribe((value: any) => {
       if (value) {
-        let min: number | null = controls[param + '.min'].value;
-        if (min && min > value) {
-          controls[param + '.max'].setErrors({ max: true });
+        if (!pattern.test(value)) {
+          controls[param + '.min'].setErrors({ pattern: true });
+        } else {
+          controls[param + '.min'].setErrors(null);
+        }
+      }
+    });
+
+    controls[param + '.max'].valueChanges.subscribe((value: any) => {
+      if (value) {
+        if (!pattern.test(value)) {
+          controls[param + '.max'].setErrors({ pattern: true });
         } else {
           controls[param + '.max'].setErrors(null);
         }
       }
     });
 
-    controls[param + '.min'].valueChanges.subscribe((value: null | number) => {
-      if (value) {
-        let max: null | number = controls[param + '.max'].value;
-        if (max && max < value) {
-          controls[param + '.min'].setErrors({ max: true });
+    combineLatest([
+      controls[param + '.min'].valueChanges,
+      controls[param + '.max'].valueChanges,
+    ]).subscribe(([minValue, maxValue]) => {
+      if (minValue && maxValue) {
+        if (
+          minValue > maxValue ||
+          !pattern.test(minValue) ||
+          !pattern.test(maxValue)
+        ) {
+          controls[param + '.max'].setErrors({ max: true });
         } else {
-          controls[param + '.min'].setErrors(null);
+          controls[param + '.max'].setErrors(null);
         }
       }
     });
