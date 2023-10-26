@@ -6,7 +6,14 @@ import {
   ViewChild,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, combineLatest, forkJoin, of, Subscription } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  forkJoin,
+  merge,
+  of,
+  Subscription,
+} from 'rxjs';
 
 // * Services.
 import { FormulasService } from 'app/shared/services/formulas.service';
@@ -221,7 +228,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.suscripcion.unsubscribe();
+    if (this.subscription) this.suscripcion.unsubscribe();
   }
 
   public ngAfterViewInit(): void {
@@ -366,9 +373,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.conditions$ = [];
 
         for (let param of res.data) {
+          this.params$.push(param);
           this.formTest.addControl(`${param}.min`, new FormControl(null));
           this.formTest.addControl(`${param}.max`, new FormControl(null));
-          this.params$.push(param);
           this.configureValidators(param);
         }
 
@@ -384,41 +391,47 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private configureValidators(param: string): void {
     let controls = this.formTest.controls;
-    const pattern: RegExp = /^\d+(\.\d{1,4})?$/;
+    let pattern: RegExp = /^\d+(\.\d{1,4})?$/;
 
-    controls[param + '.min'].valueChanges.subscribe((value: any) => {
-      if (value) {
-        if (!pattern.test(value)) {
-          controls[param + '.min'].setErrors({ pattern: true });
+    let min = controls[param + '.min'];
+    let max = controls[param + '.max'];
+
+    merge(min.valueChanges, max.valueChanges).subscribe(() => {
+      if (min.value && max.value) {
+        if (!pattern.test(min.value) || !pattern.test(max.value)) {
+          if (!pattern.test(min.value)) {
+            min.setErrors({ pattern: true });
+          } else {
+            min.setErrors(null);
+          }
+          if (!pattern.test(max.value)) {
+            max.setErrors({ pattern: true });
+          } else {
+            max.setErrors(null);
+          }
         } else {
-          controls[param + '.min'].setErrors(null);
+          let minVal: number = parseFloat(min.value);
+          let maxVal: number = parseFloat(max.value);
+          if (minVal > maxVal) {
+            max.setErrors({ max: true });
+          } else {
+            max.setErrors(null);
+          }
         }
-      }
-    });
-
-    controls[param + '.max'].valueChanges.subscribe((value: any) => {
-      if (value) {
-        if (!pattern.test(value)) {
-          controls[param + '.max'].setErrors({ pattern: true });
-        } else {
-          controls[param + '.max'].setErrors(null);
+      } else {
+        if (min.value) {
+          if (!pattern.test(min.value)) {
+            min.setErrors({ pattern: true });
+          } else {
+            min.setErrors(null);
+          }
         }
-      }
-    });
-
-    combineLatest([
-      controls[param + '.min'].valueChanges,
-      controls[param + '.max'].valueChanges,
-    ]).subscribe(([minValue, maxValue]) => {
-      if (minValue && maxValue) {
-        if (
-          minValue > maxValue ||
-          !pattern.test(minValue) ||
-          !pattern.test(maxValue)
-        ) {
-          controls[param + '.max'].setErrors({ max: true });
-        } else {
-          controls[param + '.max'].setErrors(null);
+        if (max.value) {
+          if (!pattern.test(max.value)) {
+            max.setErrors({ pattern: true });
+          } else {
+            max.setErrors(null);
+          }
         }
       }
     });
