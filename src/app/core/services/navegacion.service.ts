@@ -6,16 +6,13 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 })
 export class NavegacionService {
   private vistas: FuseNavigationItem[] = [
-    /*
-        {
-            icon: "heroicons_outline:chart-pie",
-            id: "example",
-            link: "/example",
-            title: "Example",
-            type: "basic"
-        },
-        */
-
+    // {
+    //     icon: "heroicons_outline:chart-pie",
+    //     id: "example",
+    //     link: "/example",
+    //     title: "Example",
+    //     type: "basic"
+    // },
     {
       icon: 'mat_solid:biotech',
       id: 'laboratorio',
@@ -30,14 +27,20 @@ export class NavegacionService {
           type: 'basic',
         },
         {
-    
           icon: 'heroicons_outline:calculator',
           id: 'maquinas',
           link: '/maquinas/grid',
           title: 'Máquinas',
           type: 'basic',
-        }
-      ]
+        },
+        {
+          icon: '', // ! Icono pendiente.
+          id: 'lotes',
+          link: '/lotes/grid',
+          title: 'Lotes',
+          type: 'basic',
+        },
+      ],
     },
     {
       icon: 'heroicons_outline:briefcase',
@@ -51,8 +54,8 @@ export class NavegacionService {
           link: '/clientes/grid',
           title: 'Clientes',
           type: 'basic',
-        }
-      ]
+        },
+      ],
     },
     {
       icon: 'mat_solid:engineering',
@@ -81,7 +84,7 @@ export class NavegacionService {
           title: 'Prouctos',
           type: 'basic',
         },
-      ]
+      ],
     },
     {
       icon: 'heroicons_outline:cog',
@@ -119,11 +122,9 @@ export class NavegacionService {
         },
       ],
     },
-    
-    
   ];
 
-  public get() {
+  public get(): FuseNavigationItem[] {
     return this.vistas;
   }
 }

@@ -26,19 +26,22 @@ export interface ITestTitle {
   providedIn: 'root',
 })
 export class FormulasService {
+  // public actions$ = this.action.asObservable();
+  public actions$: Observable<boolean>;
+
+  public events = new EventEmitter<any>();
+  public viewEvents = new EventEmitter<any>();
+
   private url: string = `${environment.server}formula`;
   private mode: string = '';
 
   // * Test mode:
   private testTitle: ITestTitle | undefined;
   private action = new Subject<boolean>();
-  public actions$ = this.action.asObservable();
-
-  public events = new EventEmitter<any>();
-  public viewEvents = new EventEmitter<any>();
 
   constructor(private http: HttpClient, private handler: HttpBackend) {
     this.http = new HttpClient(handler);
+    this.actions$ = new Subject<boolean>();
   }
 
   public work(option: boolean): void {
@@ -58,16 +61,24 @@ export class FormulasService {
   ): Observable<IFormulaResponse | IFormulasResponse> {
     let url: string;
 
-    if (!body) return this.http.get<IFormulasResponse>(`${this.url}`);
+    if (!body) {
+      return this.http.get<IFormulasResponse>(`${this.url}`);
+    }
 
-    if (body.id)
+    if (body.id) {
       return this.http.get<IFormulaResponse>(`${this.url}/${body.id}`);
+    }
 
     if (body.nombre && body.idMaterial) {
       url = `${this.url}?nombre=${body.nombre}&idMaterial=${body.idMaterial}`;
     } else {
-      if (body.nombre) url = `${this.url}?nombre=${body.nombre}`;
-      if (body.idMaterial) url = `${this.url}?idMaterial=${body.idMaterial}`;
+      if (body.nombre) {
+        url = `${this.url}?nombre=${body.nombre}`;
+      }
+
+      if (body.idMaterial) {
+        url = `${this.url}?idMaterial=${body.idMaterial}`;
+      }
     }
 
     return this.http.get<IFormulasResponse>(`${url}`);
@@ -95,7 +106,7 @@ export class FormulasService {
     return this.mode;
   }
 
-  public setMode(mode: string) {
+  public setMode(mode: string): void {
     this.mode = mode;
   }
 }
