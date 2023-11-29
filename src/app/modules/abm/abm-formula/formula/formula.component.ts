@@ -71,9 +71,7 @@ export interface IConditions {
   templateUrl: './formula.component.html',
 })
 export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
-  private suscripcion: Subscription;
-  private formula$: IFormula;
-  private id: number;
+  @ViewChild('drawer') drawer: MatDrawer;
 
   // * mode: Edit.
   public mode: string;
@@ -82,7 +80,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public materials$: IMaterial[] | undefined;
 
   // * mode: Test.
-  private idMachine: number; // ID Maquina.
   public drawerOpened: boolean = false; // fuse-drawer [opened].
   public selectedIndex: number = 0;
   public machine: string = ''; // Título.
@@ -97,9 +94,12 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public conditions$: string[] = []; // Condiciones asociadas a una maquina.
   public displayedColumnsConditions: string[] = [];
 
-  @ViewChild('drawer') drawer: MatDrawer;
-
   public component: string = 'Mode';
+
+  private suscripcion: Subscription;
+  private formula$: IFormula;
+  private id: number;
+  private idMachine: number; // ID Maquina.
 
   constructor(
     private _materials: MaterialsService,
@@ -112,7 +112,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private router: Router
   ) {
-    if (!this._formulas.getMode()) this.router.navigate(['/formulas/grid']);
+    if (!this._formulas.getMode()) {
+      this.router.navigate(['/formulas/grid']);
+    }
 
     this.mode = this._formulas.getMode();
 
@@ -124,7 +126,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.activeRoute.paramMap.subscribe(
         (param: any) => (this.id = param.get('id'))
       );
-      if (this.mode === 'Edit' || this.mode === 'Create') this.setForm();
+      if (this.mode === 'Edit' || this.mode === 'Create') {
+        this.setForm();
+      }
       if (this.mode === 'Test') {
         this.formTest = this.formBuilder.group({
           condition: null,
@@ -176,14 +180,14 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public saveTest(): void {
-    let body: ITest = {
+    const body: ITest = {
       idFormula: this.id,
       idMaquina: this.idMachine,
       parametros: [],
       condiciones: [],
     };
-    let controls = this.formTest.controls;
-    for (let param of this.params$) {
+    const controls = this.formTest.controls;
+    for (const param of this.params$) {
       if (!controls[param + '.min'].value && !controls[param + '.max'].value) {
         this.snackBar.open(
           `El parametro '${param}' debe contener al menos un valor asignado.`,
@@ -217,7 +221,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    for (let condition of this.conditions$) {
+    for (const condition of this.conditions$) {
       body.condiciones.push({
         nombre: condition,
         valor: controls[condition + '.value'].value,
@@ -228,7 +232,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    if (this.subscription) this.suscripcion.unsubscribe();
+    if (this.subscription) {
+      this.suscripcion.unsubscribe();
+    }
   }
 
   public ngAfterViewInit(): void {
@@ -244,7 +250,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.router.navigate(['/formulas/grid']);
       return;
     }
-    if (this.form.pristine == true) {
+    if (this.form.pristine === true) {
       this.router.navigate(['/formulas/grid']);
     } else {
       const dialog = this.dialog.open(RemoveDialogComponent, {
@@ -252,7 +258,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         data: { data: null, seccion: 'formulas', boton: 'Cerrar' },
       });
       dialog.afterClosed().subscribe((res: boolean) => {
-        if (res) this.router.navigate(['/formulas/grid']);
+        if (res) {
+          this.router.navigate(['/formulas/grid']);
+        }
       });
     }
   }
@@ -262,12 +270,16 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.form.markAllAsTouched();
       return;
     }
-    if (this.mode === 'Create') this.postFormula();
-    if (this.mode === 'Edit') this.putFormula();
+    if (this.mode === 'Create') {
+      this.postFormula();
+    }
+    if (this.mode === 'Edit') {
+      this.putFormula();
+    }
   }
 
   public getTest(id: number): void {
-    let error: string = 'formula.component.ts => getTest() => ';
+    const error: string = 'formula.component.ts => getTest() => ';
     this._configTest.get(id).subscribe({
       next: (res: any) => {
         this.displayedColumnsConditions = ['condition', 'value'];
@@ -288,13 +300,16 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public deleteCondition(row: any): void {
     this.formTest.removeControl(row);
-    this.conditions$ = this.conditions$.filter((x) => x !== row);
+    this.conditions$ = this.conditions$.filter((x: any) => x !== row);
   }
 
   public addCondition(): void {
-    let condition: string | undefined = this.formTest.controls.condition.value;
+    const condition: string | undefined =
+      this.formTest.controls.condition.value;
 
-    if (!condition || this.conditions$.includes(condition)) return;
+    if (!condition || this.conditions$.includes(condition)) {
+      return;
+    }
 
     this.formTest.addControl(`${condition}.value`, new FormControl(null));
     this.conditions$.push(condition);
@@ -303,7 +318,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private postMachine(body: ITest): void {
-    let error: string = 'formula.component.ts => postTest() => ';
+    const error: string = 'formula.component.ts => postTest() => ';
     this._configTest.post(body).subscribe({
       next: () => {
         this.getMachines();
@@ -320,7 +335,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getMachines(): void {
-    let error: string = 'formula.component.ts => getMachines() => ';
+    const error: string = 'formula.component.ts => getMachines() => ';
     this._configTest.getMachines(this.id).subscribe({
       next: (res: any) => {
         this.machines$ = [...res.data];
@@ -335,7 +350,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     conditions: [{ id: number; nombre: string; valor: number }]
   ): void {
     this.params$ = [];
-    for (let param of params) {
+    for (const param of params) {
       this.formTest.addControl(
         `${param.nombre}.min`,
         new FormControl(param.minimo)
@@ -349,7 +364,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.params$ = [...this.params$];
 
     this.conditions$ = [];
-    for (let condition of conditions) {
+    for (const condition of conditions) {
       this.formTest.addControl(
         `${condition.nombre}.value`,
         new FormControl(condition.valor)
@@ -360,7 +375,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private addMachine(id: number): void {
-    let error: string = 'formula.component.ts => getMachines() => ';
+    const error: string = 'formula.component.ts => getMachines() => ';
     this._machines.getTest(id).subscribe({
       next: (res: any) => {
         this.formTest.enable();
@@ -372,7 +387,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.params$ = [];
         this.conditions$ = [];
 
-        for (let param of res.data) {
+        for (const param of res.data) {
           this.params$.push(param);
           this.formTest.addControl(`${param}.min`, new FormControl(null));
           this.formTest.addControl(`${param}.max`, new FormControl(null));
@@ -390,11 +405,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private configureValidators(param: string): void {
-    let controls = this.formTest.controls;
-    let pattern: RegExp = /^\d+(\.\d{1,4})?$/;
+    const controls = this.formTest.controls;
+    const pattern: RegExp = /^\d+(\.\d{1,4})?$/;
 
-    let min = controls[param + '.min'];
-    let max = controls[param + '.max'];
+    const min = controls[param + '.min'];
+    const max = controls[param + '.max'];
 
     merge(min.valueChanges, max.valueChanges).subscribe(() => {
       if (min.value && max.value) {
@@ -410,8 +425,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
             max.setErrors(null);
           }
         } else {
-          let minVal: number = parseFloat(min.value);
-          let maxVal: number = parseFloat(max.value);
+          const minVal: number = parseFloat(min.value);
+          const maxVal: number = parseFloat(max.value);
           if (minVal > maxVal) {
             max.setErrors({ max: true });
           } else {
@@ -438,7 +453,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadData(): void {
-    let error: string = 'FormulaComponent. ngOnInit => loadData: ';
+    const error: string = 'FormulaComponent. ngOnInit => loadData: ';
     forkJoin([
       this._materials.get().pipe(
         catchError((err: any) => {
@@ -459,6 +474,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.form.controls.date.setValue(formula.data.fecha);
         this.form.controls.name.setValue(formula.data.nombre);
         this.form.controls.norma.setValue(formula.data.norma);
+        this.form.controls.observaciones.setValue(formula.data.observaciones);
         this.formula$ = formula.data;
         if (this.materialsFail) {
           this.materials$ = [
@@ -480,7 +496,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getMaterials(): void {
-    let error: string = 'FormulaComponent => getMaterials(): ';
+    const error: string = 'FormulaComponent => getMaterials(): ';
     this._materials.get().subscribe({
       next: (res: IMaterialsResponse) => (this.materials$ = res.data),
       error: (err) => {
@@ -493,7 +509,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private getFormula(): void {
-    let error: string = 'FormulaComponent => getFormula(): ';
+    const error: string = 'FormulaComponent => getFormula(): ';
     this._formulas.get({ id: this.id }).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
@@ -501,6 +517,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           this.form.controls.date.setValue(formula.data.fecha);
           this.form.controls.name.setValue(formula.data.nombre);
           this.form.controls.material.setValue(formula.data.material);
+          this.form.controls.observaciones.setValue(formula.data.observaciones);
         }
       },
       error: (err: any) => console.error(error, err),
@@ -509,18 +526,20 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private postFormula(): void {
-    let error: string = 'FormulaComponent => postFormula(): ';
-    let body: IFormula = {
+    const error: string = 'FormulaComponent => postFormula(): ';
+    const body: IFormula = {
       nombre: this.form.controls.name.value,
       idMaterial: this.form.controls.material.value,
       norma: this.form.controls.norma.value,
+      observaciones: this.form.controls.observaciones.value,
     };
     this._formulas.post(body).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
           this.openSnackBar(true);
-          this._formulas.setMode('Edit');
-          this.router.navigate([`/formulas/edit/${formula.data.id}`]);
+          // this._formulas.setMode('Edit');
+          // this.router.navigate([`/formulas/edit/${formula.data.id}`]);
+          this.router.navigate(['/formulas/grid']);
         }
       },
       error: (err) => {
@@ -532,20 +551,21 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private putFormula(): void {
-    let error: string = 'FormulaComponent => putFormula(): ';
-    let body: IFormula = {
+    const error: string = 'FormulaComponent => putFormula(): ';
+    const body: IFormula = {
       id: this.formula$.id,
       nombre: this.form.controls.name.value,
       idMaterial: this.form.controls.material.value,
       material: this.formula$.material,
       norma: this.form.controls.norma.value,
+      observaciones: this.form.controls.observaciones.value,
     };
     this._formulas.put(body).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
           this.openSnackBar(true);
           this._formulas.setMode('Edit');
-          this.router.navigate([`/formulas/grid`]);
+          this.router.navigate(['/formulas/grid']);
         }
       },
       error: (err) => {
@@ -564,7 +584,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         { value: null, disabled: this.mode === 'Edit' },
         Validators.compose([
           Validators.required,
-          Validators.minLength(3),
+          Validators.minLength(1),
           Validators.maxLength(100),
         ]),
       ],
@@ -580,13 +600,18 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           Validators.maxLength(100),
         ]),
       ],
+      observaciones: [null, Validators.maxLength(255)],
     });
   }
 
   private subscription(): void {
     this.suscripcion = this._formulas.events.subscribe((data: any) => {
-      if (data === 1) this.close();
-      if (data === 3) this.create();
+      if (data === 1) {
+        this.close();
+      }
+      if (data === 3) {
+        this.create();
+      }
       if (data[0] === 4) {
         this.idMachine = data[1];
         this.addMachine(data[1]);
@@ -596,10 +621,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private openSnackBar(option: boolean): void {
-    let message: string = option
+    const message: string = option
       ? 'Cambios realizados.'
       : 'No se pudieron realizar los cambios.';
-    let css: string = option ? 'green' : 'red';
+    const css: string = option ? 'green' : 'red';
     this.snackBar.open(message, 'X', {
       duration: 5000,
       panelClass: `${css}-snackbar`,

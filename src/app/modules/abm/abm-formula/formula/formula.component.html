@@ -22,7 +22,7 @@
           El nombre es requerido.
         </mat-error>
         <mat-error class="mb-1" *ngIf="form.get('name').hasError('minlength')">
-          Mínimo 3 caracteres.
+          Mínimo 1 caracter.
         </mat-error>
         <mat-error class="mb-1" *ngIf="form.get('name').hasError('maxlength')">
           Máximo 100 caracteres.
@@ -53,6 +53,14 @@
         </mat-error>
         <mat-error class="mb-1" *ngIf="form.get('norma').hasError('maxlength')">
           Máximo 100 caracteres.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-full">
+        <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
+        <textarea matInput [formControlName]="'observaciones'" placeholder="Observaciones" maxlength="256"></textarea>
+        <mat-error class="mb-1" *ngIf="form.get('norma').hasError('maxlength')">
+          Máximo 255 caracteres.
         </mat-error>
       </mat-form-field>
     </form>
