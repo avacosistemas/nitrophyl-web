@@ -5,13 +5,23 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { map, Observable, Subscription } from 'rxjs';
+import { Router } from '@angular/router';
+import { FormControl } from '@angular/forms';
 
 // * Services.
-import { LotService } from 'app/shared/services/lot.service';
+import { ConfigTestService } from 'app/shared/services/config-test.service';
+import { AssayService } from 'app/shared/services/assay.service';
+
+// * Interfaces.
+import {
+  IConfigTest,
+  IConfigTestResponse,
+  IConfigTestsResponse,
+} from 'app/shared/models/config-test.interface';
 
 @Component({
-  selector: 'abm-lots',
+  selector: 'abm-assays',
   template: `<div
     class="absolute inset-0 flex flex-col min-w-0 overflow-hidden"
   >
@@ -47,7 +57,7 @@ import { LotService } from 'app/shared/services/lot.service';
                 ></path>
               </svg>
             </mat-icon>
-            <span class="ml-1 text-secondary"> Lotes </span>
+            <span class="ml-1 text-secondary"> Ensayos </span>
           </div>
         </div>
 
@@ -59,15 +69,29 @@ import { LotService } from 'app/shared/services/lot.service';
       </div>
 
       <div
-        class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2"
+        class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2 gap-4"
       >
+        <mat-form-field class="mt-4 w-full">
+          <mat-select
+            [formControl]="machine"
+            placeholder="Seleccione una maquina"
+          >
+            <mat-option
+              *ngFor="let machine of machines$ | async"
+              [value]="machine.id"
+            >
+              {{ machine.maquina }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
         <button
-          mat-flat-button=""
-          class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-          (click)="create()"
-          [disabled]="drawer"
+          mat-flat-button
+          class="mat-focus-indicator mat-flat-button mat-button-base mat-accent w-max"
+          (click)="add()"
+          [disabled]="!machine.value || drawer"
         >
-          <span class="mat-button-wrapper"> Crear nuevo lote </span>
+          <span class="mat-button-wrapper"> Agregar </span>
           <span matripple="" class="mat-ripple mat-button-ripple"></span>
           <span class="mat-button-focus-overlay"></span>
         </button>
@@ -81,31 +105,59 @@ import { LotService } from 'app/shared/services/lot.service';
     </div>
   </div>`,
 })
-export class ABMLotsComponent
+export class ABMAssaysComponent
   implements OnInit, AfterContentChecked, OnDestroy
 {
-  public title: string = 'Lotes';
+  public title: string = 'Ensayos';
   public drawer: boolean; // Drawer state.
+  public machine: FormControl = new FormControl();
+  public machines$: Observable<IConfigTest[]>; // Machines list.
 
   private subscription: Subscription; // Drawer subscription.
 
   constructor(
-    private lotService: LotService,
+    private configTestService: ConfigTestService,
+    private assayService: AssayService,
+    private router: Router,
     private cdref: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
-    this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
-      this.drawer = drawer;
-    });
+    if (!this.assayService.lot || !this.assayService.lot.idFormula) {
+      this.router.navigate(['../../lotes/grid']);
+      return;
+    }
+
+    this.machines$ = this.configTestService
+      .getMachines(this.assayService.lot.idFormula)
+      .pipe(
+        map((res: IConfigTestsResponse | IConfigTestResponse) =>
+          Array.isArray(res.data) ? res.data : [res.data]
+        )
+      );
+
+    this.subscription = this.assayService.drawer$.subscribe(
+      (drawer: boolean) => {
+        this.drawer = drawer;
+        if (drawer) {
+          this.machine.disable();
+        } else {
+          this.machine.enable();
+        }
+      }
+    );
   }
 
   public ngAfterContentChecked(): void {
     this.cdref.detectChanges();
   }
 
-  public create(): void {
-    this.lotService.toggleDrawer();
+  public add(): void {
+    if (this.drawer) {
+      return;
+    }
+    this.assayService.machine = this.machine.value;
+    this.assayService.toggleDrawer();
   }
 
   public ngOnDestroy(): void {

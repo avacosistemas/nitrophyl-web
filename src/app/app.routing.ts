@@ -195,6 +195,13 @@ export const appRoutes: Route[] = [
             (m: any) => m.ABMLotsModule
           ),
       },
+      {
+        path: 'ensayos',
+        loadChildren: () =>
+          import('app/modules/abm/abm-assays/abm-assays.module').then(
+            (m: any) => m.ABMAssaysModule
+          ),
+      },
     ],
   },
 

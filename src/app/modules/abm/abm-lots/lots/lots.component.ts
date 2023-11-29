@@ -1,10 +1,12 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { map, Observable, startWith, Subscription } from 'rxjs';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 // * Services.
 import { LotService } from 'app/shared/services/lot.service';
 import { FormulasService } from 'app/shared/services/formulas.service';
+import { AssayService } from 'app/shared/services/assay.service';
 
 // * Interfaces.
 import { ILot, ILotsResponse } from 'app/shared/models/lot.interface';
@@ -58,6 +60,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private lotService: LotService,
     private formulaService: FormulasService,
+    private assayService: AssayService,
+    private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog
   ) {}
@@ -101,6 +105,11 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public displayFn(formula: IFormula): string {
     return formula && formula.nombre ? formula.nombre : '';
+  }
+
+  public get(row: ILot): void {
+    this.assayService.lot = row;
+    this.router.navigate(['../../ensayos/grid']);
   }
 
   public create(): void {
