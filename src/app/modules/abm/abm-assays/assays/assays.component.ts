@@ -1,5 +1,4 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { map, Observable, Subscription } from 'rxjs';
 import {
   AbstractControl,
@@ -18,6 +17,9 @@ import { ConfigTestService } from 'app/shared/services/config-test.service';
 import {
   IAssay,
   IAssayCreate,
+  IAssayDetail,
+  IAssayDetailResponse,
+  IAssayDetailsResponse,
   IAssayResponse,
   IAssaysResponse,
 } from 'app/shared/models/assay.interface';
@@ -34,6 +36,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-assays',
@@ -41,6 +44,8 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 })
 export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   public component: string = 'all';
+  public mode: string; // Mode: 'create' or 'view'.
+  public title: string;
   public drawer: boolean; // Drawer state.
 
   public assays$: Observable<IAssay[]>; // Assays list.
@@ -59,6 +64,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // * Table assay (drawer).
   public assay: IConfigTest;
+  public assay$: Observable<IAssayDetail[]>;
   public displayedColumnsAssay: string[] = [
     'nombre',
     'minimo',
@@ -68,6 +74,8 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     'estado',
   ];
 
+  public assayObservations: string;
+
   private icons: { [key: string]: Icon } = {
     green: { color: 'green', icon: 'check_circle' },
     yellow: { color: 'yellow', icon: 'warning' },
@@ -75,45 +83,62 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     help: { color: 'grey', icon: 'help', tooltip: 'datos inválidos' },
   };
   private machine: number;
+  private lot: number;
   private subscription: Subscription; // Drawer subscription.
 
   constructor(
     private assayService: AssayService,
     private configTestService: ConfigTestService,
+    private router: Router,
+    private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog,
-    private router: Router
+    private dialog: MatDialog
   ) {}
 
   public ngOnInit(): void {
-    // if (!this.assayService.lot.id) {
-    //   this.router.navigate(['../../lotes/grid']);
-    //   return;
-    // }
+    this.route.params.subscribe((params: { id: number }) => {
+      this.lot = params?.id;
+    });
 
-    this.assays$ = this.assayService
-      .get(this.assayService?.lot?.id)
-      .pipe(
-        map((res: IAssaysResponse | IAssayResponse) =>
-          Array.isArray(res.data) ? res.data : [res.data]
-        )
-      );
+    if (!this.assayService.lot?.id || !this.lot) {
+      return;
+    }
 
     this.subscription = this.assayService.drawer$.subscribe(
       (drawer: boolean) => {
+        this.mode = this.assayService.mode;
         if (drawer) {
-          this.machine = this.assayService.machine;
-          this._get();
+          if (this.mode === 'create') {
+            this.title = 'Nuevo ensayo';
+            this.machine = this.assayService.machine;
+            this._get();
+            this.form = this.formBuilder.group({
+              observation: new FormControl(null, Validators.maxLength(255)),
+              params: this.formBuilder.array([]),
+            });
+          }
+          if (this.mode === 'view') {
+            this.assay$ = this.assayService
+              .getAssay(this.machine)
+              .pipe(
+                map((res: IAssayDetailResponse | IAssayDetailsResponse) =>
+                  Array.isArray(res.data) ? res.data : [res.data]
+                )
+              );
+          }
         }
         this.drawer = drawer;
       }
     );
 
-    this.form = this.formBuilder.group({
-      observation: new FormControl(null, Validators.maxLength(255)),
-      params: this.formBuilder.array([]),
-    });
+    this.assays$ = this.assayService
+      .get(this.lot)
+      .pipe(
+        map((res: IAssaysResponse | IAssayResponse) =>
+          Array.isArray(res.data) ? res.data : [res.data]
+        )
+      );
   }
 
   public ngAfterViewInit(): void {
@@ -123,11 +148,23 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  public icon(element: AbstractControl): Icon {
-    const min: number | null = element.get('minimo')?.value;
-    const max: number | null = element.get('maximo')?.value;
-    const result: number | null = element.get('resultado')?.value;
-    const round: number | null = element.get('redondeo')?.value;
+  public icon(element: AbstractControl | IAssayDetail): Icon {
+    let min: number | null;
+    let max: number | null;
+    let result: number | null;
+    let round: number | null;
+
+    if (element instanceof AbstractControl) {
+      min = element.get('minimo')?.value;
+      max = element.get('maximo')?.value;
+      result = element.get('resultado')?.value;
+      round = element.get('redondeo')?.value;
+    } else {
+      min = element.minimo;
+      max = element.maximo;
+      result = element.resultado;
+      round = element.redondeo;
+    }
 
     if (this._range(round, min, max) && round === result) {
       return this.icons.green;
@@ -139,47 +176,79 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.icons.help;
   }
 
+  public view(assay: IAssay): void {
+    this.machine = assay.id;
+    this.title = assay?.maquina;
+    this.assayObservations = assay?.observaciones;
+
+    this.assayService.mode = 'view';
+    this.assayService.toggleDrawer();
+  }
+
   public save(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
+    let failed: boolean = false;
+
     const assay: IAssayCreate = {
+      idLote: this.lot,
       idConfiguracionPrueba: this.machine,
       observaciones: this.form.get('observation')?.value ?? '',
       resultados: this.form
         .get('params')
-        .value.map((param: IParams, index: number) => ({
-          idConfiguracionPruebaParametro: Number(
-            this.assay.parametros[index].id
-          ),
-          redondeo: Number(param.redondeo),
-          resultado: Number(param.resultado),
-        })),
+        .value.map((param: IParams, index: number) => {
+          if (
+            (param.minimo === null || param.redondeo < param.minimo) &&
+            (param.maximo === null || param.redondeo > param.maximo) &&
+            param.resultado !== null &&
+            param.redondeo !== param.resultado
+          ) {
+            this._snackBar(false, param.nombre);
+            failed = true;
+            return;
+          }
+          return {
+            idConfiguracionPruebaParametro: Number(
+              this.assay.parametros[index].id
+            ),
+            redondeo: Number(param.redondeo),
+            resultado: Number(param.resultado),
+          };
+        }),
     };
 
-    this._post(assay);
+    if (!failed) {
+      this._post(assay);
+    }
   }
 
   public close(): void {
-    if (!this.form.pristine) {
-      const dialog = this.dialog.open(RemoveDialogComponent, {
-        maxWidth: '50%',
-        data: { data: null, seccion: '', boton: 'Cerrar' },
-      });
-      dialog.afterClosed().subscribe((res: boolean) => {
-        if (res) {
-          this._reset();
-        }
-      });
+    if (this.mode === 'create') {
+      if (!this.form.pristine) {
+        const dialog = this.dialog.open(RemoveDialogComponent, {
+          maxWidth: '50%',
+          data: { data: null, seccion: '', boton: 'Cerrar' },
+        });
+        dialog.afterClosed().subscribe((res: boolean) => {
+          if (res) {
+            this._reset();
+          }
+        });
+      } else {
+        this._reset();
+      }
     } else {
       this._reset();
     }
   }
 
   public ngOnDestroy(): void {
-    this.form.reset();
+    if (this.mode === 'create') {
+      this.form.reset();
+    }
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
@@ -223,6 +292,13 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
       next: () => {
         this._snackBar(true);
         this._reset();
+        this.assays$ = this.assayService
+          .get(this.lot)
+          .pipe(
+            map((res: IAssaysResponse | IAssayResponse) =>
+              Array.isArray(res.data) ? res.data : [res.data]
+            )
+          );
       },
       error: (err: any) => {
         console.log(error, err);
@@ -231,11 +307,17 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private _snackBar(option: boolean): void {
-    const message: string = option
+  private _snackBar(option?: boolean, test?: string): void {
+    let message: string = option
       ? 'Cambios realizados correctamente.'
       : 'No se han podido realizar los cambios.';
+
     const css: string = option ? 'green' : 'red';
+
+    if (test) {
+      message = 'Datos inválidos en la prueba: ' + test;
+    }
+
     this.snackBar.open(message, 'X', {
       duration: 5000,
       panelClass: `${css}-snackbar`,
@@ -243,7 +325,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private _reset(): void {
-    this.form.reset();
+    if (this.mode === 'create') {
+      this.form.reset();
+    }
     this.assayService.toggleDrawer();
   }
 

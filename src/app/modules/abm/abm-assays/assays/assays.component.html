@@ -1,15 +1,15 @@
 <mat-drawer-container hasBackdrop="true" class="w-full">
-  <mat-drawer mode="over" position="end" [opened]="drawer" [autoFocus]="false" disableClose="true" class="w-1/2">
+  <mat-drawer mode="over" position="end" [opened]="drawer" [autoFocus]="false" disableClose="true" class="w-fit">
     <div class="w-full">
       <div class="p-4 w-full">
         <div class="flex w-full py-4 row gap-3 justify-between items-center">
           <!-- Title -->
-          <h1 class="text-2xl font-semibold pl-2">Nuevo Ensayo </h1>
+          <h1 class="text-2xl font-semibold pl-2"> {{ title }} </h1>
 
           <div>
             <!-- Create lot -->
             <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
-              (click)="save()">
+              (click)="save()" *ngIf="mode === 'create'">
               <!-- [disabled]="form.invalid" -->
               <span class="mat-button-wrapper"> Guardar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
@@ -25,7 +25,7 @@
           </div>
         </div>
 
-        <form [formGroup]="form">
+        <form [formGroup]="form" *ngIf="mode === 'create'">
           <table mat-table [dataSource]="paramsArray" formArrayName="params" class="border-2 rounded-2xl w-full">
             <ng-container matColumnDef="nombre">
               <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full"> Nombre </th>
@@ -40,18 +40,24 @@
               <td mat-cell *matCellDef="let element"> {{ element.get('maximo').value }} </td>
             </ng-container>
             <ng-container matColumnDef="resultado">
-              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full px-4"> Resultado </th>
+              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full px-2"> Resultado </th>
               <td mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
-                <mat-form-field class="w-full p-4 flex" style="margin-bottom: -16px;">
-                  <input matInput formControlName="resultado" placeholder="resultado" required />
+                <mat-form-field class="w-full p-2 flex" style="margin-bottom: -16px;">
+                  <input #result matInput formControlName="resultado" placeholder="resultado" required />
+                  <mat-error>
+                    {{ !result?.value ? 'Resultado requerido.' : 'Fórmato no valido.' }}
+                  </mat-error>
                 </mat-form-field>
               </td>
             </ng-container>
             <ng-container matColumnDef="redondeo">
-              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full px-4"> Redondeo </th>
+              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full px-2"> Redondeo </th>
               <td mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
-                <mat-form-field class="w-full p-4 flex" style="margin-bottom: -16px;">
-                  <input matInput formControlName="redondeo" placeholder="redondeo" required />
+                <mat-form-field class="w-full p-2 flex" style="margin-bottom: -16px;">
+                  <input #round matInput formControlName="redondeo" placeholder="redondeo" required />
+                  <mat-error>
+                    {{ !round?.value ? 'Resultado requerido.' : 'Fórmato no valido.' }}
+                  </mat-error>
                 </mat-form-field>
               </td>
             </ng-container>
@@ -70,10 +76,50 @@
 
           <mat-form-field class="w-full pt-4" appearance="outline">
             <mat-label> Observaciones </mat-label>
-            <textarea matInput formControlName="observation" placeholder="Ingrese las respectivas observaciones"
-              maxlength="255"></textarea>
+            <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
           </mat-form-field>
         </form>
+
+        <ng-container *ngIf="mode === 'view'">
+          <table mat-table [dataSource]="assay$ | async" class="border-2 rounded-2xl w-full">
+            <ng-container matColumnDef="nombre">
+              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full"> Nombre </th>
+              <td mat-cell *matCellDef="let element" class="pr-6"> {{ element.nombre }} </td>
+            </ng-container>
+            <ng-container matColumnDef="minimo">
+              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full"> Mínimo </th>
+              <td mat-cell *matCellDef="let element"> {{ element.minimo }}</td>
+            </ng-container>
+            <ng-container matColumnDef="maximo">
+              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full"> Máximo </th>
+              <td mat-cell *matCellDef="let element"> {{ element.maximo }} </td>
+            </ng-container>
+            <ng-container matColumnDef="resultado">
+              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full px-2"> Resultado </th>
+              <td mat-cell *matCellDef="let element"> {{ element.resultado }} </td>
+            </ng-container>
+            <ng-container matColumnDef="redondeo">
+              <th mat-header-cell *matHeaderCellDef class="min-w-20 w-full px-2"> Redondeo </th>
+              <td mat-cell *matCellDef="let element"> {{ element.redondeo }} </td>
+            </ng-container>
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef> Estado </th>
+              <td mat-cell *matCellDef="let element" class="text-center">
+                <mat-icon [style.color]="icon(element).color" [matTooltip]="icon(element)?.tooltip">
+                  {{ icon(element).icon }}
+                </mat-icon>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsAssay"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsAssay;"></tr>
+          </table>
+
+          <mat-form-field class="w-full pt-4" appearance="outline">
+            <mat-label> Observaciones </mat-label>
+            <textarea disabled matInput [value]="this.assayObservations"></textarea>
+          </mat-form-field>
+        </ng-container>
       </div>
     </div>
   </mat-drawer>
@@ -101,7 +147,11 @@
           </ng-container>
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="text-right"> Acciones </th>
-            <td mat-cell *matCellDef="let row" class="text-right">Detalle</td>
+            <td mat-cell *matCellDef="let row" class="text-right">
+              <button (click)="view(row)" matTooltip="Ver" class="mr-4">
+                <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
+              </button>
+            </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumnsAssays"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumnsAssays;"></tr>

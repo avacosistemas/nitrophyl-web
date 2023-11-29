@@ -15,7 +15,7 @@ const routes: Route[] = [
   {
     path: '',
     component: ABMAssaysComponent,
-    children: [{ path: 'grid', component: AssaysComponent }],
+    children: [{ path: ':id', component: AssaysComponent }],
   },
 ];
 

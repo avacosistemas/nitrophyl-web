@@ -9,6 +9,8 @@ import { environment } from 'environments/environment';
 import {
   IAssay,
   IAssayCreate,
+  IAssayDetailResponse,
+  IAssayDetailsResponse,
   IAssayResponse,
   IAssaysResponse,
 } from '../models/assay.interface';
@@ -22,7 +24,8 @@ export class AssayService {
 
   private _lot: ILot;
   private _machine: number;
-  private readonly _url: string = `${environment.server}ensayo`;
+  private _mode: string;
+  private readonly _url: string = `${environment.server}`;
   private readonly _drawer: BehaviorSubject<boolean>;
 
   constructor(private readonly http: HttpClient, handler: HttpBackend) {
@@ -48,12 +51,29 @@ export class AssayService {
     this._lot = lot;
   }
 
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public get mode(): string {
+    return this._mode;
+  }
+
+  public set mode(mode: string) {
+    this._mode = mode;
+  }
+
   public get(id: number): Observable<IAssaysResponse> {
-    return this.http.get<IAssaysResponse>(`${this._url}/${id}`);
+    return this.http.get<IAssaysResponse>(`${this._url}ensayo/${id}`);
+  }
+
+  public getAssay(
+    id: number
+  ): Observable<IAssayDetailsResponse | IAssayDetailResponse> {
+    return this.http.get<IAssayDetailsResponse | IAssayDetailResponse>(
+      `${this._url}ensayoResultado/${id}`
+    );
   }
 
   public post(assay: IAssayCreate): Observable<IAssayResponse> {
-    return this.http.post<IAssayResponse>(this._url, assay);
+    return this.http.post<IAssayResponse>(`${this._url}ensayo`, assay);
   }
 
   public toggleDrawer(): void {

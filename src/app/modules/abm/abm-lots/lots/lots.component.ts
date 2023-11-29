@@ -109,7 +109,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public get(row: ILot): void {
     this.assayService.lot = row;
-    this.router.navigate(['../../ensayos/grid']);
+    this.router.navigate([`../../ensayos/${row.id}`]);
   }
 
   public create(): void {
@@ -168,6 +168,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       next: () => {
         this._snackBar(true);
         this._reset();
+        this.lots$ = this.lotService
+          .get()
+          .pipe(map((res: ILotsResponse) => res.data));
       },
       error: (err: any) => {
         console.log(error, err);

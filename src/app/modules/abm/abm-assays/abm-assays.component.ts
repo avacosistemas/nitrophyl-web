@@ -143,6 +143,7 @@ export class ABMAssaysComponent
           this.machine.disable();
         } else {
           this.machine.enable();
+          this.machine.reset();
         }
       }
     );
@@ -157,6 +158,7 @@ export class ABMAssaysComponent
       return;
     }
     this.assayService.machine = this.machine.value;
+    this.assayService.mode = 'create';
     this.assayService.toggleDrawer();
   }
 
