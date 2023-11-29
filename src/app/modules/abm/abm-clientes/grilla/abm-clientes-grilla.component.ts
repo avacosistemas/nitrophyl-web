@@ -50,7 +50,8 @@ export class ABMClientesGrillaComponent implements OnInit {
             webSite: [null],
             nombre:  [null, [Validators.required]],
             observacionesCobranzas: [null],
-            observacionesEntrega: [null]
+            observacionesEntrega: [null],
+            telefono: [null, [Validators.required]],
         });
     }
 
@@ -88,7 +89,8 @@ export class ABMClientesGrillaComponent implements OnInit {
             webSite: element.webSite,
             provincia: element.provincia,
             observacionesCobranzas: element.observacionesCobranzas,
-            observacionesEntrega: element.observacionesEntrega
+            observacionesEntrega: element.observacionesEntrega,
+            telefono: element.telefono
         })
         this.expandedElement = this.expandedElement === element ? null : element;
     }

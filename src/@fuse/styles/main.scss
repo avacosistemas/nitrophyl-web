@@ -7,3 +7,12 @@
 @import 'overrides/highlightjs';
 @import 'overrides/perfect-scrollbar';
 @import 'overrides/quill';
+
+thead {
+    background-color: #2C3344 !important;
+}
+
+thead tr th {
+    color: var(--fuse-on-accent) !important;
+    font-size: 14px !important;
+}

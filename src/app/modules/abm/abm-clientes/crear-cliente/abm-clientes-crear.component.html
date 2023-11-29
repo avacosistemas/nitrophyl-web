@@ -86,7 +86,18 @@
                         </mat-form-field>
                     </div>
                     <div class="row flex gap-3 left-around">
-                        <mat-form-field class="w-1/4">
+                        <mat-form-field class="w-1/3">
+                            <mat-label>Teléfono</mat-label>
+                            <input
+                                id="telefono"
+                                matInput
+                                [formControlName]="'telefono'"
+                                placeholder="Teléfono">
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefono').hasError('required')">
+                                    El teléfono es requerido
+                                </mat-error>
+                        </mat-form-field>
+                        <mat-form-field class="w-1/3">
                             <mat-label>CUIT</mat-label>
                             <input
                                 id="cuit"
@@ -98,7 +109,7 @@
                                     El cuit es requerido
                                 </mat-error>
                         </mat-form-field>             
-                        <mat-form-field class="w-3/4">
+                        <mat-form-field class="w-1/3">
                             <mat-label>Página</mat-label>
                             <input
                                 id="webSite"
