@@ -10,7 +10,7 @@ export const environment = {
   // server: 'http://localhost:8080/ws-rest-authentication/',
   // server: 'http://gestion-pc:8080/ws-rest-authentication/',
 
-  server: 'http://localhost:8080/nitro-api-test/',
+  server: 'http://localhost:8080/avaco-api/',
   // server: 'http://gestion-pc:8080/nitro-api-test/',
   // server: 'http://gestion-pc:8080/nitro-api-test/',
 };
