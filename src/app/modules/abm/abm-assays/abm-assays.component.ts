@@ -71,7 +71,7 @@ import {
       <div
         class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2 gap-4"
       >
-        <mat-form-field class="mt-4 w-full">
+        <mat-form-field class="mt-4 w-full max-w-60">
           <mat-select
             [formControl]="machine"
             placeholder="Seleccione una maquina"
@@ -87,11 +87,22 @@ import {
 
         <button
           mat-flat-button
-          class="mat-focus-indicator mat-flat-button mat-button-base mat-accent w-max"
+          class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30"
           (click)="add()"
           [disabled]="!machine.value || drawer"
         >
           <span class="mat-button-wrapper"> Agregar </span>
+          <span matripple="" class="mat-ripple mat-button-ripple"></span>
+          <span class="mat-button-focus-overlay"></span>
+        </button>
+
+        <button
+          mat-stroked-button
+          class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30"
+          (click)="close()"
+          [disabled]="drawer"
+        >
+          <span class="mat-button-wrapper"> Cerrar </span>
           <span matripple="" class="mat-ripple mat-button-ripple"></span>
           <span class="mat-button-focus-overlay"></span>
         </button>
@@ -160,6 +171,10 @@ export class ABMAssaysComponent
     this.assayService.machine = this.machine.value;
     this.assayService.mode = 'create';
     this.assayService.toggleDrawer();
+  }
+
+  public close(): void {
+    this.router.navigate(['../../lotes/grid']);
   }
 
   public ngOnDestroy(): void {
