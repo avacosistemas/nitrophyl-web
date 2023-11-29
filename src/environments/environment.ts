@@ -4,15 +4,11 @@
 
 export const environment = {
   production: false,
-  //server: 'http://nitrophyl-env.eba-uipv2mcj.us-east-1.elasticbeanstalk.com/'
-  //server: 'http://7.100.170.120:8080/ws-rest-authentication/'
-
-  // server: 'http://localhost:8080/ws-rest-authentication/',
+  server: 'http://localhost:8080/ws-rest-authentication/',
+  // server: 'http://nitrophyl-env.eba-uipv2mcj.us-east-1.elasticbeanstalk.com/',
+  // server: 'http://7.100.170.120:8080/ws-rest-authentication/',
+  // server: 'http://gestion-pc:8080/nitro-api-test/',
   // server: 'http://gestion-pc:8080/ws-rest-authentication/',
-
-  server: 'http://localhost:8080/avaco-api/',
-  // server: 'http://gestion-pc:8080/nitro-api-test/',
-  // server: 'http://gestion-pc:8080/nitro-api-test/',
 };
 
 /*
