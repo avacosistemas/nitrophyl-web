@@ -133,6 +133,17 @@
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
+                        <mat-form-field class="w-1/2">
+                            <mat-label>Observaciones Facturación</mat-label>
+                            <textarea
+                                id="observacionesFacturacion"
+                                matInput
+                                [formControlName]="'observacionesFacturacion'"
+                                placeholder="Observaciones Facturación"></textarea>
+                                <mat-error class="mb-1" *ngIf="clienteForm.get('observacionesFacturacion').hasError('required')">
+                                    El código es requerido
+                                </mat-error>
+                        </mat-form-field>
                     </div>
                 </form>
             </div>

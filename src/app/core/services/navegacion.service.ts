@@ -34,7 +34,7 @@ export class NavegacionService {
           type: 'basic',
         },
         {
-          icon: '', // ! Icono pendiente.
+          icon: 'mat_solid:auto_awesome_motion',
           id: 'lotes',
           link: '/lotes/grid',
           title: 'Lotes',
