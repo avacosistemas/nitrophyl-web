@@ -23,7 +23,7 @@ export class ABMClientesGrillaComponent implements OnInit {
     component = "Grilla";
     clienteForm: FormGroup;
     dataSource;
-    columnsToDisplay = ['razonSocial', 'mail', 'cuit'];
+    columnsToDisplay = ['razonSocial', 'nombre', 'mail', 'cuit'];
     columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
     expandedElement: Cliente | null;
     provincias = [];
@@ -51,7 +51,8 @@ export class ABMClientesGrillaComponent implements OnInit {
             nombre:  [null, [Validators.required]],
             observacionesCobranzas: [null],
             observacionesEntrega: [null],
-            telefono: [null, [Validators.required]],
+			observacionesFacturacion: [null],
+			telefono: [null, [Validators.required]]
         });
     }
 
@@ -89,9 +90,8 @@ export class ABMClientesGrillaComponent implements OnInit {
             webSite: element.webSite,
             provincia: element.provincia,
             observacionesCobranzas: element.observacionesCobranzas,
-            observacionesEntrega: element.observacionesEntrega,
-            telefono: element.telefono
-        })
+			observacionesFacturacion: element.observacionesFacturacion,
+ 			telefono: element.telefono        })
         this.expandedElement = this.expandedElement === element ? null : element;
     }
 

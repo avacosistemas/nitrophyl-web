@@ -53,7 +53,8 @@
     <div class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2">
       <ng-container *ngIf="title === 'Test'">
         <form [formGroup]="formTest" class="mr-4 w-3/5">
-          <mat-form-field class="mt-4 w-full">
+          <mat-form-field class="mt-4 w-full" appearance="outline">
+            <mat-label>Máquina </mat-label>
             <mat-select [formControlName]="'machine'"
               [placeholder]="status ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
               <mat-option *ngFor="let machine of machines$" [value]="machine">{{ machine.nombre }}</mat-option>

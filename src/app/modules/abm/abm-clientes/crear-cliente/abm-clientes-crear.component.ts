@@ -47,7 +47,8 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             nombre:  [null, [Validators.required]],
             observacionesCobranzas: [null],
             observacionesEntrega: [null],
-            telefono:  [null, [Validators.required]]
+ 			observacionesFacturacion: [null],
+			telefono:  [null, [Validators.required]]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
             (data: any) => {

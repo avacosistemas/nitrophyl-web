@@ -6,8 +6,8 @@
           <h1 class="text-2xl font-semibold mb-2">Molde</h1>
         </div>
         <form class="mt-8" [formGroup]="moldeForm">
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Código </mat-label>
             <input id="code" matInput [formControlName]="'code'" placeholder="Código">
             <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('required')">
               El código es requerido
@@ -16,26 +16,29 @@
               Máximo 30 caracteres
             </mat-error>
           </mat-form-field>
-          <div class="w-full mb-3">
-            <mat-label class="ml-3">Estado: </mat-label>
-            <mat-radio-group aria-label="Select an option" formControlName="status">
-              <mat-radio-button [value]='"ACTIVO"' class="ml-5">Activo</mat-radio-button>
-              <mat-radio-button [value]='"INACTIVO"' class="ml-5">Inactivo</mat-radio-button>
-              <mat-radio-button [value]='"REPARACION"' class="ml-5">En Reparación</mat-radio-button>
-            </mat-radio-group>
-          </div>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
-            <input id="name" matInput [formControlName]="'name'" placeholder="Nombre">
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Estado </mat-label>
+            <mat-select formControlName="estado" placeholder="Estado">
+              <mat-option [value]='"ACTIVO"'>Activo</mat-option>
+              <mat-option [value]='"INACTIVO"' >Inactivo</mat-option>
+              <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Descripción </mat-label>
+            <input id="name" matInput [formControlName]="'name'" placeholder="Descripción">
             <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('required')">
-              El nombre es requerido
+              La descripción es requerida
             </mat-error>
             <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('maxlength')">
               Máximo 100 caracteres
             </mat-error>
           </mat-form-field>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Propietario </mat-label>
             <mat-select formControlName="client" placeholder="Propietario">
               <mat-option [value]="-1"> Nitrophyl </mat-option>
               <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
@@ -44,13 +47,13 @@
               El propietario es requerido
             </mat-error>
           </mat-form-field>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:comment" class="mr-3"></mat-icon>
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Observaciones </mat-label>
             <textarea matInput id="observations" [formControlName]="'observations'" placeholder="Observaciones"
               cols="30" rows="3"></textarea>
           </mat-form-field>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:location_on" class="mr-3"></mat-icon>
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Ubicación </mat-label>
             <textarea matInput id="location" [formControlName]="'location'" placeholder="Ubicación" cols="30"
               rows="3"></textarea>
           </mat-form-field>

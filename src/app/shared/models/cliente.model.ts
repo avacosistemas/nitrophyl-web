@@ -11,7 +11,8 @@ export interface Cliente {
     webSite: string;
     observacionesCobranzas: string;
     observacionesEntrega: string;
-    telefono: string;
+	observacionesFacturacion: string;
+	telefono: string;
     contacto?: any
 }
 

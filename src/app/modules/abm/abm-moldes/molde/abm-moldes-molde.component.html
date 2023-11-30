@@ -2,31 +2,32 @@
   <mat-tab-group class="mt-2 col-span-12 grid-rows-1" (selectedTabChange)="tabChange($event)">
     <mat-tab label="Datos del Molde">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div>
-          <h1 class="text-2xl font-semibold mb-2">Molde</h1>
-        </div>
-        <form class="mt-8" [formGroup]="moldeForm">
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
-            <input id="codigo" matInput [formControlName]="'codigo'" placeholder="Código">
-            <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
-              El código es requerido
-            </mat-error>
-            <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
-              Máximo 30 caracteres
-            </mat-error>
+        <form  [formGroup]="moldeForm">
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Código </mat-label>
+            <input type="text" placeholder="Código " matInput formControlName="codigo" required
+              maxlength="30">
+              <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
+                El código es requerido
+              </mat-error>
+              <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
+                Máximo 30 caracteres
+              </mat-error>
           </mat-form-field>
-          <div class="w-full mb-3">
-            <mat-label class="ml-3">Estado: </mat-label>
-            <mat-radio-group aria-label="Select an option" formControlName="estado">
-              <mat-radio-button [value]='"ACTIVO"' [checked]="true" class="ml-5">Activo</mat-radio-button>
-              <mat-radio-button [value]='"INACTIVO"' class="ml-5">Inactivo</mat-radio-button>
-              <mat-radio-button [value]='"REPARACION"' class="ml-5">En Reparación</mat-radio-button>
-            </mat-radio-group>
-          </div>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
-            <input id="name" matInput [formControlName]="'nombre'" placeholder="Descripción">
+          
+         <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Estado </mat-label>
+            <mat-select formControlName="estado" placeholder="Estado">
+              <mat-option [value]='"ACTIVO"'>Activo</mat-option>
+              <mat-option [value]='"INACTIVO"' >Inactivo</mat-option>
+              <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
+            </mat-select>
+          </mat-form-field>
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Descripción </mat-label>
+            <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Descripción">
             <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
               El nombre es requerido
             </mat-error>
@@ -34,8 +35,10 @@
               Máximo 100 caracteres
             </mat-error>
           </mat-form-field>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+          
+          
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Propietario </mat-label>
             <mat-select formControlName="client" placeholder="Propietario">
               <mat-option [value]="-1"> Nitrophyl </mat-option>
               <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
@@ -44,34 +47,39 @@
               El propietario es requerido
             </mat-error>
           </mat-form-field>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:comment" class="mr-3"></mat-icon>
+          <mat-form-field class="w-full"appearance="outline">
+            <mat-label>Observaciones </mat-label>
             <input id="observations" matInput [formControlName]="'observaciones'" placeholder="Observaciones">
           </mat-form-field>
-          <mat-form-field class="w-full">
-            <mat-icon svgIcon="mat_solid:location_on" class="mr-3"></mat-icon>
+          <mat-form-field class="w-full"appearance="outline">
+            <mat-label>Ubicación </mat-label>
             <input id="location" matInput [formControlName]="'ubicacion'" placeholder="Ubicación">
           </mat-form-field>
+
+
+
+
+
         </form>
       </div>
     </mat-tab>
     <mat-tab label="Bocas">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div>
-          <h1 class="text-2xl font-semibold mb-2">Bocas</h1>
-        </div>
         <div class="flex justify-around" [formGroup]="bocaForm" *ngIf="mode == 'Edit'">
-          <mat-form-field class="min-w-[25%]">
+          <mat-form-field class="min-w-[25%]"appearance="outline">
+            <mat-label>Número de Boca </mat-label>
             <input id="boca" matInput placeholder="Número de Boca" formControlName="boca">
           </mat-form-field>
-          <mat-form-field class="min-w-[25%]">
+          <mat-form-field class="min-w-[25%]" appearance="outline">
+            <mat-label>Estado </mat-label>
             <mat-select id="estado" placeholder="Estado" formControlName="estado">
               <mat-option [value]='"ACTIVO"'>Activa</mat-option>
               <mat-option [value]='"INACTIVO"'>Inactiva</mat-option>
               <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
             </mat-select>
           </mat-form-field>
-          <mat-form-field class="min-w-[25%]">
+          <mat-form-field class="min-w-[25%]"appearance="outline">
+            <mat-label>Descripción </mat-label>
             <input id="descripcion" matInput placeholder="Descripción" formControlName="descripcion">
             <mat-error class="mb-1" *ngIf="bocaForm.get('descripcion').hasError('maxlength')">
               Máximo 100 caracteres
@@ -123,18 +131,17 @@
     </mat-tab>
     <mat-tab label="Dimensiones">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div>
-          <h1 class="text-2xl font-semibold mb-2">Dimensiones</h1>
-        </div>
         <div class="flex justify-around" [formGroup]="dimensionForm" *ngIf="mode == 'Edit'">
-          <mat-form-field class="min-w-[25%]">
+          <mat-form-field class="min-w-[25%]" appearance="outline">
+            <mat-label>Dimensión </mat-label>
             <mat-select id="dimension" placeholder="Dimensión" formControlName="dimension">
               <mat-option *ngFor="let dimension of dimensionesSelect" [value]="dimension">
                 {{ dimension }}
               </mat-option>
             </mat-select>
           </mat-form-field>
-          <mat-form-field class="min-w-[25%]">
+          <mat-form-field class="min-w-[25%]" appearance="outline">
+            <mat-label>Valor en mm </mat-label>
             <input id="valor" matInput placeholder="Valor en mm" formControlName="valor">
           </mat-form-field>
           <button mat-flat-button color="primary" (click)="addDimension()">Agregar</button>
@@ -167,6 +174,7 @@
       </div>
     </mat-tab>
     <mat-tab label="Planos">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
       <table mat-table [dataSource]="planos" class="border-2 rounded-2xl w-full">
         <ng-container matColumnDef="nombre">
           <th mat-header-cell *matHeaderCellDef> Nombre </th>
@@ -182,7 +190,7 @@
         </ng-container>
         <ng-container matColumnDef="fecha">
           <th mat-header-cell *matHeaderCellDef> Fecha </th>
-          <td mat-cell *matCellDef="let element"> {{element.fecha | date:'MMMM d y, h:mm:ss a'}} </td>
+          <td mat-cell *matCellDef="let element"> {{element.fecha}} </td>
         </ng-container>
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef></th>
@@ -200,8 +208,10 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumnsPlanos"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumnsPlanos;"></tr>
       </table>
+      </div>
     </mat-tab>
     <mat-tab label="Fotos">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
       <table mat-table [dataSource]="fotos" class="border-2 rounded-2xl w-full">
         <ng-container matColumnDef="nombre">
           <th mat-header-cell *matHeaderCellDef> Nombre </th>
@@ -217,7 +227,7 @@
         </ng-container>
         <ng-container matColumnDef="fecha">
           <th mat-header-cell *matHeaderCellDef> Fecha </th>
-          <td mat-cell *matCellDef="let element"> {{element.fecha | date:'MMMM d y, h:mm:ss a'}} </td>
+          <td mat-cell *matCellDef="let element"> {{element.fecha}} </td>
         </ng-container>
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef></th>
@@ -235,19 +245,18 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumnsFotos"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumnsFotos;"></tr>
       </table>
+      </div>
     </mat-tab>
     <mat-tab label="Clientes">
-      <mat-accordion *ngIf="mode == 'Edit'">
-        <mat-expansion-panel>
-          <mat-expansion-panel-header class="mt-2 mb-2">
-            <mat-panel-title>
-              <h1 class="text-2xl font-semibold"> Clientes </h1>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <mat-accordion *ngIf="mode == 'Edit'">
+        
+          
           <form class="form-client" [formGroup]="clientForm">
-            <mat-form-field class="w-full">
+            <mat-form-field class="w-full"appearance="outline">
+              <mat-label>Cliente </mat-label>
               <mat-select placeholder="Seleccione un cliente" formControlName="client">
-                <mat-option *ngFor="let client of clients$" [value]="client">{{ client.razonSocial }}</mat-option>
+                <mat-option *ngFor="let client of clients$" [value]="client">{{ client.nombre }}</mat-option>
               </mat-select>
               <mat-error class="mt-4 ml-4" *ngIf="clientForm.get('client').hasError('required')">
                 El cliente es requerido
@@ -260,7 +269,7 @@
               <span class="mat-button-focus-overlay"></span>
             </button>
           </form>
-        </mat-expansion-panel>
+        
       </mat-accordion>
 
       <table mat-table [dataSource]="clients" class="border-2 rounded-2xl w-full mt-4">
@@ -283,6 +292,7 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumnsClients"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumnsClients;"></tr>
       </table>
+      </div>
     </mat-tab>
   </mat-tab-group>
 </div>

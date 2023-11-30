@@ -16,7 +16,7 @@
                                 <input id="code" matInput [formControlName]="'code'" placeholder="Código">
                             </mat-form-field>
                             <mat-form-field class="w-1/3">
-                                <input id="name" matInput [formControlName]="'name'" placeholder="Nombre">
+                                <input id="name" matInput [formControlName]="'name'" placeholder="Descripción">
                             </mat-form-field>
                             <mat-form-field class="w-1/3">
                                 <mat-select [formControlName]="'status'" placeholder='Estado'>
@@ -61,7 +61,7 @@
                     <td mat-cell *matCellDef="let element"> {{element.codigo}} </td>
                 </ng-container>
                 <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
+                    <th mat-header-cell *matHeaderCellDef> Descripción </th>
                     <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
                 </ng-container>
                 <ng-container matColumnDef="status">
