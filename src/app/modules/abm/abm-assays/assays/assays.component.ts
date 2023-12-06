@@ -216,6 +216,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
             ),
             redondeo: Number(param.redondeo),
             resultado: Number(param.resultado),
+            nombre: param.nombre,
+            maximo: Number(param.maximo),
+            minimo: Number(param.minimo)
           };
         }),
     };
