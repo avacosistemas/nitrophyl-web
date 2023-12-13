@@ -4,7 +4,6 @@ import {
   AbstractControl,
   FormArray,
   FormBuilder,
-  FormControl,
   FormGroup,
   Validators,
 } from '@angular/forms';
@@ -32,12 +31,12 @@ interface Icon {
 }
 
 // * Material.
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 // * Dialogs.
 import { AssayDialogComponent } from '../assay-dialog/assay-dialog.component';
@@ -93,7 +92,6 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private assayService: AssayService,
     private configTestService: ConfigTestService,
-    private router: Router,
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,

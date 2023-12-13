@@ -11,6 +11,9 @@ import { LotsComponent } from './lots/lots.component';
 // * Material sidenav.
 import { MatSidenavModule } from '@angular/material/sidenav';
 
+// * Dialogs.
+import { LotDialogComponent } from './lot-dialog/lot-dialog.component';
+
 const routes: Route[] = [
   {
     path: '',
@@ -20,7 +23,7 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMLotsComponent, LotsComponent],
+  declarations: [ABMLotsComponent, LotsComponent, LotDialogComponent],
   imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule],
 })
 export class ABMLotsModule {}

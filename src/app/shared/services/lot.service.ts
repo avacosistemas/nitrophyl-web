@@ -34,6 +34,19 @@ export class LotService {
     return this.http.post<ILotResponse>(this._url, lot);
   }
 
+  public approve(
+    id: number,
+    body: { estado: string; observaciones: string }
+  ): Observable<ILotResponse> {
+    return this.http.put<ILotResponse>(`${this._url}/aprobar/${id}`, body);
+  }
+
+  public reject(id: number, observaciones: string): Observable<ILotResponse> {
+    return this.http.put<ILotResponse>(`${this._url}/rechazar/${id}`, {
+      observaciones,
+    });
+  }
+
   public toggleDrawer(): void {
     this._drawer.next(!this._drawer.value);
   }

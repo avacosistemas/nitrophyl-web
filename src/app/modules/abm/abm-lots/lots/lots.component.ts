@@ -23,6 +23,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 
+// * Dialogs.
+import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
+
 @Component({
   selector: 'app-lots',
   templateUrl: './lots.component.html',
@@ -52,6 +55,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     'fecha',
     'formula',
     'observaciones',
+    'observacionesEstado',
+    'fechaEstado',
+    'estado',
     'actions',
   ];
 
@@ -110,6 +116,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   public get(row: ILot): void {
     this.assayService.lot = row;
     this.router.navigate([`../../ensayos/${row.id}`]);
+  }
+
+  public set(id: number, status: string): void {
+    this._dialog(id, status);
   }
 
   public create(): void {
@@ -193,5 +203,68 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   private _reset(): void {
     this.form.reset();
     this.lotService.toggleDrawer();
+  }
+
+  private _approve(
+    id: number,
+    body: { estado: string; observaciones: string }
+  ): void {
+    const error: string = 'abm-lots => lots.component.ts => approve() =>';
+
+    this.lotService.approve(id, body).subscribe({
+      next: () => {
+        this._snackBar(true);
+        this.lots$ = this.lotService
+          .get()
+          .pipe(map((res: ILotsResponse) => res.data));
+      },
+      error: (err: any) => {
+        console.log(error, err);
+        this._snackBar(false);
+      },
+    });
+  }
+
+  private _reject(id: number, observations: string): void {
+    const error: string = 'abm-lots => lots.component.ts => reject() =>';
+
+    this.lotService.reject(id, observations).subscribe({
+      next: () => {
+        this._snackBar(true);
+        this.lots$ = this.lotService
+          .get()
+          .pipe(map((res: ILotsResponse) => res.data));
+      },
+      error: (err: any) => {
+        console.log(error, err);
+        this._snackBar(false);
+      },
+    });
+  }
+
+  private _dialog(id: number, set: string): void {
+    const dialogRef = this.dialog.open(LotDialogComponent, {
+      width: 'fit-content',
+      data: { set: set },
+    });
+
+    dialogRef
+      .afterClosed()
+      .subscribe((result: { status: string; observation: string }) => {
+        if (result) {
+          if (
+            result.status === 'APROBADO' ||
+            result.status === 'APROBADO_OBSERVADO'
+          ) {
+            this._approve(id, {
+              estado: result.status,
+              observaciones: result.observation,
+            });
+          }
+          if (result.status === 'RECHAZADO') {
+            this._reject(id, result.observation);
+          }
+        }
+      });
   }
 }

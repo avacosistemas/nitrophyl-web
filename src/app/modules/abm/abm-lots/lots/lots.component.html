@@ -87,12 +87,48 @@
             <th mat-header-cell *matHeaderCellDef> Observaciones </th>
             <td mat-cell *matCellDef="let element"> {{ element.observaciones }} </td>
           </ng-container>
+          <ng-container matColumnDef="observacionesEstado">
+            <th mat-header-cell *matHeaderCellDef> Observaciones Estado </th>
+            <td mat-cell *matCellDef="let element"> {{ element.observacionesEstado }} </td>
+          </ng-container>
+          <ng-container matColumnDef="fechaEstado">
+            <th mat-header-cell *matHeaderCellDef> Fecha Estado </th>
+            <td mat-cell *matCellDef="let element"> {{ element.fechaEstado }} </td>
+          </ng-container>
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef> Estado </th>
+            <td mat-cell *matCellDef="let element">
+              <mat-icon
+                [style.color]="element.estado === 'PENDIENTE_APROBACION' ? '#50c5e9' : element.estado === 'APROBADO' ? 'green' : element.estado === 'APROBADO_OBSERVADO' ? 'yellow' : element.estado === 'RECHAZADO' ? 'red' : ''">
+                {{
+                element.estado === 'PENDIENTE_APROBACION'
+                ? 'schedule'
+                : element.estado === 'APROBADO'
+                ? 'check_circle'
+                : element.estado === 'APROBADO_OBSERVADO'
+                ? 'warning'
+                : element.estado === 'RECHAZADO'
+                ? 'error'
+                : ''
+                }}
+              </mat-icon>
+            </td>
+          </ng-container>
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="text-right"> </th>
-            <td mat-cell *matCellDef="let row" class="text-right">
-              <button (click)="get(row)" matTooltip="Ensayos" class="mr-4">
-                <mat-icon svgIcon="mat_solid:network_check"></mat-icon>
+            <td mat-cell *matCellDef="let lot">
+              <button (click)="get(lot)" matTooltip="Ensayos" class="mr-4">
+                <!-- <mat-icon svgIcon="mat_solid:network_check"></mat-icon> -->
+                <mat-icon>speed</mat-icon>
               </button>
+              <ng-container *ngIf="lot.estado === 'PENDIENTE_APROBACION'">
+                <button (click)="set(lot.id, 'APPROVE')">
+                  <mat-icon>done</mat-icon>
+                </button>
+                <button (click)="set(lot.id, 'REJECT')">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </ng-container>
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
