@@ -24,6 +24,7 @@ import {
   IAssaysResponse,
 } from 'app/shared/models/assay.interface';
 import { IConfigTest, IParams } from 'app/shared/models/config-test.interface';
+
 interface Icon {
   color: string;
   icon: string;
@@ -31,12 +32,15 @@ interface Icon {
 }
 
 // * Material.
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { ActivatedRoute, Router } from '@angular/router';
+
+// * Dialogs.
+import { AssayDialogComponent } from '../assay-dialog/assay-dialog.component';
 
 @Component({
   selector: 'app-assays',
@@ -114,7 +118,6 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
             this.machine = this.assayService.machine;
             this._get();
             this.form = this.formBuilder.group({
-              observation: new FormControl(null, Validators.maxLength(255)),
               params: this.formBuilder.array([]),
             });
           }
@@ -196,7 +199,8 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     const assay: IAssayCreate = {
       idLote: this.lot,
       idConfiguracionPrueba: this.machine,
-      observaciones: this.form.get('observation')?.value ?? '',
+      observaciones: '',
+      estado: '',
       resultados: this.form
         .get('params')
         .value.map((param: IParams, index: number) => {
@@ -218,13 +222,13 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
             resultado: Number(param.resultado),
             nombre: param.nombre,
             maximo: Number(param.maximo),
-            minimo: Number(param.minimo)
+            minimo: Number(param.minimo),
           };
         }),
     };
 
     if (!failed) {
-      this._post(assay);
+      this._dialog(assay);
     }
   }
 
@@ -336,5 +340,21 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _range(value: number, min: number, max: number): boolean {
     return (min === null || value >= min) && (max === null || value <= max);
+  }
+
+  private _dialog(assay: IAssayCreate): void {
+    const dialogRef = this.dialog.open(AssayDialogComponent, {
+      width: 'fit-content',
+    });
+
+    dialogRef
+      .afterClosed()
+      .subscribe((result: { status: string; observation: string }) => {
+        if (result) {
+          assay.estado = result.status;
+          assay.observaciones = result.observation;
+          this._post(assay);
+        }
+      });
   }
 }

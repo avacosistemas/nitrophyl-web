@@ -35,6 +35,7 @@ export interface IAssayCreate {
   idConfiguracionPrueba: number;
   observaciones: string;
   resultados: IAssayResult[];
+  estado: string;
 }
 
 export interface IAssayResult {

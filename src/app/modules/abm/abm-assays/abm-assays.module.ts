@@ -8,6 +8,9 @@ import { ABMSharedModule } from '../abm-shared.module';
 import { ABMAssaysComponent } from './abm-assays.component';
 import { AssaysComponent } from './assays/assays.component';
 
+// * Dialogs.
+import { AssayDialogComponent } from './assay-dialog/assay-dialog.component';
+
 // * Material sidenav.
 import { MatSidenavModule } from '@angular/material/sidenav';
 
@@ -20,7 +23,7 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMAssaysComponent, AssaysComponent],
+  declarations: [ABMAssaysComponent, AssaysComponent, AssayDialogComponent],
   imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule],
 })
 export class ABMAssaysModule {}

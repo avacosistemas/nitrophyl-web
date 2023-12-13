@@ -73,11 +73,6 @@
             <tr mat-header-row *matHeaderRowDef="displayedColumnsAssay"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumnsAssay;"></tr>
           </table>
-
-          <mat-form-field class="w-full pt-4" appearance="outline">
-            <mat-label> Observaciones </mat-label>
-            <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
-          </mat-form-field>
         </form>
 
         <ng-container *ngIf="mode === 'view'">
@@ -146,7 +141,7 @@
             <td mat-cell *matCellDef="let element"> {{ element.observaciones }} </td>
           </ng-container>
           <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef class="text-right">  </th>
+            <th mat-header-cell *matHeaderCellDef class="text-right"> </th>
             <td mat-cell *matCellDef="let row" class="text-right">
               <button (click)="view(row)" matTooltip="Ver" class="mr-4">
                 <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
