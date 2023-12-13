@@ -58,6 +58,32 @@ import {
               </svg>
             </mat-icon>
             <span class="ml-1 text-secondary"> Ensayos </span>
+            <mat-icon
+              role="img"
+              class="mat-icon notranslate icon-size-5 mat-icon-no-color"
+              aria-hidden="true"
+              data-mat-icon-type="svg"
+              data-mat-icon-name="chevron-right"
+              data-mat-icon-namespace="heroicons_solid"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                fit=""
+                height="100%"
+                width="100%"
+                preserveAspectRatio="xMidYMid meet"
+                focusable="false"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                  clip-rule="evenodd"
+                ></path>
+              </svg>
+            </mat-icon>
+            <span class="ml-1 text-secondary">{{ lot }} </span>
           </div>
         </div>
 
@@ -120,6 +146,7 @@ export class ABMAssaysComponent
   implements OnInit, AfterContentChecked, OnDestroy
 {
   public title: string = 'Ensayos';
+  public lot: string = '';
   public drawer: boolean; // Drawer state.
   public machine: FormControl = new FormControl();
   public machines$: Observable<IConfigTest[]>; // Machines list.
@@ -138,6 +165,9 @@ export class ABMAssaysComponent
       this.router.navigate(['../../lotes/grid']);
       return;
     }
+
+    this.title = `Ensayos del Lote ${this.assayService.lot?.nroLote}`;
+    this.lot = `Lote ${this.assayService.lot?.nroLote}`;
 
     this.machines$ = this.configTestService
       .getMachines(this.assayService.lot.idFormula)

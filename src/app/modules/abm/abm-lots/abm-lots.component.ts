@@ -84,7 +84,7 @@ import { LotService } from 'app/shared/services/lot.service';
 export class ABMLotsComponent
   implements OnInit, AfterContentChecked, OnDestroy
 {
-  public title: string = 'Lotes';
+  public title: string = 'Consultar Lotes';
   public drawer: boolean; // Drawer state.
 
   private subscription: Subscription; // Drawer subscription.
