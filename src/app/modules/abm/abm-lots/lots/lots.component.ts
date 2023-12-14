@@ -51,13 +51,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // * Table.
   public displayedColumns: string[] = [
-    'nroLote',
-    'fecha',
-    'formula',
-    'observaciones',
-    'observacionesEstado',
-    'fechaEstado',
     'estado',
+    'nroLote',
+    'formula',
+    'fecha',
+    'observaciones',
+    'fechaEstado',
+    'observacionesEstado',
     'actions',
   ];
 

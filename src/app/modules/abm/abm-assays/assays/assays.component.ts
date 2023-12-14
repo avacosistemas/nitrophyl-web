@@ -54,9 +54,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   public assays$: Observable<IAssay[]>; // Assays list.
   // * Table assays.
   public displayedColumnsAssays: string[] = [
+    'resultados',
     'maquina',
     'fecha',
-    'resultados',
     'observaciones',
     'actions',
   ];
