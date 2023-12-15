@@ -62,7 +62,7 @@ export class FormulasService {
     let url: string;
 
     if (!body) {
-      return this.http.get<IFormulasResponse>(`${this.url}`);
+      return this.http.get<IFormulasResponse>(`${this.url}?idx=nombre&asc=true`);
     }
 
     if (body.id) {
