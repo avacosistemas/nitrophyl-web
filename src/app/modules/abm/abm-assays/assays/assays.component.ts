@@ -1,12 +1,13 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { map, Observable, Subscription } from 'rxjs';
 import {
   AbstractControl,
   FormArray,
   FormBuilder,
+  FormControl,
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { map, Observable, Subscription } from 'rxjs';
 
 // * Services.
 import { AssayService } from 'app/shared/services/assay.service';
@@ -35,8 +36,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { ActivatedRoute } from '@angular/router';
+import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 
 // * Dialogs.
 import { AssayDialogComponent } from '../assay-dialog/assay-dialog.component';
@@ -116,6 +117,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
             this.machine = this.assayService.machine;
             this._get();
             this.form = this.formBuilder.group({
+              fecha: new FormControl(new Date(), Validators.required),
               params: this.formBuilder.array([]),
             });
           }
@@ -197,6 +199,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     const assay: IAssayCreate = {
       idLote: this.lot,
       idConfiguracionPrueba: this.machine,
+      fecha: this.form.controls['fecha'].value,
       observaciones: '',
       estado: '',
       resultados: this.form

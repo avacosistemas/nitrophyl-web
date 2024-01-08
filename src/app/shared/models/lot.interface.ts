@@ -5,7 +5,8 @@ export interface ILot {
   observaciones: string;
   formula?: string;
   idFormula: number;
-  fecha?: string;
+  fecha?: Date;
+  fechaEstado?: string;
   nroLote: string;
 }
 

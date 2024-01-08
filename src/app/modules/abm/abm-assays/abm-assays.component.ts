@@ -5,13 +5,13 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { map, Observable, Subscription } from 'rxjs';
-import { Router } from '@angular/router';
 import { FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
+import { map, Observable, Subscription } from 'rxjs';
 
 // * Services.
-import { ConfigTestService } from 'app/shared/services/config-test.service';
 import { AssayService } from 'app/shared/services/assay.service';
+import { ConfigTestService } from 'app/shared/services/config-test.service';
 
 // * Interfaces.
 import {
@@ -157,7 +157,7 @@ export class ABMAssaysComponent
     private configTestService: ConfigTestService,
     private assayService: AssayService,
     private router: Router,
-    private cdref: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
@@ -191,7 +191,7 @@ export class ABMAssaysComponent
   }
 
   public ngAfterContentChecked(): void {
-    this.cdref.detectChanges();
+    this._cdr.detectChanges();
   }
 
   public add(): void {
@@ -208,6 +208,8 @@ export class ABMAssaysComponent
   }
 
   public ngOnDestroy(): void {
+    console.log('hola');
+
     if (this.subscription) {
       this.subscription.unsubscribe();
     }

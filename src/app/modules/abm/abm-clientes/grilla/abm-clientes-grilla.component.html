@@ -1,213 +1,196 @@
 <div class="flex flex-col flex-auto min-w-0" id="top">
-    <!-- Main -->
-    <div class="flex-auto p-6 sm:p-10">
-        <!-- CONTENT GOES HERE -->
-        <div>
-            <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="border-2 rounded-2xl w-full">
-                <ng-container matColumnDef="razonSocial">
-                    <th mat-header-cell *matHeaderCellDef> Razón Social </th>
-                    <td mat-cell *matCellDef="let element"> {{element.razonSocial}} </td>
-                </ng-container>
-                <ng-container matColumnDef="nombre">
-                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
-                    <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
-                </ng-container>
-                <ng-container matColumnDef="mail">
-                    <th mat-header-cell *matHeaderCellDef> Mail </th>
-                    <td mat-cell *matCellDef="let element"> {{element.email}} </td>
-                </ng-container>
-                <ng-container matColumnDef="cuit">
-                    <th mat-header-cell *matHeaderCellDef> CUIT </th>
-                    <td mat-cell *matCellDef="let element"> {{element.cuit}} </td>
-                </ng-container>
-                <ng-container matColumnDef="expand">
-                    <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
-                    <td mat-cell *matCellDef="let element" class="text-right">
-                        <button mat-icon-button aria-label="expand row"
-                            (click)="expandRow(element); $event.stopPropagation()">
-                            <mat-icon *ngIf="expandedElement !== element">keyboard_arrow_down</mat-icon>
-                            <mat-icon *ngIf="expandedElement === element">keyboard_arrow_up</mat-icon>
-                        </button>
-                    </td>
-                </ng-container>
-                <ng-container matColumnDef="expandedDetail">
-                    <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
-                        <div class="example-element-detail w-full"
-                            [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
-                            <div class="example-element-description">
-                                <form [formGroup]="clienteForm">
-                                    <div class="flex w-full justify-end mb-2">
-                                        <button mat-flat-button type="button" color="primary" class="self-center" (click)="verContacto(element)">Contactos</button>&nbsp;&nbsp;
-                                        <button mat-flat-button color="primary" [disabled]="clienteForm.pristine || clienteForm.invalid" (click)="updateCliente()">Guardar cambios</button>&nbsp;
-                                        
-                                    </div>
-                                    
-                                    <div class="row flex gap-3 justify-around">
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Nombre</mat-label>
-                                            <input
-                                                id="nombre"
-                                                matInput
-                                                [formControlName]="'nombre'"
-                                                placeholder="Nombre">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('nombre').hasError('required')">
-                                                    El nombre es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Razón Social</mat-label>
-                                            <input
-                                                id="razonSocial"
-                                                matInput
-                                                [formControlName]="'razonSocial'"
-                                                placeholder="Razón Social">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('razonSocial').hasError('required')">
-                                                    La razón social es requerida
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Mail</mat-label>
-                                            <input
-                                                id="email"
-                                                matInput
-                                                [formControlName]="'email'"
-                                                placeholder="Mail">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('email').hasError('required')">
-                                                    El email es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                        
-                                    </div>
-                                    <div class="row flex gap-3 justify-around">
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Dirección</mat-label>
-                                            <input
-                                                id="domicilio"
-                                                matInput
-                                                [formControlName]="'domicilio'"
-                                                placeholder="Dirección">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('domicilio').hasError('required')">
-                                                    La dirección es requerida
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Localidad</mat-label>
-                                            <input
-                                                id="localidad"
-                                                matInput
-                                                [formControlName]="'localidad'"
-                                                placeholder="Localidad">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('localidad').hasError('required')">
-                                                    La localidad es requerida
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Código Postal</mat-label>
-                                            <input
-                                                id="codigoPostal"
-                                                matInput
-                                                [formControlName]="'codigoPostal'"
-                                                placeholder="Código Postal">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('codigoPostal').hasError('required')">
-                                                    El código postal es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Provincia</mat-label>
-                                            <mat-select [formControlName]="'provincia'" placeholder='Provincia'>
-                                                <mat-option *ngFor="let provincia of provincias" [value]="provincia.codigo">{{provincia.nombre}}</mat-option>
-                                            </mat-select>
-                                            <mat-error class="mb-1" *ngIf="clienteForm.get('provincia').hasError('required')">
-                                                La provincia es requerida
-                                            </mat-error>
-                                        </mat-form-field>
-                                    </div>
-                                    <div class="row flex gap-3 justify-around">
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Teléfono</mat-label>
-                                            <input
-                                                id="telefono"
-                                                matInput
-                                                [formControlName]="'telefono'"
-                                                placeholder="Teléfono">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('telefono').hasError('required')">
-                                                    El teléfono es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>CUIT</mat-label>
-                                            <input
-                                                id="cuit"
-                                                matInput
-                                                [formControlName]="'cuit'"
-                                                placeholder="CUIT"
-                                                mask="00-00000000-0">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('cuit').hasError('required')">
-                                                    El CUIT es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/3">
-                                            <mat-label>Página</mat-label>
-                                            <input
-                                                id="webSite"
-                                                matInput
-                                                [formControlName]="'webSite'"
-                                                placeholder="Página">
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('webSite').hasError('required')">
-                                                    La página es requerida
-                                                </mat-error>
-                                        </mat-form-field>
-                                        
-                                    </div>
-                                    <div class="row flex gap-3 justify-around">
-                                        <mat-form-field class="w-1/2">
-                                            <mat-label>Observaciones Cobranzas</mat-label>
-                                            <textarea
-                                                id="observacionesCobranzas"
-                                                matInput
-                                                [formControlName]="'observacionesCobranzas'"
-                                                placeholder="Observaciones Cobranzas"></textarea>
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('observacionesCobranzas').hasError('required')">
-                                                    El código es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/2">
-                                            <mat-label>Observaciones Entrega</mat-label>
-                                            <textarea
-                                                id="observacionesEntrega"
-                                                matInput
-                                                [formControlName]="'observacionesEntrega'"
-                                                placeholder="Observaciones Entrega"></textarea>
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('observacionesEntrega').hasError('required')">
-                                                    El código es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                        <mat-form-field class="w-1/2">
-                                            <mat-label>Observaciones Facturación</mat-label>
-                                            <textarea
-                                                id="observacionesFacturacion"
-                                                matInput
-                                                [formControlName]="'observacionesFacturacion'"
-                                                placeholder="Observaciones Facturación"></textarea>
-                                                <mat-error class="mb-1" *ngIf="clienteForm.get('observacionesFacturacion').hasError('required')">
-                                                    El código es requerido
-                                                </mat-error>
-                                        </mat-form-field>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </td>
-                </ng-container>
+  <!-- Main -->
+  <div class="flex-auto p-6 sm:p-10">
+    <!-- CONTENT GOES HERE -->
+    <div>
+      <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="border-2 rounded-2xl w-full">
+        <ng-container matColumnDef="razonSocial">
+          <th mat-header-cell *matHeaderCellDef>Razón Social</th>
+          <td mat-cell *matCellDef="let element">{{ element.razonSocial }}</td>
+        </ng-container>
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef>Nombre</th>
+          <td mat-cell *matCellDef="let element">{{ element.nombre }}</td>
+        </ng-container>
+        <ng-container matColumnDef="mail">
+          <th mat-header-cell *matHeaderCellDef>Mail</th>
+          <td mat-cell *matCellDef="let element">{{ element.email }}</td>
+        </ng-container>
+        <ng-container matColumnDef="cuit">
+          <th mat-header-cell *matHeaderCellDef>CUIT</th>
+          <td mat-cell *matCellDef="let element">{{ element.cuit }}</td>
+        </ng-container>
+        <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef aria-label="row actions">
+            &nbsp;
+          </th>
+          <td mat-cell *matCellDef="let element" class="text-right">
+            <button mat-icon-button aria-label="expand row" (click)="expandRow(element); $event.stopPropagation()">
+              <mat-icon *ngIf="expandedElement !== element">keyboard_arrow_down</mat-icon>
+              <mat-icon *ngIf="expandedElement === element">keyboard_arrow_up</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand.length">
+            <div class="example-element-detail w-full" [@detailExpand]="
+                element === expandedElement ? 'expanded' : 'collapsed'
+              ">
+              <div class="example-element-description">
+                <form [formGroup]="clienteForm">
+                  <div class="flex w-full justify-end mb-2">
+                    <button mat-flat-button type="button" color="primary" class="self-center"
+                      (click)="verContacto(element)">
+                      Contactos</button>&nbsp;&nbsp;
+                    <button mat-flat-button color="primary" [disabled]="clienteForm.pristine || clienteForm.invalid"
+                      (click)="updateCliente()">
+                      Guardar cambios</button>&nbsp;
+                  </div>
 
-                <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
-                <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand;" class="example-element-row"
-                    [class.example-expanded-row]="expandedElement === element"
-                    (click)="expandRow(element)">
-                </tr>
-                <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
-            </table>
+                  <div class="row flex gap-3 justify-around">
+                    <div>
+                      <p class="mb-2">Habilitado</p>
+                      <mat-slide-toggle formControlName="activo"></mat-slide-toggle>
+                    </div>
 
-        </div>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Nombre</mat-label>
+                      <input id="nombre" matInput [formControlName]="'nombre'" placeholder="Nombre" />
+                      <mat-error class="mb-1" *ngIf="clienteForm.get('nombre').hasError('required')">
+                        El nombre es requerido
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Razón Social</mat-label>
+                      <input id="razonSocial" matInput [formControlName]="'razonSocial'" placeholder="Razón Social" />
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm.get('razonSocial').hasError('required')
+                        ">
+                        La razón social es requerida
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Mail</mat-label>
+                      <input id="email" matInput [formControlName]="'email'" placeholder="Mail" />
+                      <mat-error class="mb-1" *ngIf="clienteForm.get('email').hasError('required')">
+                        El email es requerido
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="row flex gap-3 justify-around">
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Dirección</mat-label>
+                      <input id="domicilio" matInput [formControlName]="'domicilio'" placeholder="Dirección" />
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm.get('domicilio').hasError('required')
+                        ">
+                        La dirección es requerida
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Localidad</mat-label>
+                      <input id="localidad" matInput [formControlName]="'localidad'" placeholder="Localidad" />
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm.get('localidad').hasError('required')
+                        ">
+                        La localidad es requerida
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Código Postal</mat-label>
+                      <input id="codigoPostal" matInput [formControlName]="'codigoPostal'"
+                        placeholder="Código Postal" />
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm.get('codigoPostal').hasError('required')
+                        ">
+                        El código postal es requerido
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Provincia</mat-label>
+                      <mat-select [formControlName]="'provincia'" placeholder="Provincia">
+                        <mat-option *ngFor="let provincia of provincias" [value]="provincia.codigo">{{ provincia.nombre
+                          }}</mat-option>
+                      </mat-select>
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm.get('provincia').hasError('required')
+                        ">
+                        La provincia es requerida
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="row flex gap-3 justify-around">
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Teléfono</mat-label>
+                      <input id="telefono" matInput [formControlName]="'telefono'" placeholder="Teléfono" />
+                      <mat-error class="mb-1" *ngIf="clienteForm.get('telefono').hasError('required')">
+                        El teléfono es requerido
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>CUIT</mat-label>
+                      <input id="cuit" matInput [formControlName]="'cuit'" placeholder="CUIT" mask="00-00000000-0" />
+                      <mat-error class="mb-1" *ngIf="clienteForm.get('cuit').hasError('required')">
+                        El CUIT es requerido
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/3">
+                      <mat-label>Página</mat-label>
+                      <input id="webSite" matInput [formControlName]="'webSite'" placeholder="Página" />
+                      <mat-error class="mb-1" *ngIf="clienteForm.get('webSite').hasError('required')">
+                        La página es requerida
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                  <div class="row flex gap-3 justify-around">
+                    <mat-form-field class="w-1/2">
+                      <mat-label>Observaciones Cobranzas</mat-label>
+                      <textarea id="observacionesCobranzas" matInput [formControlName]="'observacionesCobranzas'"
+                        placeholder="Observaciones Cobranzas"></textarea>
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm
+                            .get('observacionesCobranzas')
+                            .hasError('required')
+                        ">
+                        El código es requerido
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/2">
+                      <mat-label>Observaciones Entrega</mat-label>
+                      <textarea id="observacionesEntrega" matInput [formControlName]="'observacionesEntrega'"
+                        placeholder="Observaciones Entrega"></textarea>
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm
+                            .get('observacionesEntrega')
+                            .hasError('required')
+                        ">
+                        El código es requerido
+                      </mat-error>
+                    </mat-form-field>
+                    <mat-form-field class="w-1/2">
+                      <mat-label>Observaciones Facturación</mat-label>
+                      <textarea id="observacionesFacturacion" matInput [formControlName]="'observacionesFacturacion'"
+                        placeholder="Observaciones Facturación"></textarea>
+                      <mat-error class="mb-1" *ngIf="
+                          clienteForm
+                            .get('observacionesFacturacion')
+                            .hasError('required')
+                        ">
+                        El código es requerido
+                      </mat-error>
+                    </mat-form-field>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+        <tr mat-row *matRowDef="let element; columns: columnsToDisplayWithExpand" class="example-element-row"
+          [class.example-expanded-row]="expandedElement === element" (click)="expandRow(element)"></tr>
+        <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+      </table>
     </div>
+  </div>
 </div>

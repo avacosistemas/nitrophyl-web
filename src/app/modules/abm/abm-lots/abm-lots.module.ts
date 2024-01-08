@@ -14,6 +14,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 // * Dialogs.
 import { LotDialogComponent } from './lot-dialog/lot-dialog.component';
 
+// * Material datepicker.
+import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+
 const routes: Route[] = [
   {
     path: '',
@@ -24,6 +28,13 @@ const routes: Route[] = [
 
 @NgModule({
   declarations: [ABMLotsComponent, LotsComponent, LotDialogComponent],
-  imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule],
+  imports: [
+    RouterModule.forChild(routes),
+    ABMSharedModule,
+    MatSidenavModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+  ],
+  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }],
 })
 export class ABMLotsModule {}

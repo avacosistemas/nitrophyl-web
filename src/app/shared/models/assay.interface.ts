@@ -33,6 +33,7 @@ export interface IAssayDetail {
 export interface IAssayCreate {
   idLote: number;
   idConfiguracionPrueba: number;
+  fecha?: Date;
   observaciones: string;
   resultados: IAssayResult[];
   estado: string;

@@ -1,20 +1,20 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, startWith, Subscription } from 'rxjs';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
 
 // * Services.
-import { LotService } from 'app/shared/services/lot.service';
-import { FormulasService } from 'app/shared/services/formulas.service';
 import { AssayService } from 'app/shared/services/assay.service';
+import { FormulasService } from 'app/shared/services/formulas.service';
+import { LotService } from 'app/shared/services/lot.service';
 
 // * Interfaces.
-import { ILot, ILotsResponse } from 'app/shared/models/lot.interface';
 import {
   IFormula,
   IFormulaResponse,
   IFormulasResponse,
 } from 'app/shared/models/formula.interface';
+import { ILot, ILotsResponse } from 'app/shared/models/lot.interface';
 
 // * Material.
 import { MatDialog } from '@angular/material/dialog';
@@ -44,6 +44,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       Validators.maxLength(5),
       Validators.pattern(/^[A-Za-z]\d{4}$/),
     ]),
+    date: new FormControl(new Date(), Validators.required),
     formula: new FormControl(null, Validators.required),
     observation: new FormControl(null, Validators.maxLength(255)),
   });
@@ -132,10 +133,12 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       idFormula: number;
       nroLote: string;
       observaciones: string;
+      fecha: Date;
     } = {
       idFormula: this.form.controls['formula'].value.id,
       nroLote: this.form.controls['lot'].value,
       observaciones: this.form.controls['observation'].value ?? '',
+      fecha: this.form.controls['date'].value,
     };
 
     this._post(lot);
