@@ -18,6 +18,9 @@ import { LotDialogComponent } from './lot-dialog/lot-dialog.component';
 import { MatNativeDateModule, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 
+// * Pipes.
+import { DatePipe } from '@angular/common';
+
 const routes: Route[] = [
   {
     path: '',
@@ -35,6 +38,6 @@ const routes: Route[] = [
     MatDatepickerModule,
     MatNativeDateModule,
   ],
-  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }],
+  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })
 export class ABMLotsModule {}

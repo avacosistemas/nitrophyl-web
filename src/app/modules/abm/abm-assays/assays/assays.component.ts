@@ -40,6 +40,7 @@ import { ActivatedRoute } from '@angular/router';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 
 // * Dialogs.
+import { DatePipe } from '@angular/common';
 import { AssayDialogComponent } from '../assay-dialog/assay-dialog.component';
 
 @Component({
@@ -96,7 +97,8 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private _dPipe: DatePipe
   ) {}
 
   public ngOnInit(): void {
@@ -196,10 +198,15 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
 
     let failed: boolean = false;
 
+    const date: string = this._dPipe.transform(
+      this.form.controls['fecha'].value,
+      'dd/MM/yyyy'
+    );
+
     const assay: IAssayCreate = {
       idLote: this.lot,
       idConfiguracionPrueba: this.machine,
-      fecha: this.form.controls['fecha'].value,
+      fecha: date,
       observaciones: '',
       estado: '',
       resultados: this.form

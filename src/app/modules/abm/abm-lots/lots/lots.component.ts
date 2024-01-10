@@ -24,6 +24,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 
 // * Dialogs.
+import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 
 @Component({
@@ -70,7 +71,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private assayService: AssayService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private _dPipe: DatePipe
   ) {}
 
   public ngOnInit(): void {
@@ -129,16 +131,21 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    const date: string = this._dPipe.transform(
+      this.form.controls['date'].value,
+      'dd/MM/yyyy'
+    );
+
     const lot: {
       idFormula: number;
       nroLote: string;
       observaciones: string;
-      fecha: Date;
+      fecha: string;
     } = {
       idFormula: this.form.controls['formula'].value.id,
       nroLote: this.form.controls['lot'].value,
       observaciones: this.form.controls['observation'].value ?? '',
-      fecha: this.form.controls['date'].value,
+      fecha: date,
     };
 
     this._post(lot);
