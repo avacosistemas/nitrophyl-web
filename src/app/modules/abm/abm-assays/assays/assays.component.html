@@ -26,7 +26,7 @@
 
         <form [formGroup]="form" *ngIf="mode === 'create' && form">
           <mat-form-field class="w-full fuse-mat-emphasized-affix">
-            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha" required />
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha" required readonly />
             <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
             <mat-error>Fecha requerida</mat-error>

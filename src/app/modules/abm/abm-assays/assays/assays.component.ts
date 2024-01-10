@@ -42,6 +42,7 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 // * Dialogs.
 import { DatePipe } from '@angular/common';
 import { AssayDialogComponent } from '../assay-dialog/assay-dialog.component';
+import { DateAdapter } from '@angular/material/core';
 
 @Component({
   selector: 'app-assays',
@@ -98,8 +99,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private _dPipe: DatePipe
-  ) {}
+    private _dPipe: DatePipe,
+    private dateAdapter: DateAdapter<Date>
+  ) { this.dateAdapter.setLocale('es');}
 
   public ngOnInit(): void {
     this.route.params.subscribe((params: { id: number }) => {

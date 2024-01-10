@@ -26,6 +26,7 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 // * Dialogs.
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
+import { DateAdapter } from '@angular/material/core';
 
 @Component({
   selector: 'app-lots',
@@ -72,8 +73,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private router: Router,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private _dPipe: DatePipe
-  ) {}
+    private _dPipe: DatePipe,
+    private dateAdapter: DateAdapter<Date>
+  ) { this.dateAdapter.setLocale('es');}
 
   public ngOnInit(): void {
     this.lots$ = this.lotService

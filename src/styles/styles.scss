@@ -34,3 +34,12 @@
     color: white !important;
     border: none;
 }
+
+.mat-calendar-table-header th {
+    text-align: center;
+    padding: 8px 0 8px 0 !important;
+}
+
+.mat-calendar-table-header-divider {
+    display: none;
+}
