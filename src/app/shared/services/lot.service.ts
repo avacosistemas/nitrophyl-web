@@ -27,7 +27,7 @@ export class LotService {
   }
 
   public get(): Observable<ILotsResponse> {
-    return this.http.get<ILotsResponse>(this._url);
+    return this.http.get<ILotsResponse>(this._url + "?asc=false&idx=nroLote");
   }
 
   public post(lot: ILot): Observable<ILotResponse> {
