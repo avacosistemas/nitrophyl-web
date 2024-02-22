@@ -40,6 +40,13 @@ export class NavegacionService {
           title: 'Lotes',
           type: 'basic',
         },
+        {
+          icon: 'mat_solid:auto_awesome_motion',
+          id: 'monitor',
+          link: '/monitor/grid',
+          title: 'Monitor',
+          type: 'basic',
+        },
       ],
     },
     {

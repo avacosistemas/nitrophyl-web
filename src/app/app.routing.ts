@@ -202,6 +202,13 @@ export const appRoutes: Route[] = [
             (m: any) => m.ABMAssaysModule
           ),
       },
+      {
+        path: 'monitor',
+        loadChildren: () =>
+          import('app/modules/abm/grid-monitor/grid-monitor.module').then(
+            (m: any) => m.GRIDMonitorModule
+          ),
+      },
     ],
   },
 

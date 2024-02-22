@@ -1,0 +1,62 @@
+<mat-drawer-container hasBackdrop="true" class="w-full">
+  <mat-drawer-content>
+    <!-- CONTENT GOES HERE -->
+    <div class="bg-gray-100">
+      <div class="p-6 sm:p-10">
+        <table mat-table [dataSource]="lots$ | async" class="border-2 rounded-2xl w-full">
+          <ng-container matColumnDef="estado">
+            <th *matHeaderCellDef style="font-size:24px !important;"> </th>
+            <td style="  padding-left: 16px; padding-right: 16px; padding-top: 5px;" mat-cell *matCellDef="let element">
+              <mat-icon
+                [style.color]="element.estado === 'PENDIENTE_APROBACION' ? '#50c5e9' : element.estado === 'APROBADO' ? 'green' : element.estado === 'APROBADO_OBSERVADO' ? 'yellow' : element.estado === 'RECHAZADO' ? 'red' : ''">
+                {{
+                element.estado === 'PENDIENTE_APROBACION'
+                ? 'schedule'
+                : element.estado === 'APROBADO'
+                ? 'check_circle'
+                : element.estado === 'APROBADO_OBSERVADO'
+                ? 'warning'
+                : element.estado === 'RECHAZADO'
+                ? 'error'
+                : ''
+                }}
+              </mat-icon  >
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="nroLote">
+            <th *matHeaderCellDef style="font-size:24px !important;"> Lote </th>
+            <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.nroLote }} </td>
+          </ng-container>
+          <ng-container matColumnDef="fecha">
+            <th *matHeaderCellDef style="font-size:24px !important;"> Fecha </th>
+            <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.fecha }} </td>
+          </ng-container>
+          <ng-container matColumnDef="formula">
+            <th *matHeaderCellDef style="font-size:24px !important;"> Fórmula </th>
+            <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.formula }} </td>
+          </ng-container>
+          <!--ng-container matColumnDef="observaciones">
+            <th mat-header-cell *matHeaderCellDef> Observaciones </th>
+            <td mat-cell *matCellDef="let element"> {{ element.observaciones }} </td>
+          </ng-container>
+          <ng-container matColumnDef="observacionesEstado">
+            <th mat-header-cell *matHeaderCellDef> Observaciones Estado </th>
+            <td mat-cell *matCellDef="let element"> {{ element.observacionesEstado }} </td>
+          </ng-container>
+          <ng-container matColumnDef="fechaEstado">
+            <th mat-header-cell *matHeaderCellDef> Fecha Estado </th>
+            <td mat-cell *matCellDef="let element"> {{ element.fechaEstado }} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="text-right"> </th>
+            <td mat-cell *matCellDef="let lot">
+            </td>
+          </ng-container-->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+      </div>
+    </div>
+  </mat-drawer-content>
+</mat-drawer-container>
