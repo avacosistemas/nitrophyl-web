@@ -53,6 +53,7 @@ export interface ITest {
   idMaquina: number;
   parametros: IParams[];
   condiciones: IConditions[];
+  observacionesReporte: string;
 }
 
 export interface IParams {
@@ -132,6 +133,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       if (this.mode === 'Test') {
         this.formTest = this.formBuilder.group({
           condition: null,
+          observacionesReporte : null
         });
       }
     }
@@ -185,6 +187,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       idMaquina: this.idMachine,
       parametros: [],
       condiciones: [],
+      observacionesReporte: null
     };
     const controls = this.formTest.controls;
     for (const param of this.params$) {
@@ -227,6 +230,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         valor: controls[condition + '.value'].value,
       });
     }
+
+    body.observacionesReporte = controls['observacionesReporte'].value;
 
     this.postMachine(body);
   }
@@ -286,8 +291,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formTest = this.formBuilder.group({});
         this.formTest = this.formBuilder.group({
           condition: null,
+          observacionesReporte: null
         });
-        this.setValues(res.data.parametros, res.data.condiciones);
+        this.setValues(res.data.parametros, res.data.condiciones, res.data.observacionesReporte);
         this.formTest.disable();
         this.machine = res.data.maquina;
         this.selectedIndex = 0;
@@ -347,7 +353,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private setValues(
     params: [{ id: number; nombre: string; minimo: number; maximo: number }],
-    conditions: [{ id: number; nombre: string; valor: number }]
+    conditions: [{ id: number; nombre: string; valor: number }],
+    observacionesReporte: string
   ): void {
     this.params$ = [];
     for (const param of params) {
@@ -372,6 +379,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.conditions$.push(condition.nombre);
     }
     this.conditions$ = [...this.conditions$];
+
+    this.formTest.controls['observacionesReporte'].setValue(observacionesReporte);
   }
 
   private addMachine(id: number): void {
@@ -382,6 +391,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formTest = this.formBuilder.group({});
         this.formTest = this.formBuilder.group({
           condition: null,
+          observacionesReporte: null
         });
         this.displayedColumnsConditions = ['condition', 'value', 'actions'];
         this.params$ = [];

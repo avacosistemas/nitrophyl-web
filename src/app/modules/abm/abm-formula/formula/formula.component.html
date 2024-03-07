@@ -170,8 +170,15 @@
             </table>
           </mat-tab>
         </mat-tab-group>
+
+        <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded fuse-mat-bold w-full p-4">
+          <mat-label>Observaciones para informe</mat-label>
+          <textarea matInput [formControlName]="'observacionesReporte'" placeholder="Observaciones" maxlength="256"></textarea>
+        </mat-form-field>
       </form>
+      
     </div>
+
   </mat-drawer>
 
   <mat-drawer-content>
@@ -189,5 +196,6 @@
       </div>
     </div>
   </mat-drawer-content>
+
 </mat-drawer-container>
 <!-- </div> -->
