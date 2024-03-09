@@ -90,7 +90,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public displayedColumnsMachines: string[] = ['name'];
 
   public params$: string[] = []; // Parametros asociados a una maquina.
-  public displayedColumnsParams: string[] = ['name', 'min', 'max'];
+  public displayedColumnsParams: string[] = ['name', 'min', 'max', 'norma'];
 
   public conditions$: string[] = []; // Condiciones asociadas a una maquina.
   public displayedColumnsConditions: string[] = [];
