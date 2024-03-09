@@ -34,6 +34,12 @@
           <input matInput [formControlName]="'status'">
         </ng-template>
       </mat-form-field>
+
+      
+      <mat-form-field class="w-full">
+        <mat-label>Observaciones generales para reporte</mat-label>
+        <textarea matInput [formControlName]="'observacionesReporte'" placeholder="Observaciones" maxlength="256"></textarea>
+      </mat-form-field>
     </form>
   </div>
 
