@@ -54,12 +54,14 @@ export interface ITest {
   parametros: IParams[];
   condiciones: IConditions[];
   observacionesReporte: string;
+  mostrarResultadosReporte: boolean;
 }
 
 export interface IParams {
   nombre: string;
   maximo: number | null;
   minimo: number | null;
+  norma: string | null;
 }
 
 export interface IConditions {
@@ -101,6 +103,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   private formula$: IFormula;
   private id: number;
   private idMachine: number; // ID Maquina.
+
+  public mostrarResultadosReporte: boolean;
 
   constructor(
     private _materials: MaterialsService,
@@ -187,7 +191,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       idMaquina: this.idMachine,
       parametros: [],
       condiciones: [],
-      observacionesReporte: null
+      observacionesReporte: null,
+      mostrarResultadosReporte: false
     };
     const controls = this.formTest.controls;
     for (const param of this.params$) {
@@ -220,6 +225,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           nombre: param,
           minimo: controls[param + '.min'].value,
           maximo: controls[param + '.max'].value,
+          norma: controls[param + '.norma'].value
         });
       }
     }
@@ -232,6 +238,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     body.observacionesReporte = controls['observacionesReporte'].value;
+    body.mostrarResultadosReporte = this.mostrarResultadosReporte;
 
     this.postMachine(body);
   }
@@ -293,7 +300,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           condition: null,
           observacionesReporte: null
         });
-        this.setValues(res.data.parametros, res.data.condiciones, res.data.observacionesReporte);
+        this.setValues(res.data.parametros, 
+                       res.data.condiciones, 
+                       res.data.observacionesReporte, 
+                       res.data.mostrarResultadosReporte);
         this.formTest.disable();
         this.machine = res.data.maquina;
         this.selectedIndex = 0;
@@ -352,9 +362,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setValues(
-    params: [{ id: number; nombre: string; minimo: number; maximo: number }],
+    params: [{ id: number; nombre: string; minimo: number; maximo: number, norma: string }],
     conditions: [{ id: number; nombre: string; valor: number }],
-    observacionesReporte: string
+    observacionesReporte: string,
+    mostrarResultadosReporte : boolean
   ): void {
     this.params$ = [];
     for (const param of params) {
@@ -365,6 +376,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.formTest.addControl(
         `${param.nombre}.max`,
         new FormControl(param.maximo)
+      );
+      this.formTest.addControl(
+        `${param.nombre}.norma`,
+        new FormControl(param.norma)
       );
       this.params$.push(param.nombre);
     }
@@ -381,6 +396,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.conditions$ = [...this.conditions$];
 
     this.formTest.controls['observacionesReporte'].setValue(observacionesReporte);
+    this.mostrarResultadosReporte = mostrarResultadosReporte;
   }
 
   private addMachine(id: number): void {
@@ -401,6 +417,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           this.params$.push(param);
           this.formTest.addControl(`${param}.min`, new FormControl(null));
           this.formTest.addControl(`${param}.max`, new FormControl(null));
+          this.formTest.addControl(`${param}.norma`, new FormControl(null));
           this.configureValidators(param);
         }
 
@@ -603,7 +620,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         Validators.required,
       ],
       norma: [
-        null,
+        {value: null, disabled: this.mode === 'Edit'},
         Validators.compose([
           Validators.required,
           Validators.minLength(3),
