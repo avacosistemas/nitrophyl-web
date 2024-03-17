@@ -1,62 +1,117 @@
-<mat-drawer-container hasBackdrop="true" class="w-full">
-  <mat-drawer-content>
+  <!-- Main -->
+  <div class="flex-auto p-6 sm:p-10">
     <!-- CONTENT GOES HERE -->
-    <div class="bg-gray-100">
-      <div class="p-6 sm:p-10">
-        <table mat-table [dataSource]="lots$ | async" class="border-2 rounded-2xl w-full">
-          <ng-container matColumnDef="estado">
-            <th *matHeaderCellDef style="font-size:24px !important;"> </th>
-            <td style="  padding-left: 16px; padding-right: 16px; padding-top: 5px;" mat-cell *matCellDef="let element">
-              <mat-icon
-                [style.color]="element.estado === 'PENDIENTE_APROBACION' ? '#50c5e9' : element.estado === 'APROBADO' ? 'green' : element.estado === 'APROBADO_OBSERVADO' ? 'yellow' : element.estado === 'RECHAZADO' ? 'red' : ''">
-                {{
-                element.estado === 'PENDIENTE_APROBACION'
-                ? 'schedule'
-                : element.estado === 'APROBADO'
-                ? 'check_circle'
-                : element.estado === 'APROBADO_OBSERVADO'
-                ? 'warning'
-                : element.estado === 'RECHAZADO'
-                ? 'error'
-                : ''
-                }}
-              </mat-icon  >
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="nroLote">
-            <th *matHeaderCellDef style="font-size:24px !important;"> Lote </th>
-            <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.nroLote }} </td>
-          </ng-container>
-          <ng-container matColumnDef="fecha">
-            <th *matHeaderCellDef style="font-size:24px !important;"> Fecha </th>
-            <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.fecha }} </td>
-          </ng-container>
-          <ng-container matColumnDef="formula">
-            <th *matHeaderCellDef style="font-size:24px !important;"> Fórmula </th>
-            <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.formula }} </td>
-          </ng-container>
-          <!--ng-container matColumnDef="observaciones">
-            <th mat-header-cell *matHeaderCellDef> Observaciones </th>
-            <td mat-cell *matCellDef="let element"> {{ element.observaciones }} </td>
-          </ng-container>
-          <ng-container matColumnDef="observacionesEstado">
-            <th mat-header-cell *matHeaderCellDef> Observaciones Estado </th>
-            <td mat-cell *matCellDef="let element"> {{ element.observacionesEstado }} </td>
-          </ng-container>
-          <ng-container matColumnDef="fechaEstado">
-            <th mat-header-cell *matHeaderCellDef> Fecha Estado </th>
-            <td mat-cell *matCellDef="let element"> {{ element.fechaEstado }} </td>
-          </ng-container>
+    <div>
+      <mat-accordion>
+        <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+          <mat-expansion-panel-header class="h-12">
+            <mat-panel-title>
+              <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                Búsqueda
+              </span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
 
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef class="text-right"> </th>
-            <td mat-cell *matCellDef="let lot">
-            </td>
-          </ng-container-->
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
-      </div>
+          <form [formGroup]="form" class="mt-2">
+            <div class="row flex gap-3 justify-around">
+
+              <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+                <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Fecha Desde" readonly>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                <mat-datepicker #pickerDesde></mat-datepicker>
+                <mat-error>Fecha Desde requerida</mat-error>
+              </mat-form-field>
+              
+              <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+                <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Fecha Hasta" readonly>
+                <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                <mat-datepicker #pickerHasta></mat-datepicker>
+                <mat-error>Fecha Hasta requerida</mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full" >
+                <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="idFormula"
+                  [matAutocomplete]="auto">
+                <button matSuffix *ngIf="form.controls['idFormula'].value" (click)="form.controls['idFormula'].setValue('')">
+                  <mat-icon> close </mat-icon>
+                </button>
+                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+                  <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
+                    V{{formula.version}} ({{ formula.norma }})</mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <mat-form-field class="w-full">
+                <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote"
+                  minlength="5" maxlength="5">
+                <mat-error>
+                  {{
+                  form.controls['nroLote'].hasError('minlength')
+                  ? 'Mínimo 5 caracteres.'
+                  : form.controls['nroLote'].hasError('maxlength')
+                  ? 'Máximo 5 caracteres.'
+                  : form.controls['nroLote'].hasError('pattern')
+                  ? 'Formato inválido.'
+                  : ''
+                  }}
+                </mat-error>
+              </mat-form-field>
+            </div>
+
+            <div class="row flex justify-end">
+              <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                (click)="search()">
+                <span class="mat-button-wrapper"> Buscar </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span class="mat-button-focus-overlay"></span>
+              </button>
+            </div>
+          </form>
+        </mat-expansion-panel>
+      </mat-accordion>
+      <mat-drawer-container hasBackdrop="true" class="w-full">
+        <mat-drawer-content>
+          <!-- CONTENT GOES HERE -->
+          <div class="bg-gray-100">
+            <div class="mt-5">
+              <table mat-table [dataSource]="lots$" class="border-2 rounded-2xl w-full">
+                <ng-container matColumnDef="estado">
+                  <th *matHeaderCellDef style="font-size:24px !important;"> </th>
+                  <td style="padding-left: 16px; padding-right: 16px; padding-top: 5px;" mat-cell *matCellDef="let element">
+                    <mat-icon
+                      [style.color]="element.estado === 'PENDIENTE_APROBACION' ? '#50c5e9' : element.estado === 'APROBADO' ? 'green' : element.estado === 'APROBADO_OBSERVADO' ? 'yellow' : element.estado === 'RECHAZADO' ? 'red' : ''">
+                      {{
+                      element.estado === 'PENDIENTE_APROBACION'
+                      ? 'schedule'
+                      : element.estado === 'APROBADO'
+                      ? 'check_circle'
+                      : element.estado === 'APROBADO_OBSERVADO'
+                      ? 'warning'
+                      : element.estado === 'RECHAZADO'
+                      ? 'error'
+                      : ''
+                      }}
+                    </mat-icon  >
+                  </td>
+                </ng-container>
+                <ng-container matColumnDef="nroLote">
+                  <th *matHeaderCellDef style="font-size:24px !important;text-align: left;"> Lote </th>
+                  <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.nroLote }} </td>
+                </ng-container>
+                <ng-container matColumnDef="fecha">
+                  <th *matHeaderCellDef style="font-size:24px !important;text-align: left;"> Fecha </th>
+                  <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.fecha }} </td>
+                </ng-container>
+                <ng-container matColumnDef="formula">
+                  <th *matHeaderCellDef style="font-size:24px !important;text-align: left;"> Fórmula </th>
+                  <td mat-cell *matCellDef="let element" style="font-size:24px;"> {{ element.formula }} </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+              </table>
+            </div>
+          </div>
+        </mat-drawer-content>
+      </mat-drawer-container>
     </div>
-  </mat-drawer-content>
-</mat-drawer-container>
+  </div>
