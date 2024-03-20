@@ -188,7 +188,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     };
     const controls = this.formTest.controls;
     for (const param of this.params$) {
-      if (!controls[param + '.min'].value && !controls[param + '.max'].value) {
+      var minvparam = controls[param + '.min'].value;
+      var maxvparam = controls[param + '.max'].value
+      if (!minvparam && !maxvparam && !Number(minvparam) && !Number(maxvparam)) {
         this.snackBar.open(
           `El parametro '${param}' debe contener al menos un valor asignado.`,
           'X',
@@ -198,10 +200,15 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         );
         return;
-      } else if (
-        controls[param + '.min'].value !== null &&
-        controls[param + '.max'].value !== null &&
-        controls[param + '.min'].value > controls[param + '.max'].value
+      } 
+      
+      var minvparamnum = Number(minvparam);
+      var maxvparamnum = Number(maxvparam);
+
+      if (
+        minvparam !== null && minvparam.trim().length > 0 &&
+        maxvparam !== null && maxvparam.trim().length > 0 &&
+        minvparamnum > maxvparamnum
       ) {
         this.snackBar.open(
           `El valor mínimo del parametro '${param}' no puede ser mayor al valor máximo.`,
@@ -215,8 +222,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         body.parametros.push({
           nombre: param,
-          minimo: controls[param + '.min'].value,
-          maximo: controls[param + '.max'].value,
+          minimo: minvparam,
+          maximo: maxvparam,
         });
       }
     }
