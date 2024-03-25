@@ -43,7 +43,7 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
     'estado',
     'nroLote',
     'formula',
-    'fecha',
+    'fechaEstado',
 /*    'observaciones',
     'fechaEstado',
     'observacionesEstado',
@@ -62,7 +62,7 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngOnInit(): void {
     this.lots$ = this.lotService
-      .get()
+      .getMonitor()
       .pipe(map((res: ILotsResponse) => res.data));
 
     this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
@@ -92,12 +92,12 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
       idFormula: number;
       nroLote: string;
       observaciones: string;
-      fecha: string;
+      fechaEstado: string;
     } = {
       idFormula: this.form.controls['formula'].value.id,
       nroLote: this.form.controls['lot'].value,
       observaciones: this.form.controls['observation'].value ?? '',
-      fecha: date,
+      fechaEstado: date,
     };
 
     this._post(lot);

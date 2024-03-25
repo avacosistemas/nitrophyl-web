@@ -18,6 +18,7 @@ import {
 export class LotService {
   public drawer$: Observable<boolean>;
   private readonly _url: string = `${environment.server}lote`;
+  private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
   private readonly _drawer: BehaviorSubject<boolean>;
 
   constructor(private readonly http: HttpClient, handler: HttpBackend) {
@@ -28,6 +29,10 @@ export class LotService {
 
   public get(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._url + "?asc=false&idx=nroLote");
+  }
+
+  public getMonitor(): Observable<ILotsResponse> {
+    return this.http.get<ILotsResponse>(this._urlMonitor);
   }
 
   public post(lot: ILot): Observable<ILotResponse> {
