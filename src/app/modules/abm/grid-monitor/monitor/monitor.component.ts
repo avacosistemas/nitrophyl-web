@@ -18,6 +18,9 @@ import { DateAdapter } from '@angular/material/core';
 import { IFormula, IFormulaResponse, IFormulasResponse } from 'app/shared/models/formula.interface';
 import { FormulasService } from 'app/shared/services/formulas.service';
 import * as moment from 'moment';
+import { FuseVerticalNavigationComponent } from '@fuse/components/navigation/vertical/vertical.component';
+import { FuseNavigationService } from '@fuse/components/navigation';
+import { ClassyLayoutComponent } from 'app/layout/layouts/vertical/classy/classy.component';
 
 @Component({
   selector: 'app-lots',
@@ -61,7 +64,8 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private _dPipe: DatePipe,
     private formulaService: FormulasService,
-    private dateAdapter: DateAdapter<Date>
+    private dateAdapter: DateAdapter<Date>,
+    private _fuseNavigationService: FuseNavigationService
   ) { this.dateAdapter.setLocale('es');}
 
 
@@ -80,6 +84,13 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   public ngOnInit(): void {
+    const navigation = this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>('mainNavigation');
+    const header = this._fuseNavigationService.getComponent<ClassyLayoutComponent>('header-classy');
+
+    if (navigation) {
+      navigation.close();
+      header.hideHeader();
+    }
     this.get();
 
     this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {

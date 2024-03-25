@@ -15,7 +15,7 @@
           <form [formGroup]="form" class="mt-2">
             <div class="row flex gap-3 justify-around">
 
-              <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+              <!-- <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
                 <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Fecha Desde" readonly>
                 <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
                 <mat-datepicker #pickerDesde></mat-datepicker>
@@ -39,7 +39,7 @@
                   <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
                     V{{formula.version}} ({{ formula.norma }})</mat-option>
                 </mat-autocomplete>
-              </mat-form-field>
+              </mat-form-field> -->
 
               <mat-form-field class="w-full">
                 <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote"
