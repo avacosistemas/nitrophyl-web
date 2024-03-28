@@ -17,7 +17,7 @@ import {
 })
 export class LotService {
   public drawer$: Observable<boolean>;
-  private readonly _url: string = `${environment.server}lote`;
+  private readonly _url: string = `${environment.server}lote/monitor`;
   private readonly _drawer: BehaviorSubject<boolean>;
 
   constructor(private readonly http: HttpClient, handler: HttpBackend) {

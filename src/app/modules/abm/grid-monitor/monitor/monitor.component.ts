@@ -25,6 +25,7 @@ import { ClassyLayoutComponent } from 'app/layout/layouts/vertical/classy/classy
 @Component({
   selector: 'app-lots',
   templateUrl: './monitor.component.html',
+  styleUrls: ['./monitor.component.scss'],
 })
 export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
   public component: string = 'all';

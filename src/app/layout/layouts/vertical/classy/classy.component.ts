@@ -126,7 +126,6 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
     }
 
     hideHeader() {
-        debugger
         var header = document.getElementById('header');
         header.style.setProperty('display', 'none', 'important');
     }

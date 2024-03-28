@@ -15,32 +15,6 @@
           <form [formGroup]="form" class="mt-2">
             <div class="row flex gap-3 justify-around">
 
-              <!-- <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
-                <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Fecha Desde" readonly>
-                <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
-                <mat-datepicker #pickerDesde></mat-datepicker>
-                <mat-error>Fecha Desde requerida</mat-error>
-              </mat-form-field>
-              
-              <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
-                <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Fecha Hasta" readonly>
-                <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
-                <mat-datepicker #pickerHasta></mat-datepicker>
-                <mat-error>Fecha Hasta requerida</mat-error>
-              </mat-form-field>
-
-              <mat-form-field class="w-full" >
-                <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="idFormula"
-                  [matAutocomplete]="auto">
-                <button matSuffix *ngIf="form.controls['idFormula'].value" (click)="form.controls['idFormula'].setValue('')">
-                  <mat-icon> close </mat-icon>
-                </button>
-                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
-                  <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
-                    V{{formula.version}} ({{ formula.norma }})</mat-option>
-                </mat-autocomplete>
-              </mat-form-field> -->
-
               <mat-form-field class="w-full">
                 <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote"
                   minlength="5" maxlength="5">
@@ -78,20 +52,12 @@
                 <ng-container matColumnDef="estado">
                   <th *matHeaderCellDef style="font-size:24px !important;"> </th>
                   <td style="padding-left: 16px; padding-right: 16px; padding-top: 5px;" mat-cell *matCellDef="let element">
-                    <mat-icon
-                      [style.color]="element.estado === 'PENDIENTE_APROBACION' ? '#50c5e9' : element.estado === 'APROBADO' ? 'green' : element.estado === 'APROBADO_OBSERVADO' ? 'yellow' : element.estado === 'RECHAZADO' ? 'red' : ''">
-                      {{
-                      element.estado === 'PENDIENTE_APROBACION'
-                      ? 'schedule'
-                      : element.estado === 'APROBADO'
-                      ? 'check_circle'
-                      : element.estado === 'APROBADO_OBSERVADO'
-                      ? 'warning'
-                      : element.estado === 'RECHAZADO'
-                      ? 'error'
-                      : ''
-                      }}
-                    </mat-icon  >
+                    <div *ngIf="element.estado === 'APROBADO' || element.estado === 'APROBADO_OBSERVADO'">
+                      <img cImg src="assets/images/ok2.png" style="width:40px !important"/>
+                    </div>
+                    <div *ngIf="element.estado === 'RECHAZADO'">
+                      <img cImg src="assets/images/error2.png" style="width:40px !important"/>
+                    </div>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="nroLote">
