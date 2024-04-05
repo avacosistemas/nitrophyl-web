@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, startWith, Subscription } from 'rxjs';
 
@@ -37,6 +37,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   public drawer: boolean; // Drawer state.
   public lots$: Observable<ILot[]>; // Lotes.
   public formulas$: Observable<IFormula[]>; // Formulas.
+  public panelOpenState: boolean;
+  public formFilter: FormGroup;
 
   // * Form (create).
   public form: FormGroup = new FormGroup({
@@ -74,10 +76,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private _dPipe: DatePipe,
-    private dateAdapter: DateAdapter<Date>
+    private dateAdapter: DateAdapter<Date>,
+    private formBuilder: FormBuilder,
   ) { this.dateAdapter.setLocale('es');}
 
   public ngOnInit(): void {
+    this.setForm();
+
     this.lots$ = this.lotService
       .get()
       .pipe(map((res: ILotsResponse) => res.data));
@@ -253,6 +258,25 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
+  
+  search() {
+    const dateT: string = this._dPipe.transform(
+      this.formFilter.controls['fechaDesde'].value,
+      'dd/MM/yyyy'
+    );
+
+    const dateF: string = this._dPipe.transform(
+      this.formFilter.controls['fechaHasta'].value,
+      'dd/MM/yyyy'
+    );
+
+    this.lots$ = this.lotService
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null, 
+                    this.formFilter.controls['nroLote'].value, 
+                    dateT, 
+                    dateF)
+      .pipe(map((res: ILotsResponse) => res.data));
+  }
 
   private _dialog(id: number, set: string): void {
     const dialogRef = this.dialog.open(LotDialogComponent, {
@@ -278,5 +302,18 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         }
       });
+  }
+
+  private setForm(): void {
+    this.formFilter = this.formBuilder.group({
+      nroLote: new FormControl('', [
+        Validators.minLength(5),
+        Validators.maxLength(5),
+        Validators.pattern(/^[A-Za-z]\d{4}$/),
+      ]),
+      fechaDesde: new FormControl(null),
+      fechaHasta: new FormControl(null),
+      idFormula: new FormControl(null)
+    });
   }
 }

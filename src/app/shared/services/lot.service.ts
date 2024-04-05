@@ -17,7 +17,7 @@ import {
 })
 export class LotService {
   public drawer$: Observable<boolean>;
-  private readonly _url: string = `${environment.server}lote/monitor`;
+  private readonly _url: string = `${environment.server}lote`;
   private readonly _drawer: BehaviorSubject<boolean>;
 
   constructor(private readonly http: HttpClient, handler: HttpBackend) {
@@ -28,6 +28,25 @@ export class LotService {
 
   public get(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._url + "?asc=false&idx=nroLote");
+  }
+
+  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string): Observable<ILotsResponse> {
+    var url = this._url + "?asc=false&idx=nroLote";
+
+    if (formula != null && formula != "") {
+      url = url + "&idFormula="+formula;
+    }
+    if (lot != null && lot != "") {
+      url = url + "&nroLote="+lot;
+    }
+    if (fechaDesde != null && fechaDesde != "") {
+      url = url + "&fechaDesde="+fechaDesde;
+    }
+    if (fechaHasta != null && fechaHasta != "") {
+      url = url + "&fechaHasta="+fechaHasta;
+    }
+
+    return this.http.get<ILotsResponse>(url);
   }
 
   public post(lot: ILot): Observable<ILotResponse> {

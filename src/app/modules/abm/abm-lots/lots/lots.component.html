@@ -77,7 +77,74 @@
     <!-- CONTENT GOES HERE -->
     <div class="bg-gray-100">
       <div class="p-6 sm:p-10">
-        <table mat-table [dataSource]="lots$ | async" class="border-2 rounded-2xl w-full">
+
+        <mat-accordion>
+          <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+            <mat-expansion-panel-header class="h-12">
+              <mat-panel-title>
+                <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                  Búsqueda
+                </span>
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+  
+            <form [formGroup]="formFilter" class="mt-2">
+              <div class="row flex gap-3 justify-around">
+                <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+                  <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Fecha Desde" readonly>
+                  <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                  <mat-datepicker #pickerDesde></mat-datepicker>
+                  <mat-error>Fecha Desde requerida</mat-error>
+                </mat-form-field>
+                
+                <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+                  <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Fecha Hasta" readonly>
+                  <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                  <mat-datepicker #pickerHasta></mat-datepicker>
+                  <mat-error>Fecha Hasta requerida</mat-error>
+                </mat-form-field>
+  
+                <mat-form-field class="w-full" >
+                  <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="idFormula"
+                    [matAutocomplete]="auto">
+                  <button matSuffix *ngIf="formFilter.controls['idFormula'].value" (click)="formFilter.controls['idFormula'].setValue('')">
+                    <mat-icon> close </mat-icon>
+                  </button>
+                  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+                    <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
+                      V{{formula.version}} ({{ formula.norma }})</mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+  
+                <mat-form-field class="w-full">
+                  <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote"
+                    minlength="5" maxlength="5">
+                  <mat-error>
+                    {{
+                      formFilter.controls['nroLote'].hasError('minlength')
+                    ? 'Mínimo 5 caracteres.'
+                    : formFilter.controls['nroLote'].hasError('maxlength')
+                    ? 'Máximo 5 caracteres.'
+                    : formFilter.controls['nroLote'].hasError('pattern')
+                    ? 'Formato inválido.'
+                    : ''
+                    }}
+                  </mat-error>
+                </mat-form-field>
+              </div>
+              <div class="row flex justify-end">
+                <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                  (click)="search()">
+                  <span class="mat-button-wrapper"> Buscar </span>
+                  <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                  <span class="mat-button-focus-overlay"></span>
+                </button>
+              </div>
+            </form>
+          </mat-expansion-panel>
+        </mat-accordion>
+
+        <table mat-table [dataSource]="lots$ | async" class="border-2 rounded-2xl w-full mt-5 ">
           <ng-container matColumnDef="estado">
             <th mat-header-cell *matHeaderCellDef> </th>
             <td style="  padding-left: 16px; padding-right: 16px; padding-top: 5px;" mat-cell *matCellDef="let element">
