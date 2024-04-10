@@ -145,6 +145,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
             : [res.data as IMachine];
           this.form.controls.name.setValue(data[0].nombre);
           this.form.controls.status.setValue(data[0].estado);
+          this.form.controls.observacionesReporte.setValue(data[0].observacionesReporte);
         }
       },
       error: (err: any) => console.error(error, err),
@@ -154,9 +155,10 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private post(): void {
     let error: string = 'MachineComponent => post(): ';
-    let body: IMachine = {
+    let body: IMachine = {  
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
+      observacionesReporte: this.form.controls.observacionesReporte.value,
     };
     this._machines.post(body).subscribe({
       next: (res: IMachineResponse) => {
@@ -183,6 +185,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       id: this.id,
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
+      observacionesReporte: this.form.controls.observacionesReporte.value
     };
     this._machines.put(body).subscribe({
       next: (res: IMachineResponse) => {
@@ -248,6 +251,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
         { value: null, disabled: this.mode === 'View' },
         Validators.required,
       ],
+      observacionesReporte: []
     });
   }
 
