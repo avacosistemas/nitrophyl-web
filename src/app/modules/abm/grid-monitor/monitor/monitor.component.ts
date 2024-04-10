@@ -73,7 +73,7 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
   
   private get(): void {
     let error: string = 'MonitorComponent => get(): ';
-    this.lotService.get().subscribe({
+    this.lotService.getMonitor().subscribe({
       next: (res: ILotsResponse) => {
         this.lots$ = res.data;
         this.lotsBackUp$ = res.data;
