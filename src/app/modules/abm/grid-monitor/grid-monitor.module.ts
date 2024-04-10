@@ -17,17 +17,19 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 
 // * Pipes.
 import { DatePipe } from '@angular/common';
+import { BridgeMonitorComponent } from './monitor/bridge-monitor.component';
 
 const routes: Route[] = [
   {
     path: '',
     component: GRIDMonitorComponent,
-    children: [{ path: 'grid', component: MonitorComponent }],
+    children: [{ path: 'grid', component: MonitorComponent },
+               { path: 'full', component: BridgeMonitorComponent }],
   },
 ];
 
 @NgModule({
-  declarations: [GRIDMonitorComponent, MonitorComponent],
+  declarations: [GRIDMonitorComponent, MonitorComponent, BridgeMonitorComponent],
   imports: [
     RouterModule.forChild(routes),
     ABMSharedModule,

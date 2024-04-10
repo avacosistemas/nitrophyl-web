@@ -57,6 +57,8 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
      */
     ngOnInit(): void
     {
+        // Register the navigation component
+        this._fuseNavigationService.registerComponent('header-classy', this);
         // Subscribe to navigation data
         this._navigationService.navigation$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -121,5 +123,10 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
     signOut(): void
     {
         this._router.navigate(['/sign-out']);
+    }
+
+    hideHeader() {
+        var header = document.getElementById('header');
+        header.style.setProperty('display', 'none', 'important');
     }
 }

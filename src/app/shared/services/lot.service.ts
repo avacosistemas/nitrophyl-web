@@ -31,10 +31,28 @@ export class LotService {
     return this.http.get<ILotsResponse>(this._url + "?asc=false&idx=nroLote");
   }
 
-  public getMonitor(): Observable<ILotsResponse> {
+public getMonitor(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._urlMonitor);
   }
 
+  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string): Observable<ILotsResponse> {
+    var url = this._url + "?asc=false&idx=nroLote";
+
+    if (formula != null && formula != "") {
+      url = url + "&idFormula="+formula;
+    }
+    if (lot != null && lot != "") {
+      url = url + "&nroLote="+lot;
+    }
+    if (fechaDesde != null && fechaDesde != "") {
+      url = url + "&fechaDesde="+fechaDesde;
+    }
+    if (fechaHasta != null && fechaHasta != "") {
+      url = url + "&fechaHasta="+fechaHasta;
+    }
+
+    return this.http.get<ILotsResponse>(url);
+  }
   public post(lot: ILot): Observable<ILotResponse> {
     return this.http.post<ILotResponse>(this._url, lot);
   }

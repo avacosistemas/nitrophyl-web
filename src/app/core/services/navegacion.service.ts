@@ -43,7 +43,7 @@ export class NavegacionService {
         {
           icon: 'mat_solid:auto_awesome_motion',
           id: 'monitor',
-          link: '/monitor/grid',
+          link: '/monitor/full',
           title: 'Monitor',
           type: 'basic',
         },
