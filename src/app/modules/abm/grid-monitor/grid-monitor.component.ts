@@ -12,7 +12,7 @@ import { LotService } from 'app/shared/services/lot.service';
 
 @Component({
   selector: 'grid-monitor',
-  template: `<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  template: `<div class="absolute inset-0 flex flex-col min-w-0">
       <router-outlet></router-outlet>
   </div>`,
 })
