@@ -20,17 +20,17 @@ export class NavegacionService {
       type: 'collapsable',
       children: [
         {
-          icon: 'heroicons_outline:beaker',
-          id: 'formulas',
-          link: '/formulas/grid',
-          title: 'Fórmulas',
-          type: 'basic',
-        },
-        {
           icon: 'heroicons_outline:calculator',
           id: 'maquinas',
           link: '/maquinas/grid',
           title: 'Máquinas',
+          type: 'basic',
+        },
+        {
+          icon: 'heroicons_outline:beaker',
+          id: 'formulas',
+          link: '/formulas/grid',
+          title: 'Fórmulas',
           type: 'basic',
         },
         {
@@ -41,7 +41,7 @@ export class NavegacionService {
           type: 'basic',
         },
         {
-          icon: 'mat_solid:auto_awesome_motion',
+          icon: 'mat_solid:monitor',
           id: 'monitor',
           link: '/monitor/full',
           title: 'Monitor',
