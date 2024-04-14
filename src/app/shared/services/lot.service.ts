@@ -70,6 +70,10 @@ public getMonitor(): Observable<ILotsResponse> {
     });
   }
 
+  public delete(id: number): Observable<ILotResponse> {
+    return this.http.delete<ILotResponse>(`${this._url}/delete/${id}`);
+  }
+
   public toggleDrawer(): void {
     this._drawer.next(!this._drawer.value);
   }

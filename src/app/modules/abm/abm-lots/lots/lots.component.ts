@@ -316,4 +316,28 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       idFormula: new FormControl(null)
     });
   }
+
+  private delete(id : number):void  {
+    console.log("a borrar lote " + id)
+    const dialogRef = this.dialog.open(RemoveDialogComponent, {
+      maxWidth: '40%',
+      data: {data: id, seccion: "lote", boton: "Eliminar"},
+  });
+  dialogRef.afterClosed().subscribe(result => {
+      if(result) {
+        console.log("result", result, id)
+        
+          this.lotService.delete(id).subscribe(response => {
+              if (response.status == 'OK') {
+                //this.showSuccess = true;
+                console.log("success borrar lote")
+              } else {
+                //this.showError = true;
+                console.log("fail borrar lote")
+              }
+              //this.inicializar();
+          })
+      }
+  });
+  }
 }

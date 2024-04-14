@@ -203,6 +203,9 @@
                 <button (click)="set(lot.id, 'REJECT')">
                   <mat-icon>close</mat-icon>
                 </button>
+                <button>
+                  <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(lot.id)"></mat-icon>
+              </button>
               </ng-container>
             </td>
           </ng-container>
