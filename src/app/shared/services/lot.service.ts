@@ -17,14 +17,18 @@ import {
 })
 export class LotService {
   public drawer$: Observable<boolean>;
+  public drawerEdit$: Observable<boolean>;
   private readonly _url: string = `${environment.server}lote`;
   private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
   private readonly _drawer: BehaviorSubject<boolean>;
+  private readonly _drawerEdit: BehaviorSubject<boolean>;
 
   constructor(private readonly http: HttpClient, handler: HttpBackend) {
     this.http = new HttpClient(handler);
     this._drawer = new BehaviorSubject<boolean>(false);
     this.drawer$ = this._drawer.asObservable();
+    this._drawerEdit = new BehaviorSubject<boolean>(false);
+    this.drawerEdit$ = this._drawerEdit.asObservable();
   }
 
   public get(): Observable<ILotsResponse> {
@@ -72,5 +76,9 @@ public getMonitor(): Observable<ILotsResponse> {
 
   public toggleDrawer(): void {
     this._drawer.next(!this._drawer.value);
+  }
+
+  public toggleDrawerEdit(): void {
+    this._drawerEdit.next(!this._drawerEdit.value);
   }
 }

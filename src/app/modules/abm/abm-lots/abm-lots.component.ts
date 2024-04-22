@@ -86,8 +86,10 @@ export class ABMLotsComponent
 {
   public title: string = 'Consultar Lotes';
   public drawer: boolean; // Drawer state.
+  public drawerEdit: boolean; // Drawer state.
 
   private subscription: Subscription; // Drawer subscription.
+  private subscriptionEdit: Subscription; // Drawer subscription.
 
   constructor(
     private lotService: LotService,
@@ -98,6 +100,9 @@ export class ABMLotsComponent
     this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
       this.drawer = drawer;
     });
+    this.subscriptionEdit = this.lotService.drawerEdit$.subscribe((drawer: boolean) => {
+      this.drawerEdit = drawer;
+    });
   }
 
   public ngAfterContentChecked(): void {
@@ -106,6 +111,10 @@ export class ABMLotsComponent
 
   public create(): void {
     this.lotService.toggleDrawer();
+  }
+
+  public edit(): void {
+    this.lotService.toggleDrawerEdit();
   }
 
   public ngOnDestroy(): void {

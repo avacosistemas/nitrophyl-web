@@ -25,21 +25,23 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 
 // * Dialogs.
 import { DatePipe } from '@angular/common';
-import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
+//import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter } from '@angular/material/core';
+import { LotDialogComponent } from '../../lot-dialog/lot-dialog.component';
 
 @Component({
-  selector: 'app-lots',
-  templateUrl: './lots.component.html',
+  selector: 'app-EditLot',
+  templateUrl: './EditLot.component.html',
+  styleUrls: ['./EditLot.component.scss']
 })
-export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class EditLotComponent implements OnInit, AfterViewInit, OnDestroy {
   public component: string = 'all';
   public drawer: boolean; // Drawer state.
   public lots$: Observable<ILot[]>; // Lotes.
   public formulas$: Observable<IFormula[]>; // Formulas.
   public panelOpenState: boolean;
   public formFilter: FormGroup;
-
+  showFiller = false;
   // * Form (create).
   public form: FormGroup = new FormGroup({
     lot: new FormControl('', [
@@ -107,7 +109,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       });
 
- 
+    this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
+      this.drawer = drawer;
+    });
 
     this.subscription = this.lotService.drawerEdit$.subscribe((drawer: boolean) => {
       this.drawer = drawer;

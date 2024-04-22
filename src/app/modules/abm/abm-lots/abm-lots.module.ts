@@ -20,6 +20,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 
 // * Pipes.
 import { DatePipe } from '@angular/common';
+import { EditLotComponent } from './edit-lots/EditLot/EditLot.component';
 
 const routes: Route[] = [
   {
@@ -30,7 +31,7 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMLotsComponent, LotsComponent, LotDialogComponent],
+  declarations: [ABMLotsComponent, LotsComponent, LotDialogComponent, EditLotComponent],
   imports: [
     RouterModule.forChild(routes),
     ABMSharedModule,
