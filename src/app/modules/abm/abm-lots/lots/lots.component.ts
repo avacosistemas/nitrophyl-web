@@ -27,6 +27,7 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter } from '@angular/material/core';
+import { Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-lots',
@@ -39,7 +40,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   public formulas$: Observable<IFormula[]>; // Formulas.
   public panelOpenState: boolean;
   public formFilter: FormGroup;
-
+  private sortedData: any[]
+  
   // * Form (create).
   public form: FormGroup = new FormGroup({
     lot: new FormControl('', [
@@ -78,7 +80,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _dPipe: DatePipe,
     private dateAdapter: DateAdapter<Date>,
     private formBuilder: FormBuilder,
-  ) { this.dateAdapter.setLocale('es');}
+  ) { this.dateAdapter.setLocale('es');
+    //this.sortedData = this.lots$.slice();
+  }
 
   public ngOnInit(): void {
     this.setForm();
@@ -110,6 +114,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
       this.drawer = drawer;
     });
+
   }
 
   public ngAfterViewInit(): void {
@@ -219,6 +224,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _reset(): void {
     this.form.reset();
+    this.form.get("date").setValue(new Date());
+    this.form.get("date").markAsPristine();
     this.lotService.toggleDrawer();
   }
 
@@ -340,4 +347,42 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
   });
   }
+
+  
+  sortData(sort: Sort) {
+    /*const data = this.lotService
+    .get()
+    .pipe(map((res: ILotsResponse) => res.data)).subscribe((value: ILot[])=> {
+      this.lots$ = value
+    })
+    //data.slice();
+    if (!sort.active || sort.direction === '') {
+      this.sortedData = data.
+      return;
+    }
+
+    this.sortedData = data.sort((a, b) => {
+      const isAsc = sort.direction === 'asc';
+      switch (sort.active) {
+        case 'name':
+          return compare(a.name, b.name, isAsc);
+        case 'calories':
+          return compare(a.calories, b.calories, isAsc);
+        case 'fat':
+          return compare(a.fat, b.fat, isAsc);
+        case 'carbs':
+          return compare(a.carbs, b.carbs, isAsc);
+        case 'protein':
+          return compare(a.protein, b.protein, isAsc);
+        default:
+          return 0;
+      }
+    });
+  }*/
 }
+
+compare(a: number | string, b: number | string, isAsc: boolean) {
+  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+}
+}
+
