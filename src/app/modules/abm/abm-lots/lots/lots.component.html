@@ -1,4 +1,79 @@
 <mat-drawer-container hasBackdrop="true" class="w-full">
+
+  <mat-drawer mode="over" position="end" [opened]="drawerEdit" [autoFocus]="false" disableClose="true" class="w-1/2">
+    <div class="w-full">
+      <div class="p-4 w-full">
+        <div class="flex w-full py-4 row gap-3 justify-between items-center">
+          <!-- Title -->
+          <h1 class="text-2xl font-semibold">Edicion Lote </h1>
+
+          <div>
+            <!-- Create lot -->
+            <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
+              (click)="onEdit()" [disabled]="form.invalid">
+              <span class="mat-button-wrapper"> Guardar </span>
+              <span matripple="" class="mat-ripple mat-button-ripple"></span>
+              <span class="mat-button-focus-overlay"></span>
+            </button>
+
+            <!-- Close -->
+            <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()">
+              <span class="mat-button-wrapper"> Cerrar </span>
+              <span matripple="" class="mat-ripple mat-button-ripple"></span>
+              <span class="mat-button-focus-overlay"></span>
+            </button>
+          </div>
+        </div>
+
+        <form [formGroup]="form">
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Lote </mat-label>
+            <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="lot" required
+              minlength="5" maxlength="5">
+            <mat-error>
+              {{
+              form.controls['lot'].hasError('required')
+              ? 'Lote requerido.'
+              : form.controls['lot'].hasError('minlength')
+              ? 'Mínimo 5 caracteres.'
+              : form.controls['lot'].hasError('maxlength')
+              ? 'Máximo 5 caracteres.'
+              : form.controls['lot'].hasError('pattern')
+              ? 'Formato inválido.'
+              : ''
+              }}
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field class="w-full fuse-mat-emphasized-affix">
+            <input matInput [matDatepicker]="pickerEdit" formControlName="date" placeholder="Fecha" required>
+            <mat-datepicker-toggle matIconSuffix [for]="pickerEdit"></mat-datepicker-toggle>
+            <mat-datepicker #pickerEdit></mat-datepicker>
+            <mat-error>Fecha requerida</mat-error>
+          </mat-form-field>
+
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Fórmula </mat-label>
+            <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="formula"
+              [matAutocomplete]="auto" required>
+            <button matSuffix *ngIf="form.controls['formula'].value" (click)="form.controls['formula'].setValue('')">
+              <mat-icon> close </mat-icon>
+            </button>
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+              <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
+                V{{formula.version}} ({{ formula.norma }})</mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Observaciones </mat-label>
+            <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
+          </mat-form-field>
+        </form>
+      </div>
+    </div>
+  </mat-drawer>
+
   <mat-drawer mode="over" position="end" [opened]="drawer" [autoFocus]="false" disableClose="true" class="w-1/2">
     <div class="w-full">
       <div class="p-4 w-full">

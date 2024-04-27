@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { map, Observable, startWith, Subscription } from 'rxjs';
+import { map, Observable, startWith, Subscription, tap } from 'rxjs';
 
 // * Services.
 import { AssayService } from 'app/shared/services/assay.service';
@@ -14,7 +14,7 @@ import {
   IFormulaResponse,
   IFormulasResponse,
 } from 'app/shared/models/formula.interface';
-import { ILot, ILotsResponse } from 'app/shared/models/lot.interface';
+import { ILot, ILotResponse, ILotsResponse } from 'app/shared/models/lot.interface';
 
 // * Material.
 import { MatDialog } from '@angular/material/dialog';
@@ -35,6 +35,7 @@ import { DateAdapter } from '@angular/material/core';
 export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   public component: string = 'all';
   public drawer: boolean; // Drawer state.
+  public drawerEdit: boolean; // Drawer state.
   public lots$: Observable<ILot[]>; // Lotes.
   public formulas$: Observable<IFormula[]>; // Formulas.
   public panelOpenState: boolean;
@@ -78,7 +79,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _dPipe: DatePipe,
     private dateAdapter: DateAdapter<Date>,
     private formBuilder: FormBuilder,
-  ) { this.dateAdapter.setLocale('es');}
+  ) { this.dateAdapter.setLocale('es'); }
 
   public ngOnInit(): void {
     this.setForm();
@@ -107,10 +108,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       });
 
- 
+
 
     this.subscription = this.lotService.drawerEdit$.subscribe((drawer: boolean) => {
-      this.drawer = drawer;
+      this.drawerEdit = drawer;
     });
   }
 
@@ -161,7 +162,47 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public edit(idLote: number) {
+    this.lotService
+      .read(idLote)
+      .pipe(map((res: ILotResponse) => res.data)).subscribe({
+        next: (value: ILot) => {
+          console.log(value.observaciones)
+        },
+      });
+
+    this.lotService.read(idLote).subscribe({
+      next: (value: ILotResponse) => {
+        let data : any = value.data
+        console.log(data.body.data)
+      },
+    });
     this.lotService.toggleDrawerEdit();
+  }
+
+  public onEdit(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const date: string = this._dPipe.transform(
+      this.form.controls['date'].value,
+      'dd/MM/yyyy'
+    );
+
+    const lot: {
+      idFormula: number;
+      nroLote: string;
+      observaciones: string;
+      fecha: string;
+    } = {
+      idFormula: this.form.controls['formula'].value.id,
+      nroLote: this.form.controls['lot'].value,
+      observaciones: this.form.controls['observation'].value ?? '',
+      fecha: date,
+    };
+
+    this._put(lot);
   }
 
   public close(): void {
@@ -212,6 +253,24 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private _put(lot: ILot): void {
+    const error: string = 'abm-lots => lots.component.ts => _put() =>';
+
+    this.lotService.put(lot).subscribe({
+      next: () => {
+        this._snackBar(true);
+        this._reset();
+        this.lots$ = this.lotService
+          .get()
+          .pipe(map((res: ILotsResponse) => res.data));
+      },
+      error: (err: any) => {
+        console.log(error, err);
+        this._snackBar(false);
+      },
+    });
+  }
+
   private _snackBar(option: boolean): void {
     const message: string = option
       ? 'Cambios realizados correctamente.'
@@ -225,6 +284,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _reset(): void {
     this.form.reset();
+    this.form.get('fecha').markAsPristine();
     this.lotService.toggleDrawer();
   }
 
@@ -264,7 +324,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
-  
+
   search() {
     const dateT: string = this._dPipe.transform(
       this.formFilter.controls['fechaDesde'].value,
@@ -277,10 +337,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.lots$ = this.lotService
-      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null, 
-                    this.formFilter.controls['nroLote'].value, 
-                    dateT, 
-                    dateF)
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF)
       .pipe(map((res: ILotsResponse) => res.data));
   }
 

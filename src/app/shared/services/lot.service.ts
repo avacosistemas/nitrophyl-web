@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpBackend } from '@angular/common/http';
+import { HttpClient, HttpBackend, HttpParams, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 // * Environment.
@@ -35,6 +35,10 @@ export class LotService {
     return this.http.get<ILotsResponse>(this._url + "?asc=false&idx=nroLote");
   }
 
+  public read(id): Observable<ILotResponse> {
+    return this.http.get<ILotResponse>(this._url+ "/" + parseInt(id));
+  }
+
 public getMonitor(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._urlMonitor);
   }
@@ -59,6 +63,10 @@ public getMonitor(): Observable<ILotsResponse> {
   }
   public post(lot: ILot): Observable<ILotResponse> {
     return this.http.post<ILotResponse>(this._url, lot);
+  }
+
+  public put(lot: ILot): Observable<ILotResponse> {
+    return this.http.put<ILotResponse>(this._url, lot);
   }
 
   public approve(
