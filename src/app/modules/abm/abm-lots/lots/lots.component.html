@@ -8,6 +8,7 @@
           <h1 class="text-2xl font-semibold">Edicion Lote </h1>
 
           <div>
+
             <!-- Create lot -->
             <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
               (click)="onEdit()" [disabled]="form.invalid">
@@ -17,7 +18,7 @@
             </button>
 
             <!-- Close -->
-            <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()">
+            <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="closeEdit()">
               <span class="mat-button-wrapper"> Cerrar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
               <span class="mat-button-focus-overlay"></span>
@@ -69,6 +70,10 @@
             <mat-label> Observaciones </mat-label>
             <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
           </mat-form-field>
+
+            <input type="text" matInput formControlName="id" [hidden]="true" [ngModel]="" >
+          
+           
         </form>
       </div>
     </div>

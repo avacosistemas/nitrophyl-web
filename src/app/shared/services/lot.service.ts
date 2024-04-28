@@ -66,7 +66,7 @@ public getMonitor(): Observable<ILotsResponse> {
   }
 
   public put(lot: ILot): Observable<ILotResponse> {
-    return this.http.put<ILotResponse>(this._url, lot);
+    return this.http.put<ILotResponse>(this._url + "/update/" + lot.id, lot);
   }
 
   public approve(

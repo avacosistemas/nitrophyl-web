@@ -27,6 +27,7 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter } from '@angular/material/core';
+import { IResponse } from 'app/shared/models/response.interface';
 
 @Component({
   selector: 'app-lots',
@@ -52,6 +53,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     date: new FormControl(new Date(), Validators.required),
     formula: new FormControl(null, Validators.required),
     observation: new FormControl(null, Validators.maxLength(255)),
+    id: new FormControl(0),
   });
   public formulas: IFormula[]; // AutoComplete.
 
@@ -166,11 +168,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public edit(idLote: number) {
     this.lotService.read(idLote).subscribe({
-      next: (value: ILotResponse) => {
+      next: (value: IResponse<ILot>) => {
         let data: any = value.data
-        let data2 : ILot = value.data
-        console.log("data2", data2)
-        console.log(data.body.data)
+        let data2 : IResponse<ILot> = value
         this.form.controls['observation'].setValue(data.body.data.observaciones)
         let dateString = data.body.data.fecha
         let dateParts = dateString.split("/");
@@ -178,14 +178,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.form.controls['date'].patchValue(dateObject)
         this.form.controls['formula'].patchValue(this.formulas.find(arg=> arg.id == data.body.data.idFormula))
         this.form.controls['lot'].setValue(data.body.data.nroLote)
+        this.form.controls['id'].setValue(data.body.data.id)
         this.lotService.toggleDrawerEdit();
+        this.form.markAsDirty();
       },
     });
   }
 
-  compareFunction(o1: any, o2: any) {
-    return (o1.idFormula == o2.idFormula);
-   }
 
   public onEdit(): void {
     if (this.form.invalid) {
@@ -203,14 +202,32 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       nroLote: string;
       observaciones: string;
       fecha: string;
+      id: number;
     } = {
       idFormula: this.form.controls['formula'].value.id,
       nroLote: this.form.controls['lot'].value,
       observaciones: this.form.controls['observation'].value ?? '',
       fecha: date,
+      id : this.form.controls['id'].value,
     };
 
     this._put(lot);
+  }
+
+  public closeEdit(): void {
+    if (!this.form.pristine) {
+      const dialog = this.dialog.open(RemoveDialogComponent, {
+        maxWidth: '50%',
+        data: { data: null, seccion: '', boton: 'Cerrar' },
+      });
+      dialog.afterClosed().subscribe((res: boolean) => {
+        if (res) {
+          this._resetEdit();
+        }
+      });
+    } else {
+      this._resetEdit();
+    }
   }
 
   public close(): void {
@@ -290,9 +307,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private _resetEdit(): void {
+    this.form.reset();
+    this.lotService.toggleDrawerEdit();
+  }
+
   private _reset(): void {
     this.form.reset();
-    //this.form.get('fecha').markAsPristine();
     this.lotService.toggleDrawer();
   }
 
