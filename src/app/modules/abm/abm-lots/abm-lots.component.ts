@@ -121,5 +121,8 @@ export class ABMLotsComponent
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+    if (this.subscriptionEdit) {
+      this.subscriptionEdit.unsubscribe();
+    }
   }
 }

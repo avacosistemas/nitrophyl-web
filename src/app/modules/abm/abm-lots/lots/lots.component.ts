@@ -68,6 +68,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   private subscription: Subscription; // Drawer subscription.
+  private subscriptionEdit: Subscription; // Drawer subscription.
 
   constructor(
     private lotService: LotService,
@@ -108,9 +109,11 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       });
 
+      this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
+        this.drawer = drawer;
+      });
 
-
-    this.subscription = this.lotService.drawerEdit$.subscribe((drawer: boolean) => {
+    this.subscriptionEdit = this.lotService.drawerEdit$.subscribe((drawer: boolean) => {
       this.drawerEdit = drawer;
     });
   }
@@ -162,22 +165,27 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public edit(idLote: number) {
-    this.lotService
-      .read(idLote)
-      .pipe(map((res: ILotResponse) => res.data)).subscribe({
-        next: (value: ILot) => {
-          console.log(value.observaciones)
-        },
-      });
-
     this.lotService.read(idLote).subscribe({
       next: (value: ILotResponse) => {
-        let data : any = value.data
+        let data: any = value.data
+        let data2 : ILot = value.data
+        console.log("data2", data2)
         console.log(data.body.data)
+        this.form.controls['observation'].setValue(data.body.data.observaciones)
+        let dateString = data.body.data.fecha
+        let dateParts = dateString.split("/");
+        let dateObject = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+        this.form.controls['date'].patchValue(dateObject)
+        this.form.controls['formula'].patchValue(this.formulas.find(arg=> arg.id == data.body.data.idFormula))
+        this.form.controls['lot'].setValue(data.body.data.nroLote)
+        this.lotService.toggleDrawerEdit();
       },
     });
-    this.lotService.toggleDrawerEdit();
   }
+
+  compareFunction(o1: any, o2: any) {
+    return (o1.idFormula == o2.idFormula);
+   }
 
   public onEdit(): void {
     if (this.form.invalid) {
@@ -284,7 +292,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _reset(): void {
     this.form.reset();
-    this.form.get('fecha').markAsPristine();
+    //this.form.get('fecha').markAsPristine();
     this.lotService.toggleDrawer();
   }
 

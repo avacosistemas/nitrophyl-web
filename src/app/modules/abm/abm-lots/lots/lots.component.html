@@ -60,10 +60,10 @@
               <mat-icon> close </mat-icon>
             </button>
             <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
-              <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
-                V{{formula.version}} ({{ formula.norma }})</mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
+                <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
+                  V{{formula.version}} ({{ formula.norma }})</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
 
           <mat-form-field class="w-full" appearance="outline">
             <mat-label> Observaciones </mat-label>
