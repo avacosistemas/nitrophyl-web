@@ -41,7 +41,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   public panelOpenState: boolean;
   public formFilter: FormGroup;
   private sortedData: any[]
-  
+
   // * Form (create).
   public form: FormGroup = new FormGroup({
     lot: new FormControl('', [
@@ -80,7 +80,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _dPipe: DatePipe,
     private dateAdapter: DateAdapter<Date>,
     private formBuilder: FormBuilder,
-  ) { this.dateAdapter.setLocale('es');
+  ) {
+    this.dateAdapter.setLocale('es');
     //this.sortedData = this.lots$.slice();
   }
 
@@ -265,7 +266,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
-  
+
   search() {
     const dateT: string = this._dPipe.transform(
       this.formFilter.controls['fechaDesde'].value,
@@ -278,10 +279,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.lots$ = this.lotService
-      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null, 
-                    this.formFilter.controls['nroLote'].value, 
-                    dateT, 
-                    dateF)
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF)
       .pipe(map((res: ILotsResponse) => res.data));
   }
 
@@ -324,31 +325,28 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private delete(id : number):void  {
-    console.log("a borrar lote " + id)
+  public delete(id: number): void {
     const dialogRef = this.dialog.open(RemoveDialogComponent, {
       maxWidth: '40%',
-      data: {data: id, seccion: "lote", boton: "Eliminar"},
-  });
-  dialogRef.afterClosed().subscribe(result => {
-      if(result) {
-        console.log("result", result, id)
-        
-          this.lotService.delete(id).subscribe(response => {
-              if (response.status == 'OK') {
-                //this.showSuccess = true;
-                console.log("success borrar lote")
-              } else {
-                //this.showError = true;
-                console.log("fail borrar lote")
-              }
-              //this.inicializar();
-          })
+      data: { data: id, seccion: "lote", boton: "Eliminar" },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.lotService.delete(id).subscribe(response => {
+          if (response.status == 'OK') {
+            this.lots$ = this.lotService
+              .get()
+              .pipe(map((res: ILotsResponse) => res.data));
+            this._snackBar(true);
+          } else {
+            this._snackBar(false);
+          }
+        })
       }
-  });
+    });
   }
 
-  
+
   sortData(sort: Sort) {
     /*const data = this.lotService
     .get()
@@ -379,10 +377,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }*/
-}
+  }
 
-compare(a: number | string, b: number | string, isAsc: boolean) {
-  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
-}
+  compare(a: number | string, b: number | string, isAsc: boolean) {
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  }
 }
 
