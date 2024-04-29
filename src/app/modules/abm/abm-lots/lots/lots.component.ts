@@ -26,14 +26,29 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 // * Dialogs.
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
-import { DateAdapter } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { IResponse } from 'app/shared/models/response.interface';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
 
 @Component({
   selector: 'app-lots',
   templateUrl: './lots.component.html',
+  providers: [// The locale would typically be provided on the root module of your application. We do it at
+    // the component level here, due to limitations of our example generation script.
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
+
+    // `MomentDateAdapter` and `MAT_MOMENT_DATE_FORMATS` can be automatically provided by importing
+    // `MatMomentDateModule` in your applications root module. We provide it at the component level
+    // here, due to limitations of our example generation script.
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },],
 })
 export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
+
   public component: string = 'all';
   public drawer: boolean; // Drawer state.
   public drawerEdit: boolean; // Drawer state.
@@ -50,7 +65,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       Validators.maxLength(5),
       Validators.pattern(/^[A-Za-z]\d{4}$/),
     ]),
-    date: new FormControl(new Date(), Validators.required),
+    date: new FormControl(new Date()),
     formula: new FormControl(null, Validators.required),
     observation: new FormControl(null, Validators.maxLength(255)),
     id: new FormControl(0),
@@ -82,7 +97,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _dPipe: DatePipe,
     private dateAdapter: DateAdapter<Date>,
     private formBuilder: FormBuilder,
-  ) { this.dateAdapter.setLocale('es'); }
+  ) { this.dateAdapter.setLocale('es-AR'); }
 
   public ngOnInit(): void {
     this.setForm();
@@ -111,9 +126,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       });
 
-      this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
-        this.drawer = drawer;
-      });
+    this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
+      this.drawer = drawer;
+    });
 
     this.subscriptionEdit = this.lotService.drawerEdit$.subscribe((drawer: boolean) => {
       this.drawerEdit = drawer;
@@ -170,13 +185,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lotService.read(idLote).subscribe({
       next: (value: IResponse<ILot>) => {
         let data: any = value.data
-        let data2 : IResponse<ILot> = value
+        let data2: IResponse<ILot> = value
         this.form.controls['observation'].setValue(data.body.data.observaciones)
         let dateString = data.body.data.fecha
         let dateParts = dateString.split("/");
         let dateObject = new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
         this.form.controls['date'].patchValue(dateObject)
-        this.form.controls['formula'].patchValue(this.formulas.find(arg=> arg.id == data.body.data.idFormula))
+        this.form.controls['formula'].patchValue(this.formulas.find(arg => arg.id == data.body.data.idFormula))
         this.form.controls['lot'].setValue(data.body.data.nroLote)
         this.form.controls['id'].setValue(data.body.data.id)
         this.lotService.toggleDrawerEdit();
@@ -184,6 +199,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
+
+
 
 
   public onEdit(): void {
@@ -208,7 +225,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       nroLote: this.form.controls['lot'].value,
       observaciones: this.form.controls['observation'].value ?? '',
       fecha: date,
-      id : this.form.controls['id'].value,
+      id: this.form.controls['id'].value,
     };
 
     this._put(lot);

@@ -47,9 +47,10 @@
           </mat-form-field>
 
           <mat-form-field class="w-full fuse-mat-emphasized-affix">
-            <input matInput [matDatepicker]="pickerEdit" formControlName="date" placeholder="Fecha" required>
+            <input matInput [matDatepicker]="pickerEdit" formControlName="date" placeholder="Fecha">
             <mat-datepicker-toggle matIconSuffix [for]="pickerEdit"></mat-datepicker-toggle>
             <mat-datepicker #pickerEdit></mat-datepicker>
+            <mat-hint>DD/MM/YYYY</mat-hint>
             <mat-error>Fecha requerida</mat-error>
           </mat-form-field>
 
