@@ -78,7 +78,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _dPipe: DatePipe,
     private dateAdapter: DateAdapter<Date>,
     private formBuilder: FormBuilder,
-  ) { this.dateAdapter.setLocale('es');}
+  ) { this.dateAdapter.setLocale('es'); }
 
   public ngOnInit(): void {
     this.setForm();
@@ -258,7 +258,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
-  
+
   search() {
     const dateT: string = this._dPipe.transform(
       this.formFilter.controls['fechaDesde'].value,
@@ -271,10 +271,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.lots$ = this.lotService
-      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null, 
-                    this.formFilter.controls['nroLote'].value, 
-                    dateT, 
-                    dateF)
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF)
       .pipe(map((res: ILotsResponse) => res.data));
   }
 
@@ -316,4 +316,28 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       idFormula: new FormControl(null)
     });
   }
+
+  private delete(id: number): void {
+    console.log("a borrar lote " + id)
+    const dialogRef = this.dialog.open(RemoveDialogComponent, {
+      maxWidth: '40%',
+      data: { data: id, seccion: "lote", boton: "Eliminar" },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.lotService.delete(id).subscribe(response => {
+          if (response.status == 'OK') {
+            this.lots$ = this.lotService
+              .get()
+              .pipe(map((res: ILotsResponse) => res.data));
+            this._snackBar(true);
+          } else {
+            this._snackBar(false);
+          }
+        })
+      }
+    });
+  };
+
+
 }
