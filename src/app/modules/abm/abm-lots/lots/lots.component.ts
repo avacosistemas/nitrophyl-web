@@ -293,12 +293,20 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       'dd/MM/yyyy'
     );
 
+    const dateE: string = this._dPipe.transform(
+      this.formFilter.controls['fechaEstado'].value,
+      'dd/MM/yyyy'
+    );
+
     this.lots$ = this.lotService
       .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
         this.formFilter.controls['nroLote'].value,
         dateT,
-        dateF)
+        dateF,
+        dateE)
       .pipe(map((res: ILotsResponse) => res.data));
+
+      this.lots$.subscribe(value=> this.dataSource.data = value);
   }
 
   private _dialog(id: number, set: string): void {
@@ -336,7 +344,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       ]),
       fechaDesde: new FormControl(null),
       fechaHasta: new FormControl(null),
-      idFormula: new FormControl(null)
+      idFormula: new FormControl(null),
+      fechaEstado: new FormControl(null)
     });
   }
 

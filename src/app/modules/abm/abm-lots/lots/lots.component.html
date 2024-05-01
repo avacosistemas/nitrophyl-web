@@ -106,6 +106,14 @@
                   <mat-error>Fecha Hasta requerida</mat-error>
                 </mat-form-field>
 
+                <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+                  <input matInput [matDatepicker]="pickerEstado" formControlName="fechaEstado" placeholder="Fecha Estado"
+                    readonly>
+                  <mat-datepicker-toggle matIconSuffix [for]="pickerEstado"></mat-datepicker-toggle>
+                  <mat-datepicker #pickerEstado></mat-datepicker>
+                  <mat-error>Fecha Estado requerida</mat-error>
+                </mat-form-field>
+
                 <mat-form-field class="w-full">
                   <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="idFormula"
                     [matAutocomplete]="auto">
