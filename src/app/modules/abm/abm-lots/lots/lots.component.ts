@@ -27,6 +27,7 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter } from '@angular/material/core';
+import { Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-lots',
@@ -68,6 +69,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private subscription: Subscription; // Drawer subscription.
 
+  lots: ILot[];
+  sortedData: ILot[];
+
   constructor(
     private lotService: LotService,
     private formulaService: FormulasService,
@@ -78,7 +82,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _dPipe: DatePipe,
     private dateAdapter: DateAdapter<Date>,
     private formBuilder: FormBuilder,
-  ) { this.dateAdapter.setLocale('es');}
+  ) { this.dateAdapter.setLocale('es'); }
 
   public ngOnInit(): void {
     this.setForm();
@@ -110,6 +114,14 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
       this.drawer = drawer;
     });
+
+    this.lotService.get().subscribe({
+      next: (response) => {
+        this.lots = response.data;
+        this.sortedData = response.data;
+      }
+    })
+
   }
 
   public ngAfterViewInit(): void {
@@ -258,7 +270,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
-  
+
   search() {
     const dateT: string = this._dPipe.transform(
       this.formFilter.controls['fechaDesde'].value,
@@ -271,10 +283,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.lots$ = this.lotService
-      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null, 
-                    this.formFilter.controls['nroLote'].value, 
-                    dateT, 
-                    dateF)
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF)
       .pipe(map((res: ILotsResponse) => res.data));
   }
 
@@ -316,4 +328,37 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       idFormula: new FormControl(null)
     });
   }
+
+  sortData(sort: Sort) {
+    const data = this.lots.slice();
+    if (!sort.active || sort.direction === '') {
+      this.sortedData = data;
+      return;
+    }
+
+    this.sortedData = data.sort((a, b) => {
+      const isAsc = sort.direction === 'asc';
+      switch (sort.active) {
+        case 'fechaEstado':
+          return compare(a.fechaEstado, b.fechaEstado, isAsc);
+        case 'nroLote':
+          return compare(a.nroLote, b.nroLote, isAsc);
+        case 'formula':
+          return compare(a.formula, b.formula, isAsc);
+        case 'fecha':
+          return compare(a.fecha, b.fecha, isAsc);
+        case 'observaciones':
+          return compare(a.observaciones, b.observaciones, isAsc);
+        case 'estado':
+          return compare(a.observaciones, b.observaciones, isAsc);
+        default:
+          return 0;
+      }
+    });
+  }
 }
+
+function compare(a: number | string, b: number | string, isAsc: boolean) {
+  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+}
+
