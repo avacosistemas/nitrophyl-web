@@ -20,6 +20,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 
 // * Pipes.
 import { DatePipe } from '@angular/common';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 const routes: Route[] = [
   {
@@ -37,6 +38,7 @@ const routes: Route[] = [
     MatSidenavModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatPaginatorModule
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })

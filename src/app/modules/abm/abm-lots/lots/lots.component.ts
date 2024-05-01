@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, startWith, Subscription } from 'rxjs';
@@ -28,6 +28,8 @@ import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter } from '@angular/material/core';
 import { Sort } from '@angular/material/sort';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-lots',
@@ -71,6 +73,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   lots: ILot[];
   sortedData: ILot[];
+  @ViewChild('paginator', { static: true }) paginator: MatPaginator;
+  dataSource = new MatTableDataSource<ILot>([]);
+  totalRecords = 0;
+  pageSize = 10;
+  pageIndex = 0;
+  searching: boolean;
+
 
   constructor(
     private lotService: LotService,
@@ -119,6 +128,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (response) => {
         this.lots = response.data;
         this.sortedData = response.data;
+        this.dataSource.data = response.data
       }
     })
 
@@ -340,25 +350,55 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       const isAsc = sort.direction === 'asc';
       switch (sort.active) {
         case 'fechaEstado':
-          return compare(a.fechaEstado, b.fechaEstado, isAsc);
+          return this.compare(a.fechaEstado, b.fechaEstado, isAsc);
         case 'nroLote':
-          return compare(a.nroLote, b.nroLote, isAsc);
+          return this.compare(a.nroLote, b.nroLote, isAsc);
         case 'formula':
-          return compare(a.formula, b.formula, isAsc);
+          return this.compare(a.formula, b.formula, isAsc);
         case 'fecha':
-          return compare(a.fecha, b.fecha, isAsc);
+          return this.compare(a.fecha, b.fecha, isAsc);
         case 'observaciones':
-          return compare(a.observaciones, b.observaciones, isAsc);
+          return this.compare(a.observaciones, b.observaciones, isAsc);
         case 'estado':
-          return compare(a.observaciones, b.observaciones, isAsc);
+          return this.compare(a.observaciones, b.observaciones, isAsc);
         default:
           return 0;
       }
     });
   }
-}
+  compare(a: number | string, b: number | string, isAsc: boolean) {
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  }
 
-function compare(a: number | string, b: number | string, isAsc: boolean) {
-  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+
+
+  getPagedData() {
+    const search = {
+      // ... set filters here
+    };
+
+    this.dataSource.data = this.lots.slice(this.pageIndex*this.pageSize, (this.pageIndex*this.pageSize) + this.pageSize);
+    this.totalRecords = this.lots.length
+
+    //this.searching = true;
+    /*this.service.search(search).subscribe({
+      next: ((results) => {
+        this.totalRecords = results?.length ? results[0].totalRecords : 0;
+        this.dataSource.data = results || [];
+      }),
+      complete: () => this.searching = false,
+      error: () => this.searching = false,
+    });*/
+  }
+
+
+  pageChangeEvent(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.getPagedData();
+  }
+
+
+
 }
 
