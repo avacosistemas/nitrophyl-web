@@ -38,6 +38,15 @@ import { LotsComponent } from '../lots/lots.component';
         </div>
 
         <div class="py-4">
+          <mat-form-field class="w-full">
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Aprobacion" >
+                  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                  <mat-error>Fecha Aprobacion requerida</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="py-4">
           <mat-form-field class="w-full" appearance="outline">
             <mat-label> Observaciones </mat-label>
             <textarea
@@ -156,6 +165,9 @@ export class LotDialogComponent {
         observation: new FormControl({ value: null, disabled: false }, [
           Validators.maxLength(255),
         ]),
+        fecha: new FormControl({ value: new Date(), disabled: false }, [
+          Validators.maxLength(10), Validators.required
+        ])
       });
     } else {
       this.form = this._formBuilder.group({
