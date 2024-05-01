@@ -137,6 +137,12 @@
               </div>
               <div class="row flex justify-end">
                 <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                  (click)="limpiar()">
+                  <span class="mat-button-wrapper"> Limpiar </span>
+                  <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                  <span class="mat-button-focus-overlay"></span>
+                </button>
+                <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
                   (click)="search()">
                   <span class="mat-button-wrapper"> Buscar </span>
                   <span matripple="" class="mat-ripple mat-button-ripple"></span>
@@ -213,7 +219,7 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
-        <mat-paginator #paginator (page)="pageChangeEvent($event)" [length]="totalRecords" [pageSize]="pageSize"
+        <mat-paginator #paginator (page)="pageChangeEvent($event)" [length]="totalRecords" [pageSize]="pageSize" style="display: flex; justify-content: right;"
           [pageIndex]="pageIndex" [length]="totalRecords" [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons>
         </mat-paginator>
       </div>

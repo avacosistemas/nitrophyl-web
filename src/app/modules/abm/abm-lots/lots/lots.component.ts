@@ -36,6 +36,7 @@ import { MatTableDataSource } from '@angular/material/table';
   templateUrl: './lots.component.html',
 })
 export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
+
   public component: string = 'all';
   public drawer: boolean; // Drawer state.
   public lots$: Observable<ILot[]>; // Lotes.
@@ -377,7 +378,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       // ... set filters here
     };
 
-    this.dataSource.data = this.lots.slice(this.pageIndex*this.pageSize, (this.pageIndex*this.pageSize) + this.pageSize);
+    this.dataSource.data = this.lots.slice(this.pageIndex * this.pageSize, (this.pageIndex * this.pageSize) + this.pageSize);
     this.totalRecords = this.lots.length
 
     //this.searching = true;
@@ -398,7 +399,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.getPagedData();
   }
 
-
+  limpiar() {
+    this.formFilter.reset();
+  }
 
 }
 
