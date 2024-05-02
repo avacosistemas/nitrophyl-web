@@ -197,7 +197,7 @@
                 <mat-icon>speed</mat-icon>
               </button>
               <button>
-                <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(lot.id)"></mat-icon>
+                <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(lot)"></mat-icon>
               </button>
               <ng-container *ngIf="lot.estado === 'PENDIENTE_APROBACION'">
                 <button (click)="set(lot.id, 'APPROVE')">

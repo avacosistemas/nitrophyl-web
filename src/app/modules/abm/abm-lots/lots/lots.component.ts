@@ -193,7 +193,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.lotService.post(lot).subscribe({
       next: () => {
-        this._snackBar(true);
+        this._snackBar(true, null);
         this._reset();
         this.lots$ = this.lotService
           .get()
@@ -201,15 +201,15 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false);
+        this._snackBar(false, null);
       },
     });
   }
 
-  private _snackBar(option: boolean): void {
+  private _snackBar(option: boolean, errorMsg:string): void {
     const message: string = option
       ? 'Cambios realizados correctamente.'
-      : 'No se han podido realizar los cambios.';
+      : errorMsg == null ? 'No se han podido realizar los cambios.': errorMsg;
     const css: string = option ? 'green' : 'red';
     this.snackBar.open(message, 'X', {
       duration: 5000,
@@ -230,14 +230,14 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.lotService.approve(id, body).subscribe({
       next: () => {
-        this._snackBar(true);
+        this._snackBar(true, null);
         this.lots$ = this.lotService
           .get()
           .pipe(map((res: ILotsResponse) => res.data));
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false);
+        this._snackBar(false, null);
       },
     });
   }
@@ -247,14 +247,14 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.lotService.reject(id, observations).subscribe({
       next: () => {
-        this._snackBar(true);
+        this._snackBar(true, null);
         this.lots$ = this.lotService
           .get()
           .pipe(map((res: ILotsResponse) => res.data));
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false);
+        this._snackBar(false, null);
       },
     });
   }
@@ -317,22 +317,21 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private delete(id: number): void {
-    console.log("a borrar lote " + id)
+  private delete(lote: ILot): void {
     const dialogRef = this.dialog.open(RemoveDialogComponent, {
       maxWidth: '40%',
-      data: { data: id, seccion: "lote", boton: "Eliminar" },
+      data: { data: lote.nroLote, seccion: "lote", boton: "Eliminar" },
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.lotService.delete(id).subscribe(response => {
+        this.lotService.delete(lote.id).subscribe(response => {
           if (response.status == 'OK') {
             this.lots$ = this.lotService
               .get()
               .pipe(map((res: ILotsResponse) => res.data));
-            this._snackBar(true);
+            this._snackBar(true, null);
           } else {
-            this._snackBar(false);
+            this._snackBar(false, response.error);
           }
         })
       }
