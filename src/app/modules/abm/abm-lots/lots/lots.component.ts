@@ -128,8 +128,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate([`../../ensayos/${row.id}`]);
   }
 
-  public set(id: number, status: string): void {
-    this._dialog(id, status);
+  public set(lote: ILot, status: string): void {
+    this._dialog(lote, status);
   }
 
   public create(): void {
@@ -224,7 +224,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _approve(
     id: number,
-    body: { estado: string; observaciones: string }
+    body: { estado: string; observaciones: string, fechaAprobacion: string}
   ): void {
     const error: string = 'abm-lots => lots.component.ts => approve() =>';
 
@@ -242,10 +242,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private _reject(id: number, observations: string): void {
+  private _reject(id: number, observations: string, fechaAprobacion: string): void {
     const error: string = 'abm-lots => lots.component.ts => reject() =>';
 
-    this.lotService.reject(id, observations).subscribe({
+    this.lotService.reject(id, observations, fechaAprobacion).subscribe({
       next: () => {
         this._snackBar(true);
         this.lots$ = this.lotService
@@ -278,7 +278,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       .pipe(map((res: ILotsResponse) => res.data));
   }
 
-  private _dialog(id: number, set: string): void {
+  private _dialog(lote: ILot, set: string): void {
     const dialogRef = this.dialog.open(LotDialogComponent, {
       width: 'fit-content',
       data: { set: set },
@@ -286,19 +286,20 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef
       .afterClosed()
-      .subscribe((result: { status: string; observation: string }) => {
+      .subscribe((result: { status: string; observation: string; fechaAprobacion: string }) => {
         if (result) {
           if (
             result.status === 'APROBADO' ||
             result.status === 'APROBADO_OBSERVADO'
           ) {
-            this._approve(id, {
+            this._approve(lote.id, {
               estado: result.status,
               observaciones: result.observation,
+              fechaAprobacion: result.fechaAprobacion
             });
           }
           if (result.status === 'RECHAZADO') {
-            this._reject(id, result.observation);
+            this._reject(lote.id, result.observation, result.fechaAprobacion);
           }
         }
       });

@@ -59,14 +59,14 @@ public getMonitor(): Observable<ILotsResponse> {
 
   public approve(
     id: number,
-    body: { estado: string; observaciones: string }
+    body: { estado: string; observaciones: string, fechaAprobacion: string }
   ): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/aprobar/${id}`, body);
   }
 
-  public reject(id: number, observaciones: string): Observable<ILotResponse> {
+  public reject(id: number, observaciones: string, fechaAprobacion: string): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/rechazar/${id}`, {
-      observaciones,
+      observaciones, fechaAprobacion
     });
   }
 
