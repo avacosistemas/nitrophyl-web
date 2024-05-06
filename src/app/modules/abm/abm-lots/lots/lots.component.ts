@@ -229,6 +229,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     };
 
     this._put(lot);
+
+    this._resetEdit();
   }
 
   public closeEdit(): void {
