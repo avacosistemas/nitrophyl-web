@@ -65,7 +65,7 @@ import { LotService } from 'app/shared/services/lot.service';
           mat-flat-button=""
           class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent"
           (click)="create()"
-          [disabled]="drawer"
+          [disabled]="drawer || drawerEdit"
         >
           <span class="mat-button-wrapper"> Crear nuevo lote </span>
           <span matripple="" class="mat-ripple mat-button-ripple"></span>
