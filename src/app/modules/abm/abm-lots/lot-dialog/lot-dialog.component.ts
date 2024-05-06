@@ -92,6 +92,15 @@ import { LotsComponent } from '../lots/lots.component';
         <h1 class="text-2xl font-semibold py-4">¿Rechazar?</h1>
 
         <div class="py-4">
+          <mat-form-field class="w-full">
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Rechazo" >
+                  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                  <mat-error>Fecha Rechazo requerida</mat-error>
+          </mat-form-field>
+        </div>
+
+        <div class="py-4">
           <mat-form-field class="w-full" appearance="outline">
             <mat-label> Observaciones </mat-label>
             <textarea
@@ -141,6 +150,12 @@ export class LotDialogComponent {
   }
 
   public confirm(): void {
+    let fechaAprobacionForm = this.form.controls['fecha'].value
+    if (true) {
+      console.log(fechaAprobacionForm)
+      this.form.markAllAsTouched();
+      this._dialogRef.close(this.form.value);
+    }
     if (this.data.set === 'APPROVE') {
       this.submitted = true;
       if (this.form.valid) {
@@ -174,6 +189,9 @@ export class LotDialogComponent {
         observation: new FormControl({ value: null, disabled: false }, [
           Validators.maxLength(255),
         ]),
+        fecha: new FormControl({ value: new Date(), disabled: false }, [
+          Validators.maxLength(10), Validators.required
+        ])
       });
     }
   }

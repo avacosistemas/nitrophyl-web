@@ -26,11 +26,25 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 // * Dialogs.
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
-import { DateAdapter } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
 
 @Component({
   selector: 'app-lots',
   templateUrl: './lots.component.html',
+  providers: [// The locale would typically be provided on the root module of your application. We do it at
+    // the component level here, due to limitations of our example generation script.
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
+
+    // `MomentDateAdapter` and `MAT_MOMENT_DATE_FORMATS` can be automatically provided by importing
+    // `MatMomentDateModule` in your applications root module. We provide it at the component level
+    // here, due to limitations of our example generation script.
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },],
 })
 export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   public component: string = 'all';
@@ -292,17 +306,29 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
             result.status === 'APROBADO' ||
             result.status === 'APROBADO_OBSERVADO'
           ) {
+            if (this.validarFechas(result.fechaAprobacion)) {
             this._approve(lote.id, {
               estado: result.status,
               observaciones: result.observation,
               fechaAprobacion: result.fechaAprobacion
             });
+          } else {
+            
+          }
           }
           if (result.status === 'RECHAZADO') {
+            if (this.validarFechas(result.fechaAprobacion)) {
             this._reject(lote.id, result.observation, result.fechaAprobacion);
+          } else {
+
+          }
           }
         }
       });
+  }
+  validarFechas(fechaAprobacion: string) {
+    console.log("validar")
+    return false
   }
 
   private setForm(): void {
