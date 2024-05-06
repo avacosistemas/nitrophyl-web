@@ -209,6 +209,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+
     const date: string = this._dPipe.transform(
       this.form.controls['date'].value,
       'dd/MM/yyyy'
@@ -301,12 +302,17 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     const error: string = 'abm-lots => lots.component.ts => _put() =>';
 
     this.lotService.put(lot).subscribe({
-      next: () => {
-        this._snackBar(true);
-        this._reset();
-        this.lots$ = this.lotService
-          .get()
-          .pipe(map((res: ILotsResponse) => res.data));
+      next: (value:IResponse<ILot>) => {
+        if (value.status != "OK") {
+          this._snackBar(false);  
+        } else {
+          this._snackBar(true);
+          this._reset();
+          
+          this.lots$ = this.lotService
+            .get()
+            .pipe(map((res: ILotsResponse) => res.data));
+        }
       },
       error: (err: any) => {
         console.log(error, err);
