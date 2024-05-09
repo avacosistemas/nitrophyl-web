@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, startWith, Subscription, tap } from 'rxjs';
@@ -33,6 +33,7 @@ import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FOR
 @Component({
   selector: 'app-lots',
   templateUrl: './lots.component.html',
+  styleUrls: ['./lots.component.css'],
   providers: [// The locale would typically be provided on the root module of your application. We do it at
     // the component level here, due to limitations of our example generation script.
     { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
@@ -195,7 +196,6 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.form.controls['lot'].setValue(data.body.data.nroLote)
         this.form.controls['id'].setValue(data.body.data.id)
         this.lotService.toggleDrawerEdit();
-        this.form.markAsDirty();
       },
     });
   }
@@ -231,7 +231,6 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this._put(lot);
 
-    this._resetEdit();
   }
 
   public closeEdit(): void {
@@ -305,9 +304,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (value:IResponse<ILot>) => {
         if (value.status != "OK") {
           this._snackBar(false);  
+          this.lotService.toggleDrawerEdit();
         } else {
           this._snackBar(true);
-          this._reset();
           
           this.lots$ = this.lotService
             .get()
@@ -435,5 +434,11 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       fechaHasta: new FormControl(null),
       idFormula: new FormControl(null)
     });
+  }
+
+  @HostListener("window:scroll", ["$event"])
+  onWindowScroll(event) {
+    // prevent the background from scrolling when the dialog is open.
+    event.stopPropagation();
   }
 }
