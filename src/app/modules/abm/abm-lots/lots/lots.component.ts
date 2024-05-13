@@ -312,23 +312,31 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
               observaciones: result.observation,
               fechaAprobacion: result.fechaAprobacion
             });
+            this._snackBar(true);
           } else {
-            
+            this._snackBar(false);
           }
           }
           if (result.status === 'RECHAZADO') {
             if (this.validarFechas(result.fechaAprobacion)) {
             this._reject(lote.id, result.observation, result.fechaAprobacion);
           } else {
-
+            this._snackBar(false);
           }
           }
         }
       });
   }
+  
   validarFechas(fechaAprobacion: string) {
-    console.log("validar")
-    return false
+    let inputDate : Date = new Date(fechaAprobacion);
+    let inputDateDate = new Date(inputDate.toDateString())
+    let now :string = new Date().toDateString();
+    let nowDate = new Date(now);
+    if (inputDateDate.getTime() < nowDate.getTime() || inputDateDate.getTime() == nowDate.getTime()) {
+      return false
+    }
+    return true;
   }
 
   private setForm(): void {

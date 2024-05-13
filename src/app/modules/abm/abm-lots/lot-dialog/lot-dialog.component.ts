@@ -150,12 +150,6 @@ export class LotDialogComponent {
   }
 
   public confirm(): void {
-    let fechaAprobacionForm = this.form.controls['fecha'].value
-    if (true) {
-      console.log(fechaAprobacionForm)
-      this.form.markAllAsTouched();
-      this._dialogRef.close(this.form.value);
-    }
     if (this.data.set === 'APPROVE') {
       this.submitted = true;
       if (this.form.valid) {
@@ -167,6 +161,7 @@ export class LotDialogComponent {
       this._dialogRef.close({
         status: 'RECHAZADO',
         observation: this.form.controls.observation.value,
+        fechaAprobacion : this.form.controls.fecha.value
       });
     }
   }
