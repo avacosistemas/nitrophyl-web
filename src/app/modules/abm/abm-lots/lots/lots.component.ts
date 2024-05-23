@@ -311,6 +311,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
           this.lots$ = this.lotService
             .get()
             .pipe(map((res: ILotsResponse) => res.data));
+            this.lotService.toggleDrawerEdit();
         }
       },
       error: (err: any) => {
