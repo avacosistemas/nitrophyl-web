@@ -31,6 +31,11 @@ import { Sort } from '@angular/material/sort';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 
+export interface Estado {
+  idEstado : string,
+  value: string
+}
+
 @Component({
   selector: 'app-lots',
   templateUrl: './lots.component.html',
@@ -80,6 +85,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   pageSize = 10;
   pageIndex = 0;
   searching: boolean;
+  estados : Estado[] = [{idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación"}, 
+  {idEstado: "RECHAZADO", value: "Rechazado"},
+  {idEstado: "APROBADO", value: "Aprobado"},
+  {idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones"}]
 
 
   constructor(
@@ -144,6 +153,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public displayFn(formula: IFormula): string {
     return formula && formula.nombre ? formula.nombre : '';
+  }
+
+  public displayEstado(formula: any): string {
+    return formula;
   }
 
   public get(row: ILot): void {
@@ -293,17 +306,12 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       'dd/MM/yyyy'
     );
 
-    const dateE: string = this._dPipe.transform(
-      this.formFilter.controls['fechaEstado'].value,
-      'dd/MM/yyyy'
-    );
-
     this.lots$ = this.lotService
       .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        dateE)
+        this.formFilter.controls['estado'].value)
       .pipe(map((res: ILotsResponse) => res.data));
 
       this.lots$.subscribe(value=> this.dataSource.data = value);
@@ -345,41 +353,39 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       fechaDesde: new FormControl(null),
       fechaHasta: new FormControl(null),
       idFormula: new FormControl(null),
-      fechaEstado: new FormControl(null)
+      estado: new FormControl(null)
     });
   }
 
   sortData(sort: Sort) {
-    const data = this.lots.slice();
-    if (!sort.active || sort.direction === '') {
-      this.sortedData = data;
-      return;
-    }
+    const dateT: string = this._dPipe.transform(
+      this.formFilter.controls['fechaDesde'].value,
+      'dd/MM/yyyy'
+    );
 
-    this.sortedData = data.sort((a, b) => {
-      const isAsc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'fechaEstado':
-          return this.compare(a.fechaEstado, b.fechaEstado, isAsc);
-        case 'nroLote':
-          return this.compare(a.nroLote, b.nroLote, isAsc);
-        case 'formula':
-          return this.compare(a.formula, b.formula, isAsc);
-        case 'fecha':
-          return this.compare(a.fecha, b.fecha, isAsc);
-        case 'observaciones':
-          return this.compare(a.observaciones, b.observaciones, isAsc);
-        case 'estado':
-          return this.compare(a.observaciones, b.observaciones, isAsc);
-        default:
-          return 0;
-      }
-    });
-    this.dataSource.data = this.sortedData
+    const dateF: string = this._dPipe.transform(
+      this.formFilter.controls['fechaHasta'].value,
+      'dd/MM/yyyy'
+    );
+
+    const estado: string = this._dPipe.transform(
+      this.formFilter.controls['fechaEstado'].value,
+      'dd/MM/yyyy'
+    );
+    /*this.lots$ = this.lotService
+    .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+      this.formFilter.controls['nroLote'].value,
+      dateT,
+      dateF,
+      dateE)
+    .pipe(map((res: ILotsResponse) => res.data));
+
+    this.lots$.subscribe(value=> this.dataSource.data = value);
+    this.lots = this.dataSource.data
+    */
+    //this.dataSource.data = this.sortedData
   }
-  compare(a: number | string, b: number | string, isAsc: boolean) {
-    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
-  }
+  
 
 
 

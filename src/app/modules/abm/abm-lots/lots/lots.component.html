@@ -106,12 +106,20 @@
                   <mat-error>Fecha Hasta requerida</mat-error>
                 </mat-form-field>
 
-                <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
-                  <input matInput [matDatepicker]="pickerEstado" formControlName="fechaEstado" placeholder="Fecha Estado"
-                    readonly>
-                  <mat-datepicker-toggle matIconSuffix [for]="pickerEstado"></mat-datepicker-toggle>
-                  <mat-datepicker #pickerEstado></mat-datepicker>
-                  <mat-error>Fecha Estado requerida</mat-error>
+                
+
+
+                <mat-form-field class="w-full">
+                  <input type="text" placeholder="Ingrese o seleccione un estado" matInput formControlName="estado"
+                    [matAutocomplete]="auto2">
+                  <button matSuffix *ngIf="formFilter.controls['estado'].value"
+                    (click)="formFilter.controls['estado'].setValue('')">
+                    <mat-icon> close </mat-icon>
+                  </button>
+                  <mat-autocomplete #auto2="matAutocomplete" autoActiveFirstOption>
+                    <mat-option *ngFor="let estado2 of estados" [value]="estado2.idEstado">{{ estado2.value }}
+                    </mat-option>
+                  </mat-autocomplete>
                 </mat-form-field>
 
                 <mat-form-field class="w-full">

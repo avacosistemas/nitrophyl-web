@@ -35,7 +35,7 @@ public getMonitor(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._urlMonitor);
   }
 
-  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, fechaEstado:string): Observable<ILotsResponse> {
+  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, estado:string): Observable<ILotsResponse> {
     var url = this._url + "?asc=false&idx=nroLote";
 
     if (formula != null && formula != "") {
@@ -50,8 +50,8 @@ public getMonitor(): Observable<ILotsResponse> {
     if (fechaHasta != null && fechaHasta != "") {
       url = url + "&fechaHasta="+fechaHasta;
     }
-    if (fechaEstado != null && fechaEstado != "") {
-      url = url + "&fechaEstado="+fechaEstado;
+    if (estado != null && estado != "") {
+      url = url + "&estado="+estado;
     }
 
     return this.http.get<ILotsResponse>(url);
