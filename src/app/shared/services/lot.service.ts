@@ -35,8 +35,8 @@ public getMonitor(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._urlMonitor);
   }
 
-  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, estado:string): Observable<ILotsResponse> {
-    var url = this._url + "?asc=false&idx=nroLote";
+  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, estado:string, rows, first, idx, asc): Observable<ILotsResponse> {
+    var url = this._url + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
 
     if (formula != null && formula != "") {
       url = url + "&idFormula="+formula;

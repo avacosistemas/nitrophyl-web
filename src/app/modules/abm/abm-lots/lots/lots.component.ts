@@ -27,12 +27,12 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter } from '@angular/material/core';
-import { Sort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 
 export interface Estado {
-  idEstado : string,
+  idEstado: string,
   value: string
 }
 
@@ -85,11 +85,11 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   pageSize = 10;
   pageIndex = 0;
   searching: boolean;
-  estados : Estado[] = [{idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación"}, 
-  {idEstado: "RECHAZADO", value: "Rechazado"},
-  {idEstado: "APROBADO", value: "Aprobado"},
-  {idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones"}]
-
+  estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
+  { idEstado: "RECHAZADO", value: "Rechazado" },
+  { idEstado: "APROBADO", value: "Aprobado" },
+  { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
     private lotService: LotService,
@@ -138,7 +138,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (response) => {
         this.lots = response.data;
         this.sortedData = response.data;
-        this.dataSource.data = response.data
+        this.dataSource = new MatTableDataSource(response.data);
+        this.dataSource.sort = this.sort;
+        this.dataSource.paginator = this.paginator;
       }
     })
 
@@ -149,6 +151,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (top !== null) {
       top.scrollIntoView();
     }
+
+    this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
   }
 
   public displayFn(formula: IFormula): string {
@@ -306,15 +311,21 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       'dd/MM/yyyy'
     );
 
+    let estadoFind = this.estados.find((value) => {
+      if (value.value == this.formFilter.controls['estado'].value) return true;
+      return false;
+    }
+    )
+
     this.lots$ = this.lotService
       .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        this.formFilter.controls['estado'].value)
+        estadoFind.idEstado, this.pageSize, this.pageIndex, "nroLote", true)
       .pipe(map((res: ILotsResponse) => res.data));
 
-      this.lots$.subscribe(value=> this.dataSource.data = value);
+    this.lots$.subscribe(value => this.dataSource.data = value);
   }
 
   private _dialog(id: number, set: string): void {
@@ -358,6 +369,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   sortData(sort: Sort) {
+
     const dateT: string = this._dPipe.transform(
       this.formFilter.controls['fechaDesde'].value,
       'dd/MM/yyyy'
@@ -368,24 +380,21 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       'dd/MM/yyyy'
     );
 
-    const estado: string = this._dPipe.transform(
-      this.formFilter.controls['fechaEstado'].value,
-      'dd/MM/yyyy'
-    );
-    /*this.lots$ = this.lotService
-    .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
-      this.formFilter.controls['nroLote'].value,
-      dateT,
-      dateF,
-      dateE)
-    .pipe(map((res: ILotsResponse) => res.data));
 
-    this.lots$.subscribe(value=> this.dataSource.data = value);
-    this.lots = this.dataSource.data
-    */
-    //this.dataSource.data = this.sortedData
+    this.lots$ = this.lotService
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        this.formFilter.controls['estado'].value, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
+      .pipe(map((res: ILotsResponse) => res.data));
+
+    this.lots$.subscribe(value => this.dataSource.data = value);
+    this.sortedData = this.dataSource.data;
+    this.totalRecords = this.lots.length
+    this.pageIndex = 0;
   }
-  
+
 
 
 
@@ -417,6 +426,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   limpiar() {
     this.formFilter.reset();
+    this.estados = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
+    { idEstado: "RECHAZADO", value: "Rechazado" },
+    { idEstado: "APROBADO", value: "Aprobado" },
+    { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
   }
 
 }
