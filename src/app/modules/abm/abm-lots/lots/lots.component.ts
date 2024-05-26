@@ -82,7 +82,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('paginator', { static: true }) paginator: MatPaginator;
   dataSource = new MatTableDataSource<ILot>([]);
   totalRecords = 0;
-  pageSize = 10;
+  pageSize = 5;
   pageIndex = 0;
   searching: boolean;
   estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
@@ -403,18 +403,27 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       // ... set filters here
     };
 
-    this.dataSource.data = this.lots.slice(this.pageIndex * this.pageSize, (this.pageIndex * this.pageSize) + this.pageSize);
-    this.totalRecords = this.lots.length
+    const dateT: string = this._dPipe.transform(
+      this.formFilter.controls['fechaDesde'].value,
+      'dd/MM/yyyy'
+    );
 
-    //this.searching = true;
-    /*this.service.search(search).subscribe({
-      next: ((results) => {
-        this.totalRecords = results?.length ? results[0].totalRecords : 0;
-        this.dataSource.data = results || [];
-      }),
-      complete: () => this.searching = false,
-      error: () => this.searching = false,
-    });*/
+    const dateF: string = this._dPipe.transform(
+      this.formFilter.controls['fechaHasta'].value,
+      'dd/MM/yyyy'
+    );
+
+
+    this.lots$ = this.lotService
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        this.formFilter.controls['estado'].value, this.pageSize, this.pageIndex, "nroLote", true)
+      .pipe(map((res: ILotsResponse) => res.data));
+    this.lots$.subscribe(value => this.dataSource.data = value || []);
+
+    this.totalRecords = this.lots.length
   }
 
 
