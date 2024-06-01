@@ -306,7 +306,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
             result.status === 'APROBADO' ||
             result.status === 'APROBADO_OBSERVADO'
           ) {
-            if (this.validarFechas(result.fechaAprobacion)) {
+            if (this.validarFechas(result.fechaAprobacion, lote.fecha)) {
             this._approve(lote.id, {
               estado: result.status,
               observaciones: result.observation,
@@ -318,7 +318,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
           }
           }
           if (result.status === 'RECHAZADO') {
-            if (this.validarFechas(result.fechaAprobacion)) {
+            if (this.validarFechas(result.fechaAprobacion, lote.fecha)) {
             this._reject(lote.id, result.observation, result.fechaAprobacion);
           } else {
             this._snackBar(false);
@@ -328,12 +328,18 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
   
-  validarFechas(fechaAprobacion: string) {
-    let inputDate : Date = new Date(fechaAprobacion);
-    let inputDateDate = new Date(inputDate.toDateString())
-    let now :string = new Date().toDateString();
-    let nowDate = new Date(now);
-    if (inputDateDate.getTime() < nowDate.getTime() || inputDateDate.getTime() == nowDate.getTime()) {
+  validarFechas(fechaAprobacion: string, loteFecha: string) {
+    let fechaAprobacionDate : Date = new Date(fechaAprobacion);
+    let inputDate = new Date(fechaAprobacionDate.toDateString())
+    const strFechaCreacion: string = this._dPipe.transform(
+       loteFecha,
+      'MM/dd/yyyy'
+    );
+    const strFechaAprobacion: string = this._dPipe.transform(
+      inputDate,
+     'dd/MM/yyyy'
+   );
+    if (strFechaAprobacion < strFechaCreacion || strFechaAprobacion == strFechaCreacion) {
       return false
     }
     return true;
