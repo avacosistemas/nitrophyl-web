@@ -30,6 +30,7 @@ import { DateAdapter } from '@angular/material/core';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { IResponse } from 'app/shared/models/response.interface';
 
 export interface Estado {
   idEstado: string,
@@ -322,10 +323,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        estadoFind.idEstado, this.pageSize, this.pageIndex, "nroLote", true)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
       .pipe(map((res: ILotsResponse) => res.data));
 
-    this.lots$.subscribe(value => this.dataSource.data = value);
+    this.lots$.subscribe(value => this.dataSource.filteredData = value);
   }
 
   private _dialog(id: number, set: string): void {
@@ -389,7 +390,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['estado'].value, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
       .pipe(map((res: ILotsResponse) => res.data));
 
-    this.lots$.subscribe(value => this.dataSource.data = value);
+    this.lots$.subscribe(value => this.dataSource.filteredData = value);
     this.sortedData = this.dataSource.data;
     this.totalRecords = this.lots.length
     this.pageIndex = 0;
@@ -421,9 +422,22 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         dateF,
         this.formFilter.controls['estado'].value, this.pageSize, this.pageIndex, "nroLote", true)
       .pipe(map((res: ILotsResponse) => res.data));
-    this.lots$.subscribe(value => this.dataSource.data = value || []);
+    this.lots$.subscribe(value => this.dataSource.filteredData = value || []);
 
-    this.totalRecords = this.lots.length
+    let estadoFind = this.estados.find((value) => {
+      if (value.value == this.formFilter.controls['estado'].value) return true;
+      return false;
+    }
+    )
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => this.totalRecords = value);
   }
 
 
