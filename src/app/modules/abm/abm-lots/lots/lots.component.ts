@@ -84,7 +84,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   dataSource = new MatTableDataSource<ILot>([]);
   totalRecords = 0;
   pageSize = 5;
-  pageIndex = 1;
+  pageIndex = 0;
   searching: boolean;
   estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
   { idEstado: "RECHAZADO", value: "Rechazado" },
