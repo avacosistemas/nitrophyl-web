@@ -165,7 +165,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     if (top !== null) {
       top.scrollIntoView();
     }
-    
+
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
   }
@@ -339,7 +339,12 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
       .pipe(map((res: ILotsResponse) => res.data));
 
-    this.lots$.subscribe(value => this.dataSource.filteredData = value);
+    this.lots$.subscribe({
+      next: (value) => {
+        this.dataSource = new MatTableDataSource<ILot>(value);
+        this.totalRecords = value.length
+      }
+    })
   }
 
   private _dialog(id: number, set: string): void {
@@ -394,13 +399,17 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       'dd/MM/yyyy'
     );
 
+    let estadoFind = this.estados.find((value) => {
+      if (value.value == this.formFilter.controls['estado'].value) return true;
+      return false;
+    })
 
     this.lots$ = this.lotService
       .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        this.formFilter.controls['estado'].value, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
       .pipe(map((res: ILotsResponse) => res.data));
 
     this.lots$.subscribe(value => this.dataSource.filteredData = value);
@@ -422,7 +431,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.formFilter.controls['fechaHasta'].value,
       'dd/MM/yyyy'
     );
-    
+
     let estadoFind = this.estados.find((value) => {
       if (value.value == this.formFilter.controls['estado'].value) return true;
       return false;
@@ -444,15 +453,15 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        this.formFilter.controls['estado'].value, this.pageSize, this.pageIndex, "nroLote", true)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
       .pipe(map((res: ILotsResponse) => res.data));
     this.lots$.subscribe(value => {
       this.dataSource = new MatTableDataSource<ILot>(value);
     });
 
-    
 
-    
+
+
   }
 
 
