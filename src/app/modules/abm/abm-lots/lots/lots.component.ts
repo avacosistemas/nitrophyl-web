@@ -330,6 +330,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       return false;
     }
     )
+    this.pageIndex = 0;
 
     this.lots$ = this.lotService
       .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
@@ -342,9 +343,20 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lots$.subscribe({
       next: (value) => {
         this.dataSource = new MatTableDataSource<ILot>(value);
-        this.totalRecords = value.length
       }
     })
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => {
+      this.totalRecords = value;
+    })
+
   }
 
   private _dialog(id: number, set: string): void {
@@ -412,10 +424,24 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
       .pipe(map((res: ILotsResponse) => res.data));
 
-    this.lots$.subscribe(value => this.dataSource.filteredData = value);
-    this.sortedData = this.dataSource.data;
-    this.totalRecords = this.lots.length
-    this.pageIndex = 0;
+    this.lots$.subscribe({
+      next: (value) => {
+        this.dataSource = new MatTableDataSource<ILot>(value);
+      }
+    });
+    
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => {
+      this.totalRecords = value;
+    })
+
   }
 
 
@@ -442,7 +468,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)//TODO: ver de donde sacar el campo por el q se ordena.
       .pipe(map((res: IResponse<number>) => res.data));
     lotsCount$.subscribe(value => {
       this.totalRecords = value;
