@@ -333,7 +333,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     let inputDate = new Date(fechaAprobacionDate.toDateString())
     const strFechaCreacion: string = this._dPipe.transform(
        loteFecha,
-      'MM/dd/yyyy'
+      'dd/MM/yyyy'
     );
     const strFechaAprobacion: string = this._dPipe.transform(
       inputDate,
