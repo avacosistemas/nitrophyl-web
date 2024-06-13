@@ -337,7 +337,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
       .pipe(map((res: ILotsResponse) => res.data));
 
     this.lots$.subscribe({
@@ -351,7 +351,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
       .pipe(map((res: IResponse<number>) => res.data));
     lotsCount$.subscribe(value => {
       this.totalRecords = value;
@@ -429,7 +429,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.dataSource = new MatTableDataSource<ILot>(value);
       }
     });
-    
+
 
     let lotsCount$ = this.lotService
       .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
@@ -468,7 +468,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.direction, this.sort.direction == 'asc' ? true : false)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
       .pipe(map((res: IResponse<number>) => res.data));
     lotsCount$.subscribe(value => {
       this.totalRecords = value;
@@ -479,7 +479,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         this.formFilter.controls['nroLote'].value,
         dateT,
         dateF,
-        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.direction, this.sort.direction == 'asc' ? true : false)
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
       .pipe(map((res: ILotsResponse) => res.data));
     this.lots$.subscribe(value => {
       this.dataSource = new MatTableDataSource<ILot>(value);
