@@ -329,6 +329,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
   
   validarFechas(fechaAprobacion: string, loteFecha: string) {
+    if (fechaAprobacion == null) {
+      return false;
+    }
     let fechaAprobacionDate : Date = new Date(fechaAprobacion);
     let inputDate = new Date(fechaAprobacionDate.toDateString())
     const strFechaCreacion: string = this._dPipe.transform(

@@ -173,11 +173,15 @@ export class LotDialogComponent {
         this.form.markAllAsTouched();
       }
     } else {
-      this._dialogRef.close({
-        status: 'RECHAZADO',
-        observation: this.form.controls.observation.value,
-        fechaAprobacion : this.form.controls.fecha.value
-      });
+      if (this.form.valid) {
+        this._dialogRef.close({
+          status: 'RECHAZADO',
+          observation: this.form.controls.observation.value,
+          fechaAprobacion: this.form.controls.fecha.value
+        });
+      } else {
+        this.form.markAllAsTouched();
+      }
     }
   }
 
