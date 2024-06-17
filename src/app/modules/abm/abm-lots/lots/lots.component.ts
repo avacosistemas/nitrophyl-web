@@ -28,6 +28,7 @@ import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
+import moment from 'moment';
 
 @Component({
   selector: 'app-lots',
@@ -92,7 +93,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private _dPipe: DatePipe,
     private dateAdapter: DateAdapter<Date>,
     private formBuilder: FormBuilder,
-  ) { this.dateAdapter.setLocale('es');}
+  ) { this.dateAdapter.setLocale('es'); }
 
   public ngOnInit(): void {
     this.setForm();
@@ -238,7 +239,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _approve(
     id: number,
-    body: { estado: string; observaciones: string, fechaAprobacion: string}
+    body: { estado: string; observaciones: string, fecha: string }
   ): void {
     const error: string = 'abm-lots => lots.component.ts => approve() =>';
 
@@ -272,7 +273,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
-  
+
   search() {
     const dateT: string = this._dPipe.transform(
       this.formFilter.controls['fechaDesde'].value,
@@ -285,10 +286,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.lots$ = this.lotService
-      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null, 
-                    this.formFilter.controls['nroLote'].value, 
-                    dateT, 
-                    dateF)
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF)
       .pipe(map((res: ILotsResponse) => res.data));
   }
 
@@ -300,48 +301,51 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef
       .afterClosed()
-      .subscribe((result: { status: string; observation: string; fechaAprobacion: string }) => {
+      .subscribe((result: { status: string; observation: string; fecha: string }) => {
         if (result) {
           if (
             result.status === 'APROBADO' ||
             result.status === 'APROBADO_OBSERVADO'
           ) {
-            if (this.validarFechas(result.fechaAprobacion, lote.fecha)) {
-            this._approve(lote.id, {
-              estado: result.status,
-              observaciones: result.observation,
-              fechaAprobacion: result.fechaAprobacion
-            });
-            this._snackBar(true);
-          } else {
-            this._snackBar(false);
-          }
+            if (this.validarFechas(result.fecha, lote.fecha)) {
+              this._approve(lote.id, {
+                estado: result.status,
+                observaciones: result.observation,
+                fecha: result.fecha
+              });
+              this._snackBar(true);
+            } else {
+              this._snackBar(false);
+            }
           }
           if (result.status === 'RECHAZADO') {
-            if (this.validarFechas(result.fechaAprobacion, lote.fecha)) {
-            this._reject(lote.id, result.observation, result.fechaAprobacion);
-          } else {
-            this._snackBar(false);
-          }
+            if (this.validarFechas(result.fecha, lote.fecha)) {
+              this._reject(lote.id, result.observation, result.fecha);
+            } else {
+              this._snackBar(false);
+            }
           }
         }
       });
   }
-  
+
   validarFechas(fechaAprobacion: string, loteFecha: string) {
     if (fechaAprobacion == null) {
       return false;
     }
-    let fechaAprobacionDate : Date = new Date(fechaAprobacion);
+    let fechaAprobacionDate: Date = new Date(fechaAprobacion);
     let inputDate = new Date(fechaAprobacionDate.toDateString())
+
+    let dateMomentObject = moment(loteFecha, "DD/MM/YYYY"); // 1st argument - string, 2nd argument - format
+    let dateObject = dateMomentObject.toDate()
     const strFechaCreacion: string = this._dPipe.transform(
-       loteFecha,
+      dateObject,
       'dd/MM/yyyy'
     );
     const strFechaAprobacion: string = this._dPipe.transform(
       inputDate,
-     'dd/MM/yyyy'
-   );
+      'dd/MM/yyyy'
+    );
     if (strFechaAprobacion < strFechaCreacion || strFechaAprobacion == strFechaCreacion) {
       return false
     }

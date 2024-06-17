@@ -59,7 +59,7 @@ public getMonitor(): Observable<ILotsResponse> {
 
   public approve(
     id: number,
-    body: { estado: string; observaciones: string, fechaAprobacion: string }
+    body: { estado: string; observaciones: string, fecha: string }
   ): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/aprobar/${id}`, body);
   }
