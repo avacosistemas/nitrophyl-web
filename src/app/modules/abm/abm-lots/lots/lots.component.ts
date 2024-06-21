@@ -27,7 +27,7 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter } from '@angular/material/core';
-import { MatSort, Sort } from '@angular/material/sort';
+import { MatSort, MatSortable, Sort } from '@angular/material/sort';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { IResponse } from 'app/shared/models/response.interface';
@@ -168,6 +168,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
+
+    this.sort.sort(({ id: 'nroLote', start: 'asc'}) as MatSortable);
+    this.dataSource.sort = this.sort;
   }
 
   public displayFn(formula: IFormula): string {
@@ -356,6 +359,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     lotsCount$.subscribe(value => {
       this.totalRecords = value;
     })
+
+    
 
   }
 
