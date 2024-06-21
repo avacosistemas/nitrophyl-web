@@ -336,7 +336,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     let fechaAprobacionDate: Date = new Date(fechaAprobacion);
     let inputDate = new Date(fechaAprobacionDate.toDateString())
 
-    let dateMomentObject = moment(loteFecha, "DD/MM/YYYY"); // 1st argument - string, 2nd argument - format
+    let dateMomentObject = moment(loteFecha, "DD/MM/YYYY");
     let dateObject = dateMomentObject.toDate()
     const strFechaCreacion: string = this._dPipe.transform(
       dateObject,
