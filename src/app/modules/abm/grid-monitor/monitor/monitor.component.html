@@ -33,6 +33,34 @@
                 }}
               </mat-error>
             </mat-form-field>
+
+            
+            <mat-form-field class="w-full" >
+              <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="idFormula"
+                [matAutocomplete]="auto">
+              <button matSuffix *ngIf="form.controls['idFormula'].value" (click)="formFilter.controls['idFormula'].setValue('')">
+                <mat-icon> close </mat-icon>
+              </button>
+              <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+                <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
+                  V{{formula.version}} ({{ formula.norma }})</mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+
+            <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+              <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Fecha Desde" readonly>
+              <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+              <mat-datepicker #pickerDesde></mat-datepicker>
+              <mat-error>Fecha Desde requerida</mat-error>
+            </mat-form-field>
+            
+            <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+              <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Fecha Hasta" readonly>
+              <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+              <mat-datepicker #pickerHasta></mat-datepicker>
+              <mat-error>Fecha Hasta requerida</mat-error>
+            </mat-form-field>
+
           </div>
 
           <div class="row flex justify-end">
