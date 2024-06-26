@@ -257,10 +257,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private _reject(id: number, observations: string, fechaAprobacion: string): void {
+  private _reject(id: number, observations: string, fecha: string): void {
     const error: string = 'abm-lots => lots.component.ts => reject() =>';
 
-    this.lotService.reject(id, observations, fechaAprobacion).subscribe({
+    this.lotService.reject(id, observations, fecha).subscribe({
       next: () => {
         this._snackBar(true);
         this.lots$ = this.lotService

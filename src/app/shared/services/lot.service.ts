@@ -64,9 +64,9 @@ public getMonitor(): Observable<ILotsResponse> {
     return this.http.put<ILotResponse>(`${this._url}/aprobar/${id}`, body);
   }
 
-  public reject(id: number, observaciones: string, fechaAprobacion: string): Observable<ILotResponse> {
+  public reject(id: number, observaciones: string, fecha: string): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/rechazar/${id}`, {
-      observaciones, fechaAprobacion
+      observaciones, fecha
     });
   }
 
