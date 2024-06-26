@@ -11,6 +11,7 @@ import {
   ILotResponse,
   ILotsResponse,
 } from 'app/shared/models/lot.interface';
+import { IResponse } from '../models/response.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,7 @@ export class LotService {
   public drawer$: Observable<boolean>;
   public drawerEdit$: Observable<boolean>;
   private readonly _url: string = `${environment.server}lote`;
+  private readonly _urlCount: string = `${environment.server}lote/count`;
   private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
   private readonly _drawer: BehaviorSubject<boolean>;
   private readonly _drawerEdit: BehaviorSubject<boolean>;
@@ -43,8 +45,8 @@ public getMonitor(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._urlMonitor);
   }
 
-  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string): Observable<ILotsResponse> {
-    var url = this._url + "?asc=false&idx=nroLote";
+  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, estado:string, rows, first, idx, asc): Observable<ILotsResponse> {
+    var url = this._url + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
 
     if (formula != null && formula != "") {
       url = url + "&idFormula="+formula;
@@ -58,34 +60,58 @@ public getMonitor(): Observable<ILotsResponse> {
     if (fechaHasta != null && fechaHasta != "") {
       url = url + "&fechaHasta="+fechaHasta;
     }
+    if (estado != null && estado != "") {
+      url = url + "&estado="+estado;
+    }
 
     return this.http.get<ILotsResponse>(url);
   }
-  public post(lot: ILot): Observable<ILotResponse> {
-    return this.http.post<ILotResponse>(this._url, lot);
-  }
 
+  public countByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, estado:string, rows, first, idx, asc): Observable<IResponse<number>> {
+    var url = this._urlCount + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+
+    if (formula != null && formula != "") {
+      url = url + "&idFormula="+formula;
+  }
+    if (lot != null && lot != "") {
+      url = url + "&nroLote="+lot;
+    }
+    if (fechaDesde != null && fechaDesde != "") {
+      url = url + "&fechaDesde="+fechaDesde;
+    }
+    if (fechaHasta != null && fechaHasta != "") {
+      url = url + "&fechaHasta="+fechaHasta;
+    }
+    if (estado != null && estado != "") {
+      url = url + "&estado="+estado;
+    }
+
+    return this.http.get<IResponse<number>>(url);
+  }
   public put(lot: ILot): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(this._url + "/update/" + lot.id, lot);
-  }
-
-  public approve(
+  }  
+  public post(lot: ILot): Observable<IResponse<number>> {
+    return this.http.post<IResponse<number>>(this._url, lot);
+  }  public approve(
     id: number,
-    body: { estado: string; observaciones: string }
+    body: { estado: string; observaciones: string, fecha: string }
   ): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/aprobar/${id}`, body);
   }
 
-  public reject(id: number, observaciones: string): Observable<ILotResponse> {
+  public reject(id: number, observaciones: string, fecha: string): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/rechazar/${id}`, {
-      observaciones,
+      observaciones, fecha
     });
   }
 
   public toggleDrawer(): void {
     this._drawer.next(!this._drawer.value);
   }
-
+  public delete(id: number): Observable<ILotResponse> {
+    return this.http.delete<ILotResponse>(`${this._url}/delete/${id}`);
+  }
   public toggleDrawerEdit(): void {
     this._drawerEdit.next(!this._drawerEdit.value);
   }

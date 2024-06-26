@@ -13,9 +13,24 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 // * Components.
 import { LotsComponent } from '../lots/lots.component';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 
 @Component({
   selector: 'app-lot-dialog',
+  providers: [// The locale would typically be provided on the root module of your application. We do it at
+    // the component level here, due to limitations of our example generation script.
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
+
+    // `MomentDateAdapter` and `MAT_MOMENT_DATE_FORMATS` can be automatically provided by importing
+    // `MatMomentDateModule` in your applications root module. We provide it at the component level
+    // here, due to limitations of our example generation script.
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },],
   template: `
     <ng-container *ngIf="data.set === 'APPROVE'; else reject">
       <form [formGroup]="form">
@@ -35,6 +50,15 @@ import { LotsComponent } from '../lots/lots.component';
               <mat-icon [style.color]="'yellow'">error</mat-icon>
             </mat-radio-button>
           </mat-radio-group>
+        </div>
+
+        <div class="py-4">
+          <mat-form-field class="w-full">
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Aprobacion" >
+                  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                  <mat-error>Fecha Aprobacion requerida</mat-error>
+          </mat-form-field>
         </div>
 
         <div class="py-4">
@@ -81,6 +105,15 @@ import { LotsComponent } from '../lots/lots.component';
     <ng-template #reject>
       <form [formGroup]="form">
         <h1 class="text-2xl font-semibold py-4">¿Rechazar?</h1>
+
+        <div class="py-4">
+          <mat-form-field class="w-full">
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Rechazo" >
+                  <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                  <mat-datepicker #picker></mat-datepicker>
+                  <mat-error>Fecha Rechazo requerida</mat-error>
+          </mat-form-field>
+        </div>
 
         <div class="py-4">
           <mat-form-field class="w-full" appearance="outline">
@@ -140,10 +173,15 @@ export class LotDialogComponent {
         this.form.markAllAsTouched();
       }
     } else {
-      this._dialogRef.close({
-        status: 'RECHAZADO',
-        observation: this.form.controls.observation.value,
-      });
+      if (this.form.valid) {
+        this._dialogRef.close({
+          status: 'RECHAZADO',
+          observation: this.form.controls.observation.value,
+          fecha: this.form.controls.fecha.value
+        });
+      } else {
+        this.form.markAllAsTouched();
+      }
     }
   }
 
@@ -156,12 +194,18 @@ export class LotDialogComponent {
         observation: new FormControl({ value: null, disabled: false }, [
           Validators.maxLength(255),
         ]),
+        fecha: new FormControl({ value: new Date(), disabled: false }, [
+          Validators.maxLength(10), Validators.required
+        ])
       });
     } else {
       this.form = this._formBuilder.group({
         observation: new FormControl({ value: null, disabled: false }, [
           Validators.maxLength(255),
         ]),
+        fecha: new FormControl({ value: new Date(), disabled: false }, [
+          Validators.maxLength(10), Validators.required
+        ])
       });
     }
   }

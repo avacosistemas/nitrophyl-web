@@ -1,4 +1,3 @@
-import { AfterViewInit, Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, startWith, Subscription, tap } from 'rxjs';
@@ -27,8 +26,18 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
-import { IResponse } from 'app/shared/models/response.interface';
 import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
+import moment from 'moment';
+import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+import { IResponse } from 'app/shared/models/response.interface';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+
+export interface Estado {
+  idEstado: string,
+  value: string
+}
 
 @Component({
   selector: 'app-lots',
@@ -88,6 +97,20 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   private subscription: Subscription; // Drawer subscription.
   private subscriptionEdit: Subscription; // Drawer subscription.
 
+  lots: ILot[];
+  sortedData: ILot[];
+  @ViewChild('paginator', { static: true }) paginator: MatPaginator;
+  dataSource = new MatTableDataSource<ILot>([]);
+  totalRecords = 0;
+  pageSize = 5;
+  pageIndex = 0;
+  searching: boolean;
+  estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobaci�n" },
+  { idEstado: "RECHAZADO", value: "Rechazado" },
+  { idEstado: "APROBADO", value: "Aprobado" },
+  { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
+
   constructor(
     private lotService: LotService,
     private formulaService: FormulasService,
@@ -130,21 +153,53 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription = this.lotService.drawer$.subscribe((drawer: boolean) => {
       this.drawer = drawer;
     });
-
+    
     this.subscriptionEdit = this.lotService.drawerEdit$.subscribe((drawer: boolean) => {
       this.drawerEdit = drawer;
+    });let estadoFind = this.estados.find((value) => {
+      if (value.value == this.formFilter.controls['estado'].value) return true;
+      return false;
+    })
+
+    this.lots$ = this.lotService
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        null,
+        null,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
+      .pipe(map((res: ILotsResponse) => res.data));
+    this.lots$.subscribe(value => {
+      this.dataSource = new MatTableDataSource<ILot>(value);
     });
-  }
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        null,
+        null,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, "nroLote", true)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => this.totalRecords = value);  }
 
   public ngAfterViewInit(): void {
     const top = document.getElementById('top');
     if (top !== null) {
       top.scrollIntoView();
     }
+
+    this.dataSource.sort = this.sort;
+    this.dataSource.paginator = this.paginator;
+
+    this.sort.sort(({ id: 'nroLote', start: 'desc'}) as MatSortable);
+    this.dataSource.sort = this.sort;
   }
 
   public displayFn(formula: IFormula): string {
     return formula && formula.nombre ? formula.nombre : '';
+  }
+
+  public displayEstado(formula: any): string {
+    return formula;
   }
 
   public get(row: ILot): void {
@@ -152,8 +207,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate([`../../ensayos/${row.id}`]);
   }
 
-  public set(id: number, status: string): void {
-    this._dialog(id, status);
+  public set(lote: ILot, status: string): void {
+    this._dialog(lote, status);
   }
 
   public create(): void {
@@ -284,15 +339,16 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.lotService.post(lot).subscribe({
       next: () => {
-        this._snackBar(true);
+        this._snackBar(true, null);
         this._reset();
         this.lots$ = this.lotService
           .get()
           .pipe(map((res: ILotsResponse) => res.data));
+        this.search();
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false);
+        this._snackBar(false, null);
       },
     });
   }
@@ -303,10 +359,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lotService.put(lot).subscribe({
       next: (value:IResponse<ILot>) => {
         if (value.status != "OK") {
-          this._snackBar(false);  
+          this._snackBar(false, null);  
           this.lotService.toggleDrawerEdit();
         } else {
-          this._snackBar(true);
+          this._snackBar(true, "No se puede actualizar el lote");
           
           this.lots$ = this.lotService
             .get()
@@ -316,15 +372,16 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false);
+        this._snackBar(false, err);
       },
     });
   }
 
-  private _snackBar(option: boolean): void {
+
+private _snackBar(option: boolean, errorMsg:string): void {
     const message: string = option
       ? 'Cambios realizados correctamente.'
-      : 'No se han podido realizar los cambios.';
+      : errorMsg == null ? 'No se han podido realizar los cambios.': errorMsg;
     const css: string = option ? 'green' : 'red';
     this.snackBar.open(message, 'X', {
       duration: 5000,
@@ -344,37 +401,33 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _approve(
     id: number,
-    body: { estado: string; observaciones: string }
+    body: { estado: string; observaciones: string, fecha: string }
   ): void {
     const error: string = 'abm-lots => lots.component.ts => approve() =>';
 
     this.lotService.approve(id, body).subscribe({
       next: () => {
-        this._snackBar(true);
-        this.lots$ = this.lotService
-          .get()
-          .pipe(map((res: ILotsResponse) => res.data));
+        this._snackBar(true, null);
+        this.search();
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false);
+        this._snackBar(false, null);
       },
     });
   }
 
-  private _reject(id: number, observations: string): void {
+  private _reject(id: number, observations: string, fecha: string): void {
     const error: string = 'abm-lots => lots.component.ts => reject() =>';
 
-    this.lotService.reject(id, observations).subscribe({
+    this.lotService.reject(id, observations, fecha).subscribe({
       next: () => {
-        this._snackBar(true);
-        this.lots$ = this.lotService
-          .get()
-          .pipe(map((res: ILotsResponse) => res.data));
+        this._snackBar(true, null);
+        this.search();
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false);
+        this._snackBar(false, null);
       },
     });
   }
@@ -390,15 +443,29 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       'dd/MM/yyyy'
     );
 
+    let estadoFind = this.estados.find((value) => {
+      if (value.value == this.formFilter.controls['estado'].value) return true;
+      return false;
+    }
+    )
+    this.pageIndex = 0;
+
     this.lots$ = this.lotService
       .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
         this.formFilter.controls['nroLote'].value,
         dateT,
-        dateF)
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
       .pipe(map((res: ILotsResponse) => res.data));
+
+    this.lots$.subscribe({
+      next: (value) => {
+        this.dataSource = new MatTableDataSource<ILot>(value);
+  }
+    })
   }
 
-  private _dialog(id: number, set: string): void {
+  private _dialog(lote: ILot, set: string): void {    
     const dialogRef = this.dialog.open(LotDialogComponent, {
       width: 'fit-content',
       data: { set: set },
@@ -406,22 +473,55 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef
       .afterClosed()
-      .subscribe((result: { status: string; observation: string }) => {
+      .subscribe((result: { status: string; observation: string; fecha: string }) => {
         if (result) {
-          if (
-            result.status === 'APROBADO' ||
-            result.status === 'APROBADO_OBSERVADO'
-          ) {
-            this._approve(id, {
+          if ( result.status === 'APROBADO' || result.status === 'APROBADO_OBSERVADO') {
+            if (this.validarFechas(result.fecha, lote.fecha)) {
+              this._approve(lote.id, {
               estado: result.status,
               observaciones: result.observation,
+                  fecha: result.fecha
             });
+              this._snackBar(true, null);
+            } else {
+              this._snackBar(false, "La fecha de aprobación no puede ser anterior a la de creación del lote.");
+          }
           }
           if (result.status === 'RECHAZADO') {
-            this._reject(id, result.observation);
+            if (this.validarFechas(result.fecha, lote.fecha)) {
+              this._reject(lote.id, result.observation, result.fecha);
+            } else {
+              this._snackBar(false, "La fecha de rechazo no puede ser anterior a la de creación del lote.");
           }
         }
+        }
       });
+      
+
+  }
+
+  validarFechas(fechaAprobacion: string, loteFecha: string) {
+    if (fechaAprobacion == null) {
+      return false;
+    }
+    let fechaAprobacionDate: Date = new Date(fechaAprobacion);
+    let inputDate = new Date(fechaAprobacionDate.toDateString())
+
+    let dateMomentObject = moment(loteFecha, "DD/MM/YYYY");
+    let dateObject = dateMomentObject.toDate()
+    const strFechaCreacion: string = this._dPipe.transform(
+      dateObject,
+      'dd/MM/yyyy'
+    );
+    const strFechaAprobacion: string = this._dPipe.transform(
+      inputDate,
+      'dd/MM/yyyy'
+    );
+    if (strFechaAprobacion < strFechaCreacion ) {
+      // || strFechaAprobacion == strFechaCreacion
+      return false
+    }
+    return true;
   }
 
   private setForm(): void {
@@ -433,7 +533,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       ]),
       fechaDesde: new FormControl(null),
       fechaHasta: new FormControl(null),
-      idFormula: new FormControl(null)
+      idFormula: new FormControl(null),
+      estado: new FormControl(null)
     });
   }
 
@@ -441,5 +542,135 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   onWindowScroll(event) {
     // prevent the background from scrolling when the dialog is open.
     event.stopPropagation();
+  }
+
+sortData(sort: Sort) {
+
+    const dateT: string = this._dPipe.transform(
+      this.formFilter.controls['fechaDesde'].value,
+      'dd/MM/yyyy'
+    );
+
+    const dateF: string = this._dPipe.transform(
+      this.formFilter.controls['fechaHasta'].value,
+      'dd/MM/yyyy'
+    );
+
+    let estadoFind = this.estados.find((value) => {
+      if (value.value == this.formFilter.controls['estado'].value) return true;
+      return false;
+    })
+
+    this.lots$ = this.lotService
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
+      .pipe(map((res: ILotsResponse) => res.data));
+
+    this.lots$.subscribe({
+      next: (value) => {
+        this.dataSource = new MatTableDataSource<ILot>(value);
+      }
+    });
+
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => {
+      this.totalRecords = value;
+    })
+
+  }
+
+
+
+
+  getPagedData() {
+    const dateT: string = this._dPipe.transform(
+      this.formFilter.controls['fechaDesde'].value,
+      'dd/MM/yyyy'
+    );
+
+    const dateF: string = this._dPipe.transform(
+      this.formFilter.controls['fechaHasta'].value,
+      'dd/MM/yyyy'
+    );
+
+    let estadoFind = this.estados.find((value) => {
+      if (value.value == this.formFilter.controls['estado'].value) return true;
+      return false;
+    })
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => {
+      this.totalRecords = value;
+    })
+
+    this.lots$ = this.lotService
+      .getByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
+        this.formFilter.controls['nroLote'].value,
+        dateT,
+        dateF,
+        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
+      .pipe(map((res: ILotsResponse) => res.data));
+    this.lots$.subscribe(value => {
+      this.dataSource = new MatTableDataSource<ILot>(value);
+    });
+
+
+
+
+  }
+
+
+  pageChangeEvent(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.getPagedData();
+  }
+
+  limpiar() {
+    this.formFilter.reset();
+    this.estados = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobaci�n" },
+    { idEstado: "RECHAZADO", value: "Rechazado" },
+    { idEstado: "APROBADO", value: "Aprobado" },
+    { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
+  }
+
+
+
+  private delete(lote: ILot): void {
+    const dialogRef = this.dialog.open(RemoveDialogComponent, {
+      maxWidth: '40%',
+      data: { data: lote.nroLote, seccion: "lote", boton: "Eliminar" },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.lotService.delete(lote.id).subscribe(response => {
+          if (response.status == 'OK') {
+            this.lots$ = this.lotService
+              .get()
+              .pipe(map((res: ILotsResponse) => res.data));
+            this._snackBar(true, null);
+            this.search();
+          } else {
+            this._snackBar(false, response.error);
+          }
+        })
+      }
+    });
   }
 }
