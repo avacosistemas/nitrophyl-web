@@ -184,7 +184,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
 
-    this.sort.sort(({ id: 'nroLote', start: 'asc'}) as MatSortable);
+    this.sort.sort(({ id: 'nroLote', start: 'desc'}) as MatSortable);
     this.dataSource.sort = this.sort;
   }
 
