@@ -9,7 +9,7 @@
       <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
         <mat-expansion-panel-header class="h-12">
           <mat-panel-title>
-            <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+            <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate" style="font-size:24px !important;">
               Búsqueda
             </span>
           </mat-panel-title>
@@ -19,7 +19,7 @@
           <div class="row flex gap-3 justify-around">
 
             <mat-form-field class="w-full">
-              <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote" minlength="5"
+              <input style="font-size:24px !important;" type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote" minlength="5"
                 maxlength="5">
               <mat-error>
                 {{
@@ -38,7 +38,7 @@
           <div class="row flex justify-end">
             <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
               (click)="search()">
-              <span class="mat-button-wrapper"> Buscar </span>
+              <span class="mat-button-wrapper" style="font-size:24px !important;"> Buscar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
               <span class="mat-button-focus-overlay"></span>
             </button>
