@@ -26,7 +26,9 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 // * Dialogs.
 import { DatePipe } from '@angular/common';
 import { LotDialogComponent } from '../lot-dialog/lot-dialog.component';
-import { DateAdapter } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS } from '@angular/material-moment-adapter';
+import moment from 'moment';
 import { MatSort, MatSortable, Sort } from '@angular/material/sort';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
@@ -40,6 +42,19 @@ export interface Estado {
 @Component({
   selector: 'app-lots',
   templateUrl: './lots.component.html',
+  providers: [// The locale would typically be provided on the root module of your application. We do it at
+    // the component level here, due to limitations of our example generation script.
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
+
+    // `MomentDateAdapter` and `MAT_MOMENT_DATE_FORMATS` can be automatically provided by importing
+    // `MatMomentDateModule` in your applications root module. We provide it at the component level
+    // here, due to limitations of our example generation script.
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },],
 })
 export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
@@ -86,7 +101,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   pageSize = 5;
   pageIndex = 0;
   searching: boolean;
-  estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
+  estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobaci�n" },
   { idEstado: "RECHAZADO", value: "Rechazado" },
   { idEstado: "APROBADO", value: "Aprobado" },
   { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
@@ -186,8 +201,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate([`../../ensayos/${row.id}`]);
   }
 
-  public set(id: number, status: string): void {
-    this._dialog(id, status);
+  public set(lote: ILot, status: string): void {
+    this._dialog(lote, status);
   }
 
   public create(): void {
@@ -283,16 +298,14 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private _approve(
     id: number,
-    body: { estado: string; observaciones: string }
+    body: { estado: string; observaciones: string, fecha: string }
   ): void {
     const error: string = 'abm-lots => lots.component.ts => approve() =>';
 
     this.lotService.approve(id, body).subscribe({
       next: () => {
         this._snackBar(true, null);
-        this.lots$ = this.lotService
-          .get()
-          .pipe(map((res: ILotsResponse) => res.data));
+        this.search();
       },
       error: (err: any) => {
         console.log(error, err);
@@ -301,15 +314,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private _reject(id: number, observations: string): void {
+  private _reject(id: number, observations: string, fecha: string): void {
     const error: string = 'abm-lots => lots.component.ts => reject() =>';
 
-    this.lotService.reject(id, observations).subscribe({
+    this.lotService.reject(id, observations, fecha).subscribe({
       next: () => {
         this._snackBar(true, null);
-        this.lots$ = this.lotService
-          .get()
-          .pipe(map((res: ILotsResponse) => res.data));
+        this.search();
       },
       error: (err: any) => {
         console.log(error, err);
@@ -347,25 +358,11 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lots$.subscribe({
       next: (value) => {
         this.dataSource = new MatTableDataSource<ILot>(value);
-  }
+      }
     })
-
-    let lotsCount$ = this.lotService
-      .countByFilter(this.formFilter.controls['idFormula'].value != null ? this.formFilter.controls['idFormula'].value.id : null,
-        this.formFilter.controls['nroLote'].value,
-        dateT,
-        dateF,
-        estadoFind != null ? estadoFind.idEstado : null, this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
-      .pipe(map((res: IResponse<number>) => res.data));
-    lotsCount$.subscribe(value => {
-      this.totalRecords = value;
-    })
-
-    
-
   }
 
-  private _dialog(id: number, set: string): void {
+  private _dialog(lote: ILot, set: string): void {    
     const dialogRef = this.dialog.open(LotDialogComponent, {
       width: 'fit-content',
       data: { set: set },
@@ -373,22 +370,55 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     dialogRef
       .afterClosed()
-      .subscribe((result: { status: string; observation: string }) => {
+      .subscribe((result: { status: string; observation: string; fecha: string }) => {
         if (result) {
-          if (
-            result.status === 'APROBADO' ||
-            result.status === 'APROBADO_OBSERVADO'
-          ) {
-            this._approve(id, {
-              estado: result.status,
-              observaciones: result.observation,
-            });
+          if ( result.status === 'APROBADO' || result.status === 'APROBADO_OBSERVADO') {
+            if (this.validarFechas(result.fecha, lote.fecha)) {
+              this._approve(lote.id, {
+                estado: result.status,
+                observaciones: result.observation,
+                  fecha: result.fecha
+              });
+              this._snackBar(true, null);
+            } else {
+              this._snackBar(false, "La fecha de aprobación no puede ser anterior a la de creación del lote.");
+            }
           }
           if (result.status === 'RECHAZADO') {
-            this._reject(id, result.observation);
+            if (this.validarFechas(result.fecha, lote.fecha)) {
+              this._reject(lote.id, result.observation, result.fecha);
+            } else {
+              this._snackBar(false, "La fecha de rechazo no puede ser anterior a la de creación del lote.");
+            }
           }
         }
       });
+      
+
+  }
+
+  validarFechas(fechaAprobacion: string, loteFecha: string) {
+    if (fechaAprobacion == null) {
+      return false;
+    }
+    let fechaAprobacionDate: Date = new Date(fechaAprobacion);
+    let inputDate = new Date(fechaAprobacionDate.toDateString())
+
+    let dateMomentObject = moment(loteFecha, "DD/MM/YYYY");
+    let dateObject = dateMomentObject.toDate()
+    const strFechaCreacion: string = this._dPipe.transform(
+      dateObject,
+      'dd/MM/yyyy'
+    );
+    const strFechaAprobacion: string = this._dPipe.transform(
+      inputDate,
+      'dd/MM/yyyy'
+    );
+    if (strFechaAprobacion < strFechaCreacion ) {
+      // || strFechaAprobacion == strFechaCreacion
+      return false
+    }
+    return true;
   }
 
   private setForm(): void {
@@ -504,7 +534,7 @@ sortData(sort: Sort) {
 
   limpiar() {
     this.formFilter.reset();
-    this.estados = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
+    this.estados = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobaci�n" },
     { idEstado: "RECHAZADO", value: "Rechazado" },
     { idEstado: "APROBADO", value: "Aprobado" },
     { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
