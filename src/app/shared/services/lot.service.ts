@@ -18,19 +18,27 @@ import { IResponse } from '../models/response.interface';
 })
 export class LotService {
   public drawer$: Observable<boolean>;
+  public drawerEdit$: Observable<boolean>;
   private readonly _url: string = `${environment.server}lote`;
   private readonly _urlCount: string = `${environment.server}lote/count`;
   private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
   private readonly _drawer: BehaviorSubject<boolean>;
+  private readonly _drawerEdit: BehaviorSubject<boolean>;
 
   constructor(private readonly http: HttpClient, handler: HttpBackend) {
     this.http = new HttpClient(handler);
     this._drawer = new BehaviorSubject<boolean>(false);
     this.drawer$ = this._drawer.asObservable();
+    this._drawerEdit = new BehaviorSubject<boolean>(false);
+    this.drawerEdit$ = this._drawerEdit.asObservable();
   }
 
   public get(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._url + "?asc=false&idx=nroLote");
+  }
+
+  public read(id): Observable<ILotResponse> {
+    return this.http.get<ILotResponse>(this._url+ "/" + parseInt(id));
   }
 
 public getMonitor(): Observable<ILotsResponse> {
@@ -80,7 +88,10 @@ public getMonitor(): Observable<ILotsResponse> {
 
     return this.http.get<IResponse<number>>(url);
   }
-
+  public put(lot: ILot): Observable<ILotResponse> {
+    return this.http.put<ILotResponse>(this._url + "/update/" + lot.id, lot);
+  }
+  
   public post(lot: ILot): Observable<IResponse<number>> {
     return this.http.post<IResponse<number>>(this._url, lot);
   }
@@ -104,5 +115,8 @@ public getMonitor(): Observable<ILotsResponse> {
 
   public delete(id: number): Observable<ILotResponse> {
     return this.http.delete<ILotResponse>(`${this._url}/delete/${id}`);
+  }
+  public toggleDrawerEdit(): void {
+    this._drawerEdit.next(!this._drawerEdit.value);
   }
 }
