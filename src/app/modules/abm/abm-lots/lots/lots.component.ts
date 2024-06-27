@@ -343,13 +343,18 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     const error: string = 'abm-lots => lots.component.ts => _post() =>';
 
     this.lotService.post(lot).subscribe({
-      next: () => {
-        this._snackBar(true, null);
-        this._reset();
-        this.lots$ = this.lotService
-          .get()
-          .pipe(map((res: ILotsResponse) => res.data));
-        this.search();
+      next: (value:IResponse<ILot>) => {
+        if (value.status != "OK") {
+            this._snackBar(false, value.error);  
+            //this.lotService.toggleDrawer();
+        } else {
+          this._snackBar(true, null);
+          this._reset();
+          // this.lots$ = this.lotService
+          //   .get()
+          //   .pipe(map((res: ILotsResponse) => res.data));
+          this.search();
+        }
       },
       error: (err: any) => {
         console.log(error, err);
@@ -364,10 +369,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lotService.put(lot).subscribe({
       next: (value:IResponse<ILot>) => {
         if (value.status != "OK") {
-          this._snackBar(false, null);  
-          this.lotService.toggleDrawerEdit();
+          this._snackBar(false, value.error);  
+          //this.lotService.toggleDrawerEdit();
         } else {
-          this._snackBar(true, "No se puede actualizar el lote");
+          this._snackBar(true, null);
           
           this.lots$ = this.lotService
             .get()

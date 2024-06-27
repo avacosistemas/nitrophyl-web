@@ -92,8 +92,8 @@ public getMonitor(): Observable<ILotsResponse> {
     return this.http.put<ILotResponse>(this._url + "/update/" + lot.id, lot);
   }
   
-  public post(lot: ILot): Observable<IResponse<number>> {
-    return this.http.post<IResponse<number>>(this._url, lot);
+  public post(lot: ILot): Observable<ILotResponse> {
+    return this.http.post<ILotResponse>(this._url, lot);
   }
 
   public approve(
