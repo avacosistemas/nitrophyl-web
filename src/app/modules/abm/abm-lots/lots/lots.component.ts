@@ -71,9 +71,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   public form: FormGroup = new FormGroup({
     lot: new FormControl('', [
       Validators.required,
-      Validators.minLength(5),
       Validators.maxLength(5),
-      Validators.pattern(/^[A-Za-z]\d{4}$/),
     ]),
     date: new FormControl(new Date(), Validators.required),
     formula: new FormControl(null, Validators.required),
@@ -106,7 +104,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   pageSize = 5;
   pageIndex = 0;
   searching: boolean;
-  estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobaci�n" },
+  estados: Estado[] = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
   { idEstado: "RECHAZADO", value: "Rechazado" },
   { idEstado: "APROBADO", value: "Aprobado" },
   { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
@@ -538,9 +536,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   private setForm(): void {
     this.formFilter = this.formBuilder.group({
       nroLote: new FormControl('', [
-        Validators.minLength(5),
         Validators.maxLength(5),
-        Validators.pattern(/^[A-Za-z]\d{4}$/),
       ]),
       fechaDesde: new FormControl(null),
       fechaHasta: new FormControl(null),
@@ -655,7 +651,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   limpiar() {
     this.formFilter.reset();
-    this.estados = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobaci�n" },
+    this.estados = [{ idEstado: "PENDIENTE_APROBACION", value: "Pendiente Aprobación" },
     { idEstado: "RECHAZADO", value: "Rechazado" },
     { idEstado: "APROBADO", value: "Aprobado" },
     { idEstado: "APROBADO_OBSERVADO", value: "Aprobado con observaciones" }]
