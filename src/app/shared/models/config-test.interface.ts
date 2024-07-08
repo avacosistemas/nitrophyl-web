@@ -18,7 +18,10 @@ export interface ICondiciones {
 
 export interface IParams {
   id: number;
-  nombre: string;
+  maquinaPrueba: {
+    id: number;
+    nombre: string;
+  };
   minimo: number;
   maximo: number;
   resultado?: number;

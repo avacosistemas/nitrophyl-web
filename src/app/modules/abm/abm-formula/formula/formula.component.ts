@@ -48,21 +48,29 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { MatDrawer } from '@angular/material/sidenav';
 
+export interface IConfiguracionPruebaParametro
+{ id: number; 
+  maquinaPrueba: { id: number; nombre: string; }; 
+  minimo: number; 
+  maximo: number, 
+  norma: string 
+}
+
 export interface ITest {
   idFormula: number;
   idMaquina: number;
-  parametros: IParams[];
+  parametros: IConfiguracionPruebaParametro[];
   condiciones: IConditions[];
   observacionesReporte: string;
   mostrarResultadosReporte: boolean;
 }
 
-export interface IParams {
-  nombre: string;
-  maximo: number | null;
-  minimo: number | null;
-  norma: string | null;
-}
+// export interface IParams {
+//   maquinaPrueba: string;
+//   maximo: number | null;
+//   minimo: number | null;
+//   norma: string | null;
+// }
 
 export interface IConditions {
   nombre: string;
@@ -91,7 +99,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public machines$: any; // Maquinas asociadas a la formula.
   public displayedColumnsMachines: string[] = ['name'];
 
-  public params$: string[] = []; // Parametros asociados a una maquina.
+  public params$: any[] = []; // Parametros asociados a una maquina.
   public displayedColumnsParams: string[] = ['name', 'min', 'max', 'norma'];
 
   public conditions$: string[] = []; // Condiciones asociadas a una maquina.
@@ -196,11 +204,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     };
     const controls = this.formTest.controls;
     for (const param of this.params$) {
-      var minvparam = controls[param + '.min'].value;
-      var maxvparam = controls[param + '.max'].value
+      var minvparam = controls[param.id + '.min'].value;
+      var maxvparam = controls[param.id + '.max'].value
       if (!minvparam && !maxvparam && !Number(minvparam) && !Number(maxvparam)) {
         this.snackBar.open(
-          `El parametro '${param}' debe contener al menos un valor asignado.`,
+          `El parametro '${param.nombre}' debe contener al menos un valor asignado.`,
           'X',
           {
             duration: 5000,
@@ -219,7 +227,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         minvparamnum > maxvparamnum
       ) {
         this.snackBar.open(
-          `El valor mínimo del parametro '${param}' no puede ser mayor al valor máximo.`,
+          `El valor mínimo del parametro '${param.nombre}' no puede ser mayor al valor máximo.`,
           'X',
           {
             duration: 5000,
@@ -229,10 +237,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       } else {
         body.parametros.push({
-          nombre: param,
+          id: null,
+          maquinaPrueba: {id: param.id, nombre: param.nombre},
           minimo: minvparam,
           maximo: maxvparam,
-          norma: controls[param + '.norma'].value
+          norma: controls[param.id + '.norma'].value
         });
       }
     }
@@ -368,8 +377,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  
   private setValues(
-    params: [{ id: number; nombre: string; minimo: number; maximo: number, norma: string }],
+    params: IConfiguracionPruebaParametro[],
     conditions: [{ id: number; nombre: string; valor: number }],
     observacionesReporte: string,
     mostrarResultadosReporte : boolean
@@ -377,18 +387,18 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.params$ = [];
     for (const param of params) {
       this.formTest.addControl(
-        `${param.nombre}.min`,
+        `${param.maquinaPrueba.id}.min`,
         new FormControl(param.minimo)
       );
       this.formTest.addControl(
-        `${param.nombre}.max`,
+        `${param.maquinaPrueba.id}.max`,
         new FormControl(param.maximo)
       );
       this.formTest.addControl(
-        `${param.nombre}.norma`,
+        `${param.maquinaPrueba.id}.norma`,
         new FormControl(param.norma)
       );
-      this.params$.push(param.nombre);
+      this.params$.push({id: param.maquinaPrueba.id, nombre: param.maquinaPrueba.nombre, min: param.minimo, max: param.maximo, norma: param.norma});
     }
     this.params$ = [...this.params$];
 
@@ -422,10 +432,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
         for (const param of res.data) {
           this.params$.push(param);
-          this.formTest.addControl(`${param}.min`, new FormControl(null));
-          this.formTest.addControl(`${param}.max`, new FormControl(null));
-          this.formTest.addControl(`${param}.norma`, new FormControl(null));
-          this.configureValidators(param);
+          this.formTest.addControl(`${param.id}.min`, new FormControl(null));
+          this.formTest.addControl(`${param.id}.max`, new FormControl(null));
+          this.formTest.addControl(`${param.id}.norma`, new FormControl(null));
+          this.configureValidators(param.id);
         }
 
         this.params$ = [...this.params$];

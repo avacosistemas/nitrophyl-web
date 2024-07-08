@@ -107,15 +107,15 @@
               <!-- Columna de nombres -->
               <ng-container matColumnDef="name">
                 <th mat-header-cell *matHeaderCellDef> Prueba </th>
-                <td mat-cell *matCellDef="let param">{{ param }}</td>
+                <td mat-cell *matCellDef="let param">{{ param.nombre }}</td>
               </ng-container>
 
               <!-- Columna de valores mínimos -->
               <ng-container matColumnDef="min">
-                <th mat-header-cell *matHeaderCellDef> Mínimo </th>
+                <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Mínimo </th>
                 <td mat-cell *matCellDef="let param">
                   <mat-form-field class="w-3/4 mt-4">
-                    <input matInput [formControlName]="param + '.min'"
+                    <input matInput [formControlName]="param.id + '.min'" style="text-align: right;"
                       [placeholder]="formTest.disabled ? '' : 'Mínimo'">
                     <mat-error></mat-error>
                   </mat-form-field>
@@ -124,10 +124,10 @@
 
               <!-- Columna de valores máximos -->
               <ng-container matColumnDef="max">
-                <th mat-header-cell *matHeaderCellDef> Máximo </th>
+                <th mat-header-cell *matHeaderCellDef style="text-align: center;"> Máximo </th>
                 <td mat-cell *matCellDef="let param">
                   <mat-form-field class="w-3/4 mt-4">
-                    <input matInput [formControlName]="param + '.max'"
+                    <input matInput [formControlName]="param.id + '.max'" style="text-align: right;"
                       [placeholder]="formTest.disabled ? '' : 'Maximo'">
                     <mat-error></mat-error>
                   </mat-form-field>
@@ -139,7 +139,7 @@
                 <th mat-header-cell *matHeaderCellDef> Norma </th>
                 <td mat-cell *matCellDef="let param">
                   <mat-form-field class="w-3/4 mt-4">
-                    <input matInput [formControlName]="param + '.norma'"
+                    <input matInput [formControlName]="param.id + '.norma'" 
                       [placeholder]="formTest.disabled ? '' : 'Norma'">
                     <mat-error> No valido. </mat-error>
                   </mat-form-field>

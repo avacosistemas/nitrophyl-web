@@ -220,7 +220,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
             param.resultado !== null &&
             param.redondeo !== param.resultado
           ) {
-            this._snackBar(false, param.nombre);
+            this._snackBar(false, param.maquinaPrueba.nombre);
             failed = true;
             return;
           }
@@ -230,7 +230,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
             ),
             redondeo: Number(param.redondeo),
             resultado: Number(param.resultado),
-            nombre: param.nombre,
+            nombre: param.maquinaPrueba.nombre,
             maximo: Number(param.maximo),
             minimo: Number(param.minimo),
           };
@@ -279,7 +279,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
         const formGroups = [];
         for (const param of this.assay.parametros) {
           const group = this.formBuilder.group({
-            nombre: [param.nombre],
+            nombre: [param.maquinaPrueba.nombre],
             minimo: [param.minimo],
             maximo: [param.maximo],
             resultado: [
