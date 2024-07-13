@@ -55,10 +55,10 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
     'nroLote',
     'formula',
     'fechaEstado',
-/*    'observaciones',
-    'fechaEstado',
-    'observacionesEstado',
-    'actions',*/
+    /*    'observaciones',
+        'fechaEstado',
+        'observacionesEstado',
+        'actions',*/
   ];
 
   private subscription: Subscription; // Drawer subscription.
@@ -71,10 +71,10 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
     private formulaService: FormulasService,
     private dateAdapter: DateAdapter<Date>,
     private _fuseNavigationService: FuseNavigationService
-  ) { this.dateAdapter.setLocale('es');}
+  ) { this.dateAdapter.setLocale('es'); }
 
 
-  
+
   private get(): void {
     let error: string = 'MonitorComponent => get(): ';
     this.lotService.getMonitor().subscribe({
@@ -83,7 +83,7 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
         this.lotsBackUp$ = res.data;
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -143,12 +143,24 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
       this.subscription.unsubscribe();
     }
   }
-  
+
   public displayFn(formula: IFormula): string {
     return formula && formula.nombre ? formula.nombre : '';
   }
-  
+
   public search(): void {
+    this.lotService.getByFilter(this.form.controls.idFormula.value ? this.form.controls.idFormula.value.id : null,
+      this.form.controls.nroLote.value,
+      this.form.controls.fechaDesde.value ? moment(this.form.controls.fechaDesde.value).format("DD/MM/YYYY") : null,
+      this.form.controls.fechaHasta.value ? moment(this.form.controls.fechaHasta.value).format("DD/MM/YYYY") : null).subscribe({
+        next: (res: ILotsResponse) => {
+          this.lots$ = res.data;
+          this.lotsBackUp$ = res.data;
+        },
+        error: (err: any) => console.error(err),
+        complete: () => { },
+      });
+    /*
     if (!this.form.controls.nroLote.value && !this.form.controls.idFormula.value &&
       !this.form.controls.fechaDesde.value && !this.form.controls.fechaHasta.value)
       this.lots$ = this.lotsBackUp$;
@@ -168,38 +180,39 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.form.controls.nroLote.value && !this.form.controls.idFormula.value &&
        this.form.controls.fechaDesde.value && this.form.controls.fechaHasta.value)
       this.compareFecha();
+      */
   }
-  
+
   private compare(): void {
     this.lots$ = this.lotsBackUp$.filter(
       (lot: ILot) =>
-      lot.nroLote === this.form.controls.nroLote.value &&
-      lot.idFormula === this.form.controls.idFormula.value &&
-      lot.fecha >= this.form.controls.fechaDesde.value &&
-      lot.fecha <= this.form.controls.fechaHasta.value
+        lot.nroLote === this.form.controls.nroLote.value &&
+        lot.idFormula === this.form.controls.idFormula.value &&
+        lot.fecha >= this.form.controls.fechaDesde.value &&
+        lot.fecha <= this.form.controls.fechaHasta.value
     );
   }
-    
+
   private compareLote(): void {
     this.lots$ = this.lotsBackUp$.filter(
       (lot: ILot) =>
-      lot.nroLote === this.form.controls.nroLote.value
+        lot.nroLote === this.form.controls.nroLote.value
     );
   }
-    
+
   private compareFormula(): void {
     this.lots$ = this.lotsBackUp$.filter(
       (lot: ILot) =>
-      lot.idFormula === this.form.controls.idFormula.value.id
+        lot.idFormula === this.form.controls.idFormula.value.id
     );
   }
-    
+
   private compareFecha(): void {
     this.lots$ = this.lotsBackUp$.filter(
       (lot: ILot) => {
-        var date2 = moment(lot.fecha,'DD/MM/YYYY');
+        var date2 = moment(lot.fecha, 'DD/MM/YYYY');
         return date2 >= this.form.controls.fechaDesde.value &&
-               date2 <= this.form.controls.fechaHasta.value
+          date2 <= this.form.controls.fechaHasta.value
       }
     );
   }
