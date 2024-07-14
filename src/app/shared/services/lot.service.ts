@@ -11,6 +11,7 @@ import {
   ILotResponse,
   ILotsResponse,
 } from 'app/shared/models/lot.interface';
+import { IResponse } from '../models/response.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -19,6 +20,7 @@ export class LotService {
   public drawer$: Observable<boolean>;
   private readonly _url: string = `${environment.server}lote`;
   private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
+  private readonly _urlCount: string = `${environment.server}lote/monitor/count`;
   private readonly _drawer: BehaviorSubject<boolean>;
 
   constructor(private readonly http: HttpClient, handler: HttpBackend) {
@@ -53,6 +55,46 @@ public getMonitor(): Observable<ILotsResponse> {
 
     return this.http.get<ILotsResponse>(url);
   }
+
+  public getByFilterMonitor(formula: string, lot: string, fechaDesde: string, fechaHasta:string, rows, first, idx, asc): Observable<ILotsResponse> {
+    var url = this._url + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+
+    if (formula != null && formula != "") {
+      url = url + "&idFormula="+formula;
+    }
+    if (lot != null && lot != "") {
+      url = url + "&nroLote="+lot;
+    }
+    if (fechaDesde != null && fechaDesde != "") {
+      url = url + "&fechaDesde="+fechaDesde;
+    }
+    if (fechaHasta != null && fechaHasta != "") {
+      url = url + "&fechaHasta="+fechaHasta;
+    }
+
+    return this.http.get<ILotsResponse>(url);
+  }
+
+  public countByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, rows, first, idx, asc): Observable<IResponse<number>> {
+    var url = this._urlCount + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+
+    if (formula != null && formula != "") {
+      url = url + "&idFormula="+formula;
+    }
+    if (lot != null && lot != "") {
+      url = url + "&nroLote="+lot;
+    }
+    if (fechaDesde != null && fechaDesde != "") {
+      url = url + "&fechaDesde="+fechaDesde;
+    }
+    if (fechaHasta != null && fechaHasta != "") {
+      url = url + "&fechaHasta="+fechaHasta;
+    }
+    
+
+    return this.http.get<IResponse<number>>(url);
+  }
+
   public post(lot: ILot): Observable<ILotResponse> {
     return this.http.post<ILotResponse>(this._url, lot);
   }

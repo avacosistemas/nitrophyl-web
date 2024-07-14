@@ -21,6 +21,10 @@ import * as moment from 'moment';
 import { FuseVerticalNavigationComponent } from '@fuse/components/navigation/vertical/vertical.component';
 import { FuseNavigationService } from '@fuse/components/navigation';
 import { ClassyLayoutComponent } from 'app/layout/layouts/vertical/classy/classy.component';
+import { PageEvent } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
+import { IResponse } from 'app/shared/models/response.interface';
+import { Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-lots',
@@ -63,6 +67,23 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private subscription: Subscription; // Drawer subscription.
 
+  // MatPaginator Inputs
+  length = 100;
+  pageSize = 10;
+  pageSizeOptions: number[] = [5, 10, 25, 100];
+
+  // MatPaginator Output
+  pageEvent: PageEvent;
+  pageIndex: number;
+  totalRecords: number;
+
+  setPageSizeOptions(setPageSizeOptionsInput: string) {
+    if (setPageSizeOptionsInput) {
+      this.pageSizeOptions = setPageSizeOptionsInput.split(',').map(str => +str);
+    }
+  }
+  dataSource = new MatTableDataSource<ILot>([]);
+
   constructor(
     private lotService: LotService,
     private router: Router,
@@ -89,6 +110,30 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
 
 
   public ngOnInit(): void {
+    this.lotService.getByFilterMonitor(this.form.controls.idFormula.value ? this.form.controls.idFormula.value.id : null,
+      this.form.controls.nroLote.value,
+      this.form.controls.fechaDesde.value ? moment(this.form.controls.fechaDesde.value).format("DD/MM/YYYY") : null,
+      this.form.controls.fechaHasta.value ? moment(this.form.controls.fechaHasta.value).format("DD/MM/YYYY") : null,
+      this.pageSize, this.pageIndex, "nroLote", true).subscribe({
+        next: (res: ILotsResponse) => {
+          this.dataSource = new MatTableDataSource<ILot>(res.data);
+          this.lots$ = res.data;
+          this.lotsBackUp$ = res.data;
+        },
+        error: (err: any) => console.error(err),
+        complete: () => { },
+      });
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.form.controls.idFormula.value ? this.form.controls.idFormula.value.id : null,
+        this.form.controls.nroLote.value,
+        this.form.controls.fechaDesde.value ? moment(this.form.controls.fechaDesde.value).format("DD/MM/YYYY") : null,
+        this.form.controls.fechaHasta.value ? moment(this.form.controls.fechaHasta.value).format("DD/MM/YYYY") : null, this.pageSize, this.pageIndex, "nroLote", true)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => {
+      this.length = value;
+    })
+
     const navigation = this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>('mainNavigation');
     const header = this._fuseNavigationService.getComponent<ClassyLayoutComponent>('header-classy');
 
@@ -149,17 +194,31 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public search(): void {
-    this.lotService.getByFilter(this.form.controls.idFormula.value ? this.form.controls.idFormula.value.id : null,
+    this.pageIndex = 0;
+
+    this.lotService.getByFilterMonitor(this.form.controls.idFormula.value ? this.form.controls.idFormula.value.id : null,
       this.form.controls.nroLote.value,
       this.form.controls.fechaDesde.value ? moment(this.form.controls.fechaDesde.value).format("DD/MM/YYYY") : null,
-      this.form.controls.fechaHasta.value ? moment(this.form.controls.fechaHasta.value).format("DD/MM/YYYY") : null).subscribe({
+      this.form.controls.fechaHasta.value ? moment(this.form.controls.fechaHasta.value).format("DD/MM/YYYY") : null,
+      this.pageSize, this.pageIndex, "nroLote", true).subscribe({
         next: (res: ILotsResponse) => {
+          this.dataSource = new MatTableDataSource<ILot>(res.data);
           this.lots$ = res.data;
           this.lotsBackUp$ = res.data;
         },
         error: (err: any) => console.error(err),
         complete: () => { },
       });
+
+    let lotsCount$ = this.lotService
+      .countByFilter(this.form.controls.idFormula.value ? this.form.controls.idFormula.value.id : null,
+        this.form.controls.nroLote.value,
+        this.form.controls.fechaDesde.value ? moment(this.form.controls.fechaDesde.value).format("DD/MM/YYYY") : null,
+        this.form.controls.fechaHasta.value ? moment(this.form.controls.fechaHasta.value).format("DD/MM/YYYY") : null, this.pageSize, this.pageIndex, "nroLote", true)
+      .pipe(map((res: IResponse<number>) => res.data));
+    lotsCount$.subscribe(value => {
+      this.length = value;
+    })
     /*
     if (!this.form.controls.nroLote.value && !this.form.controls.idFormula.value &&
       !this.form.controls.fechaDesde.value && !this.form.controls.fechaHasta.value)
@@ -215,5 +274,41 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
           date2 <= this.form.controls.fechaHasta.value
       }
     );
+  }
+
+  sortData(sort: Sort) {
+
+    const dateT: string = this._dPipe.transform(
+      this.form.controls['fechaDesde'].value,
+      'dd/MM/yyyy'
+    );
+
+    const dateF: string = this._dPipe.transform(
+      this.form.controls['fechaHasta'].value,
+      'dd/MM/yyyy'
+    );
+
+    this.lotService
+      .getByFilterMonitor(this.form.controls['idFormula'].value != null ? this.form.controls['idFormula'].value.id : null,
+        this.form.controls['nroLote'].value,
+        dateT,
+        dateF,
+       this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
+      .pipe(map((res: ILotsResponse) => res.data)).subscribe({
+      next: (value) => {
+        this.dataSource = new MatTableDataSource<ILot>(value);
+      }
+    });
+
+
+    this.lotService
+      .countByFilter(this.form.controls['idFormula'].value != null ? this.form.controls['idFormula'].value.id : null,
+        this.form.controls['nroLote'].value,
+        dateT,
+        dateF, this.pageSize, this.pageIndex, sort.active, sort.direction == 'asc' ? true : false)
+      .pipe(map((res: IResponse<number>) => res.data)).subscribe(value => {
+      this.totalRecords = value;
+    })
+
   }
 }

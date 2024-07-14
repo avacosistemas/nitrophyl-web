@@ -18,6 +18,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 // * Pipes.
 import { DatePipe } from '@angular/common';
 import { BridgeMonitorComponent } from './monitor/bridge-monitor.component';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 const routes: Route[] = [
   {
@@ -36,6 +38,8 @@ const routes: Route[] = [
     MatSidenavModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatTableModule,
+    MatPaginatorModule
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })

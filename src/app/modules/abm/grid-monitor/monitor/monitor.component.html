@@ -79,7 +79,7 @@
         <!-- CONTENT GOES HERE -->
         <div class="bg-gray-100">
           <div class="mt-5">
-            <table mat-table [dataSource]="lots$" class="border-2 rounded-2xl w-full">
+            <table mat-table [dataSource]="dataSource"  matSort (matSortChange)="sortData($event)" class="border-2 rounded-2xl w-full">
               <ng-container matColumnDef="estado">
                 <th *matHeaderCellDef style="font-size:24px !important;"> </th>
                 <td style="  padding-left: 16px; padding-right: 16px; padding-top: 5px;" mat-cell
@@ -110,6 +110,13 @@
               <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
               <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
+            <mat-paginator #paginator 
+              [length]="length"
+               [pageSize]="pageSize"
+               [pageSizeOptions]="pageSizeOptions"
+               (page)="pageEvent = $event"
+               aria-label="Seleccionar pagina">
+            </mat-paginator>
           </div>
         </div>
       </mat-drawer-content>
