@@ -20,6 +20,7 @@ import { DatePipe } from '@angular/common';
 import { BridgeMonitorComponent } from './monitor/bridge-monitor.component';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatSortModule } from '@angular/material/sort';
 
 const routes: Route[] = [
   {
@@ -39,7 +40,8 @@ const routes: Route[] = [
     MatDatepickerModule,
     MatNativeDateModule,
     MatTableModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatSortModule
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })

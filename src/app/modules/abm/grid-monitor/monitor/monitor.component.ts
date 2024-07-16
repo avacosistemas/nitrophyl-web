@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, startWith, Subscription } from 'rxjs';
@@ -24,7 +24,7 @@ import { ClassyLayoutComponent } from 'app/layout/layouts/vertical/classy/classy
 import { PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { IResponse } from 'app/shared/models/response.interface';
-import { Sort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-lots',
@@ -74,7 +74,7 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // MatPaginator Output
   pageEvent: PageEvent;
-  pageIndex: number;
+  pageIndex: number = 0;
   totalRecords: number;
 
   setPageSizeOptions(setPageSizeOptionsInput: string) {
@@ -83,6 +83,7 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
   dataSource = new MatTableDataSource<ILot>([]);
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
 
   constructor(
     private lotService: LotService,
@@ -94,7 +95,49 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
     private _fuseNavigationService: FuseNavigationService
   ) { this.dateAdapter.setLocale('es'); }
 
+  pageChangeEvent(event: PageEvent) {
+    this.pageIndex = event.pageIndex;
+    this.pageSize = event.pageSize;
+    this.getPagedData();
+  }
 
+  getPagedData() {
+    const dateT: string = this._dPipe.transform(
+      this.form.controls['fechaDesde'].value,
+      'dd/MM/yyyy'
+    );
+
+    const dateF: string = this._dPipe.transform(
+      this.form.controls['fechaHasta'].value,
+      'dd/MM/yyyy'
+    );
+
+   
+
+    this.lotService
+      .countByFilter(this.form.controls['idFormula'].value != null ? this.form.controls['idFormula'].value.id : null,
+        this.form.controls['nroLote'].value,
+        dateT,
+        dateF,
+        this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
+      .pipe(map((res: IResponse<number>) => res.data)).subscribe(value => {
+      this.totalRecords = value;
+    })
+
+    this.lotService
+      .getByFilterMonitor(this.form.controls['idFormula'].value != null ? this.form.controls['idFormula'].value.id : null,
+        this.form.controls['nroLote'].value,
+        dateT,
+        dateF,
+        this.pageSize, this.pageIndex, this.sort.active ? this.sort.active : "nroLote", this.sort.direction == 'asc' ? true : false)
+      .pipe(map((res: ILotsResponse) => res.data)).subscribe(value => {
+      this.dataSource = new MatTableDataSource<ILot>(value);
+    });
+
+
+
+
+  }
 
   private get(): void {
     let error: string = 'MonitorComponent => get(): ';
