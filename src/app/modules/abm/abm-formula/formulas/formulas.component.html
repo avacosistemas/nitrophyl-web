@@ -69,6 +69,9 @@
                 (click)="mode(2)">
               </mat-icon>
             </button> -->
+            <button>
+              <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(row)"></mat-icon>
+            </button>
 
             <button class="mr-2" (click)="mode(3, row)" [routerLink]="['../test', row.id]"
               matTooltip="Configurar pruebas">

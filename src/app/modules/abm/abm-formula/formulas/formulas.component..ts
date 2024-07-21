@@ -14,6 +14,8 @@ import { IMaterialsResponse } from 'app/shared/models/material.interface';
 
 // * Forms.
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-formulas',
@@ -45,7 +47,8 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   constructor(
     private _formulas: FormulasService,
     private _materials: MaterialsService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private dialog: MatDialog,
   ) {
     this.setForm();
   }
@@ -166,4 +169,26 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       norma: [null],
     });
   }
+
+  delete(formula: IFormula): void {
+    const dialogRef = this.dialog.open(RemoveDialogComponent, {
+      maxWidth: '40%',
+      data: { data: formula, seccion: "lote", boton: "Eliminar" },
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this._formulas.delete(formula.id).subscribe(response => {
+          if (response.status == 'OK') {
+            /*this.lots$ = this.lotService
+              .get()
+              .pipe(map((res: ILotsResponse) => res.data));
+              */
+            //this._snackBar(true, null);
+          } else {
+            //this._snackBar(false, response.error);
+          }
+        })
+      }
+    });
+  };
 }
