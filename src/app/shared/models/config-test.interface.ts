@@ -26,6 +26,7 @@ export interface IParams {
   maximo: number;
   resultado?: number;
   redondeo?: number;
+  nombre?: string;
 }
 
 export type IConfigTestsResponse = IResponse<IConfigTest[]>;
