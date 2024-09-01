@@ -47,6 +47,14 @@ export class NavegacionService {
           title: 'Monitor',
           type: 'basic',
         },
+        {
+          icon: 'heroicons_outline:clipboard-list',
+          id: 'configuracion',
+          link: '/configuracion/grid',
+          title: 'Configuracion',
+          type: 'basic',
+        }
+        
       ],
     },
     {
@@ -88,7 +96,7 @@ export class NavegacionService {
           icon: 'heroicons_outline:cube',
           id: 'productos',
           link: '/productos/grid',
-          title: 'Prouctos',
+          title: 'Productos',
           type: 'basic',
         },
       ],

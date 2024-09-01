@@ -1,0 +1,150 @@
+<div class="flex flex-col flex-auto min-w-0" id="top">
+    <!-- Main -->
+    <div class="flex-auto p-6 sm:p-10">
+        <!-- CONTENT GOES HERE -->
+        <div>
+            <mat-accordion>
+                <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                    <mat-expansion-panel-header class="h-12">
+                        <mat-panel-title>
+                            <span
+                                class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                                Búsqueda
+                            </span>
+                        </mat-panel-title>
+                    </mat-expansion-panel-header>
+
+                    <form [formGroup]="form" class="mt-2">
+                        <div class="row flex gap-3 justify-around">
+                            <mat-form-field class="w-1/3">
+                                <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput
+                                    formControlName="formula" [matAutocomplete]="auto">
+                                <button matSuffix *ngIf="form.controls['formula'].value"
+                                    (click)="form.controls['formula'].setValue('')">
+                                    <mat-icon> close </mat-icon>
+                                </button>
+                                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
+                                    autoActiveFirstOption>
+                                    <mat-option [value]="0">Todos</mat-option>
+                                    <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{
+                                        formula.nombre }}
+                                        V{{formula.version}} ({{ formula.norma }})</mat-option>
+                                </mat-autocomplete>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-1/3">
+                                <mat-select [formControlName]="'machine'"
+                                    [placeholder]="machinesFail ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
+                                    <mat-option [value]="0">Todos</mat-option>
+                                    <mat-option *ngFor="let machine of machines$" [value]="machine">
+                                        {{ machine.nombre }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field class="w-1/3">
+                                <mat-select [formControlName]="'cliente'"
+                                    [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'">
+                                    <mat-option [value]="0">Todos</mat-option>
+                                    <mat-option *ngFor="let cliente of clientes$" [value]="cliente.id">
+                                        {{ cliente.nombre }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="row flex gap-5">
+                            <section>
+                                <mat-checkbox formControlName="mostrarParametros">
+                                    Mostrar parámetros
+                                </mat-checkbox>
+                            </section>
+                            <section>
+                                <mat-checkbox formControlName="mostrarObservaciones">
+                                    Mostrar observaciones
+                                </mat-checkbox>
+                            </section>
+                            <section>
+                                <mat-checkbox formControlName="mostrarResultados">
+                                    Mostrar resultados
+                                </mat-checkbox>
+                            </section>
+                            <section>
+                                <mat-checkbox formControlName="mostrarCondiciones">
+                                    Mostrar condiciones
+                                </mat-checkbox>
+                            </section>
+                        </div>
+                        <div class="row flex justify-end">
+                            <button mat-flat-button=""
+                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                                (click)="search()">
+                                <span class="mat-button-wrapper"> Buscar </span>
+                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                                <span class="mat-button-focus-overlay"></span>
+                            </button>
+                        </div>
+                    </form>
+                </mat-expansion-panel>
+            </mat-accordion>
+
+            <table mat-table [dataSource]="dataSource" class="border-2 rounded-2xl mt-5 w-full">
+                <ng-container matColumnDef="cliente">
+                    <th mat-header-cell *matHeaderCellDef> Cliente </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.cliente }} </td>
+                </ng-container>
+                <ng-container matColumnDef="formula">
+                    <th mat-header-cell *matHeaderCellDef> Formula </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.formula }} </td>
+                </ng-container>
+                <ng-container matColumnDef="maquina">
+                    <th mat-header-cell *matHeaderCellDef> Máquina </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.maquina }} </td>
+                </ng-container>
+                <ng-container matColumnDef="mostrarCondiciones">
+                    <th mat-header-cell *matHeaderCellDef> Mostrar condiciones </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.mostrarCondiciones == true ? 'Si' : 'No' }} </td>
+                </ng-container>
+                <ng-container matColumnDef="mostrarResultados">
+                    <th mat-header-cell *matHeaderCellDef> Mostrar resultados </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.mostrarResultados == true ? 'Si' : 'No' }} </td>
+                </ng-container>
+                <ng-container matColumnDef="mostrarObservacionesParametro">
+                    <th mat-header-cell *matHeaderCellDef> Mostrar observaciones </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.mostrarObservacionesParametro == true ? 'Si' :
+                        'No' }} </td>
+                </ng-container>
+                <ng-container matColumnDef="mostrarParametros">
+                    <th mat-header-cell *matHeaderCellDef> Mostrar parámetros </th>
+                    <td mat-cell *matCellDef="let element"> {{ element.mostrarParametros == true ? 'Si' : 'No' }} </td>
+                </ng-container>
+
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="text-right"> </th>
+                    <td mat-cell *matCellDef="let row" class="text-right">
+                        <button class="mr-2">
+                            <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver" [routerLink]="['../view', row.id]"
+                                (click)="mode(2)">
+                            </mat-icon>
+                        </button>
+                        <button class="mr-2">
+                            <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
+                                [routerLink]="['../edit', row.id]" (click)="mode(1)">
+                            </mat-icon>
+                        </button>
+                        <button>
+                            <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(row)">
+                            </mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+            <mat-paginator #paginator (page)="pageChangeEvent($event)" [length]="totalRecords" [pageSize]="pageSize"
+                [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons>
+            </mat-paginator>
+        </div>
+    </div>
+</div>

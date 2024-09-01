@@ -209,6 +209,13 @@ export const appRoutes: Route[] = [
             (m: any) => m.GRIDMonitorModule
           ),
       },
+      {
+        path: 'configuracion',
+        loadChildren: () =>
+          import('app/modules/abm/abm-configuracion/abm-configuracion.module').then(
+            (m: any) => m.ABMConfiguracionModule
+          )
+      },
     ],
   },
 

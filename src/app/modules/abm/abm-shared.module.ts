@@ -21,6 +21,7 @@ import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
 
+
 @NgModule({
     exports: [
         CommonModule,
@@ -45,7 +46,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
         ReactiveFormsModule,
         ScrollingModule,
         MatExpansionModule
-    ]
+    ],
 })
 
 export class ABMSharedModule {

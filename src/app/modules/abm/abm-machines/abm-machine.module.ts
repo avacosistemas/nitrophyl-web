@@ -24,7 +24,14 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMMachineComponent, MachinesComponent, MachineComponent],
-  imports: [RouterModule.forChild(routes), ABMSharedModule],
+  declarations: [
+      ABMMachineComponent, 
+      MachinesComponent, 
+      MachineComponent
+  ],
+  imports: [
+    RouterModule.forChild(routes), 
+    ABMSharedModule
+  ],
 })
 export class ABMMachineModule {}

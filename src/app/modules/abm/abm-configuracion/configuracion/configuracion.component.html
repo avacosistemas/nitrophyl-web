@@ -1,0 +1,79 @@
+<div class="flex flex-col w-full" id="top" *ngIf="mode === 'Edit' || mode === 'Create' || mode === 'View'">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8">
+
+    <div>
+      <h1 class="text-2xl font-semibold mb-2"> Configuración </h1>
+    </div>
+
+    <form class="mt-4" [formGroup]="form">
+      <mat-form-field class="w-full" appearance="outline">
+        <mat-label>Fórmula</mat-label>
+        <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="formula"
+          [matAutocomplete]="auto" required>
+        <mat-error class="mb-1" *ngIf="form.get('formula').hasError('required')">
+          La fórmula es requerida.
+        </mat-error>
+        <button matSuffix *ngIf="form.controls['formula'].value" (click)="form.controls['formula'].setValue('')">
+          <mat-icon> close </mat-icon>
+        </button>
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+          <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
+            {{ formula.nombre }}
+            V{{formula.version}} ({{ formula.norma }})</mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field class="w-full" appearance="outline">
+        <mat-label>Máquina</mat-label>
+        <mat-select [formControlName]="'machine'" required
+          [placeholder]="machinesFail ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
+          <mat-option [value]="0">Todos</mat-option>
+          <mat-option *ngFor="let machine of machines$" [value]="machine">
+            {{ machine.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-error class="mb-1" *ngIf="form.get('machine').hasError('required')">
+          La máquina es requerida.
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field class="w-full" appearance="outline">
+        <mat-label>Cliente</mat-label>
+        <mat-select [formControlName]="'cliente'" required
+          [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'">
+          <mat-option [value]="0">Todos</mat-option>
+          <mat-option *ngFor="let cliente of clientes$" [value]="cliente.id">
+            {{ cliente.nombre }}
+          </mat-option>
+        </mat-select>
+        <mat-error class="mb-1" *ngIf="form.get('machine').hasError('required')">
+          El cliente es requerido.
+        </mat-error>
+      </mat-form-field>
+
+      <div class="w-full" appearance="outline">
+        <mat-checkbox formControlName="mostrarParametros">
+          Mostrar parámetros
+        </mat-checkbox>
+      </div>
+
+      <div class="w-full my-2" appearance="outline">
+        <mat-checkbox formControlName="mostrarObservacionesParametro">
+          Mostrar observaciones
+        </mat-checkbox>
+      </div>
+
+      <div class="w-full my-2" appearance="outline">
+        <mat-checkbox formControlName="mostrarResultados">
+          Mostrar resultados
+        </mat-checkbox>
+      </div>
+
+      <div class="w-full my-2" appearance="outline">
+        <mat-checkbox formControlName="mostrarCondiciones">
+          Mostrar condiciones
+        </mat-checkbox>
+      </div>
+    </form>
+  </div>
+</div>
