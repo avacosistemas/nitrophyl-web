@@ -14,7 +14,7 @@ import {
 
 // * Forms.
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IConfiguracion, IConfiguracionesData, IConfiguracionesResponse } from 'app/shared/models/configuracion.interface';
+import { IConfiguracion, IConfiguracionesData, IConfiguracionesResponse, IConfiguracionResponse } from 'app/shared/models/configuracion.interface';
 import { MachinesService } from 'app/shared/services/machines.service';
 import { IMachine, IMachineResponse, IResponse } from 'app/shared/models/machine.model';
 import { Cliente, ResponseClientes } from 'app/shared/models/cliente.model';
@@ -69,7 +69,7 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   pageSize = 5;
   public pageIndex = 0;
   searching: boolean;
-  sort: MatSort;
+  @ViewChild(MatSort) sort: MatSort;
   dataSource = new MatTableDataSource<IConfiguracion>([]);
   @ViewChild('paginator', { static: true }) paginator: MatPaginator;
 
@@ -133,6 +133,7 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
 
     if (this.dataSource) {
       this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
     }
   }
 
@@ -150,30 +151,39 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     return 0;
   }
 
+  onSortChange(sort: MatSort): void {
+    this.updateDataSource();
+  }
+
   private loadData(): void {
     let error: string = 'ConfiguracionesComponent => loadData: ';
     forkJoin([
       this.clientesService.getClientes().pipe(
         catchError((err: any) => {
-          console.error(error, 'this.clientesService.get() ', err);
+          console.error('Error fetching clientes', err);
           this.clientesFail = true;
           this.form.controls.material.disable();
-          return of([]);
+          return of({ data: [] } as ResponseClientes); // Devuelve un objeto compatible con el tipo esperado
+        })
+      ),
+      this.configuracionService.get().pipe(
+        map((res: IConfiguracionesResponse) => Array.isArray(res.data) ? res.data : [res.data]),
+        catchError((err: any) => {
+          console.error('Error fetching configuraciones', err);
+          return of([] as IConfiguracion[]);
         })
       ),
       this.machinesService.get().pipe(
         catchError((err: any) => {
+          console.error('Error fetching machines', err);
           this.machinesFail = true;
-          console.error(error, 'this.machinesService.get() ', err);
-          return of([]);
+          return of({ data: [] } as IMachineResponse); // Devuelve un objeto compatible con el tipo esperado
         })
       )
     ]).subscribe({
-      next: ([clientes, machines]: [
-        ResponseClientes,
-        IMachineResponse
-      ]) => {
+      next: ([clientes, configuraciones, machines]: [ResponseClientes, IConfiguracion[], IMachineResponse]) => {
         this.clientes$ = clientes.data;
+        this.configuracionesBackup$ = configuraciones;
         this.machines$ = machines.data;
       },
       error: (err: any) => console.error(error, err),
@@ -224,11 +234,24 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   }
 
   private updateDataSource(): void {
+    if (!this.configuracionesBackup$) return;
+    const sortedData = this.sortData(this.configuracionesBackup$, this.sort);
+    this.dataSource.data = sortedData; // Actualizamos el dataSource con datos ordenados
+    
+      //this.updatePagedData();
+  }
+
+  private updatePagedData(): void {
+    if (this.paginator && this.dataSource) {
+      const paginatedData = this.paginateData(this.dataSource.data);
+      this.dataSource.data = paginatedData;
+    }
+  }
+  
+  private paginateData(data: IConfiguracion[]): IConfiguracion[] {
     const startIndex = this.pageIndex * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    const paginatedData = this.configuracionesBackup$.slice(startIndex, endIndex);
-  
-    this.dataSource = new MatTableDataSource<IConfiguracion>(paginatedData);
+    return data.slice(startIndex, endIndex);
   }
 
   public pageChangeEvent(event: PageEvent): void {
@@ -248,13 +271,37 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       mostrarResultados: formValues.mostrarResultados,
       mostrarCondiciones: formValues.mostrarCondiciones,
     };
-  
+
     this.configuracionService.get(body)
       .pipe(map((res: IConfiguracionesResponse) => res.data))
       .subscribe((response: IConfiguracionesData) => {
-        this.configuracionesBackup$ = response.page; 
+        this.configuracionesBackup$ = response.page;
         this.totalRecords = response.totalReg;
-        this.updateDataSource(); 
+        this.updateDataSource();
       });
+  }
+
+  private sortData(data: IConfiguracion[], sort: MatSort): IConfiguracion[] {
+    if (!sort.active || sort.direction === '') {
+      return data;
+    }
+  
+    const isAsc = sort.direction === 'asc';
+    return data.sort((a, b) => {
+      switch (sort.active) {
+        case 'cliente': return this.compare(a.cliente, b.cliente, isAsc);
+        case 'formula': return this.compare(a.formula, b.formula, isAsc);
+        case 'maquina': return this.compare(a.maquina, b.maquina, isAsc);
+        case 'mostrarCondiciones': return this.compare(a.mostrarCondiciones, b.mostrarCondiciones, isAsc);
+        case 'mostrarResultados': return this.compare(a.mostrarResultados, b.mostrarResultados, isAsc);
+        case 'mostrarObservacionesParametro': return this.compare(a.mostrarObservacionesParametro, b.mostrarObservacionesParametro, isAsc);
+        case 'mostrarParametros': return this.compare(a.mostrarParametros, b.mostrarParametros, isAsc);
+        default: return 0;
+      }
+    });
+  }
+
+  private compare(a: any, b: any, isAsc: boolean): number {
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
   }
 }

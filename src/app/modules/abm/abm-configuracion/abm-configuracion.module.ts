@@ -1,5 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
+import { MatSortModule } from '@angular/material/sort';
+import { MatTableModule } from '@angular/material/table';
 
 // * Shared module.
 import { ABMSharedModule } from '../abm-shared.module';
@@ -32,7 +34,9 @@ const abmConfiguracionRoutes: Route[] = [
     imports: [
         RouterModule.forChild(abmConfiguracionRoutes),
         ABMSharedModule,
-        MatPaginatorModule
+        MatPaginatorModule,
+        MatSortModule,
+        MatTableModule
     ]
 })
 export class ABMConfiguracionModule { }

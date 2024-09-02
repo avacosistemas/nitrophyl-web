@@ -88,34 +88,34 @@
                 </mat-expansion-panel>
             </mat-accordion>
 
-            <table mat-table [dataSource]="dataSource" class="border-2 rounded-2xl mt-5 w-full">
+            <table mat-table [dataSource]="dataSource" class="border-2 rounded-2xl mt-5 w-full" matSort >
                 <ng-container matColumnDef="cliente">
-                    <th mat-header-cell *matHeaderCellDef> Cliente </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Cliente </th>
                     <td mat-cell *matCellDef="let element"> {{ element.cliente }} </td>
                 </ng-container>
                 <ng-container matColumnDef="formula">
-                    <th mat-header-cell *matHeaderCellDef> Formula </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Formula </th>
                     <td mat-cell *matCellDef="let element"> {{ element.formula }} </td>
                 </ng-container>
                 <ng-container matColumnDef="maquina">
-                    <th mat-header-cell *matHeaderCellDef> Máquina </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Máquina </th>
                     <td mat-cell *matCellDef="let element"> {{ element.maquina }} </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarCondiciones">
-                    <th mat-header-cell *matHeaderCellDef> Mostrar condiciones </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar condiciones </th>
                     <td mat-cell *matCellDef="let element"> {{ element.mostrarCondiciones == true ? 'Si' : 'No' }} </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarResultados">
-                    <th mat-header-cell *matHeaderCellDef> Mostrar resultados </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar resultados </th>
                     <td mat-cell *matCellDef="let element"> {{ element.mostrarResultados == true ? 'Si' : 'No' }} </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarObservacionesParametro">
-                    <th mat-header-cell *matHeaderCellDef> Mostrar observaciones </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar observaciones </th>
                     <td mat-cell *matCellDef="let element"> {{ element.mostrarObservacionesParametro == true ? 'Si' :
                         'No' }} </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarParametros">
-                    <th mat-header-cell *matHeaderCellDef> Mostrar parámetros </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar parámetros </th>
                     <td mat-cell *matCellDef="let element"> {{ element.mostrarParametros == true ? 'Si' : 'No' }} </td>
                 </ng-container>
 
@@ -142,7 +142,7 @@
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
-            <mat-paginator #paginator (page)="pageChangeEvent($event)" [length]="totalRecords" [pageSize]="pageSize"
+            <mat-paginator #paginator [length]="totalRecords" [pageSize]="pageSize"
                 [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons>
             </mat-paginator>
         </div>
