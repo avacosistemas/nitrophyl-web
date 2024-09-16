@@ -19,7 +19,7 @@ const informesRoutes: Route[] = [
     children: [
       { path: '', redirectTo: 'generar-informes', pathMatch: 'full' },
       { path: 'generar-informes', component: GenerarInformesComponent,  data: { subtitle: 'Generar Informe' } },
-      { path: 'ver-informes', component: VerInformesComponent,data: { subtitle: 'Ver Informe' } }, // modo de ejemplo a futuro...
+      { path: 'ver-informes', component: VerInformesComponent, data: { subtitle: 'Ver Informe' } },
     ],
   },
 ];

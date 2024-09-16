@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
 @Component({
@@ -6,7 +6,7 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './reports.component.html',
   styleUrls: ['./reports.component.scss']
 })
-export class ReportsComponent implements OnInit, AfterViewInit {
+export class ReportsComponent implements OnInit {
   @ViewChild('tituloComponenteHijo') tituloComponenteHijo: ElementRef;
 
   title: string = 'Informes';
@@ -15,11 +15,9 @@ export class ReportsComponent implements OnInit, AfterViewInit {
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit(): void {
-  }
-
-  ngAfterViewInit(): void {
     this.route.firstChild?.data.subscribe((data) => {
       this.subtitle = data['subtitle'];
     });
   }
+
 }

@@ -13,7 +13,6 @@ import { LayoutModule } from 'app/layout/layout.module';
 import { AppComponent } from 'app/app.component';
 import { appRoutes } from 'app/app.routing';
 import { PromptsModule } from './modules/prompts/prompts.modules';
-import { ReportsModule } from './modules/reports/reports.module';
 
 const routerConfig: ExtraOptions = {
     preloadingStrategy       : PreloadAllModules,
@@ -40,7 +39,6 @@ const routerConfig: ExtraOptions = {
         // Layout module of your application
         LayoutModule,
         PromptsModule,
-        ReportsModule,
         // 3rd party modules that require global configuration via forRoot
         MarkdownModule.forRoot({})
     ],
