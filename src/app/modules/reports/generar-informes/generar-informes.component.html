@@ -1,0 +1,35 @@
+<div class="flex flex-col w-full" id="top">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+    <form [formGroup]="informesForm" (ngSubmit)="onSubmit()">
+
+      <mat-form-field class="w-full">
+        <mat-label>Cliente</mat-label>
+        <input type="text" placeholder="Buscar cliente..." aria-label="Cliente" matInput
+          [formControl]="clientFilterControl" [matAutocomplete]="autoCliente" />
+        <mat-icon matSuffix>person_search</mat-icon>
+        <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="_displayClientName"
+          (optionSelected)="onClientSelected($event)">
+          <mat-option *ngFor="let client of filteredClients | async" [value]="client">
+            {{ client.nombre }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <mat-form-field class="w-full">
+        <mat-label>Lote</mat-label>
+        <input matInput placeholder="Buscar lote..." [formControl]="lotFilterControl" [matAutocomplete]="autoLote" />
+        <mat-icon matSuffix>find_in_page</mat-icon>
+        <mat-autocomplete #autoLote="matAutocomplete" [displayWith]="_displayLotName"
+          (optionSelected)="onLotSelected($event)">
+          <mat-option *ngFor="let lote of filteredLots | async" [value]="lote">
+            {{ lote.nombre }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit" [disabled]="informesForm.invalid">
+        Enviar informe de calidad
+      </button>
+    </form>
+  </div>
+</div>

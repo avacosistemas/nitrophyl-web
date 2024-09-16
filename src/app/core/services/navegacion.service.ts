@@ -48,13 +48,19 @@ export class NavegacionService {
           type: 'basic',
         },
         {
+          icon: 'heroicons_outline:document-report',
+          id: 'informes',
+          link: '/reports',
+          title: 'Informes',
+          type: 'basic',
+        },
+        {
           icon: 'heroicons_outline:clipboard-list',
           id: 'configuracion',
           link: '/configuracion/grid',
           title: 'Configuracion',
           type: 'basic',
         }
-        
       ],
     },
     {

@@ -1,6 +1,7 @@
 import { IResponse } from './response.interface';
 
 export interface IFormula {
+  labelCombo?: any;
   id?: number;
   nombre?: string;
   idMaterial?: number;

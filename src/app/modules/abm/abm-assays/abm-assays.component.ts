@@ -7,11 +7,12 @@ import {
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { map, Observable, Subscription } from 'rxjs';
-
+import { map, Observable, Subscription, switchMap, of } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
 // * Services.
 import { AssayService } from 'app/shared/services/assay.service';
 import { ConfigTestService } from 'app/shared/services/config-test.service';
+import { FormulasService } from 'app/shared/services/formulas.service';
 
 // * Interfaces.
 import {
@@ -19,6 +20,7 @@ import {
   IConfigTestResponse,
   IConfigTestsResponse,
 } from 'app/shared/models/config-test.interface';
+import { IFormula } from 'app/shared/models/formula.interface';
 
 @Component({
   selector: 'abm-assays',
@@ -92,6 +94,7 @@ import {
         >
           {{ title }}
         </h2>
+        <span>{{ subtitle }}</span>
       </div>
 
       <div
@@ -151,13 +154,18 @@ export class ABMAssaysComponent
   public machine: FormControl = new FormControl();
   public machines$: Observable<IConfigTest[]>; // Machines list.
 
+  public subtitle: string;
+  public formula: IFormula | undefined;
+
   private subscription: Subscription; // Drawer subscription.
 
   constructor(
     private configTestService: ConfigTestService,
     private assayService: AssayService,
     private router: Router,
-    private _cdr: ChangeDetectorRef
+    private _cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private formulasService: FormulasService,
   ) {}
 
   public ngOnInit(): void {
@@ -168,6 +176,19 @@ export class ABMAssaysComponent
 
     this.title = `Ensayos del Lote ${this.assayService.lot?.nroLote}`;
     this.lot = `Lote ${this.assayService.lot?.nroLote}`;
+
+    this.formulasService.get({ id: this.assayService.lot.idFormula, labelCombo: '' }).subscribe(
+      (response: any) => {
+        if (response && response.data) {
+          console.log(response.data);
+          this.formula = response.data;
+          this.subtitle = `Fórmula: ${this.formula.labelCombo}`; 
+        }
+      },
+      (error) => {
+        console.error('Error al obtener la fórmula:', error);
+      }
+    );
 
     this.machines$ = this.configTestService
       .getMachines(this.assayService.lot.idFormula)
@@ -189,6 +210,7 @@ export class ABMAssaysComponent
       }
     );
   }
+
 
   public ngAfterContentChecked(): void {
     this._cdr.detectChanges();

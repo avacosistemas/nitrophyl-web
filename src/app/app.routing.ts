@@ -110,7 +110,6 @@ export const appRoutes: Route[] = [
       },
     ],
   },
-
   {
     path: '',
     component: LayoutComponent,
@@ -208,6 +207,11 @@ export const appRoutes: Route[] = [
           import('app/modules/abm/grid-monitor/grid-monitor.module').then(
             (m: any) => m.GRIDMonitorModule
           ),
+      },
+      {
+        path: 'reports',
+        loadChildren: () =>
+          import('app/modules/reports/reports.module').then(m => m.ReportsModule)
       },
       {
         path: 'configuracion',

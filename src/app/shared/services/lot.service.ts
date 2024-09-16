@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpBackend } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient, HttpBackend, HttpParams } from '@angular/common/http';
+import { BehaviorSubject, catchError, Observable, throwError } from 'rxjs';
 
 // * Environment.
 import { environment } from 'environments/environment';
@@ -10,6 +10,7 @@ import {
   ILot,
   ILotResponse,
   ILotsResponse,
+  ILotResponseAutocomplete
 } from 'app/shared/models/lot.interface';
 import { IResponse } from '../models/response.interface';
 
@@ -19,6 +20,8 @@ import { IResponse } from '../models/response.interface';
 export class LotService {
   public drawer$: Observable<boolean>;
   public drawerEdit$: Observable<boolean>;
+  private readonly _apiUrl: string = `${environment.server}`;
+  private readonly _apiUrlLotes: string = `${environment.server}lotes`;
   private readonly _url: string = `${environment.server}lote`;
   private readonly _urlCount: string = `${environment.server}lote/count`;
   private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
@@ -34,71 +37,75 @@ export class LotService {
   }
 
   public get(): Observable<ILotsResponse> {
-    return this.http.get<ILotsResponse>(this._url + "?asc=false&idx=nroLote");
+    return this.http.get<ILotsResponse>(this._url + '?asc=false&idx=nroLote');
   }
 
   public read(id): Observable<ILotResponse> {
-    return this.http.get<ILotResponse>(this._url+ "/" + parseInt(id));
+    return this.http.get<ILotResponse>(this._url + '/' + parseInt(id));
   }
 
-public getMonitor(): Observable<ILotsResponse> {
+  public getMonitor(): Observable<ILotsResponse> {
     return this.http.get<ILotsResponse>(this._urlMonitor);
   }
 
-  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, estado:string, rows, first, idx, asc): Observable<ILotsResponse> {
-    var url = this._url + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+  public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta: string, estado: string, rows, first, idx, asc): Observable<ILotsResponse> {
+    let url = this._url + '?asc=' + asc + '&idx=' + idx + '&rows=' + rows + '&first=' + first;
 
-    if (formula != null && formula != "") {
-      url = url + "&idFormula="+formula;
+    if (formula != null && formula != '') {
+      url = url + '&idFormula=' + formula;
     }
-    if (lot != null && lot != "") {
-      url = url + "&nroLote="+lot;
+    if (lot != null && lot != '') {
+      url = url + '&nroLote=' + lot;
     }
-    if (fechaDesde != null && fechaDesde != "") {
-      url = url + "&fechaDesde="+fechaDesde;
+    if (fechaDesde != null && fechaDesde != '') {
+      url = url + '&fechaDesde=' + fechaDesde;
     }
-    if (fechaHasta != null && fechaHasta != "") {
-      url = url + "&fechaHasta="+fechaHasta;
+    if (fechaHasta != null && fechaHasta != '') {
+      url = url + '&fechaHasta=' + fechaHasta;
     }
-    if (estado != null && estado != "") {
-      url = url + "&estado="+estado;
+    if (estado != null && estado != '') {
+      url = url + '&estado=' + estado;
     }
 
     return this.http.get<ILotsResponse>(url);
   }
 
-  public countByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta:string, estado:string, rows, first, idx, asc): Observable<IResponse<number>> {
-    var url = this._urlCount + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+  public countByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta: string, estado: string, rows, first, idx, asc): Observable<IResponse<number>> {
+    let url = this._urlCount + '?asc=' + asc + '&idx=' + idx + '&rows=' + rows + '&first=' + first;
 
-    if (formula != null && formula != "") {
-      url = url + "&idFormula="+formula;
+    if (formula != null && formula != '') {
+      url = url + '&idFormula=' + formula;
     }
-    if (lot != null && lot != "") {
-      url = url + "&nroLote="+lot;
+
+    if (lot != null && lot != '') {
+      url = url + '&nroLote=' + lot;
     }
-    if (fechaDesde != null && fechaDesde != "") {
-      url = url + "&fechaDesde="+fechaDesde;
+
+    if (fechaDesde != null && fechaDesde != '') {
+      url = url + '&fechaDesde=' + fechaDesde;
     }
-    if (fechaHasta != null && fechaHasta != "") {
-      url = url + "&fechaHasta="+fechaHasta;
+
+    if (fechaHasta != null && fechaHasta != '') {
+      url = url + '&fechaHasta=' + fechaHasta;
     }
-    if (estado != null && estado != "") {
-      url = url + "&estado="+estado;
+
+    if (estado != null && estado != '') {
+      url = url + '&estado=' + estado;
     }
 
     return this.http.get<IResponse<number>>(url);
   }
   public put(lot: ILot): Observable<ILotResponse> {
-    return this.http.put<ILotResponse>(this._url + "/update/" + lot.id, lot);
+    return this.http.put<ILotResponse>(this._url + '/update/' + lot.id, lot);
   }
-  
+
   public post(lot: ILot): Observable<ILotResponse> {
     return this.http.post<ILotResponse>(this._url, lot);
   }
 
   public approve(
     id: number,
-    body: { estado: string; observaciones: string, fecha: string }
+    body: { estado: string; observaciones: string; fecha: string }
   ): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/aprobar/${id}`, body);
   }
@@ -116,7 +123,32 @@ public getMonitor(): Observable<ILotsResponse> {
   public delete(id: number): Observable<ILotResponse> {
     return this.http.delete<ILotResponse>(`${this._url}/delete/${id}`);
   }
+
   public toggleDrawerEdit(): void {
     this._drawerEdit.next(!this._drawerEdit.value);
+  }
+
+  getLotes(): Observable<ILotResponseAutocomplete> {
+    return this.http.get<ILotResponseAutocomplete>(`${this._apiUrlLotes}/autocomplete`);
+  }
+
+  getLotesByNroLote(nroLote: string): Observable<ILotResponseAutocomplete> {
+    const url = `${this._apiUrlLotes}/autocomplete?estados=APROBADO&estados=APROBADO_OBSERVADO&nroLote=${nroLote}`;
+    return this.http.get<ILotResponseAutocomplete>(url);
+  }
+
+  enviarInformeCalidad(idCliente: number, idLote: string): Observable<any> {
+    const params = new HttpParams()
+      .set('idCliente', idCliente)
+      .set('idLote', idLote);
+
+    const url = `${this._apiUrl}loteReporte`;
+
+    return this.http.get<any>(url, { params }).pipe(
+      catchError((error) => {
+        console.error('Error al enviar el informe', error);
+        return throwError(error);
+      })
+    );
   }
 }

@@ -1,0 +1,40 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent">
+      <div class="flex-1 min-w-0">
+        <div>
+          <div class="hidden sm:flex flex-wrap items-center font-medium">
+            <div>
+                <a [routerLink]="['/reports']" class="whitespace-nowrap text-primary-500">
+                {{ title }}
+                </a>
+            </div>
+            <div class="flex items-center ml-1 whitespace-nowrap">
+              <mat-icon role="img" class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color"
+                aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="chevron-right"
+                data-mat-icon-namespace="heroicons_solid">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%"
+                  width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
+                  <path fill-rule="evenodd"
+                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                    clip-rule="evenodd">
+                  </path>
+                </svg>
+              </mat-icon>
+              <span #tituloComponenteHijo class="ml-1 text-secondary">
+                {{ subtitle }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="mt-2">
+          <h2 #tituloComponenteHijo class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+            {{ subtitle }}
+          </h2>
+        </div>
+      </div>
+    </div>
+  
+    <div class="content-scroll max-w-3xl p-6">
+        <router-outlet></router-outlet>
+    </div>
+  </div>
