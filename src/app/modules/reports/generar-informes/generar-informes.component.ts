@@ -5,11 +5,13 @@ import {
   Validators,
   FormControl,
 } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { LotService } from 'app/shared/services/lot.service';
-import { startWith, map, switchMap, delay } from 'rxjs/operators';
+import { debounceTime, startWith, map, switchMap, delay } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
+import * as FileSaver from 'file-saver';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 @Component({
@@ -28,6 +30,7 @@ export class GenerarInformesComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    public dialog: MatDialog,
     private clientsService: ClientesService,
     private lotService: LotService,
     private snackBar: MatSnackBar
@@ -40,16 +43,16 @@ export class GenerarInformesComponent implements OnInit {
     });
 
     this.filteredLots = this.lotFilterControl.valueChanges.pipe(
+      debounceTime(300),
       startWith(''),
       delay(0),
       switchMap((value) => {
-        if (
-          (typeof value === 'string' && value.length > 0) ||
-          (typeof value === 'object' && value !== null && 'nombre' in value)
-        ) {
-          const nroLote = typeof value === 'string' ? value : value.nombre;
-          return this.lotService.getLotesByNroLote(nroLote);
+        if (typeof value === 'string' && value.length > 0) {
+          return this.lotService.getLotesByNroLote(value);
+        } else if (typeof value === 'object' && value !== null && 'nombre' in value) {
+          return this.lotService.getLotesByNroLote(value.nombre);
         } else {
+          this.informesForm.get('selectedLote')?.setValue(null);
           return of({ status: 'OK', data: [] });
         }
       }),
@@ -95,16 +98,15 @@ export class GenerarInformesComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.informesForm.valid) {
-      const selectedClient = this.informesForm.get('selectedClient')?.value;
-      const selectedLote = this.informesForm.get('selectedLote')?.value;
+  }
 
-      const idCliente = selectedClient ? selectedClient.id : null;
-      const idLote = selectedLote ? selectedLote.codigo : null;
+  onEnviarInforme(): void {
+    if (this.informesForm.valid) {
+      const { idCliente, idLote } = this.getSelectedValues();
 
       if (idCliente && idLote) {
-        this.lotService.enviarInformeCalidad(idCliente, idLote).subscribe({
-          next: (response) => {
+        this.lotService.getInformeCalidad(idCliente, idLote).subscribe({
+          next: () => {
             this.clientFilterControl.setValue('');
             this.lotFilterControl.setValue('');
             this.informesForm.reset();
@@ -115,6 +117,42 @@ export class GenerarInformesComponent implements OnInit {
             console.error('Error al enviar el informe', error);
             this.openSnackBar('Error al enviar el informe', 'X', 'red-snackbar');
           }
+        });
+      } else {
+        this.openSnackBar(
+          'Error: No se pudo obtener el ID del cliente o del lote', 'X', 'red-snackbar'
+        );
+      }
+    }
+  }
+
+  onDescargarInforme(): void {
+    if (this.informesForm.valid) {
+      const { idCliente, idLote } = this.getSelectedValues();
+
+      if (idCliente && idLote) {
+        this.lotService.getInformeCalidad(idCliente, idLote).subscribe({
+          next: (response) => {
+            const archivoBase64 = response.data.archivo;
+            const nombreArchivo = response.data.nombre;
+            const fileExtension = nombreArchivo.split('.').pop()?.toLowerCase();
+            const byteString = atob(archivoBase64);
+            const ab = new ArrayBuffer(byteString.length);
+            const ia = new Uint8Array(ab);
+
+            for (let i = 0; i < byteString.length; i++) {
+              ia[i] = byteString.charCodeAt(i);
+            }
+
+            const blob = new Blob([ab], {
+              type: fileExtension === 'pdf' ? 'application/pdf' : 'image/' + fileExtension,
+            });
+
+            FileSaver.saveAs(blob, nombreArchivo);
+          },
+          error: (err) => {
+            console.error('Error al descargar el informe', err);
+          },
         });
       } else {
         this.openSnackBar(
@@ -178,5 +216,11 @@ export class GenerarInformesComponent implements OnInit {
         return this._normalizeValue(client.nombre).includes(filterValue);
       }
     });
+  }
+
+  private getSelectedValues(): { idCliente: number | null; idLote: string | null } {
+    const { id: idCliente } = this.informesForm.get('selectedClient')?.value || {};
+    const { codigo: idLote } = this.informesForm.get('selectedLote')?.value || {};
+    return { idCliente, idLote };
   }
 }

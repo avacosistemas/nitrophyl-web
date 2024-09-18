@@ -1,4 +1,4 @@
-<div class="flex flex-col max-w-3xl p-6" id="top">
+<div class="flex flex-col w-1/2 max-w-3xl p-6" id="top">
   <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
     <form [formGroup]="informesForm" (ngSubmit)="onSubmit()">
 
@@ -26,10 +26,17 @@
           </mat-option>
         </mat-autocomplete>
       </mat-form-field>
-
-      <button mat-raised-button color="primary" type="submit" [disabled]="informesForm.invalid">
-        Enviar informe de calidad
-      </button>
     </form>
+
+    <div class="flex inline-flex justify-end gap-2">
+      <button mat-raised-button color="primary" disabled (click)="onEnviarInforme()">
+        <mat-icon class="text-xl mr-1" matSuffix>send</mat-icon>
+        Enviar informe
+      </button>
+      <button mat-raised-button color="accent" [disabled]="informesForm.invalid" (click)="onDescargarInforme()">
+        <mat-icon class="text-xl mr-1" matSuffix>download</mat-icon>
+        Descargar
+      </button>
+    </div>
   </div>
 </div>
