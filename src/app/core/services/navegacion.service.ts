@@ -14,6 +14,27 @@ export class NavegacionService {
     //     type: "basic"
     // },
     {
+      icon: 'heroicons_outline:document-report',
+      id: 'informes',
+      title: 'Informes',
+      type: 'collapsable',
+      children: [
+        {
+          id: 'calidad',
+          link: '/reports',
+          title: 'Calidad',
+          type: 'basic',
+        },
+        {
+          // icon: 'heroicons_outline:clipboard-list',
+          id: 'configuracion',
+          link: '/configuracion/grid',
+          title: 'Configuración Calidad',
+          type: 'basic',
+        }
+      ]
+    },
+    {
       icon: 'mat_solid:biotech',
       id: 'laboratorio',
       title: 'Laboratorio',
@@ -45,20 +66,6 @@ export class NavegacionService {
           id: 'monitor',
           link: '/monitor/full',
           title: 'Monitor',
-          type: 'basic',
-        },
-        {
-          icon: 'heroicons_outline:document-report',
-          id: 'informes',
-          link: '/reports',
-          title: 'Informes',
-          type: 'basic',
-        },
-        {
-          icon: 'heroicons_outline:clipboard-list',
-          id: 'configuracion',
-          link: '/configuracion/grid',
-          title: 'Configuracion',
           type: 'basic',
         }
       ],
