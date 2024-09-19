@@ -44,9 +44,9 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
   // * Form (create).
   public form: FormGroup = new FormGroup({
     nroLote: new FormControl('', [
-      Validators.minLength(5),
-      Validators.maxLength(5),
-      Validators.pattern(/^[A-Za-z]\d{4}$/),
+      //Validators.minLength(5),
+      Validators.maxLength(5)
+      //Validators.pattern(/^[A-Za-z]\d{4}$/),
     ]),
     fechaDesde: new FormControl(null),
     fechaHasta: new FormControl(null),

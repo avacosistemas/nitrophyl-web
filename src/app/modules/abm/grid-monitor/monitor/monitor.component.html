@@ -19,13 +19,11 @@
           <div class="row flex gap-3 justify-around">
 
             <mat-form-field class="w-full">
-              <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote" minlength="5"
+              <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote"
                 maxlength="5">
               <mat-error>
                 {{
-                form.controls['nroLote'].hasError('minlength')
-                ? 'Mínimo 5 caracteres.'
-                : form.controls['nroLote'].hasError('maxlength')
+                form.controls['nroLote'].hasError('maxlength')
                 ? 'Máximo 5 caracteres.'
                 : form.controls['nroLote'].hasError('pattern')
                 ? 'Formato inválido.'
