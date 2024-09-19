@@ -135,6 +135,17 @@
                       </mat-error>
                     </mat-form-field>
                     <mat-form-field class="w-1/3">
+                      <mat-label>Empresa</mat-label>
+                      <mat-select [formControlName]="'empresa'" placeholder="Empresa">
+                        <mat-option *ngFor="let emp of empresa" [value]="emp.nombre">
+                          {{ emp.nombre }}
+                        </mat-option>
+                      </mat-select>
+                      <mat-error class="mb-1" *ngIf="clienteForm.get('empresa').hasError('required')">
+                        La empresa es requerida
+                      </mat-error>
+                    </mat-form-field>                    
+                    <mat-form-field class="w-1/3">
                       <mat-label>Página</mat-label>
                       <input id="webSite" matInput [formControlName]="'webSite'" placeholder="Página" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('webSite').hasError('required')">

@@ -1,5 +1,5 @@
 export interface Cliente {
-    id: number,
+    id: number;
     nombre: string;
     razonSocial: string;
     email: string;
@@ -8,39 +8,40 @@ export interface Cliente {
     codigoPostal: string;
     localidad: string;
     provincia: any;
+    empresa: any;
     webSite: string;
     observacionesCobranzas: string;
     observacionesEntrega: string;
 	observacionesFacturacion: string;
 	telefono: string;
-    contacto?: any
+    contacto?: any;
 }
 
 export interface Contacto {
-    id: number,
-    idCliente: number,
-    tipo: string,
-    nombre: string,
-    email: string,
-    telefono: string
+    id: number;
+    idCliente: number;
+    tipo: string;
+    nombre: string;
+    email: string;
+    telefono: string;
 }
 
 export interface ResponseClientes {
-    status: string,
-    data: Array<Cliente>
+    status: string;
+    data: Array<Cliente>;
 }
 
 export interface ResponseCliente {
-    status: string,
-    data: Cliente
+    status: string;
+    data: Cliente;
 }
 
 export interface ResponseContactos {
-    status: string,
-    data: Array<Contacto>
+    status: string;
+    data: Array<Contacto>;
 }
 
 export interface ResponseContacto {
-    status: string,
-    data: Contacto
+    status: string;
+    data: Contacto;
 }

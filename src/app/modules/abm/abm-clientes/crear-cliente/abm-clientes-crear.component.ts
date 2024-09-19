@@ -1,14 +1,14 @@
-import { animate, state, style, transition, trigger } from "@angular/animations";
-import { AfterViewInit, Component, OnDestroy, OnInit } from "@angular/core";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { Router } from "@angular/router";
-import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Cliente } from "app/shared/models/cliente.model";
-import { ClientesService } from "app/shared/services/clientes.service";
-import { Subscription } from "rxjs";
-import { ABMClientesService } from "../abm-clientes.service";
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
+import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { Cliente } from 'app/shared/models/cliente.model';
+import { ClientesService } from 'app/shared/services/clientes.service';
+import { Subscription } from 'rxjs';
+import { ABMClientesService } from '../abm-clientes.service';
 
 @Component({
     selector: 'abm-clientes-crear',
@@ -17,12 +17,16 @@ import { ABMClientesService } from "../abm-clientes.service";
 
 export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewInit {
     clienteForm: FormGroup;
-    component: string = "CreateCliente";
+    component: string = 'CreateCliente';
     suscripcion: Subscription;
     provincias = [];
+    empresa = [
+        { nombre: 'NITROPHYL' },
+        { nombre: 'ELASINT' }
+      ];
     ingresosBrutos = [
-        {id: 1, name: "Régimen General"},
-        {id: 2, name: "Régimen Simplificado"}
+        {id: 1, name: 'Régimen General'},
+        {id: 2, name: 'Régimen Simplificado'}
     ];
 
 
@@ -43,6 +47,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             codigoPostal: [null, [Validators.required]],
             localidad: [null, [Validators.required]],
             provincia: [null, [Validators.required]],
+            empresa: [null, [Validators.required]],
             webSite: [null],
             nombre:  [null, [Validators.required]],
             observacionesCobranzas: [null],
@@ -64,7 +69,11 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
     ngOnInit(): void {
         this.clientesService.getProvincias().subscribe(d => {
             this.provincias = d.data;
-        })
+        });
+        this.empresa = [
+            { nombre: 'NITROPHYL' },
+            { nombre: 'ELASINT' }
+          ];
     }
 
     ngAfterViewInit() {
@@ -89,15 +98,15 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             id: 0
         };
         this.clientesService.createCliente(model).subscribe(d => {
-            if(d.status == "OK") {
-                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+            if(d.status == 'OK') {
+                this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
                 this.router.navigateByUrl(`/clientes/grid`);
             } else {
-                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+                this.openSnackBar('No se puedieron realizar los cambios', 'X', 'red-snackbar');
             }
         },
         err => {
-            this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+            this.openSnackBar('No se puedieron realizar los cambios', 'X', 'red-snackbar');
         })
     }
 
@@ -107,7 +116,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         } else {
             const dialogRef = this.dialog.open(RemoveDialogComponent, {
                 maxWidth: '50%',
-                data: { data: null, seccion: "cliente", boton: "Cerrar" },
+                data: { data: null, seccion: 'cliente', boton: 'Cerrar' },
             });
             dialogRef.afterClosed().subscribe(result => {
                 if (result) {

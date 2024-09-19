@@ -35,6 +35,11 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: Cliente | null;
   provincias = [];
+  empresa = [
+    { nombre: 'NITROPHYL' },
+    { nombre: 'ELASINT' }
+  ];
+
   ingresosBrutos = [
     { id: 1, name: 'Régimen General' },
     { id: 2, name: 'Régimen Simplificado' },
@@ -55,6 +60,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
       codigoPostal: [null, [Validators.required]],
       localidad: [null, [Validators.required]],
       provincia: [null, [Validators.required]],
+      empresa: [null, [Validators.required]],
       webSite: [null],
       nombre: [null, [Validators.required]],
       observacionesCobranzas: [null],
@@ -67,6 +73,10 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
 
   public ngOnInit(): void {
     this._inicializar();
+    this.empresa = [
+      { nombre: 'NITROPHYL' },
+      { nombre: 'ELASINT' }
+    ];
   }
 
   public ngAfterViewInit(): void {
@@ -123,6 +133,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
       localidad: element.localidad,
       webSite: element.webSite,
       provincia: element.provincia,
+      empresa: element.empresa,
       observacionesCobranzas: element.observacionesCobranzas,
       observacionesFacturacion: element.observacionesFacturacion,
       telefono: element.telefono,
