@@ -25,6 +25,7 @@ export class LotService {
   private readonly _url: string = `${environment.server}lote`;
   private readonly _urlCount: string = `${environment.server}lote/count`;
   private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
+  private readonly _urlCountMonitor: string = `${environment.server}lote/monitor/count`;
   private readonly _drawer: BehaviorSubject<boolean>;
   private readonly _drawerEdit: BehaviorSubject<boolean>;
 
@@ -151,4 +152,46 @@ export class LotService {
       })
     );
   }
+
+  public getByFilterMonitor(formula: string, lot: string, fechaDesde: string, fechaHasta:string, rows, first, idx, asc): Observable<ILotsResponse> {
+    var url = this._url + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+
+    if (formula != null && formula != "") {
+      url = url + "&idFormula="+formula;
+    }
+    if (lot != null && lot != "") {
+      url = url + "&nroLote="+lot;
+    }
+    if (fechaDesde != null && fechaDesde != "") {
+      url = url + "&fechaDesde="+fechaDesde;
+    }
+    if (fechaHasta != null && fechaHasta != "") {
+      url = url + "&fechaHasta="+fechaHasta;
+    }
+
+    return this.http.get<ILotsResponse>(url);
+  }
+
+  public countByFilterMonitor(formula: string, lot: string, fechaDesde: string, fechaHasta: string, rows, first, idx, asc): Observable<IResponse<number>> {
+    let url = this._urlCountMonitor + '?asc=' + asc + '&idx=' + idx + '&rows=' + rows + '&first=' + first;
+
+    if (formula != null && formula != '') {
+      url = url + '&idFormula=' + formula;
+    }
+
+    if (lot != null && lot != '') {
+      url = url + '&nroLote=' + lot;
+    }
+
+    if (fechaDesde != null && fechaDesde != '') {
+      url = url + '&fechaDesde=' + fechaDesde;
+    }
+
+    if (fechaHasta != null && fechaHasta != '') {
+      url = url + '&fechaHasta=' + fechaHasta;
+    }
+
+    return this.http.get<IResponse<number>>(url);
+  }
+
 }
