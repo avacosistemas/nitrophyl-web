@@ -1,7 +1,7 @@
 import { HttpClient, HttpBackend } from '@angular/common/http';
 import { EventEmitter, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-
+import { forkJoin, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 // * Environment.
 import { environment } from 'environments/environment';
 
@@ -50,6 +50,18 @@ export class MachinesService {
   // ! Para actualizar una maquina /maquina/{idMaquina} PUT enviando nombre y estado
   public put(body: IMachine): Observable<IMachineResponse> {
     return this.http.put<IMachineResponse>(`${this.url}/${body.id}`, body);
+  }
+
+  public updateMachineOrder(machines: IMachine[]): Observable<any> {
+    const requests = machines.map(machine =>
+      this.http.put<any>(`${this.url}/${machine.id}`, machine)
+    );
+    return forkJoin(requests).pipe(
+      map(responses => ({
+          status: 'OK',
+          data: responses.map(response => response.data),
+        }))
+    );
   }
 
   public getTest(id: number): Observable<any> {
