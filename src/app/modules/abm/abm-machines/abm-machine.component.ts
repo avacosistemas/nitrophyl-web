@@ -65,8 +65,4 @@ export class ABMMachineComponent implements AfterContentChecked {
   public save(): void {
     this._machines.events.next(3);
   }
-
-  public saveOrder(): void {
-    this._machines.events.next(4);
-  }
 }

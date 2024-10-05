@@ -45,13 +45,6 @@ export class MachinesComponent implements OnInit, AfterViewInit {
   public ngOnInit(): void {
     this.get();
     this.machines$.next([]);
-    this.machinesEventSubscription = this._machines.events.subscribe(
-      (eventNumber: number) => {
-        if (eventNumber === 4) {
-          this.saveOrder();
-        }
-      }
-    );
   }
 
   public ngOnDestroy(): void {
@@ -72,30 +65,14 @@ export class MachinesComponent implements OnInit, AfterViewInit {
   }
 
   drop(event: CdkDragDrop<IMachine[]>): void {
-    const previousIndex = this.machines$.value.findIndex(
-      d => d === event.item.data
-    );
-    moveItemInArray(this.machines$.value, previousIndex, event.currentIndex);
-    this.updatePositions();
-    this.machines$.next([...this.machines$.value]);
-  }
+    const previousIndex = this.machines$.value.findIndex(d => d === event.item.data);
 
-  saveOrder(): void {
-    const updatedMachines = this.machines$.value;
-    console.log('lista de maquinas', updatedMachines);
-    this._machines.updateMachineOrder(updatedMachines).subscribe({
-      next: (res: any) => {
-        if (res.status === 'OK') {
-          this.openSnackBar(true);
-        } else {
-          this.openSnackBar(false);
-        }
-      },
-      error: () => {
-        this.openSnackBar(false);
-      },
-      complete: () => {},
-    });
+    if (previousIndex !== event.currentIndex) { 
+      moveItemInArray(this.machines$.value, previousIndex, event.currentIndex);
+      this.updatePositions();
+      this.machines$.next([...this.machines$.value]);
+      this.saveOrder();
+    }
   }
 
   updatePositions(): void {
@@ -176,6 +153,22 @@ export class MachinesComponent implements OnInit, AfterViewInit {
       },
       error: (err: any) => console.error(error, err),
       complete: () => {},
+    });
+  }
+
+  private saveOrder(): void {
+    const updatedMachines = this.machines$.value;
+    this._machines.updateMachineOrder(updatedMachines).subscribe({
+      next: (res: any) => {
+        if (res.status === 'OK') {
+          this.openSnackBar(true);
+        } else {
+          this.openSnackBar(false);
+        }
+      },
+      error: () => {
+        this.openSnackBar(false);
+      },
     });
   }
 
