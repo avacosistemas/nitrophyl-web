@@ -7,13 +7,16 @@ import {
 } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Subscription, BehaviorSubject } from 'rxjs';
+import { Subscription, BehaviorSubject, take, of } from 'rxjs';
+import { map, switchMap, catchError } from 'rxjs/operators';
 
 // * Services.
 import { MachinesService } from 'app/shared/services/machines.service';
+import { TestService } from 'app/shared/services/test.service';
 
 // * Interfaces.
 import { IMachine, IMachineResponse } from 'app/shared/models/machine.model';
+import { ITest } from 'app/shared/models/test.model';
 
 // * Forms.
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -25,13 +28,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-
-export interface ITest {
-  id?: number | null;
-  idMaquina: number;
-  nombre: string;
-  posicion: number;
-}
 
 @Component({
   selector: 'app-machine',
@@ -51,20 +47,20 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   // * BehaviorSubject for tests
   public tests: BehaviorSubject<ITest[]> = new BehaviorSubject<ITest[]>([]);
 
-  // * Test mode.
-  private save: boolean = true;
-
+  private testsBackUp$: ITest[] = [];
   private suscripcion: Subscription;
   private id: number;
+
   constructor(
     private _machines: MachinesService,
+    private _testService: TestService,
     private activeRoute: ActivatedRoute,
     private dialog: MatDialog,
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
     private router: Router
   ) {
-    if (!this._machines.getMode()) this.router.navigate(['/maquinas/grid']);
+    if (!this._machines.getMode()) {this.router.navigate(['/maquinas/grid']);}
     this.mode = this._machines.getMode();
     if (this.mode === 'Edit' || this.mode === 'View' || this.mode === 'Test') {
       this.activeRoute.paramMap.subscribe(
@@ -75,6 +71,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscription();
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   public get tests$() {
     return this.tests.asObservable();
   }
@@ -86,27 +83,37 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   drop(event: CdkDragDrop<ITest[]>): void {
-    const previousIndex = this.tests.value.findIndex(
-      d => d === event.item.data
-    );
+    this.tests$
+      .pipe(
+        take(1),
+        map((tests) => {
+          const previousIndex = tests.findIndex(
+            test => test === event.item.data
+          );
 
-    moveItemInArray(this.tests.value, previousIndex, event.currentIndex);
-
-    this.updatePositions();
-
-    if (this.table) {
-      this.table.renderRows();
-    }
-
-    this.tests.next([...this.tests.value]);
+          if (previousIndex !== event.currentIndex) {
+            moveItemInArray(tests, previousIndex, event.currentIndex);
+            this.updatePositions();
+            this.tests.next([...tests]);
+            this.saveOrder();
+          }
+        })
+      )
+      .subscribe();
   }
 
   updatePositions(): void {
-    const currentTests = this.tests.value;
-    currentTests.forEach((test, index) => {
-      test.posicion = index + 1;
-    });
-    this.tests.next([...currentTests]);
+    this.tests$
+      .pipe(
+        take(1),
+        map((tests) => {
+          tests.forEach((test, index) => {
+            test.posicion = index + 1;
+          });
+          this.tests.next([...tests]);
+        })
+      )
+      .subscribe();
   }
 
   public ngOnDestroy(): void {
@@ -122,7 +129,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public close(): void {
     if (this.mode === 'Test') {
-      this.save ? this.router.navigate(['/maquinas/grid']) : this.alert();
+      this.router.navigate(['/maquinas/grid']);
       return;
     }
 
@@ -131,9 +138,10 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       this.mode === 'Edit' ||
       this.mode === 'View'
     ) {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.form.pristine
-        ? this.router.navigate(['/maquinas/grid'])
-        : this.alert();
+      ? this.router.navigate(['/maquinas/grid'])
+      : this.alert();
       return;
     }
 
@@ -141,7 +149,6 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public create(): void {
-    if (this.mode === 'Test') {this.setTests();}
     if (this.mode === 'Create' || this.mode === 'Edit') {
       if (this.form.invalid) {
         this.form.markAllAsTouched();
@@ -154,80 +161,147 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public add(): void {
     const test: string | undefined = this.formTest.controls.test.value;
-    let position: number | undefined =
-      this.formTest.controls.positionTest.value;
+    let position: number | undefined = this.formTest.controls.positionTest.value;
 
     if (!test || !test.trim()) {
-      this.snackBar.open('El nombre de la prueba es obligatorio.', 'X', {
-        duration: 5000,
-        panelClass: 'red-snackbar',
-      });
-      return;
+      this.openSnackBar(false, 'El nombre de la prueba es obligatorio');
     }
 
     const currentTests = this.tests.value;
 
-    if (currentTests.some(t => t.nombre === test)) {
-      this.snackBar.open('Ya existe una prueba con ese nombre', 'X', {
-        duration: 5000,
-        panelClass: 'red-snackbar',
-      });
-      return;
+    if (currentTests.some(t => t.nombre === test.trim())) {
+      this.openSnackBar(false, 'Ya existe una prueba con ese nombre');
     }
 
     if (position === undefined || position === null) {
-      position =
-        currentTests.length > 0
-          ? Math.max(...currentTests.map(t => t.posicion)) + 1
-          : 1;
+      position = currentTests.length > 0
+        ? Math.max(...currentTests.map(t => t.posicion)) + 1
+        : 1;
     }
 
-    currentTests.forEach((t) => {
-      if (t.posicion >= position) {
-        t.posicion += 1;
-      }
-    });
-
     const newTest: ITest = {
-      id: null,
       idMaquina: this.id,
       nombre: test.trim(),
       posicion: position,
     };
 
-    const updatedTests = [...currentTests, newTest];
+    this._testService.addTest(newTest.idMaquina, newTest).subscribe({
+      next: (response) => {
+        const addedTest = response.data;
 
-    updatedTests.sort((a, b) => a.posicion - b.posicion);
+        if (!addedTest || !addedTest.id) {
+          this.openSnackBar(false, 'No se recibió un ID válido para la nueva prueba');
+          return;
+        }
 
-    this.tests.next(updatedTests);
+        currentTests.push({
+          id: addedTest.id,
+          idMaquina: addedTest.idMaquina,
+          nombre: addedTest.nombre,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          posicion: position!,
+        });
 
-    this.formTest.patchValue({
-      test: null,
-      positionTest: null,
+        const orderedTests = currentTests.sort((a, b) => a.posicion - b.posicion)
+                                        // eslint-disable-next-line @typescript-eslint/no-shadow
+                                        .map((test, index) => ({
+                                            ...test,
+                                            posicion: index + 1
+                                        }));
+
+        this._testService.updateTestPositions(orderedTests).subscribe({
+          next: (res) => {
+            if (res.status === 'OK') {
+              this.tests.next(orderedTests);
+              this.openSnackBar(true);
+            } else {
+              this.openSnackBar(false);
+            }
+          },
+          error: () => {
+            this.openSnackBar(false, 'Error al actualizar las posiciones de las pruebas.');
+          }
+        });
+      },
+      error: () => {
+        this.openSnackBar(false, 'Error al agregar la nueva prueba.');
+      }
     });
 
-    this.formTest.markAsUntouched();
-    this.formTest.markAsPristine();
+    this.formTest.reset();
   }
 
   public trash(id: number): void {
-    const currentTests = this.tests.value;
+    const dialog = this.dialog.open(RemoveDialogComponent, {
+      maxWidth: '50%',
+      data: {
+        data: null,
+        seccion: 'prueba',
+        boton: 'Eliminar'
+      },
+    });
 
-    const updatedTests = currentTests.filter(test => test.id !== id);
-    this.tests.next(updatedTests);
+    dialog.afterClosed().subscribe((confirm: boolean) => {
+      if (confirm) {
+        this._testService.deleteTest(id).subscribe({
+          next: () => {
+            this.openSnackBar(true, 'Prueba eliminada.');
+            const currentTests = this.tests.value;
+            const updatedTests = currentTests.filter(test => test.id !== id);
+            const reorderedTests = updatedTests.map((test, index) => ({
+              ...test,
+              posicion: index + 1
+            }));
 
-    this.updatePositions();
-    this.save = false;
+            this.tests.next(reorderedTests);
+            this._testService.updateTestPositions(reorderedTests).subscribe({
+              next: () => {
+                this.openSnackBar(true, 'Posiciones actualizadas.');
+              },
+              error: () => {
+                this.openSnackBar(false, 'Error al actualizar posiciones.');
+              }
+            });
+          },
+          error: () => {
+            this.openSnackBar(false, 'Error al eliminar la prueba.');
+          }
+        });
+      }
+    });
   }
 
   private getTest(): void {
-    const error: string = 'MachineComponent => getTest(): ';
-    this._machines.getTest(this.id).subscribe({
+    this._testService.getTest(this.id).subscribe({
       next: (res: any) => {
-        this.tests.next([...res.data]);
+        if (res.status === 'OK' && res.data) {
+          this.tests.next(res.data.sort((a, b) => a.posicion - b.posicion));
+        } else {
+          this.openSnackBar(false, 'La respuesta no tiene el formato esperado.');
+        }
       },
-      error: (err: any) => console.error(error, err),
+      error: () => this.openSnackBar(false, 'Error al obtener las prueba.'),
     });
+  }
+
+  private saveOrder(): void {
+    this.tests$
+      .pipe(
+        take(1),
+        switchMap(updatedTests => this._testService.updateTestPositions(updatedTests))
+      )
+      .subscribe({
+        next: (result) => {
+          if (result.status === 'OK') {
+            this.openSnackBar(true);
+          } else {
+            this.openSnackBar(false);
+          }
+        },
+        error: () => {
+          this.openSnackBar(false, 'Error al actualizar el orden de las pruebas.');
+        }
+      });
   }
 
   private get(): void {
@@ -247,16 +321,14 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
           );
         }
       },
-      error: (err: any) => console.error(error, err),
+      error: () =>  this.openSnackBar(false, 'Error al obtener las Maquinas.'),
     });
   }
 
   private post(): void {
-    const error: string = 'MachineComponent => post(): ';
     const body: IMachine = {
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
-      posicion: this.form.controls.position.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
     };
     this._machines.post(body).subscribe({
@@ -271,21 +343,18 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.router.navigate(['/maquinas/grid']);
         }
       },
-      error: (err) => {
+      error: () => {
         this.openSnackBar(false);
-        console.error(error, err);
       },
       complete: () => {},
     });
   }
 
   private put(): void {
-    const error: string = 'MachineComponent => put(): ';
     const body: IMachine = {
       id: this.id,
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
-      posicion: this.form.controls.position.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
     };
     this._machines.put(body).subscribe({
@@ -299,33 +368,8 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.router.navigate([`/maquinas/edit/${data[0].id}`]);
         }
       },
-      error: (err) => {
+      error: () => {
         this.openSnackBar(false);
-        console.error(error, err);
-      },
-      complete: () => {},
-    });
-  }
-
-  private setTests(): void {
-    const error: string = 'MachineComponent => setTests(): ';
-    const testsArray = this.tests.value;
-
-    const body: any = {
-      idMaquina: this.id,
-      moldeClientesListadoDTOs: testsArray,
-    };
-
-    this._machines.setTest(body).subscribe({
-      next: (res: any) => {
-        if (res.status === 'OK') {
-          this.openSnackBar(true);
-          this.router.navigate(['/maquinas/grid']);
-        }
-      },
-      error: (err) => {
-        this.openSnackBar(false);
-        console.error(error, err);
       },
       complete: () => {},
     });
@@ -355,18 +399,14 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
         { value: null, disabled: this.mode === 'View' },
         Validators.required,
       ],
-      position: [
-        { value: null, disabled: this.mode === 'View' },
-        Validators.required,
-      ],
       observacionesReporte: [],
     });
   }
 
   private subscription(): void {
     this.suscripcion = this._machines.events.subscribe((data: any) => {
-      if (data === 1) {this.close();}
-      if (data === 3) {this.create();}
+      if (data === 1) { this.close(); }
+      if (data === 3) { this.create(); }
     });
   }
 
@@ -380,14 +420,16 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private openSnackBar(option: boolean): void {
-    const message: string = option
-      ? 'Cambios realizados.'
-      : 'No se pudieron realizar los cambios.';
-    const css: string = option ? 'green' : 'red';
-    this.snackBar.open(message, 'X', {
-      duration: 5000,
-      panelClass: `${css}-snackbar`,
+  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
+    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
+    const defaultCss: string = option ? 'green' : 'red';
+    const snackBarMessage = message ? message : defaultMessage;
+    const snackBarCss = css ? css : defaultCss;
+    const snackBarDuration = duration ? duration : 5000;
+
+    this.snackBar.open(snackBarMessage, 'X', {
+      duration: snackBarDuration,
+      panelClass: `${snackBarCss}-snackbar`,
     });
   }
 }

@@ -47,6 +47,7 @@ export class MachinesComponent implements OnInit, AfterViewInit {
     this.machines$.next([]);
   }
 
+  // eslint-disable-next-line @angular-eslint/use-lifecycle-interface
   public ngOnDestroy(): void {
     if (this.machinesSubscription) {
       this.machinesSubscription.unsubscribe();
@@ -67,7 +68,7 @@ export class MachinesComponent implements OnInit, AfterViewInit {
   drop(event: CdkDragDrop<IMachine[]>): void {
     const previousIndex = this.machines$.value.findIndex(d => d === event.item.data);
 
-    if (previousIndex !== event.currentIndex) { 
+    if (previousIndex !== event.currentIndex) {
       moveItemInArray(this.machines$.value, previousIndex, event.currentIndex);
       this.updatePositions();
       this.machines$.next([...this.machines$.value]);
@@ -83,7 +84,7 @@ export class MachinesComponent implements OnInit, AfterViewInit {
     this.machines$.next([...currentMachines]);
   }
 
-  public mode(option: number): void {
+  public mode(option: number, element: IMachine): void {
     switch (option) {
       case 1:
         this._machines.setMode('Edit');
@@ -93,6 +94,7 @@ export class MachinesComponent implements OnInit, AfterViewInit {
         break;
       case 3:
         this._machines.setMode('Test');
+        this._machines.setSelectedMachine(element);
         break;
       default:
         break;
@@ -176,14 +178,16 @@ export class MachinesComponent implements OnInit, AfterViewInit {
     this.form = this.formBuilder.group({ name: [null], status: [null] });
   }
 
-  private openSnackBar(option: boolean): void {
-    const message: string = option
-      ? 'Cambios realizados.'
-      : 'No se pudieron realizar los cambios.';
-    const css: string = option ? 'green' : 'red';
-    this.snackBar.open(message, 'X', {
-      duration: 5000,
-      panelClass: `${css}-snackbar`,
+  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
+    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
+    const defaultCss: string = option ? 'green' : 'red';
+    const snackBarMessage = message ? message : defaultMessage;
+    const snackBarCss = css ? css : defaultCss;
+    const snackBarDuration = duration ? duration : 5000;
+
+    this.snackBar.open(snackBarMessage, 'X', {
+      duration: snackBarDuration,
+      panelClass: `${snackBarCss}-snackbar`,
     });
   }
 }
