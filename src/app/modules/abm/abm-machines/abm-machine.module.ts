@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
-
+import { DragDropModule } from '@angular/cdk/drag-drop';
 // * Shared module.
 import { ABMSharedModule } from '../abm-shared.module';
 
 // * Components.
 import { ABMMachineComponent } from './abm-machine.component';
-import { MachinesComponent } from './machines/machines.component.';
+import { MachinesComponent } from './machines/machines.component';
 import { MachineComponent } from './machine/machine.component';
 
 const routes: Route[] = [
@@ -25,13 +25,14 @@ const routes: Route[] = [
 
 @NgModule({
   declarations: [
-      ABMMachineComponent, 
-      MachinesComponent, 
+      ABMMachineComponent,
+      MachinesComponent,
       MachineComponent
   ],
   imports: [
-    RouterModule.forChild(routes), 
-    ABMSharedModule
+    RouterModule.forChild(routes),
+    ABMSharedModule,
+    DragDropModule,
   ],
 })
 export class ABMMachineModule {}

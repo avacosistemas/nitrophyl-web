@@ -1,7 +1,7 @@
 import { HttpClient, HttpBackend } from '@angular/common/http';
 import { EventEmitter, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
-
+import { forkJoin, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 // * Environment.
 import { environment } from 'environments/environment';
 
@@ -12,11 +12,12 @@ import { IMachineResponse, IMachine } from '../models/machine.model';
   providedIn: 'root',
 })
 export class MachinesService {
-  private url: string = `${environment.server}maquina`;
-  private mode: string = '';
-
   public events = new EventEmitter<any>();
   public viewEvents = new EventEmitter<any>();
+
+  private selectedMachine: IMachine | null = null;
+  private url: string = `${environment.server}maquina`;
+  private mode: string = '';
 
   constructor(private http: HttpClient, private handler: HttpBackend) {
     this.http = new HttpClient(handler);
@@ -27,16 +28,16 @@ export class MachinesService {
   public get(body?: IMachine): Observable<IMachineResponse> {
     let url: string;
 
-    if (!body) return this.http.get<IMachineResponse>(`${this.url}s`);
+    if (!body) {return this.http.get<IMachineResponse>(`${this.url}s`);}
 
     if (body.id)
-      return this.http.get<IMachineResponse>(`${this.url}/${body.id}`);
+      {return this.http.get<IMachineResponse>(`${this.url}/${body.id}`);}
 
     if (body.nombre && body.estado) {
       url = `${this.url}?nombre=${body.nombre}&estado=${body.estado}`;
     } else {
-      if (body.nombre) url = `${this.url}?nombre=${body.nombre}`;
-      if (body.estado) url = `${this.url}?estado=${body.estado}`;
+      if (body.nombre) {url = `${this.url}?nombre=${body.nombre}`;}
+      if (body.estado) {url = `${this.url}?estado=${body.estado}`;}
     }
 
     return this.http.get<IMachineResponse>(`${url}`);
@@ -52,22 +53,31 @@ export class MachinesService {
     return this.http.put<IMachineResponse>(`${this.url}/${body.id}`, body);
   }
 
-  public getTest(id: number): Observable<any> {
-    return this.http.get<any>(`${this.url}/prueba/${id}`);
-  }
-
-  public setTest(body: any): Observable<any> {
-    return this.http.put<any>(
-      `${this.url}/prueba/${body.idMaquina}`,
-      body.moldeClientesListadoDTOs
+  public updateMachineOrder(machines: IMachine[]): Observable<any> {
+    const requests = machines.map(machine =>
+      this.http.put<any>(`${this.url}/${machine.id}`, machine)
+    );
+    return forkJoin(requests).pipe(
+      map(responses => ({
+          status: 'OK',
+          data: responses.map(response => response.data),
+        }))
     );
   }
 
-  public getMode() {
+  public getMode(): string {
     return this.mode;
   }
 
-  public setMode(mode: string) {
+  public setMode(mode: string): void {
     this.mode = mode;
+  }
+
+  public setSelectedMachine(machine: IMachine): void {
+    this.selectedMachine = machine;
+  }
+
+  public getSelectedMachine(): IMachine | null {
+    return this.selectedMachine;
   }
 }

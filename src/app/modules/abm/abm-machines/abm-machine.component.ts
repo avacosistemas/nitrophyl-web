@@ -15,6 +15,7 @@ import { MachinesService } from 'app/shared/services/machines.service';
 })
 export class ABMMachineComponent implements AfterContentChecked {
   public title: string = '';
+  public titleMachine: string = '';
 
   constructor(
     private _machines: MachinesService,
@@ -42,6 +43,7 @@ export class ABMMachineComponent implements AfterContentChecked {
           break;
         case 'Test':
           this.title = 'Pruebas';
+          this.titleMachine = this._machines.getSelectedMachine()?.nombre;
           break;
         default:
           break;
