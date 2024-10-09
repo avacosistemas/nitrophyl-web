@@ -18,7 +18,7 @@ import {
 // * Services.
 import { FormulasService } from 'app/shared/services/formulas.service';
 import { MaterialsService } from 'app/shared/services/materials.service';
-import { MachinesService } from 'app/shared/services/machines.service';
+import { TestService } from 'app/shared/services/test.service';
 import { ConfigTestService } from 'app/shared/services/config-test.service';
 
 // * Interfaces.
@@ -49,14 +49,14 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { MatDrawer } from '@angular/material/sidenav';
 
 export interface IConfiguracionPruebaParametro
-{ id: number; 
+{ id: number;
   maquinaPrueba: { id: number; nombre: string; }; 
   minimo: number; 
   maximo: number, 
   norma: string 
 }
 
-export interface ITest {
+export interface ITestFormula {
   idFormula: number;
   idMaquina: number;
   parametros: IConfiguracionPruebaParametro[];
@@ -117,7 +117,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private _materials: MaterialsService,
     private _formulas: FormulasService,
-    private _machines: MachinesService,
+    private _testService: TestService,
     private _configTest: ConfigTestService,
     private activeRoute: ActivatedRoute,
     private dialog: MatDialog,
@@ -194,7 +194,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public saveTest(): void {
-    const body: ITest = {
+    const body: ITestFormula = {
       idFormula: this.id,
       idMaquina: this.idMachine,
       parametros: [],
@@ -349,7 +349,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.formTest.controls.condition.setValue(null);
   }
 
-  private postMachine(body: ITest): void {
+  private postMachine(body: ITestFormula): void {
     const error: string = 'formula.component.ts => postTest() => ';
     this._configTest.post(body).subscribe({
       next: () => {
@@ -418,7 +418,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private addMachine(id: number): void {
     const error: string = 'formula.component.ts => getMachines() => ';
-    this._machines.getTest(id).subscribe({
+    this._testService.getTest(id).subscribe({
       next: (res: any) => {
         this.formTest.enable();
         this.formTest = this.formBuilder.group({});
