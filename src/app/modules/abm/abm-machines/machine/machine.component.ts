@@ -8,7 +8,7 @@ import {
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, BehaviorSubject, take, of } from 'rxjs';
-import { map, switchMap, catchError } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 
 // * Services.
 import { MachinesService } from 'app/shared/services/machines.service';
@@ -161,28 +161,22 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public add(): void {
     const test: string | undefined = this.formTest.controls.test.value;
-    let position: number | undefined = this.formTest.controls.positionTest.value;
 
     if (!test || !test.trim()) {
       this.openSnackBar(false, 'El nombre de la prueba es obligatorio');
+      return;
     }
 
     const currentTests = this.tests.value;
 
     if (currentTests.some(t => t.nombre === test.trim())) {
       this.openSnackBar(false, 'Ya existe una prueba con ese nombre');
-    }
-
-    if (position === undefined || position === null) {
-      position = currentTests.length > 0
-        ? Math.max(...currentTests.map(t => t.posicion)) + 1
-        : 1;
+      return;
     }
 
     const newTest: ITest = {
       idMaquina: this.id,
       nombre: test.trim(),
-      posicion: position,
     };
 
     this._testService.addTest(newTest.idMaquina, newTest).subscribe({
@@ -198,21 +192,16 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
           id: addedTest.id,
           idMaquina: addedTest.idMaquina,
           nombre: addedTest.nombre,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          posicion: position!,
+          posicion: addedTest.posicion,
         });
 
-        const orderedTests = currentTests.sort((a, b) => a.posicion - b.posicion)
-                                        // eslint-disable-next-line @typescript-eslint/no-shadow
-                                        .map((test, index) => ({
-                                            ...test,
-                                            posicion: index + 1
-                                        }));
+        const updatedTests = [...currentTests];
 
-        this._testService.updateTestPositions(orderedTests).subscribe({
+        this.tests.next(updatedTests);
+
+        this._testService.updateTestPositions(updatedTests).subscribe({
           next: (res) => {
             if (res.status === 'OK') {
-              this.tests.next(orderedTests);
               this.openSnackBar(true);
             } else {
               this.openSnackBar(false);
@@ -379,7 +368,6 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.mode === 'Test') {
       this.formTest = this.formBuilder.group({
         test: null,
-        positionTest: null,
       });
       this.form = null;
       return;
