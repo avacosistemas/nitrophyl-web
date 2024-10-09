@@ -183,10 +183,10 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (response) => {
         const addedTest = response.data;
 
-        if (!addedTest || !addedTest.id) {
-          this.openSnackBar(false, 'No se recibió un ID válido para la nueva prueba');
-          return;
-        }
+        // if (!addedTest || !addedTest.id) {
+        //   this.openSnackBar(false, 'No se recibió un ID válido para la nueva prueba');
+        //   return;
+        // }
 
         currentTests.push({
           id: addedTest.id,

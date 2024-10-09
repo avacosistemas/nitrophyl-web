@@ -46,7 +46,7 @@ export class TestService {
   }
 
   public addTest(idMaquina: number, test: ITest): Observable<any> {
-    return this.http.put<any>(`${this.url}/${idMaquina}`, test).pipe(
+    return this.http.post<any>(`${this.url}`, test).pipe(
       catchError((error) => {
         console.error('Error al agregar la prueba:', error);
         return of({ status: 'ERROR' });
