@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -20,6 +20,7 @@ import { catchError, forkJoin, map, Observable, of, startWith, Subscription } fr
   styleUrls: []
 })
 export class ConfiguracionComponent implements OnInit {
+  @ViewChildren('campoInput') inputs!: QueryList<ElementRef>;
 
   suscripcion: Subscription;
   public mode: string;
@@ -28,15 +29,18 @@ export class ConfiguracionComponent implements OnInit {
   public component: string = 'Mode';
   public machines$: IMachine[] | undefined;
   public machinesFail: boolean = false;
-
-  private id: number;
   public clientes$: Cliente[] | undefined;
   public clientesFail: boolean = false;
+  public filteredMachines$: Observable<IMachine[]>;
+  public filteredClientes$: Observable<Cliente[]>;
 
   public configuraciones$: IConfiguracion[] | undefined;
   public formulas: IFormula[];
+
+  public formTest: FormGroup;
   private configuracion$: IConfiguracion;
-  public formTest: FormGroup; // Formulario de pruebas.
+  private id: number;
+  private formulasBackUp$: IFormula[] = [];
 
   constructor(
     private dialog: MatDialog,
@@ -62,9 +66,9 @@ export class ConfiguracionComponent implements OnInit {
       this.mode === 'View' ||
       this.mode === 'Test'
     ) {
-      this.activeRoute.paramMap.subscribe(
-        (param: any) => (this.id = param.get('id'))
-      );
+      this.activeRoute.paramMap.subscribe((param: any) => {
+        this.id = +param.get('id');
+      });
       if (this.mode === 'Edit' || this.mode === 'Create' || this.mode === 'View') {
         this.setupForm();
       }
@@ -81,25 +85,47 @@ export class ConfiguracionComponent implements OnInit {
   ngOnInit(): void {
     this.mode = this.configuracionService.getMode();
     this.setupForm();
-    this.formulaService
-      .get()
-      .pipe(
-        map((res: IFormulasResponse | IFormulaResponse) =>
-          Array.isArray(res.data) ? res.data : [res.data]
-        )
+    this.formulaService.get().pipe(
+      map((res: IFormulasResponse | IFormulaResponse) =>
+        Array.isArray(res.data) ? res.data : [res.data]
       )
-      .subscribe((formulas: IFormula[]) => {
-        this.formulas = formulas;
-        this.formulas$ = this.form.controls['formula'].valueChanges.pipe(
-          startWith(''),
-          map((value: IFormula) =>
-            typeof value === 'string' ? value : value?.nombre
-          ),
-          map((name: string) =>
-            name ? this._filter(name) : this.formulas.slice()
-          )
-        );
-      });
+    ).subscribe((formulas: IFormula[]) => {
+      this.formulas = formulas;
+      this.formulasBackUp$ = formulas;
+      this.formulas$ = this.form.controls['formula'].valueChanges.pipe(
+        startWith(''),
+        map(value => typeof value === 'string' ? value : value?.nombre),
+        map(name => name ? this._filterFormulas(name) : this.formulas.slice())
+      );
+    });
+    this.machinesService.get().pipe(
+      catchError((err: any) => {
+        console.error('Error fetching machines', err);
+        this.machinesFail = true;
+        return of([]);
+      })
+    ).subscribe((machinesResponse: IMachineResponse) => {
+      this.machines$ = machinesResponse.data;
+      this.filteredMachines$ = this.form.controls['machine'].valueChanges.pipe(
+        startWith(''),
+        map(value => typeof value === 'string' ? value : value?.nombre),
+        map(name => name ? this._filterMachines(name) : this.machines$ || [])
+      );
+    });
+    this.clientesService.getClientes().pipe(
+      catchError((err: any) => {
+        console.error('Error fetching clientes', err);
+        this.clientesFail = true;
+        return of({ data: [] } as ResponseClientes);
+      })
+    ).subscribe((clientesResponse: ResponseClientes) => {
+      this.clientes$ = clientesResponse.data;
+      this.filteredClientes$ = this.form.controls['cliente'].valueChanges.pipe(
+        startWith(''),
+        map(value => typeof value === 'string' ? value : value?.nombre),
+        map(name => name ? this._filterClientes(name) : this.clientes$ || [])
+      );
+    });
 
     switch (this.mode) {
       case 'Create':
@@ -118,9 +144,48 @@ export class ConfiguracionComponent implements OnInit {
     }
   }
 
-  setupForm() {
+  public version(name: string): number {
+    const filteredFormulas = this.formulasBackUp$.filter(
+      (formula: any) => formula.nombre === name
+    );
+    if (filteredFormulas.length > 0)
+      {return Math.max(...filteredFormulas.map(formula => formula.version));}
+
+    return 0;
+  }
+
+  public displayFormulaFn(formula: IFormula): string {
+    if (typeof formula === 'number' && formula === 0) {return 'Todos';}
+    return formula ? `${formula.nombre} V${formula.version} (${formula.norma})` : '';
+  }
+
+  public displayMachineFn(machine: IMachine): string {
+    if (typeof machine === 'number' && machine === 0) {return 'Todos';}
+    return machine && machine.nombre ? machine.nombre : '';
+  }
+
+  public displayClienteFn(cliente?: Cliente): string {
+    if (typeof cliente === 'number' && cliente === 0) {return 'Todos';}
+    return cliente && cliente.nombre ? cliente.nombre : '';
+  }
+
+  limpiarCampo(campo: string): void {
+    this.form.controls[campo].setValue(null);
+    this.form.controls[campo].markAsPristine();
+    this.form.controls[campo].markAsUntouched();
+
+    const input = this.inputs.find(
+      el => el.nativeElement.getAttribute('formControlName') === campo
+    );
+
+    if (input) {
+      setTimeout(() => input.nativeElement.blur(), 0);
+    }
+  }
+
+  setupForm(): void {
     this.form = this.formBuilder.group({
-      formula: new FormControl(""),
+      formula: new FormControl(null),
       cliente: new FormControl(null),
       machine: new FormControl(null),
       mostrarParametros: new FormControl(false),
@@ -132,8 +197,165 @@ export class ConfiguracionComponent implements OnInit {
     this.onChanges();
   }
 
+  public create(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    if (this.mode === 'Create') {
+      this.postConfiguracion();
+    } else if (this.mode === 'Edit') {
+      this.putConfiguracion();
+    }
+  }
+
+  onChanges(): void {
+    this.form.get('mostrarParametros').valueChanges.subscribe((value) => {
+      if (value) {
+        this.form.get('mostrarObservacionesParametro').enable();
+        this.form.get('mostrarResultados').enable();
+      } else {
+        this.form.get('mostrarObservacionesParametro').disable();
+        this.form.get('mostrarResultados').disable();
+        this.form.get('mostrarCondiciones').disable();
+      }
+    });
+
+    this.form.get('mostrarResultados').valueChanges.subscribe((value) => {
+      if (value) {
+        this.form.get('mostrarCondiciones').enable();
+      } else {
+        this.form.get('mostrarCondiciones').disable();
+      }
+    });
+  }
+
+  public displayFn(formula: IFormula): string {
+    return formula && formula.nombre ? formula.nombre : '';
+  }
+
+  // eslint-disable-next-line @angular-eslint/use-lifecycle-interface
+  ngOnDestroy(): void {
+    if (this.suscripcion) {
+      this.suscripcion.unsubscribe();
+    }
+  }
+
+  public close(): void {
+    if (this.mode === 'Test') {
+      this.router.navigate(['/configuracion/grid']);
+      return;
+    }
+    if (this.form.pristine === true) {
+      this.router.navigate(['/configuracion/grid']);
+    } else {
+      const dialog = this.dialog.open(RemoveDialogComponent, {
+        maxWidth: '50%',
+        data: { data: null, seccion: 'formulas', boton: 'Cerrar' },
+      });
+      dialog.afterClosed().subscribe((res: boolean) => {
+        if (res) {
+          this.router.navigate(['/configuracion/grid']);
+        }
+      });
+    }
+  }
+
+  private postConfiguracion(): void {
+    const error: string = 'ConfiguracionComponent => postConfiguracion(): ';
+    const formValues = this.form.getRawValue();
+
+    const body: IConfiguracion = {
+      idCliente: formValues.cliente.id,
+      idFormula: formValues.formula.id,
+      idMaquina: formValues.machine.id,
+      mostrarParametros: formValues.mostrarParametros,
+      mostrarObservacionesParametro: formValues.mostrarParametros ? formValues.mostrarObservacionesParametro : false,
+      mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
+      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false
+    };
+
+    this.configuracionService.post(body).subscribe({
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.openSnackBar(true);
+          this.router.navigate(['/configuracion/grid']);
+        }
+      },
+      error: (err) => {
+        this.openSnackBar(false);
+        console.error(error, err);
+      },
+      complete: () => { },
+    });
+  }
+
+  private putConfiguracion(): void {
+    const error: string = 'ConfiguracionComponent => putConfiguracion(): ';
+
+    const formValues = this.form.getRawValue();
+
+    const body: IConfiguracion = {
+      id: this.configuracion$.id,
+      idCliente: formValues.cliente.id,
+      idFormula: formValues.formula.id,
+      idMaquina: formValues.machine.id,
+      mostrarParametros: formValues.mostrarParametros,
+      mostrarObservacionesParametro: formValues.mostrarParametros ? formValues.mostrarObservacionesParametro : false,
+      mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
+      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false
+    };
+
+    this.configuracionService.put(body).subscribe({
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.openSnackBar(true);
+          this.configuracionService.setMode('Edit');
+          this.router.navigate(['/configuracion/grid']);
+        }
+      },
+      error: (err) => {
+        this.openSnackBar(false);
+        console.error(error, err);
+      },
+      complete: () => { },
+    });
+  }
+
+  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
+    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
+    const defaultCss: string = option ? 'green' : 'red';
+    const snackBarMessage = message ? message : defaultMessage;
+    const snackBarCss = css ? css : defaultCss;
+    const snackBarDuration = duration ? duration : 5000;
+
+    this.snackBar.open(snackBarMessage, 'X', {
+      duration: snackBarDuration,
+      panelClass: `${snackBarCss}-snackbar`,
+    });
+  }
+
+  private _filterFormulas(name: string): IFormula[] {
+    return this.formulas.filter(formula =>
+      formula.nombre.toLowerCase().includes(name.toLowerCase())
+    );
+  }
+
+  private _filterMachines(name: string): IMachine[] {
+    return this.machines$?.filter(machine =>
+      machine.nombre.toLowerCase().includes(name.toLowerCase())
+    ) || [];
+  }
+
+  private _filterClientes(name: string): Cliente[] {
+    return this.clientes$?.filter(cliente =>
+      cliente.nombre.toLowerCase().includes(name.toLowerCase())
+    ) || [];
+  }
+
   private loadData(): void {
-    let error: string = 'ConfiguracionComponent => loadData: ';
+    const error: string = 'ConfiguracionComponent => loadData: ';
     forkJoin([
       this.clientesService.getClientes().pipe(
         catchError((err: any) => {
@@ -165,11 +387,12 @@ export class ConfiguracionComponent implements OnInit {
         this.machines$ = machines.data;
 
         if (configuraciones) {
-          var configuracion = configuraciones.data.page.find(t => t.id == this.id);
-          this.form.controls.cliente.setValue(configuracion.idCliente);
+          const configuracion = configuraciones.data.page.find(t => t.id === this.id);
+          const clienteSeleccionado = this.clientes$.find(f => f.id === configuracion.idCliente);
+          this.form.controls.cliente.setValue(clienteSeleccionado);
 
           const formulaSeleccionada = this.formulas.find(f => f.id === configuracion.idFormula);
-          this.form.controls.formula.setValue(formulaSeleccionada); // Establecer el objeto completo de la fórmula
+          this.form.controls.formula.setValue(formulaSeleccionada);
 
           const maquinaSeleccionada = this.machines$.find(f => f.id === configuracion.idMaquina);
           this.form.controls.machine.setValue(maquinaSeleccionada);
@@ -179,49 +402,22 @@ export class ConfiguracionComponent implements OnInit {
           this.form.controls.mostrarResultados.setValue(configuracion.mostrarResultados);
           this.form.controls.mostrarParametros.setValue(configuracion.mostrarParametros);
           this.configuracion$ = configuracion;
-        }
+
+          if (this.mode === 'View') {
+            this.form.disable();
+          }
+        } else {
+          console.warn('No se encontró la configuración para el ID:', this.id);
+          this.snackBar.open('Configuración no encontrada.', 'X', {
+              duration: 5000,
+              panelClass: 'red-snackbar',
+          });
+          this.router.navigate(['/configuracion/grid']);
+      }
       },
       error: (err: any) => console.error(error, err),
       complete: () => { },
     });
-  }
-
-  onChanges(): void {
-    this.form.get('mostrarParametros').valueChanges.subscribe(value => {
-      if (value) {
-        this.form.get('mostrarObservacionesParametro').enable();
-        this.form.get('mostrarResultados').enable();
-      } else {
-        this.form.get('mostrarObservacionesParametro').disable();
-        this.form.get('mostrarResultados').disable();
-        this.form.get('mostrarCondiciones').disable();
-      }
-    });
-
-    this.form.get('mostrarResultados').valueChanges.subscribe(value => {
-      if (value) {
-        this.form.get('mostrarCondiciones').enable();
-      } else {
-        this.form.get('mostrarCondiciones').disable();
-      }
-    });
-  }
-
-  private _filter(name: string): IFormula[] {
-    return this.formulas.filter(
-      (formula: IFormula) =>
-        formula.nombre.toLowerCase().indexOf(name.toLowerCase()) === 0
-    );
-  }
-
-  public displayFn(formula: IFormula): string {
-    return formula && formula.nombre ? formula.nombre : '';
-  }
-
-  ngOnDestroy(): void {
-    if (this.suscripcion) {
-      this.suscripcion.unsubscribe();
-    }
   }
 
   private subscription(): void {
@@ -232,110 +428,6 @@ export class ConfiguracionComponent implements OnInit {
       if (data === 3) {
         this.create();
       }
-    });
-  }
-
-  public close(): void {
-    if (this.mode === 'Test') {
-      this.router.navigate(['/configuracion/grid']);
-      return;
-    }
-    if (this.form.pristine === true) {
-      this.router.navigate(['/configuracion/grid']);
-    } else {
-      const dialog = this.dialog.open(RemoveDialogComponent, {
-        maxWidth: '50%',
-        data: { data: null, seccion: 'formulas', boton: 'Cerrar' },
-      });
-      dialog.afterClosed().subscribe((res: boolean) => {
-        if (res) {
-          this.router.navigate(['/configuracion/grid']);
-        }
-      });
-    }
-  }
-
-  private postConfiguracion(): void {
-    const error: string = 'ConfiguracionComponent => postConfiguracion(): ';
-    const formValues = this.form.getRawValue();
-
-    const body: IConfiguracion = {
-      idCliente: formValues.cliente,
-      idFormula: formValues.formula.id,
-      idMaquina: formValues.machine.id,
-      mostrarParametros: formValues.mostrarParametros,
-      mostrarObservacionesParametro: formValues.mostrarParametros ? formValues.mostrarObservacionesParametro : false,
-      mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
-      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false
-    };
-
-    this.configuracionService.post(body).subscribe({
-      next: (formula: IFormulaResponse) => {
-        if (formula.status === 'OK') {
-          this.openSnackBar(true);
-          this.router.navigate(['/configuracion/grid']);
-        }
-      },
-      error: (err) => {
-        this.openSnackBar(false);
-        console.error(error, err);
-      },
-      complete: () => { },
-    });
-  }
-
-  private putConfiguracion(): void {
-    const error: string = 'ConfiguracionComponent => putConfiguracion(): ';
-    const formValues = this.form.getRawValue();
-
-    const body: IConfiguracion = {
-      id: this.configuracion$.id,
-      idCliente: formValues.cliente,
-      idFormula: formValues.formula.id,
-      idMaquina: formValues.machine.id,
-      mostrarParametros: formValues.mostrarParametros,
-      mostrarObservacionesParametro: formValues.mostrarParametros ? formValues.mostrarObservacionesParametro : false,
-      mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
-      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false
-    };
-
-    this.configuracionService.put(body).subscribe({
-      next: (formula: IFormulaResponse) => {
-        if (formula.status === 'OK') {
-          this.openSnackBar(true);
-          this.configuracionService.setMode('Edit');
-          this.router.navigate(['/configuracion/grid']);
-        }
-      },
-      error: (err) => {
-        this.openSnackBar(false);
-        console.error(error, err);
-      },
-      complete: () => { },
-    });
-  }
-
-  public create(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-    if (this.mode === 'Create') {
-      this.postConfiguracion();
-    }
-    if (this.mode === 'Edit') {
-      this.putConfiguracion();
-    }
-  }
-
-  private openSnackBar(option: boolean): void {
-    const message: string = option
-      ? 'Cambios realizados.'
-      : 'No se pudieron realizar los cambios.';
-    const css: string = option ? 'green' : 'red';
-    this.snackBar.open(message, 'X', {
-      duration: 5000,
-      panelClass: `${css}-snackbar`,
     });
   }
 }

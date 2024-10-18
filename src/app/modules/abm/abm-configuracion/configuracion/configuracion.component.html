@@ -5,74 +5,90 @@
       <h1 class="text-2xl font-semibold mb-2"> Configuración </h1>
     </div>
 
-    <form class="mt-4" [formGroup]="form">
-      <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Fórmula</mat-label>
-        <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="formula"
-          [matAutocomplete]="auto" required>
-        <mat-error class="mb-1" *ngIf="form.get('formula').hasError('required')">
-          La fórmula es requerida.
-        </mat-error>
-        <button matSuffix *ngIf="form.controls['formula'].value" (click)="form.controls['formula'].setValue('')">
-          <mat-icon> close </mat-icon>
-        </button>
-        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
-          <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
-            {{ formula.nombre }}
-            V{{formula.version}} ({{ formula.norma }})</mat-option>
-        </mat-autocomplete>
-      </mat-form-field>
+    <form [formGroup]="form" class="mt-2">
+      <div class="row flex gap-3 justify-around">
+        <mat-form-field class="w-1/3">
+          <input type="text" required #campoInput placeholder="Ingrese o seleccione una fórmula" matInput
+            formControlName="formula" [matAutocomplete]="formulaAuto">
+          <mat-error class="mb-1" *ngIf="form.get('formula').hasError('required')">
+            La fórmula es requerida.
+          </mat-error>
 
-      <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Máquina</mat-label>
-        <mat-select [formControlName]="'machine'" required
-          [placeholder]="machinesFail ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
-          <mat-option [value]="0">Todos</mat-option>
-          <mat-option *ngFor="let machine of machines$" [value]="machine">
-            {{ machine.nombre }}
-          </mat-option>
-        </mat-select>
-        <mat-error class="mb-1" *ngIf="form.get('machine').hasError('required')">
-          La máquina es requerida.
-        </mat-error>
-      </mat-form-field>
+          <button matSuffix *ngIf="form.controls['formula'].value !== null" (click)="limpiarCampo('formula')">
+            <mat-icon> close </mat-icon>
+          </button>
 
-      <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Cliente</mat-label>
-        <mat-select [formControlName]="'cliente'" required
-          [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'">
-          <mat-option [value]="0">Todos</mat-option>
-          <mat-option *ngFor="let cliente of clientes$" [value]="cliente.id">
-            {{ cliente.nombre }}
-          </mat-option>
-        </mat-select>
-        <mat-error class="mb-1" *ngIf="form.get('machine').hasError('required')">
-          El cliente es requerido.
-        </mat-error>
-      </mat-form-field>
+          <mat-autocomplete #formulaAuto="matAutocomplete" [displayWith]="displayFormulaFn" autoActiveFirstOption>
+            <mat-option *ngIf="!form.controls['formula'].value" [value]="0">Todos</mat-option>
+            <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
+              {{ formula.nombre }} V{{formula.version}} ({{ formula.norma }})
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
 
-      <div class="w-full" appearance="outline">
-        <mat-checkbox formControlName="mostrarParametros">
-          Mostrar parámetros
-        </mat-checkbox>
+        <mat-form-field class="w-1/3">
+          <input type="text" required #campoInput formControlName="machine"
+            [placeholder]="machinesFail ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'" matInput
+            [matAutocomplete]="machineAuto">
+          <mat-error class="mb-1" *ngIf="form.get('machine').hasError('required')">
+            La máquina es requerida.
+          </mat-error>
+
+          <button mat-icon-button matSuffix *ngIf="form.controls['machine'].value !== null"
+            (click)="limpiarCampo('machine')">
+            <mat-icon> close </mat-icon>
+          </button>
+
+          <mat-autocomplete #machineAuto="matAutocomplete" [displayWith]="displayMachineFn" autoActiveFirstOption>
+            <mat-option *ngIf="!form.controls['machine'].value" [value]="0">Todos</mat-option>
+            <mat-option *ngFor="let machine of filteredMachines$ | async" [value]="machine">
+              {{ machine.nombre }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <mat-form-field class="w-1/3">
+          <input type="text" required #campoInput formControlName="cliente"
+            [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'" matInput
+            [matAutocomplete]="clienteAuto">
+          <mat-error class="mb-1" *ngIf="form.get('machine').hasError('required')">
+            El cliente es requerido.
+          </mat-error>
+
+          <button matSuffix *ngIf="form.controls['cliente'].value !== null" (click)="limpiarCampo('cliente')">
+            <mat-icon> close </mat-icon>
+          </button>
+
+          <mat-autocomplete #clienteAuto="matAutocomplete" [displayWith]="displayClienteFn" autoActiveFirstOption>
+            <mat-option *ngIf="!form.controls['cliente'].value" [value]="0">Todos</mat-option>
+            <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+              {{ cliente.nombre }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
       </div>
 
-      <div class="w-full my-2" appearance="outline">
-        <mat-checkbox formControlName="mostrarObservacionesParametro">
-          Mostrar observaciones
-        </mat-checkbox>
-      </div>
-
-      <div class="w-full my-2" appearance="outline">
-        <mat-checkbox formControlName="mostrarResultados">
-          Mostrar resultados
-        </mat-checkbox>
-      </div>
-
-      <div class="w-full my-2" appearance="outline">
-        <mat-checkbox formControlName="mostrarCondiciones">
-          Mostrar condiciones
-        </mat-checkbox>
+      <div class="row flex gap-5">
+        <section>
+          <mat-checkbox formControlName="mostrarParametros">
+            Mostrar parámetros
+          </mat-checkbox>
+        </section>
+        <section>
+          <mat-checkbox formControlName="mostrarObservacionesParametro">
+            Mostrar observaciones
+          </mat-checkbox>
+        </section>
+        <section>
+          <mat-checkbox formControlName="mostrarResultados">
+            Mostrar resultados
+          </mat-checkbox>
+        </section>
+        <section>
+          <mat-checkbox formControlName="mostrarCondiciones">
+            Mostrar condiciones
+          </mat-checkbox>
+        </section>
       </div>
     </form>
   </div>

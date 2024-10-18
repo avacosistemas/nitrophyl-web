@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ElementRef, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { catchError, forkJoin, map, Observable, of, startWith } from 'rxjs';
 
 // * Services.
@@ -30,16 +30,20 @@ import { MatTableDataSource } from '@angular/material/table';
   templateUrl: './configuraciones.component.html',
 })
 export class ConfiguracionesComponent implements OnInit, AfterViewInit {
-  private formulasBackUp$: IFormula[] = [];
+  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild('paginator', { static: true }) paginator: MatPaginator;
+  @ViewChildren('campoInput') inputs!: QueryList<ElementRef>;
+
   public formulas$: Observable<IFormula[]>;
   public component: string = 'all';
   public machines$: IMachine[] | undefined;
   public machinesFail: boolean = false;
   public materialsFail: boolean = false;
   public materials$: IConfiguracion[] | undefined;
-
   public clientes$: Cliente[] | undefined;
   public clientesFail: boolean = false;
+  public filteredMachines$: Observable<IMachine[]>;
+  public filteredClientes$: Observable<Cliente[]>;
 
   public configuracionesBackup$: IConfiguracion[] | undefined;
   public configuraciones: Observable<IConfiguracion[]>;
@@ -66,12 +70,13 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   public formulas: IFormula[];
 
   totalRecords = 0;
-  pageSize = 5;
+  pageSize = 10;
   public pageIndex = 0;
   searching: boolean;
-  @ViewChild(MatSort) sort: MatSort;
+
   dataSource = new MatTableDataSource<IConfiguracion>([]);
-  @ViewChild('paginator', { static: true }) paginator: MatPaginator;
+
+  private formulasBackUp$: IFormula[] = [];
 
   constructor(
     private formulaService: FormulasService,
@@ -93,35 +98,55 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     });
   }
 
-  public ngOnInit(): void {
-    this.formulaService
-      .get()
-      .pipe(
-        map((res: IFormulasResponse | IFormulaResponse) =>
-          Array.isArray(res.data) ? res.data : [res.data]
-        )
+  ngOnInit(): void {
+    // Cargar fórmulas
+    this.formulaService.get().pipe(
+      map((res: IFormulasResponse | IFormulaResponse) =>
+        Array.isArray(res.data) ? res.data : [res.data]
       )
-      .subscribe((formulas: IFormula[]) => {
-        this.formulas = formulas;
-        this.formulasBackUp$ = formulas;
-        this.formulas$ = this.form.controls['formula'].valueChanges.pipe(
-          startWith(''),
-          map((value: IFormula) =>
-            typeof value === 'string' ? value : value?.nombre
-          ),
-          map((name: string) =>
-            name ? this._filter(name) : this.formulas.slice()
-          )
-        );
-      });
+    ).subscribe((formulas: IFormula[]) => {
+      this.formulas = formulas;
+      this.formulasBackUp$ = formulas;
+      this.formulas$ = this.form.controls['formula'].valueChanges.pipe(
+        startWith(''),
+        map(value => typeof value === 'string' ? value : value?.nombre),
+        map(name => name ? this._filterFormulas(name) : this.formulas.slice())
+      );
+    });
+    this.machinesService.get().pipe(
+      catchError((err: any) => {
+        console.error('Error fetching machines', err);
+        this.machinesFail = true;
+        return of([]);
+      })
+    ).subscribe((machinesResponse: IMachineResponse) => {
+      this.machines$ = machinesResponse.data;
+      this.filteredMachines$ = this.form.controls['machine'].valueChanges.pipe(
+        startWith(''),
+        map(value => typeof value === 'string' ? value : value?.nombre),
+        map(name => name ? this._filterMachines(name) : this.machines$ || [])
+      );
+    });
+    this.clientesService.getClientes().pipe(
+      catchError((err: any) => {
+        console.error('Error fetching clientes', err);
+        this.clientesFail = true;
+        return of({ data: [] } as ResponseClientes);
+      })
+    ).subscribe((clientesResponse: ResponseClientes) => {
+      this.clientes$ = clientesResponse.data;
+      this.filteredClientes$ = this.form.controls['cliente'].valueChanges.pipe(
+        startWith(''),
+        map(value => typeof value === 'string' ? value : value?.nombre),
+        map(name => name ? this._filterClientes(name) : this.clientes$ || [])
+      );
+    });
     this.loadData();
   }
 
-  private _filter(name: string): IFormula[] {
-    return this.formulas.filter(
-      (formula: IFormula) =>
-        formula.nombre.toLowerCase().indexOf(name.toLowerCase()) === 0
-    );
+  limpiar(): void {
+    this.form.reset();
+    this.loadData();
   }
 
   public ngAfterViewInit(): void {
@@ -137,8 +162,33 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     }
   }
 
-  public displayFn(formula: IFormula): string {
-    return formula && formula.nombre ? formula.nombre : '';
+  public displayFormulaFn(formula: IFormula): string {
+    if (typeof formula === 'number' && formula === 0) {return 'Todos';}
+    return formula ? `${formula.nombre} V${formula.version} (${formula.norma})` : '';
+  }
+
+  public displayMachineFn(machine: IMachine): string {
+    if (typeof machine === 'number' && machine === 0) {return 'Todos';}
+    return machine && machine.nombre ? machine.nombre : '';
+  }
+
+  public displayClienteFn(cliente?: Cliente): string {
+    if (typeof cliente === 'number' && cliente === 0) {return 'Todos';}
+    return cliente && cliente.nombre ? cliente.nombre : '';
+  }
+
+  limpiarCampo(campo: string): void {
+    this.form.controls[campo].setValue(null);
+    this.form.controls[campo].markAsPristine();
+    this.form.controls[campo].markAsUntouched();
+
+    const input = this.inputs.find(
+      el => el.nativeElement.getAttribute('formControlName') === campo
+    );
+
+    if (input) {
+      setTimeout(() => input.nativeElement.blur(), 0);
+    }
   }
 
   public version(name: string): number {
@@ -146,51 +196,13 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       (formula: any) => formula.nombre === name
     );
     if (filteredFormulas.length > 0)
-      return Math.max(...filteredFormulas.map((formula) => formula.version));
+      {return Math.max(...filteredFormulas.map(formula => formula.version));}
 
     return 0;
   }
 
   onSortChange(sort: MatSort): void {
     this.updateDataSource();
-  }
-
-  private loadData(): void {
-    let error: string = 'ConfiguracionesComponent => loadData: ';
-    forkJoin([
-      this.clientesService.getClientes().pipe(
-        catchError((err: any) => {
-          console.error('Error fetching clientes', err);
-          this.clientesFail = true;
-          this.form.controls.material.disable();
-          return of({ data: [] } as ResponseClientes); // Devuelve un objeto compatible con el tipo esperado
-        })
-      ),
-      this.configuracionService.get().pipe(
-        map((res: IConfiguracionesResponse) => Array.isArray(res.data) ? res.data : [res.data]),
-        catchError((err: any) => {
-          console.error('Error fetching configuraciones', err);
-          return of([] as IConfiguracion[]);
-        })
-      ),
-      this.machinesService.get().pipe(
-        catchError((err: any) => {
-          console.error('Error fetching machines', err);
-          this.machinesFail = true;
-          return of({ data: [] } as IMachineResponse); // Devuelve un objeto compatible con el tipo esperado
-        })
-      )
-    ]).subscribe({
-      next: ([clientes, configuraciones, machines]: [ResponseClientes, IConfiguracion[], IMachineResponse]) => {
-        this.clientes$ = clientes.data;
-        this.configuracionesBackup$ = configuraciones;
-        this.machines$ = machines.data;
-      },
-      error: (err: any) => console.error(error, err),
-      complete: () => { },
-    });
-
-    this.getPagedData();
   }
 
   public mode(option: number, row: any): void {
@@ -209,21 +221,21 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     }
   }
 
-  delete(row) {
+  delete(row): void {
     const dialogRef = this.dialog.open(RemoveDialogComponent, {
       maxWidth: '40%',
-      data: { data: row.name, seccion: "configuracion", boton: "Eliminar" },
+      data: { data: row.name, seccion: 'configuracion', boton: 'Eliminar' },
     });
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.configuracionService.delete(row.id).subscribe(response => {
-          if (response.status == 'OK') {
+        this.configuracionService.delete(row.id).subscribe((response) => {
+          if (response.status === 'OK') {
             this.showSuccess = true;
           } else {
             this.showError = true;
           }
           this.loadData();
-        })
+        });
       }
     });
   }
@@ -231,27 +243,6 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   public search(): void {
     this.pageIndex = 0;
     this.getPagedData();
-  }
-
-  private updateDataSource(): void {
-    if (!this.configuracionesBackup$) return;
-    const sortedData = this.sortData(this.configuracionesBackup$, this.sort);
-    this.dataSource.data = sortedData; // Actualizamos el dataSource con datos ordenados
-    
-      //this.updatePagedData();
-  }
-
-  private updatePagedData(): void {
-    if (this.paginator && this.dataSource) {
-      const paginatedData = this.paginateData(this.dataSource.data);
-      this.dataSource.data = paginatedData;
-    }
-  }
-  
-  private paginateData(data: IConfiguracion[]): IConfiguracion[] {
-    const startIndex = this.pageIndex * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    return data.slice(startIndex, endIndex);
   }
 
   public pageChangeEvent(event: PageEvent): void {
@@ -263,9 +254,9 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   public getPagedData(): void {
     const formValues = this.form.getRawValue();
     const body: IConfiguracion = {
-      idCliente: formValues.cliente,
-      idFormula: formValues.formula?.id,
-      idMaquina: formValues.machine?.id,
+      idCliente: formValues.cliente ? formValues.cliente.id : null,
+      idFormula: formValues.formula ? formValues.formula.id : null,
+      idMaquina: formValues.machine ? formValues.machine.id : null,
       mostrarParametros: formValues.mostrarParametros,
       mostrarObservacionesParametro: formValues.mostrarObservaciones,
       mostrarResultados: formValues.mostrarResultados,
@@ -281,11 +272,75 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       });
   }
 
+  private updateDataSource(): void {
+    if (!this.configuracionesBackup$) { return; }
+
+    const modifiedData = this.configuracionesBackup$.map(configuracion => ({
+      ...configuracion,
+      cliente: configuracion.cliente ? configuracion.cliente : 'Todos',
+      maquina: configuracion.maquina ? configuracion.maquina : 'Todos',
+    }));
+
+    const sortedData = this.sortData(modifiedData, this.sort);
+    this.dataSource.data = sortedData;
+  }
+
+  private updatePagedData(): void {
+    if (this.paginator && this.dataSource) {
+      const paginatedData = this.paginateData(this.dataSource.data);
+      this.dataSource.data = paginatedData;
+    }
+  }
+
+  private paginateData(data: IConfiguracion[]): IConfiguracion[] {
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return data.slice(startIndex, endIndex);
+  }
+
+  private loadData(): void {
+    const error: string = 'ConfiguracionesComponent => loadData: ';
+    forkJoin([
+      this.clientesService.getClientes().pipe(
+        catchError((err: any) => {
+          console.error('Error fetching clientes', err);
+          this.clientesFail = true;
+          this.form.controls.material.disable();
+          return of({ data: [] } as ResponseClientes);
+        })
+      ),
+      this.configuracionService.get().pipe(
+        map((res: IConfiguracionesResponse) => Array.isArray(res.data) ? res.data : [res.data]),
+        catchError((err: any) => {
+          console.error('Error fetching configuraciones', err);
+          return of([] as IConfiguracion[]);
+        })
+      ),
+      this.machinesService.get().pipe(
+        catchError((err: any) => {
+          console.error('Error fetching machines', err);
+          this.machinesFail = true;
+          return of({ data: [] } as IMachineResponse);
+        })
+      )
+    ]).subscribe({
+      next: ([clientes, configuraciones, machines]: [ResponseClientes, IConfiguracion[], IMachineResponse]) => {
+        this.clientes$ = clientes.data;
+        this.configuracionesBackup$ = configuraciones;
+        this.machines$ = machines.data;
+      },
+      error: (err: any) => console.error(error, err),
+      complete: () => { },
+    });
+
+    this.getPagedData();
+  }
+
   private sortData(data: IConfiguracion[], sort: MatSort): IConfiguracion[] {
     if (!sort.active || sort.direction === '') {
       return data;
     }
-  
+
     const isAsc = sort.direction === 'asc';
     return data.sort((a, b) => {
       switch (sort.active) {
@@ -303,5 +358,23 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
 
   private compare(a: any, b: any, isAsc: boolean): number {
     return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  }
+
+  private _filterFormulas(name: string): IFormula[] {
+    return this.formulas.filter(formula =>
+      formula.nombre.toLowerCase().includes(name.toLowerCase())
+    );
+  }
+
+  private _filterMachines(name: string): IMachine[] {
+    return this.machines$?.filter(machine =>
+      machine.nombre.toLowerCase().includes(name.toLowerCase())
+    ) || [];
+  }
+
+  private _filterClientes(name: string): Cliente[] {
+    return this.clientes$?.filter(cliente =>
+      cliente.nombre.toLowerCase().includes(name.toLowerCase())
+    ) || [];
   }
 }
