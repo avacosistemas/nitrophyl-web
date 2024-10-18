@@ -29,7 +29,6 @@ export interface ITestTitle {
   styleUrls: ['./abm-formula.component.scss'],
 })
 export class ABMFormulaComponent implements AfterContentChecked {
-  private action$: Subscription;
   public action: boolean = false;
 
   public title: string = '';
@@ -43,6 +42,8 @@ export class ABMFormulaComponent implements AfterContentChecked {
   public formTest: FormGroup;
   public machines$: any = [];
 
+  private action$: Subscription;
+
   constructor(
     private _formulas: FormulasService,
     private _machines: MachinesService,
@@ -51,6 +52,7 @@ export class ABMFormulaComponent implements AfterContentChecked {
     private cdref: ChangeDetectorRef
   ) {
     this.action$ = this._formulas.actions$.subscribe((option: boolean) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       option ? this.formTest.disable() : this.formTest.enable();
       this.action = option;
     });
@@ -84,26 +86,6 @@ export class ABMFormulaComponent implements AfterContentChecked {
     }
   }
 
-  private configTest(): void {
-    this.machines$ = [];
-    this.formTest.controls.machine.reset();
-    this.testObj = this._formulas.getTestTitle();
-    this.title = 'Test';
-    this.addMachineTest = true;
-    let error: string = 'abm-formula.component.ts => componentAdded => ';
-    this._machines.get().subscribe({
-      next: (res: any) => {
-        this.machines$ = [...res.data];
-      },
-      error: (err: any) => {
-        console.error(error, err);
-        this.formTest.disable();
-        this.status = true;
-      },
-      complete: () => {},
-    });
-  }
-
   public create(): void {
     this._formulas.setMode('Create');
     this.router.navigate(['../formulas/create']);
@@ -122,10 +104,30 @@ export class ABMFormulaComponent implements AfterContentChecked {
   }
 
   public addMachine(): void {
-    if (this.formTest.invalid) return;
-    let machine: any = this.formTest.controls.machine;
+    if (this.formTest.invalid) {return;}
+    const machine: any = this.formTest.controls.machine;
     this._formulas.events.next([4, machine.value.id, machine.value.nombre]);
     machine.reset();
+  }
+
+  private configTest(): void {
+    this.machines$ = [];
+    this.formTest.controls.machine.reset();
+    this.testObj = this._formulas.getTestTitle();
+    this.title = 'Test';
+    this.addMachineTest = true;
+    const error: string = 'abm-formula.component.ts => componentAdded => ';
+    this._machines.get().subscribe({
+      next: (res: any) => {
+        this.machines$ = [...res.data];
+      },
+      error: (err: any) => {
+        console.error(error, err);
+        this.formTest.disable();
+        this.status = true;
+      },
+      complete: () => {},
+    });
   }
 
   private setForm(): void {

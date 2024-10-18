@@ -20,8 +20,6 @@ import { FormBuilder, FormGroup } from '@angular/forms';
   templateUrl: './formulas.component.html',
 })
 export class FormulasComponent implements OnInit, AfterViewInit {
-  private formulasBackUp$: IFormula[] = [];
-
   public component: string = 'all';
 
   public form: FormGroup;
@@ -41,6 +39,8 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   public showSuccess: boolean = false;
   public showError: boolean = false;
   public panelOpenState: boolean = false;
+
+  private formulasBackUp$: IFormula[] = [];
 
   constructor(
     private _formulas: FormulasService,
@@ -67,13 +67,43 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       (formula: any) => formula.nombre === name
     );
     if (filteredFormulas.length > 0)
-      return Math.max(...filteredFormulas.map((formula) => formula.version));
-
+      {return Math.max(...filteredFormulas.map(formula => formula.version));}
     return 0;
   }
 
+  public mode(option: number, row: any): void {
+    switch (option) {
+      case 1:
+        this._formulas.setMode('Edit');
+        break;
+      case 2:
+        this._formulas.setMode('View');
+        break;
+      case 3:
+        this._formulas.setTestTitle(row);
+        this._formulas.setMode('Test');
+        break;
+      default:
+        break;
+    }
+  }
+
+  public search(): void {
+    if (!this.form.controls.name.value && !this.form.controls.material.value)
+      {this.formulas$ = this.formulasBackUp$;}
+
+    if (this.form.controls.name.value && this.form.controls.material.value)
+      {this.compare();}
+
+    if (this.form.controls.name.value && !this.form.controls.material.value)
+      {this.compareFormulas();}
+
+    if (!this.form.controls.name.value && this.form.controls.material.value)
+      {this.compareMaterials();}
+  }
+
   private loadData(): void {
-    let error: string = 'FormulasComponent => loadData: ';
+    const error: string = 'FormulasComponent => loadData: ';
     forkJoin([
       this._materials.get().pipe(
         catchError((err: any) => {
@@ -103,40 +133,9 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     });
   }
 
-  public mode(option: number, row: any): void {
-    switch (option) {
-      case 1:
-        this._formulas.setMode('Edit');
-        break;
-      case 2:
-        this._formulas.setMode('View');
-        break;
-      case 3:
-        this._formulas.setTestTitle(row);
-        this._formulas.setMode('Test');
-        break;
-      default:
-        break;
-    }
-  }
-
-  public search(): void {
-    if (!this.form.controls.name.value && !this.form.controls.material.value)
-      this.formulas$ = this.formulasBackUp$;
-
-    if (this.form.controls.name.value && this.form.controls.material.value)
-      this.compare();
-
-    if (this.form.controls.name.value && !this.form.controls.material.value)
-      this.compareFormulas();
-
-    if (!this.form.controls.name.value && this.form.controls.material.value)
-      this.compareMaterials();
-  }
-
   private compare(): void {
     this.formulas$ = this.formulasBackUp$.filter(
-      (formula) =>
+      formula =>
         formula.idMaterial === this.form.controls.material.value &&
         formula.nombre
           ?.toLowerCase()

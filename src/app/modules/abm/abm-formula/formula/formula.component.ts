@@ -25,6 +25,8 @@ import { ConfigTestService } from 'app/shared/services/config-test.service';
 import {
   IFormula,
   IFormulaResponse,
+  IConfiguracionPruebaParametro,
+  ITestFormula
 } from 'app/shared/models/formula.interface';
 import {
   IMaterial,
@@ -48,35 +50,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { MatDrawer } from '@angular/material/sidenav';
 
-export interface IConfiguracionPruebaParametro
-{ id: number;
-  maquinaPrueba: { id: number; nombre: string; }; 
-  minimo: number; 
-  maximo: number, 
-  norma: string 
-}
-
-export interface ITestFormula {
-  idFormula: number;
-  idMaquina: number;
-  parametros: IConfiguracionPruebaParametro[];
-  condiciones: IConditions[];
-  observacionesReporte: string;
-  mostrarResultadosReporte: boolean;
-}
-
-// export interface IParams {
-//   maquinaPrueba: string;
-//   maximo: number | null;
-//   minimo: number | null;
-//   norma: string | null;
-// }
-
-export interface IConditions {
-  nombre: string;
-  valor: number;
-}
-
 @Component({
   selector: 'app-formula',
   templateUrl: './formula.component.html',
@@ -91,28 +64,26 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public materials$: IMaterial[] | undefined;
 
   // * mode: Test.
-  public drawerOpened: boolean = false; // fuse-drawer [opened].
+  public drawerOpened: boolean = false;
   public selectedIndex: number = 0;
-  public machine: string = ''; // Título.
-  public formTest: FormGroup; // Formulario de pruebas.
+  public machine: string = '';
+  public formTest: FormGroup;
 
-  public machines$: any; // Maquinas asociadas a la formula.
-  public displayedColumnsMachines: string[] = ['name'];
+  public machines$: any;
+  public displayedColumnsMachines: string[] = ['name', 'vigente', 'fecha', 'fechaHasta', 'revision'];
 
-  public params$: any[] = []; // Parametros asociados a una maquina.
+  public params$: any[] = [];
   public displayedColumnsParams: string[] = ['name', 'min', 'max', 'norma'];
 
-  public conditions$: string[] = []; // Condiciones asociadas a una maquina.
+  public conditions$: string[] = [];
   public displayedColumnsConditions: string[] = [];
-
+  public mostrarResultadosReporte: boolean;
   public component: string = 'Mode';
 
   private suscripcion: Subscription;
   private formula$: IFormula;
   private id: number;
-  private idMachine: number; // ID Maquina.
-
-  public mostrarResultadosReporte: boolean;
+  private idMachine: number;
 
   constructor(
     private _materials: MaterialsService,
@@ -204,36 +175,22 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     };
     const controls = this.formTest.controls;
     for (const param of this.params$) {
-      var minvparam = controls[param.id + '.min'].value;
-      var maxvparam = controls[param.id + '.max'].value
+      const minvparam = controls[param.id + '.min'].value;
+      const maxvparam = controls[param.id + '.max'].value;
       if (!minvparam && !maxvparam && !Number(minvparam) && !Number(maxvparam)) {
-        this.snackBar.open(
-          `El parametro '${param.nombre}' debe contener al menos un valor asignado.`,
-          'X',
-          {
-            duration: 5000,
-            panelClass: 'red-snackbar',
-          }
-        );
+        this.openSnackBar(false, `El parametro '${param.nombre}' debe contener al menos un valor asignado.`);
         return;
-      } 
-      
-      var minvparamnum = Number(minvparam);
-      var maxvparamnum = Number(maxvparam);
+      }
+
+      const minvparamnum = Number(minvparam);
+      const maxvparamnum = Number(maxvparam);
 
       if (
         minvparam !== null && minvparam.trim().length > 0 &&
         maxvparam !== null && maxvparam.trim().length > 0 &&
         minvparamnum > maxvparamnum
       ) {
-        this.snackBar.open(
-          `El valor mínimo del parametro '${param.nombre}' no puede ser mayor al valor máximo.`,
-          'X',
-          {
-            duration: 5000,
-            panelClass: 'red-snackbar',
-          }
-        );
+        this.openSnackBar(false, `El valor mínimo del parametro '${param.nombre}' no puede ser mayor al valor máximo.`);
         return;
       } else {
         body.parametros.push({
@@ -316,10 +273,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           condition: null,
           observacionesReporte: null
         });
-        this.setValues(res.data.parametros, 
-                       res.data.condiciones, 
-                       res.data.observacionesReporte, 
-                       res.data.mostrarResultadosReporte);
+        this.setValues(res.data.parametros,
+                      res.data.condiciones,
+                      res.data.observacionesReporte,
+                      res.data.mostrarResultadosReporte);
         this.formTest.disable();
         this.machine = res.data.maquina;
         this.selectedIndex = 0;
@@ -377,12 +334,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  
   private setValues(
     params: IConfiguracionPruebaParametro[],
     conditions: [{ id: number; nombre: string; valor: number }],
     observacionesReporte: string,
-    mostrarResultadosReporte : boolean
+    mostrarResultadosReporte: boolean
   ): void {
     this.params$ = [];
     for (const param of params) {
@@ -664,14 +620,16 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private openSnackBar(option: boolean): void {
-    const message: string = option
-      ? 'Cambios realizados.'
-      : 'No se pudieron realizar los cambios.';
-    const css: string = option ? 'green' : 'red';
-    this.snackBar.open(message, 'X', {
-      duration: 5000,
-      panelClass: `${css}-snackbar`,
+  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
+    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
+    const defaultCss: string = option ? 'green' : 'red';
+    const snackBarMessage = message ? message : defaultMessage;
+    const snackBarCss = css ? css : defaultCss;
+    const snackBarDuration = duration ? duration : 5000;
+
+    this.snackBar.open(snackBarMessage, 'X', {
+      duration: snackBarDuration,
+      panelClass: `${snackBarCss}-snackbar`,
     });
   }
 }
