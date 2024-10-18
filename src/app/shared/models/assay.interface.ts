@@ -39,6 +39,11 @@ export interface IAssayCreate {
   estado: string;
 }
 
+export interface IAssayCreateWithoutResults {
+  idLote: number;
+  idConfiguracionPrueba: number;
+}
+
 export interface IAssayResult {
   idConfiguracionPruebaParametro: number;
   redondeo: number;

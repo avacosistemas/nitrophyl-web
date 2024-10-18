@@ -146,6 +146,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
           Array.isArray(res.data) ? res.data : [res.data]
         )
       );
+
+      this.assays$ = this.assayService.assays$;
+      this.assayService.fetchAssays(this.assayService.lot.id);
   }
 
   public ngAfterViewInit(): void {
@@ -264,7 +267,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    if (this.mode === 'create') {
+    if (this.mode === 'create' && this.form) {
       this.form.reset();
     }
     if (this.subscription) {

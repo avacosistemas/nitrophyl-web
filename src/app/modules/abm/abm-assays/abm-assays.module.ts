@@ -10,6 +10,8 @@ import { AssaysComponent } from './assays/assays.component';
 
 // * Dialogs.
 import { AssayDialogComponent } from './assay-dialog/assay-dialog.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from './assay-dialog-confirm/assay-dialog-confirm.component';
 
 // * Material sidenav.
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -30,13 +32,19 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMAssaysComponent, AssaysComponent, AssayDialogComponent],
+  declarations: [
+    ABMAssaysComponent,
+    AssaysComponent,
+    AssayDialogComponent,
+    ConfirmDialogComponent,
+  ],
   imports: [
     RouterModule.forChild(routes),
     ABMSharedModule,
     MatSidenavModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatDialogModule,
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })

@@ -9,6 +9,11 @@ import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { map, Observable, Subscription, switchMap, of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
+
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from './assay-dialog-confirm/assay-dialog-confirm.component';
+
 // * Services.
 import { AssayService } from 'app/shared/services/assay.service';
 import { ConfigTestService } from 'app/shared/services/config-test.service';
@@ -24,126 +29,7 @@ import { IFormula } from 'app/shared/models/formula.interface';
 
 @Component({
   selector: 'abm-assays',
-  template: `<div
-    class="absolute inset-0 flex flex-col min-w-0 overflow-hidden"
-  >
-    <div
-      class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent"
-    >
-      <div class="flex-1 min-w-0">
-        <div class="hidden sm:flex flex-wrap items-center font-medium">
-          <div><a class="whitespace-nowrap text-primary-500"> ABM </a></div>
-          <div class="flex items-center ml-1 whitespace-nowrap">
-            <mat-icon
-              role="img"
-              class="mat-icon notranslate icon-size-5 mat-icon-no-color"
-              aria-hidden="true"
-              data-mat-icon-type="svg"
-              data-mat-icon-name="chevron-right"
-              data-mat-icon-namespace="heroicons_solid"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                fit=""
-                height="100%"
-                width="100%"
-                preserveAspectRatio="xMidYMid meet"
-                focusable="false"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </mat-icon>
-            <span class="ml-1 text-secondary"> Ensayos </span>
-            <mat-icon
-              role="img"
-              class="mat-icon notranslate icon-size-5 mat-icon-no-color"
-              aria-hidden="true"
-              data-mat-icon-type="svg"
-              data-mat-icon-name="chevron-right"
-              data-mat-icon-namespace="heroicons_solid"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                fit=""
-                height="100%"
-                width="100%"
-                preserveAspectRatio="xMidYMid meet"
-                focusable="false"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </mat-icon>
-            <span class="ml-1 text-secondary">{{ lot }} </span>
-          </div>
-        </div>
-
-        <h2
-          class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate mt-2"
-        >
-          {{ title }}
-        </h2>
-        <span>{{ subtitle }}</span>
-      </div>
-
-      <div
-        class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2 gap-4"
-      >
-        <mat-form-field class="mt-4 w-full max-w-60">
-          <mat-select
-            [formControl]="machine"
-            placeholder="Seleccione una maquina"
-          >
-            <mat-option
-              *ngFor="let machine of machines$ | async"
-              [value]="machine.id"
-            >
-              {{ machine.maquina }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <button
-          mat-flat-button
-          class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30"
-          (click)="add()"
-          [disabled]="!machine.value || drawer"
-        >
-          <span class="mat-button-wrapper"> Agregar </span>
-          <span matripple="" class="mat-ripple mat-button-ripple"></span>
-          <span class="mat-button-focus-overlay"></span>
-        </button>
-
-        <button
-          mat-stroked-button
-          class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30"
-          (click)="close()"
-          [disabled]="drawer"
-        >
-          <span class="mat-button-wrapper"> Cerrar </span>
-          <span matripple="" class="mat-ripple mat-button-ripple"></span>
-          <span class="mat-button-focus-overlay"></span>
-        </button>
-      </div>
-    </div>
-
-    <div
-      style="display: flex; flex-direction: column; flex-wrap: wrap; overflow-y: scroll; height: 100%;"
-    >
-      <router-outlet></router-outlet>
-    </div>
-  </div>`,
+  templateUrl: './abm-assays.component.html',
 })
 export class ABMAssaysComponent
   implements OnInit, AfterContentChecked, OnDestroy
@@ -166,6 +52,8 @@ export class ABMAssaysComponent
     private _cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private formulasService: FormulasService,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
   ) {}
 
   public ngOnInit(): void {
@@ -177,18 +65,17 @@ export class ABMAssaysComponent
     this.title = `Ensayos del Lote ${this.assayService.lot?.nroLote}`;
     this.lot = `Lote ${this.assayService.lot?.nroLote}`;
 
-    this.formulasService.get({ id: this.assayService.lot.idFormula, labelCombo: '' }).subscribe(
-      (response: any) => {
+    this.formulasService.get({ id: this.assayService.lot.idFormula, labelCombo: '' }).subscribe({
+      next: (response: { data: any }) => {
         if (response && response.data) {
-          console.log(response.data);
           this.formula = response.data;
-          this.subtitle = `Fórmula: ${this.formula.labelCombo}`; 
+          this.subtitle = `Fórmula: ${this.formula.labelCombo}`;
         }
       },
-      (error) => {
+      error: (error: any) => {
         console.error('Error al obtener la fórmula:', error);
       }
-    );
+    });
 
     this.machines$ = this.configTestService
       .getMachines(this.assayService.lot.idFormula)
@@ -216,24 +103,67 @@ export class ABMAssaysComponent
     this._cdr.detectChanges();
   }
 
-  public add(): void {
-    if (this.drawer) {
-      return;
-    }
-    this.assayService.machine = this.machine.value;
-    this.assayService.mode = 'create';
-    this.assayService.toggleDrawer();
-  }
-
   public close(): void {
     this.router.navigate(['../../lotes/grid']);
   }
 
   public ngOnDestroy(): void {
-    console.log('hola');
-
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
+  }
+
+  public add(): void {
+    if (this.drawer) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        dismissible: true,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === 'conResultados') {
+        this.assayService.machine = this.machine.value;
+        this.assayService.mode = 'create';
+        this.assayService.toggleDrawer();
+      } else if (result === 'sinResultados') {
+        this.assayService.machine = this.machine.value;
+        this.assayService.mode = 'create';
+        this.addAssayWithoutResults();
+      }
+    });
+  }
+
+  private addAssayWithoutResults(): void {
+    const assayData = {
+      idConfiguracionPrueba: this.machine.value,
+      idLote: this.assayService.lot.id,
+    };
+
+    this.assayService.postAssayWithoutResults(assayData).subscribe({
+      next: () => {
+        this.openSnackBar(true, 'Ensayo agregado sin resultados.');
+        this.assayService.fetchAssays(this.assayService.lot.id); // Asegúrate de que esta línea se esté ejecutando.
+      },
+      error: (err: any) => {
+        this.openSnackBar(false, 'Error al cargar el ensayo.');
+      },
+    });
+  }
+
+  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
+    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
+    const defaultCss: string = option ? 'green' : 'red';
+    const snackBarMessage = message ? message : defaultMessage;
+    const snackBarCss = css ? css : defaultCss;
+    const snackBarDuration = duration ? duration : 5000;
+
+    this.snackBar.open(snackBarMessage, 'X', {
+      duration: snackBarDuration,
+      panelClass: `${snackBarCss}-snackbar`,
+    });
   }
 }
