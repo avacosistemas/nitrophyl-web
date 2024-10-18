@@ -109,7 +109,7 @@ import { IFormula } from 'app/shared/models/formula.interface';
               *ngFor="let machine of machines$ | async"
               [value]="machine.id"
             >
-              {{ machine.maquina }}
+              {{ machine.maquina }} - V{{machine.revision}}
             </mat-option>
           </mat-select>
         </mat-form-field>
@@ -191,7 +191,7 @@ export class ABMAssaysComponent
     );
 
     this.machines$ = this.configTestService
-      .getMachines(this.assayService.lot.idFormula)
+      .getMachinesVigentes(this.assayService.lot.idFormula)
       .pipe(
         map((res: IConfigTestsResponse | IConfigTestResponse) =>
           Array.isArray(res.data) ? res.data : [res.data]

@@ -30,6 +30,14 @@ export class ConfigTestService {
     );
   }
 
+  public getMachinesVigentes(
+    id: number
+  ): Observable<IConfigTestsResponse | IConfigTestResponse> {
+    return this.http.get<IConfigTestsResponse | IConfigTestResponse>(
+      `${this._url}/formula/${id}/vigentes`
+    );
+  }
+
   public getId(id: number): Observable<IConfigTestResponse> {
     return this.http.get<IConfigTestResponse>(`${this._url}/${id}`);
   }

@@ -8,6 +8,7 @@ export interface IConfigTest {
   maquina: string;
   condiciones: [];
   parametros: IParams[];
+  revision: number;
 }
 
 export interface ICondiciones {
