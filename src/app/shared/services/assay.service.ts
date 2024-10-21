@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpBackend } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
-
 // * Environment.
 import { environment } from 'environments/environment';
-
 // * Interfaces.
 import {
   IAssay,
   IAssayCreate,
+  IAssayCreateWithoutResults,
   IAssayDetailResponse,
   IAssayDetailsResponse,
   IAssayResponse,
@@ -22,6 +21,9 @@ import { ILot } from '../models/lot.interface';
 export class AssayService {
   public drawer$: Observable<boolean>;
 
+  private assaysSubject = new BehaviorSubject<IAssay[]>([]);
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public assays$ = this.assaysSubject.asObservable();
   private _lot: ILot;
   private _machine: number;
   private _mode: string;
@@ -64,12 +66,8 @@ export class AssayService {
     return this.http.get<IAssaysResponse>(`${this._url}ensayo/${id}`);
   }
 
-  public getAssay(
-    id: number
-  ): Observable<IAssayDetailsResponse | IAssayDetailResponse> {
-    return this.http.get<IAssayDetailsResponse | IAssayDetailResponse>(
-      `${this._url}ensayoResultado/${id}`
-    );
+  public getAssay(id: number): Observable<IAssayDetailsResponse | IAssayDetailResponse> {
+    return this.http.get<IAssayDetailsResponse | IAssayDetailResponse>(`${this._url}ensayoResultado/${id}`);
   }
 
   public post(assay: IAssayCreate): Observable<IAssayResponse> {
@@ -78,5 +76,20 @@ export class AssayService {
 
   public toggleDrawer(): void {
     this._drawer.next(!this._drawer.value);
+  }
+
+  public updateAssays(assays: IAssay[]): void {
+    this.assaysSubject.next(assays);
+  }
+
+  public fetchAssays(id: number): void {
+    this.get(id).subscribe((res) => {
+      const assays = Array.isArray(res.data) ? res.data : [res.data];
+      this.updateAssays(assays);
+    });
+  }
+
+  postAssayWithoutResults(assayData: IAssayCreateWithoutResults): Observable<any> {
+    return this.http.post(`${this._url}ensayo/sinresultados`, assayData);
   }
 }

@@ -17,39 +17,59 @@
                     <form [formGroup]="form" class="mt-2">
                         <div class="row flex gap-3 justify-around">
                             <mat-form-field class="w-1/3">
-                                <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput
-                                    formControlName="formula" [matAutocomplete]="auto">
-                                <button matSuffix *ngIf="form.controls['formula'].value"
-                                    (click)="form.controls['formula'].setValue('')">
+                                <input type="text" #campoInput placeholder="Ingrese o seleccione una fórmula" matInput
+                                    formControlName="formula" [matAutocomplete]="formulaAuto">
+
+                                <button matSuffix *ngIf="form.controls['formula'].value !== null"
+                                    (click)="limpiarCampo('formula')">
                                     <mat-icon> close </mat-icon>
                                 </button>
-                                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
+
+                                <mat-autocomplete #formulaAuto="matAutocomplete" [displayWith]="displayFormulaFn"
                                     autoActiveFirstOption>
-                                    <mat-option [value]="0">Todos</mat-option>
-                                    <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{
-                                        formula.nombre }}
-                                        V{{formula.version}} ({{ formula.norma }})</mat-option>
+                                    <mat-option *ngIf="!form.controls['formula'].value" [value]="0">Todos</mat-option>
+                                    <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
+                                        {{  formula.nombre }} V{{formula.version}} ({{ formula.norma }})
+                                    </mat-option>
                                 </mat-autocomplete>
                             </mat-form-field>
 
                             <mat-form-field class="w-1/3">
-                                <mat-select [formControlName]="'machine'"
-                                    [placeholder]="machinesFail ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
-                                    <mat-option [value]="0">Todos</mat-option>
-                                    <mat-option *ngFor="let machine of machines$" [value]="machine">
+                                <input type="text" #campoInput formControlName="machine"
+                                    [placeholder]="machinesFail ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'"
+                                    matInput [matAutocomplete]="machineAuto">
+
+                                <button mat-icon-button matSuffix *ngIf="form.controls['machine'].value !== null"
+                                    (click)="limpiarCampo('machine')">
+                                    <mat-icon> close </mat-icon>
+                                </button>
+
+                                <mat-autocomplete #machineAuto="matAutocomplete" [displayWith]="displayMachineFn"
+                                    autoActiveFirstOption>
+                                    <mat-option *ngIf="!form.controls['machine'].value" [value]="0">Todos</mat-option>
+                                    <mat-option *ngFor="let machine of filteredMachines$ | async" [value]="machine">
                                         {{ machine.nombre }}
                                     </mat-option>
-                                </mat-select>
+                                </mat-autocomplete>
                             </mat-form-field>
 
                             <mat-form-field class="w-1/3">
-                                <mat-select [formControlName]="'cliente'"
-                                    [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'">
-                                    <mat-option [value]="0">Todos</mat-option>
-                                    <mat-option *ngFor="let cliente of clientes$" [value]="cliente.id">
+                                <input type="text" #campoInput formControlName="cliente"
+                                    [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'"
+                                    matInput [matAutocomplete]="clienteAuto">
+
+                                <button matSuffix *ngIf="form.controls['cliente'].value !== null"
+                                        (click)="limpiarCampo('cliente')">
+                                    <mat-icon> close </mat-icon>
+                                </button>
+
+                                <mat-autocomplete #clienteAuto="matAutocomplete" [displayWith]="displayClienteFn"
+                                    autoActiveFirstOption>
+                                    <mat-option *ngIf="!form.controls['cliente'].value" [value]="0">Todos</mat-option>
+                                    <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
                                         {{ cliente.nombre }}
                                     </mat-option>
-                                </mat-select>
+                                </mat-autocomplete>
                             </mat-form-field>
                         </div>
 
@@ -77,6 +97,12 @@
                         </div>
                         <div class="row flex justify-end">
                             <button mat-flat-button=""
+                                class="mat-focus-indicator mat-stroked-button mat-button-base mr-2" (click)="limpiar()">
+                                <span class="mat-button-wrapper"> Limpiar </span>
+                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                                <span class="mat-button-focus-overlay"></span>
+                            </button>
+                            <button mat-flat-button=""
                                 class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
                                 (click)="search()">
                                 <span class="mat-button-wrapper"> Buscar </span>
@@ -88,47 +114,48 @@
                 </mat-expansion-panel>
             </mat-accordion>
 
-            <table mat-table [dataSource]="dataSource" class="border-2 rounded-2xl mt-5 w-full" matSort >
+            <table mat-table [dataSource]="dataSource" class="border-2 rounded-2xl mt-5 w-full" matSort>
                 <ng-container matColumnDef="cliente">
                     <th mat-header-cell *matHeaderCellDef mat-sort-header> Cliente </th>
                     <td mat-cell *matCellDef="let element"> {{ element.cliente }} </td>
                 </ng-container>
                 <ng-container matColumnDef="formula">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Formula </th>
-                    <td mat-cell *matCellDef="let element"> {{ element.formula }} </td>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="px-1"> Formula </th>
+                    <td mat-cell *matCellDef="let element" class="px-1"> {{ element.formula }} </td>
                 </ng-container>
                 <ng-container matColumnDef="maquina">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Máquina </th>
-                    <td mat-cell *matCellDef="let element"> {{ element.maquina }} </td>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="px-1"> Máquina </th>
+                    <td mat-cell *matCellDef="let element" class="px-1"> {{ element.maquina }} </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarCondiciones">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar condiciones </th>
-                    <td mat-cell *matCellDef="let element"> {{ element.mostrarCondiciones == true ? 'Si' : 'No' }} </td>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Mostrar condiciones </th>
+                    <td mat-cell *matCellDef="let element"  class="text-center"> {{ element.mostrarCondiciones === true ? 'Si' : 'No' }}
+                    </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarResultados">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar resultados </th>
-                    <td mat-cell *matCellDef="let element"> {{ element.mostrarResultados == true ? 'Si' : 'No' }} </td>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Mostrar resultados </th>
+                    <td mat-cell *matCellDef="let element"  class="text-center"> {{ element.mostrarResultados === true ? 'Si' : 'No' }} </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarObservacionesParametro">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar observaciones </th>
-                    <td mat-cell *matCellDef="let element"> {{ element.mostrarObservacionesParametro == true ? 'Si' :
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Mostrar observaciones </th>
+                    <td mat-cell *matCellDef="let element" class="text-center"> {{ element.mostrarObservacionesParametro === true ? 'Si' :
                         'No' }} </td>
                 </ng-container>
                 <ng-container matColumnDef="mostrarParametros">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mostrar parámetros </th>
-                    <td mat-cell *matCellDef="let element"> {{ element.mostrarParametros == true ? 'Si' : 'No' }} </td>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Mostrar parámetros </th>
+                    <td mat-cell *matCellDef="let element" class="text-center"> {{ element.mostrarParametros === true ? 'Si' : 'No' }} </td>
                 </ng-container>
 
 
                 <ng-container matColumnDef="actions">
                     <th mat-header-cell *matHeaderCellDef class="text-right"> </th>
-                    <td mat-cell *matCellDef="let row" class="text-right">
-                        <button class="mr-2">
+                    <td mat-cell *matCellDef="let row" class="text-right w-28">
+                        <button class="mr-1">
                             <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver" [routerLink]="['../view', row.id]"
                                 (click)="mode(2)">
                             </mat-icon>
                         </button>
-                        <button class="mr-2">
+                        <button class="mr-1">
                             <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
                                 [routerLink]="['../edit', row.id]" (click)="mode(1)">
                             </mat-icon>

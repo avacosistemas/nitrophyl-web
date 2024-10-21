@@ -89,11 +89,11 @@ export class ClientesService {
     return this.http.get<any>(`${environment.server}provincias/`);
   }
 
-  public getMode() {
+  public getMode(): string {
     return this.mode;
   }
 
-  public setMode(mode: string) {
+  public setMode(mode: string): void {
     this.mode = mode;
   }
 }
