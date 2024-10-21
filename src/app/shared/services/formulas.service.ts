@@ -10,17 +10,9 @@ import {
   IFormula,
   IFormulaResponse,
   IFormulasResponse,
+  ITestTitle
 } from '../models/formula.interface';
 
-export interface ITestTitle {
-  fecha: Date;
-  id: number;
-  idMaterial: number;
-  material: string;
-  nombre: string;
-  norma: string;
-  version: number;
-}
 
 @Injectable({
   providedIn: 'root',
