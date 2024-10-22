@@ -78,7 +78,7 @@ export class ABMAssaysComponent
     });
 
     this.machines$ = this.configTestService
-      .getMachines(this.assayService.lot.idFormula)
+      .getMachinesVigentes(this.assayService.lot.idFormula)
       .pipe(
         map((res: IConfigTestsResponse | IConfigTestResponse) =>
           Array.isArray(res.data) ? res.data : [res.data]
