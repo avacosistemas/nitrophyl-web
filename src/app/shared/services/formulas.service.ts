@@ -101,4 +101,9 @@ export class FormulasService {
   public setMode(mode: string): void {
     this.mode = mode;
   }
+
+  public marcarRevision(idFormula: number): Observable<any> {
+    const url = `${this.url}/marcarrevision/${idFormula}`;
+    return this.http.get<any>(url);
+  }
 }

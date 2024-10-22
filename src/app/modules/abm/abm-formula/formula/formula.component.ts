@@ -20,6 +20,7 @@ import { FormulasService } from 'app/shared/services/formulas.service';
 import { MaterialsService } from 'app/shared/services/materials.service';
 import { TestService } from 'app/shared/services/test.service';
 import { ConfigTestService } from 'app/shared/services/config-test.service';
+import { MachinesService } from 'app/shared/services/machines.service';
 
 // * Interfaces.
 import {
@@ -68,8 +69,12 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public selectedIndex: number = 0;
   public machine: string = '';
   public formTest: FormGroup;
+  public formTestMachine: FormGroup;
+  public rpdto: any;
 
+  public revision$: any;
   public machines$: any;
+  public machinesForm$: any[] = [];
   public displayedColumnsMachines: string[] = ['name', 'vigente', 'fecha', 'fechaHasta', 'revision'];
 
   public params$: any[] = [];
@@ -90,6 +95,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     private _formulas: FormulasService,
     private _testService: TestService,
     private _configTest: ConfigTestService,
+    private _machines: MachinesService,
     private activeRoute: ActivatedRoute,
     private dialog: MatDialog,
     private formBuilder: FormBuilder,
@@ -114,6 +120,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.setForm();
       }
       if (this.mode === 'Test') {
+        this.setFormMachine();
         this.formTest = this.formBuilder.group({
           condition: null,
           observacionesReporte : null
@@ -136,7 +143,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.loadData();
         break;
       case 'Test':
+        this.getRevision();
         this.getMachines();
+        this.getMachinesForm();
         break;
       default:
         break;
@@ -304,6 +313,55 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.conditions$.push(condition);
     this.conditions$ = [...this.conditions$];
     this.formTest.controls.condition.setValue(null);
+  }
+
+  public addMachineForm(): void {
+    if (this.formTestMachine.invalid) {return;}
+    const machine: any = this.formTestMachine.controls.machine;
+    this._formulas.events.next([4, machine.value.id, machine.value.nombre]);
+    machine.reset();
+  }
+
+  generarNuevaRevision(): void {
+    this._formulas.marcarRevision(this.id).subscribe({
+      next: (response) => {
+        console.log('Revisión marcada con éxito:', response);
+        this.getRevision();
+      },
+      error: (error) => {
+        console.error('Error al marcar la revisión:', error);
+      },
+    });
+  }
+
+  public mostrarRevision(rpdto: any): void {
+    this.rpdto = rpdto;
+  }
+
+  private getRevision(): void {
+    const error: string = 'FormulaComponent => getRevision(): ';
+    this._formulas.get({ id: this.id }).subscribe({
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.revision$ = formula.data;
+          this.mostrarRevision(this.revision$.rpdto);
+        }
+      },
+      error: (err: any) => console.error(error, err),
+      complete: () => {},
+    });
+  }
+
+  private getMachinesForm(): void {
+    this.formTestMachine.controls.machine.reset();
+    const error: string = 'formula.component.ts => getMachines() => ';
+    this._machines.get().subscribe({
+      next: (res: any) => {
+        this.machinesForm$ = [...res.data];
+      },
+      error: (err: any) => console.error(error, err),
+      complete: () => {},
+    });
   }
 
   private postMachine(body: ITestFormula): void {
@@ -573,6 +631,12 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error(error, err);
       },
       complete: () => {},
+    });
+  }
+
+  private setFormMachine(): void {
+    this.formTestMachine = this.formBuilder.group({
+      machine: [null, Validators.required],
     });
   }
 

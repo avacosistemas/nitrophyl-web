@@ -202,8 +202,63 @@
 
   </mat-drawer>
 
+
+
+
   <mat-drawer-content>
     <div class="bg-gray-100">
+      <div class="px-6 sm:px-10 pt-6 sm:pt-10 w-full flex gap-4">
+        <fuse-card class="flex flex-col px-8 py-6 pb-4 w-1/2" #fuseCard>
+          <div class="flex items-start">
+            <div class="truncate text-lg font-medium leading-6 tracking-tight"> Revisión </div>
+          </div>
+          <div class="justify-between h-full items-center" [ngClass]="rpdto?.revision ? 'flex_col' : 'flex'">
+            <div *ngIf="rpdto?.revision" class="mt-2 flex flex-col items-center">
+              <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
+                {{ rpdto?.revision }}
+              </div>
+              <div class="text-secondary mt-1 flex w-full items-baseline justify-center">
+                <div class="ml-1.5 text-lg font-semibold flex items-center gap-2">
+                  <mat-icon [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
+                  <p>{{ rpdto?.fecha }}</p>
+                </div>
+              </div>
+            </div>
+            <div class="mt-2 flex justify-center w-full">
+              <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                (click)="generarNuevaRevision()">
+                <span class="mat-button-wrapper">Generar Nueva Revisión</span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span class="mat-button-focus-overlay"></span>
+              </button>
+            </div>
+          </div>
+        </fuse-card>
+        <fuse-card class="flex flex-col justify-between px-8 py-6 pb-4 w-1/2" #fuseCard>
+          <div class="flex items-start">
+            <div class="truncate text-lg font-medium leading-6 tracking-tight"> Agregar Maquina </div>
+          </div>
+          <div class="mt-4">
+            <form [formGroup]="formTestMachine" class="w-full">
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Máquina </mat-label>
+                <mat-select [formControlName]="'machine'"
+                  [placeholder]="status ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'">
+                  <mat-option *ngFor="let machine of machinesForm$" [value]="machine">{{ machine.nombre }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </form>
+            <div class="flex justify-center w-full">
+              <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                (click)="addMachineForm()" [disabled]="status || action">
+                <span class="mat-button-wrapper"> Agregar </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span class="mat-button-focus-overlay"></span>
+              </button>
+            </div>
+          </div>
+        </fuse-card>
+      </div>
       <div class="p-6 sm:p-10">
         <table mat-table [dataSource]="machines$" class="border-2 rounded-2xl w-full">
           <ng-container matColumnDef="name">

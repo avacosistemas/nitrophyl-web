@@ -6,12 +6,14 @@ import { ABMSharedModule } from '../abm-shared.module';
 
 // * Components.
 import { ABMFormulaComponent } from './abm-formula.component';
-import { FormulasComponent } from './formulas/formulas.component.';
+import { FormulasComponent } from './formulas/formulas.component';
 import { FormulaComponent } from './formula/formula.component';
 
 // * Fuse sidebar.
 // import { FuseDrawerModule } from '@fuse/components/drawer';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { FuseCardModule } from '@fuse/components/card';
+import { MatIconModule } from '@angular/material/icon';
 
 const routes: Route[] = [
   {
@@ -29,6 +31,6 @@ const routes: Route[] = [
 
 @NgModule({
   declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent],
-  imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule],
+  imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule, MatIconModule, FuseCardModule ],
 })
 export class ABMFormulaModule {}
