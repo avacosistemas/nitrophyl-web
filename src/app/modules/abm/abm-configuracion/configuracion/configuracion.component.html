@@ -14,12 +14,13 @@
             La fórmula es requerida.
           </mat-error>
 
-          <button matSuffix *ngIf="form.controls['formula'].value !== null" (click)="limpiarCampo('formula')">
+          <button mat-icon-button matSuffix
+            *ngIf="(mode === 'Edit' || mode === 'Create') && form.controls['formula'].value !== null"
+            (click)="limpiarCampo('formula')">
             <mat-icon> close </mat-icon>
           </button>
 
           <mat-autocomplete #formulaAuto="matAutocomplete" [displayWith]="displayFormulaFn" autoActiveFirstOption>
-            <mat-option *ngIf="!form.controls['formula'].value" [value]="0">Todos</mat-option>
             <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
               {{ formula.nombre }} V{{formula.version}} ({{ formula.norma }})
             </mat-option>
@@ -34,7 +35,8 @@
             La máquina es requerida.
           </mat-error>
 
-          <button mat-icon-button matSuffix *ngIf="form.controls['machine'].value !== null"
+          <button mat-icon-button matSuffix
+            *ngIf="(mode === 'Edit' || mode === 'Create') && form.controls['machine'].value !== null"
             (click)="limpiarCampo('machine')">
             <mat-icon> close </mat-icon>
           </button>
@@ -55,7 +57,9 @@
             El cliente es requerido.
           </mat-error>
 
-          <button matSuffix *ngIf="form.controls['cliente'].value !== null" (click)="limpiarCampo('cliente')">
+          <button mat-icon-button matSuffix
+            *ngIf="(mode === 'Edit' || mode === 'Create') && form.controls['cliente'].value !== null"
+            (click)="limpiarCampo('cliente')">
             <mat-icon> close </mat-icon>
           </button>
 

@@ -212,8 +212,9 @@
           <div class="flex items-start">
             <div class="truncate text-lg font-medium leading-6 tracking-tight"> Revisión </div>
           </div>
-          <div class="justify-between h-full items-center" [ngClass]="rpdto?.revision ? 'flex_col' : 'flex'">
-            <div *ngIf="rpdto?.revision" class="mt-2 flex flex-col items-center">
+          <div class="justify-between h-full items-center"
+            [ngClass]="(rpdto?.revision !== null && rpdto?.revision >= 0) ? 'flex_col' : 'flex'">
+            <div *ngIf="rpdto?.revision !== null && rpdto?.revision >= 0" class="mt-2 flex flex-col items-center">
               <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
                 {{ rpdto?.revision }}
               </div>
