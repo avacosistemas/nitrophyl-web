@@ -12,6 +12,8 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { FormulasService } from 'app/shared/services/formulas.service';
 import { ConfiguracionService } from 'app/shared/services/configuracion.service';
 import { MachinesService } from 'app/shared/services/machines.service';
+import { TestService } from 'app/shared/services/test.service';
+import { ITest } from 'app/shared/models/test.model';
 import { catchError, forkJoin, map, Observable, of, startWith, Subscription } from 'rxjs';
 
 @Component({
@@ -33,6 +35,8 @@ export class ConfiguracionComponent implements OnInit {
   public clientesFail: boolean = false;
   public filteredMachines$: Observable<IMachine[]>;
   public filteredClientes$: Observable<Cliente[]>;
+  public tests: ITest[] = [];
+  public selectedMachineName: string | null = null;
 
   public configuraciones$: IConfiguracion[] | undefined;
   public formulas: IFormula[];
@@ -41,6 +45,7 @@ export class ConfiguracionComponent implements OnInit {
   private configuracion$: IConfiguracion;
   private id: number;
   private formulasBackUp$: IFormula[] = [];
+
 
   constructor(
     private dialog: MatDialog,
@@ -52,6 +57,7 @@ export class ConfiguracionComponent implements OnInit {
     private clientesService: ClientesService,
     private formBuilder: FormBuilder,
     private router: Router,
+    private testService: TestService
   ) {
     if (!this.configuracionService.getMode()) {
       this.router.navigate(['/configuracion/grid']);
@@ -80,6 +86,10 @@ export class ConfiguracionComponent implements OnInit {
       }
       this.subscription();
     }
+  }
+
+  get hasSelectedTests(): boolean {
+    return this.tests.some(test => test.selected);
   }
 
   ngOnInit(): void {
@@ -129,7 +139,6 @@ export class ConfiguracionComponent implements OnInit {
 
     switch (this.mode) {
       case 'Create':
-        this.loadData();
         break;
       case 'View':
         this.loadData();
@@ -144,28 +153,55 @@ export class ConfiguracionComponent implements OnInit {
     }
   }
 
+  onMachineSelectionChange(machineId: number | { id: number; nombre: string } | null): void {
+    if (!machineId) {
+      this.tests = [];
+      this.selectedMachineName = null;
+      return;
+    } else if (typeof machineId === 'object' && machineId.id) {
+      this.selectedMachineName = machineId.nombre;
+      this.testService.getTest(machineId.id).subscribe((response) => {
+        this.tests = response.data.map((test: ITest) => ({
+          ...test,
+          selected: false
+        }));
+      });
+    }
+  }
+
+  selectAllTests(): void {
+    if (this.tests) {
+      this.tests.forEach(test => test.selected = true);
+    }
+  }
+
+  deselectAllTests(): void {
+    if (this.tests) {
+      this.tests.forEach(test => test.selected = false);
+    }
+  }
+
   public version(name: string): number {
     const filteredFormulas = this.formulasBackUp$.filter(
       (formula: any) => formula.nombre === name
     );
-    if (filteredFormulas.length > 0)
-      {return Math.max(...filteredFormulas.map(formula => formula.version));}
+    if (filteredFormulas.length > 0) { return Math.max(...filteredFormulas.map(formula => formula.version)); }
 
     return 0;
   }
 
   public displayFormulaFn(formula: IFormula): string {
-    if (typeof formula === 'number' && formula === 0) {return 'Todos';}
+    if (typeof formula === 'number' && formula === 0) { return 'Todos'; }
     return formula ? `${formula.nombre} V${formula.version} (${formula.norma})` : '';
   }
 
   public displayMachineFn(machine: IMachine): string {
-    if (typeof machine === 'number' && machine === 0) {return 'Todos';}
+    if (typeof machine === 'number' && machine === 0) { return 'Todos'; }
     return machine && machine.nombre ? machine.nombre : '';
   }
 
   public displayClienteFn(cliente?: Cliente): string {
-    if (typeof cliente === 'number' && cliente === 0) {return 'Todos';}
+    if (typeof cliente === 'number' && cliente === 0) { return 'Todos'; }
     return cliente && cliente.nombre ? cliente.nombre : '';
   }
 
@@ -173,6 +209,7 @@ export class ConfiguracionComponent implements OnInit {
     this.form.controls[campo].setValue(null);
     this.form.controls[campo].markAsPristine();
     this.form.controls[campo].markAsUntouched();
+    this.tests = [];
 
     const input = this.inputs.find(
       el => el.nativeElement.getAttribute('formControlName') === campo
@@ -265,6 +302,9 @@ export class ConfiguracionComponent implements OnInit {
   private postConfiguracion(): void {
     const error: string = 'ConfiguracionComponent => postConfiguracion(): ';
     const formValues = this.form.getRawValue();
+    const selectedTests = this.tests
+      .filter(test => test.selected)
+      .map(test => test.id);
 
     const body: IConfiguracion = {
       idCliente: formValues.cliente.id,
@@ -273,7 +313,8 @@ export class ConfiguracionComponent implements OnInit {
       mostrarParametros: formValues.mostrarParametros,
       mostrarObservacionesParametro: formValues.mostrarParametros ? formValues.mostrarObservacionesParametro : false,
       mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
-      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false
+      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false,
+      idsPruebas: selectedTests,
     };
 
     this.configuracionService.post(body).subscribe({
@@ -293,8 +334,10 @@ export class ConfiguracionComponent implements OnInit {
 
   private putConfiguracion(): void {
     const error: string = 'ConfiguracionComponent => putConfiguracion(): ';
-
     const formValues = this.form.getRawValue();
+    const selectedTests = this.tests
+      .filter(test => test.selected)
+      .map(test => test.id);
 
     const body: IConfiguracion = {
       id: this.configuracion$.id,
@@ -304,7 +347,8 @@ export class ConfiguracionComponent implements OnInit {
       mostrarParametros: formValues.mostrarParametros,
       mostrarObservacionesParametro: formValues.mostrarParametros ? formValues.mostrarObservacionesParametro : false,
       mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
-      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false
+      mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false,
+      idsPruebas: selectedTests,
     };
 
     this.configuracionService.put(body).subscribe({
@@ -356,67 +400,59 @@ export class ConfiguracionComponent implements OnInit {
 
   private loadData(): void {
     const error: string = 'ConfiguracionComponent => loadData: ';
+
     forkJoin([
-      this.clientesService.getClientes().pipe(
-        catchError((err: any) => {
-          console.error(error, 'this.clientesService.get() ', err);
-          this.clientesFail = true;
-          return of([]);
-        })
-      ),
       this.configuracionService.get({ id: this.id }).pipe(
         catchError((err: any) => {
-          console.error(error, 'this.configuracionService.get() ', err);
-          return of([]);
+          console.error(error, 'Error en configuración', err);
+          return of(null);
         })
       ),
-      this.machinesService.get().pipe(
-        catchError((err: any) => {
-          this.machinesFail = true;
-          console.error(error, 'this.machinesService.get() ', err);
-          return of([]);
-        })
-      )
-    ]).subscribe({
-      next: ([clientes, configuraciones, machines]: [
-        ResponseClientes,
-        any,
-        IMachineResponse
-      ]) => {
-        this.clientes$ = clientes.data;
-        this.machines$ = machines.data;
+    ]).subscribe(([configuraciones]: any) => {
+      const configuracion = Array.isArray(configuraciones?.data?.page)
+        ? configuraciones.data.page.find(t => t.id === this.id)
+        : configuraciones?.data;
 
-        if (configuraciones) {
-          const configuracion = configuraciones.data.page.find(t => t.id === this.id);
-          const clienteSeleccionado = this.clientes$.find(f => f.id === configuracion.idCliente);
-          this.form.controls.cliente.setValue(clienteSeleccionado);
+      if (configuracion) {
+        const clienteSeleccionado = this.clientes$.find(f => f.id === configuracion.idCliente);
+        this.form.controls.cliente.setValue(clienteSeleccionado);
 
-          const formulaSeleccionada = this.formulas.find(f => f.id === configuracion.idFormula);
-          this.form.controls.formula.setValue(formulaSeleccionada);
+        const formulaSeleccionada = this.formulas.find(f => f.id === configuracion.idFormula);
+        this.form.controls.formula.setValue(formulaSeleccionada);
 
-          const maquinaSeleccionada = this.machines$.find(f => f.id === configuracion.idMaquina);
-          this.form.controls.machine.setValue(maquinaSeleccionada);
+        const maquinaSeleccionada = this.machines$.find(f => f.id === configuracion.idMaquina);
+        this.form.controls.machine.setValue(maquinaSeleccionada);
 
-          this.form.controls.mostrarCondiciones.setValue(configuracion.mostrarCondiciones);
-          this.form.controls.mostrarObservacionesParametro.setValue(configuracion.mostrarObservacionesParametro);
-          this.form.controls.mostrarResultados.setValue(configuracion.mostrarResultados);
-          this.form.controls.mostrarParametros.setValue(configuracion.mostrarParametros);
-          this.configuracion$ = configuracion;
+        this.selectedMachineName = maquinaSeleccionada?.nombre;
 
-          if (this.mode === 'View') {
-            this.form.disable();
-          }
-        } else {
-          console.warn('No se encontró la configuración para el ID:', this.id);
-          this.snackBar.open('Configuración no encontrada.', 'X', {
-              duration: 5000,
-              panelClass: 'red-snackbar',
+        this.form.controls.mostrarCondiciones.setValue(configuracion.mostrarCondiciones);
+        this.form.controls.mostrarObservacionesParametro.setValue(configuracion.mostrarObservacionesParametro);
+        this.form.controls.mostrarResultados.setValue(configuracion.mostrarResultados);
+        this.form.controls.mostrarParametros.setValue(configuracion.mostrarParametros);
+
+        this.configuracion$ = configuracion;
+
+        if (this.mode !== 'View') {
+          this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
+            this.tests = response.data.map((test: ITest) => ({
+              ...test,
+              selected: configuracion.idsPruebas.includes(test.id)
+            }));
           });
-          this.router.navigate(['/configuracion/grid']);
+        } else {
+          this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
+            this.tests = response.data.map((test: ITest) => ({
+              ...test,
+              selected: configuracion.idsPruebas.includes(test.id),
+              disabled: true
+            }));
+            this.form.disable();
+          });
+        }
+      } else {
+        this.openSnackBar(false, 'Configuración no encontrada.');
+        this.router.navigate(['/configuracion/grid']);
       }
-      },
-      error: (err: any) => console.error(error, err),
-      complete: () => { },
     });
   }
 

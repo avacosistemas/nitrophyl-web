@@ -12,6 +12,7 @@ export interface IConfiguracion {
   cliente?: string;
   formula?: string;
   maquina?: string;
+  idsPruebas?: number[];
 }
 
 export interface IConfiguracionesData {

@@ -99,7 +99,6 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Cargar fórmulas
     this.formulaService.get().pipe(
       map((res: IFormulasResponse | IFormulaResponse) =>
         Array.isArray(res.data) ? res.data : [res.data]
@@ -301,14 +300,6 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   private loadData(): void {
     const error: string = 'ConfiguracionesComponent => loadData: ';
     forkJoin([
-      this.clientesService.getClientes().pipe(
-        catchError((err: any) => {
-          console.error('Error fetching clientes', err);
-          this.clientesFail = true;
-          this.form.controls.material.disable();
-          return of({ data: [] } as ResponseClientes);
-        })
-      ),
       this.configuracionService.get().pipe(
         map((res: IConfiguracionesResponse) => Array.isArray(res.data) ? res.data : [res.data]),
         catchError((err: any) => {
@@ -316,18 +307,9 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
           return of([] as IConfiguracion[]);
         })
       ),
-      this.machinesService.get().pipe(
-        catchError((err: any) => {
-          console.error('Error fetching machines', err);
-          this.machinesFail = true;
-          return of({ data: [] } as IMachineResponse);
-        })
-      )
     ]).subscribe({
-      next: ([clientes, configuraciones, machines]: [ResponseClientes, IConfiguracion[], IMachineResponse]) => {
-        this.clientes$ = clientes.data;
+      next: ([configuraciones]: [IConfiguracion[]]) => {
         this.configuracionesBackup$ = configuraciones;
-        this.machines$ = machines.data;
       },
       error: (err: any) => console.error(error, err),
       complete: () => { },

@@ -74,7 +74,7 @@ export class ABMAssaysComponent
       },
       error: (error: any) => {
         console.error('Error al obtener la fórmula:', error);
-      }
+      } 
     });
 
     this.machines$ = this.configTestService
@@ -117,24 +117,26 @@ export class ABMAssaysComponent
     if (this.drawer) {
       return;
     }
+    this.assayService.machine = this.machine.value;
+    this.assayService.mode = 'create';
+    this.assayService.toggleDrawer();
+    // const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    //   data: {
+    //     dismissible: true,
+    //   },
+    // });
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        dismissible: true,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'conResultados') {
-        this.assayService.machine = this.machine.value;
-        this.assayService.mode = 'create';
-        this.assayService.toggleDrawer();
-      } else if (result === 'sinResultados') {
-        this.assayService.machine = this.machine.value;
-        this.assayService.mode = 'create';
-        this.addAssayWithoutResults();
-      }
-    });
+    // dialogRef.afterClosed().subscribe((result) => {
+    //   if (result === 'conResultados') {
+    //     this.assayService.machine = this.machine.value;
+    //     this.assayService.mode = 'create';
+    //     this.assayService.toggleDrawer();
+    //   } else if (result === 'sinResultados') {
+    //     this.assayService.machine = this.machine.value;
+    //     this.assayService.mode = 'create';
+    //     this.addAssayWithoutResults();
+    //   }
+    // });
   }
 
   private addAssayWithoutResults(): void {
@@ -146,7 +148,7 @@ export class ABMAssaysComponent
     this.assayService.postAssayWithoutResults(assayData).subscribe({
       next: () => {
         this.openSnackBar(true, 'Ensayo agregado sin resultados.');
-        this.assayService.fetchAssays(this.assayService.lot.id); // Asegúrate de que esta línea se esté ejecutando.
+        this.assayService.fetchAssays(this.assayService.lot.id);
       },
       error: (err: any) => {
         this.openSnackBar(false, 'Error al cargar el ensayo.');

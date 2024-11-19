@@ -3,4 +3,5 @@ export interface ITest {
     idMaquina: number;
     nombre: string;
     posicion?: number;
+    selected?: boolean;
   }

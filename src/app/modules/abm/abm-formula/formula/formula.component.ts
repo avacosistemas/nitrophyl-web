@@ -123,7 +123,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.setFormMachine();
         this.formTest = this.formBuilder.group({
           condition: null,
-          observacionesReporte : null
+          observacionesReporte: null
         });
       }
     }
@@ -204,7 +204,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       } else {
         body.parametros.push({
           id: null,
-          maquinaPrueba: {id: param.id, nombre: param.nombre},
+          maquinaPrueba: { id: param.id, nombre: param.nombre },
           minimo: minvparam,
           maximo: maxvparam,
           norma: controls[param.id + '.norma'].value
@@ -283,16 +283,16 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           observacionesReporte: null
         });
         this.setValues(res.data.parametros,
-                      res.data.condiciones,
-                      res.data.observacionesReporte,
-                      res.data.mostrarResultadosReporte);
+          res.data.condiciones,
+          res.data.observacionesReporte,
+          res.data.mostrarResultadosReporte);
         this.formTest.disable();
         this.machine = res.data.maquina;
         this.selectedIndex = 0;
         this.changeDrawer(true);
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -316,17 +316,42 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public addMachineForm(): void {
-    if (this.formTestMachine.invalid) {return;}
+    if (this.formTestMachine.invalid) {
+      return;
+    }
+
     const machine: any = this.formTestMachine.controls.machine;
-    this._formulas.events.next([4, machine.value.id, machine.value.nombre]);
-    machine.reset();
+    const machineId = machine.value.id;
+    const machineName = machine.value.nombre;
+    const machineVersionable = machine.value.versionable;
+
+    this._configTest.getMachines(this.id).subscribe({
+      next: (response: any) => {
+        const isMachineAlreadyAdded = response.data.some(
+          (m: any) => m.idMaquina === machineId
+        );
+
+        if (isMachineAlreadyAdded && !machineVersionable) {
+          this.openSnackBar(false, 'La maquina no es versionable y ya existe.');
+          return;
+        }
+
+        this._formulas.events.next([4, machineId, machineName]);
+
+        machine.reset();
+      },
+      error: (err: any) => {
+        console.error('Error al consultar las máquinas:', err);
+      },
+    });
   }
 
   generarNuevaRevision(): void {
     this._formulas.marcarRevision(this.id).subscribe({
       next: (response) => {
-        console.log('Revisión marcada con éxito:', response);
+        this.openSnackBar(true, `Revisión ${response.data.revision} generada con éxito`);
         this.getRevision();
+        this.getMachines();
       },
       error: (error) => {
         console.error('Error al marcar la revisión:', error);
@@ -348,7 +373,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -360,7 +385,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.machinesForm$ = [...res.data];
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -377,7 +402,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error(error, err);
         this.openSnackBar(false);
       },
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -388,7 +413,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.machines$ = [...res.data];
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -412,7 +437,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         `${param.maquinaPrueba.id}.norma`,
         new FormControl(param.norma)
       );
-      this.params$.push({id: param.maquinaPrueba.id, nombre: param.maquinaPrueba.nombre, min: param.minimo, max: param.maximo, norma: param.norma});
+      this.params$.push({ id: param.maquinaPrueba.id, nombre: param.maquinaPrueba.nombre, min: param.minimo, max: param.maximo, norma: param.norma });
     }
     this.params$ = [...this.params$];
 
@@ -458,7 +483,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.changeDrawer(true);
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -549,7 +574,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.form.controls.material.setValue(formula.data.idMaterial);
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -562,7 +587,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.materialsFail = true;
         console.error(error, err);
       },
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -579,7 +604,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -604,7 +629,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.openSnackBar(false);
         console.error(error, err);
       },
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -630,7 +655,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.openSnackBar(false);
         console.error(error, err);
       },
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -657,7 +682,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         Validators.required,
       ],
       norma: [
-        {value: null, disabled: this.mode === 'Edit'},
+        { value: null, disabled: this.mode === 'Edit' },
         Validators.compose([
           Validators.required,
           Validators.minLength(3),

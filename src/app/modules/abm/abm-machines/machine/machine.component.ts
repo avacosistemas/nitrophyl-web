@@ -4,6 +4,7 @@ import {
   AfterViewInit,
   OnDestroy,
   ViewChild,
+  ChangeDetectorRef
 } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -52,6 +53,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   private id: number;
 
   constructor(
+    private cd: ChangeDetectorRef,
     private _machines: MachinesService,
     private _testService: TestService,
     private activeRoute: ActivatedRoute,
@@ -60,7 +62,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     private snackBar: MatSnackBar,
     private router: Router
   ) {
-    if (!this._machines.getMode()) {this.router.navigate(['/maquinas/grid']);}
+    if (!this._machines.getMode()) { this.router.navigate(['/maquinas/grid']); }
     this.mode = this._machines.getMode();
     if (this.mode === 'Edit' || this.mode === 'View' || this.mode === 'Test') {
       this.activeRoute.paramMap.subscribe(
@@ -77,8 +79,8 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnInit(): void {
-    if (this.mode === 'View' || this.mode === 'Edit') {this.get();}
-    if (this.mode === 'Test') {this.getTest();}
+    if (this.mode === 'View' || this.mode === 'Edit') { this.get(); }
+    if (this.mode === 'Test') { this.getTest(); }
     this.tests.next([]);
   }
 
@@ -140,8 +142,8 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     ) {
       // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       this.form.pristine
-      ? this.router.navigate(['/maquinas/grid'])
-      : this.alert();
+        ? this.router.navigate(['/maquinas/grid'])
+        : this.alert();
       return;
     }
 
@@ -154,8 +156,8 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
         this.form.markAllAsTouched();
         return;
       }
-      if (this.mode === 'Create') {this.post();}
-      if (this.mode === 'Edit') {this.put();}
+      if (this.mode === 'Create') { this.post(); }
+      if (this.mode === 'Edit') { this.put(); }
     }
   }
 
@@ -304,13 +306,12 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
             : [res.data as IMachine];
           this.form.controls.name.setValue(data[0].nombre);
           this.form.controls.status.setValue(data[0].estado);
-          this.form.controls.position.setValue(data[0].posicion);
-          this.form.controls.observacionesReporte.setValue(
-            data[0].observacionesReporte
-          );
+          this.form.controls.versionable.setValue(!!data[0].versionable);
+          this.form.controls.observacionesReporte.setValue(data[0].observacionesReporte);
+          this.cd.detectChanges();
         }
       },
-      error: () =>  this.openSnackBar(false, 'Error al obtener las Maquinas.'),
+      error: () => this.openSnackBar(false, 'Error al obtener las Maquinas.'),
     });
   }
 
@@ -318,6 +319,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     const body: IMachine = {
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
+      versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
     };
     this._machines.post(body).subscribe({
@@ -335,7 +337,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       error: () => {
         this.openSnackBar(false);
       },
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -344,6 +346,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       id: this.id,
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
+      versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
     };
     this._machines.put(body).subscribe({
@@ -360,7 +363,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       error: () => {
         this.openSnackBar(false);
       },
-      complete: () => {},
+      complete: () => { },
     });
   }
 
@@ -387,7 +390,12 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
         { value: null, disabled: this.mode === 'View' },
         Validators.required,
       ],
-      observacionesReporte: [],
+      versionable: [
+        { value: false, disabled: this.mode === 'View' }
+      ],
+      observacionesReporte: [
+        { value: '', disabled: this.mode === 'View' }
+      ],
     });
   }
 
@@ -404,7 +412,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       data: { data: null, seccion: 'maquinas', boton: 'Cerrar' },
     });
     dialog.afterClosed().subscribe((res: boolean) => {
-      if (res) {this.router.navigate(['/maquinas/grid']);}
+      if (res) { this.router.navigate(['/maquinas/grid']); }
     });
   }
 

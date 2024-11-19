@@ -43,7 +43,7 @@ export class ConfiguracionService {
     }
 
     if (body.id) {
-      return this.http.get<IConfiguracionResponse>(`${this.url}?id=${body.id}`);
+      return this.http.get<IConfiguracionResponse>(`${this.url}/${body.id}`);
     }
 
     const params: string[] = [];
