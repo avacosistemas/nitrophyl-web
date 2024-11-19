@@ -279,7 +279,7 @@
           </ng-container>
           <ng-container matColumnDef="revision">
             <th mat-header-cell *matHeaderCellDef> Version </th>
-            <td mat-cell *matCellDef="let machine"> {{ machine.revision }} </td>
+            <td mat-cell *matCellDef="let machine"> {{ machine.version }} </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumnsMachines"></tr>
           <tr class="cursor-pointer hover:bg-hover" (click)="getTest(row.id)" mat-row
