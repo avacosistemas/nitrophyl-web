@@ -3,37 +3,56 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
+import { environment } from 'environments/environment';
+import { User } from 'app/core/user/user.types';
 
-@Injectable()
-export class AuthService
-{
+@Injectable({
+    providedIn: 'root'
+})
+export class AuthService {
     private _authenticated: boolean = false;
+    private _userPermissions: string[] = [];
 
-    /**
-     * Constructor
-     */
+    // -----------------------------------------------------------------------------------------------------
+    // @ Constructor
+    // -----------------------------------------------------------------------------------------------------
     constructor(
         private _httpClient: HttpClient,
         private _userService: UserService
-    )
-    {
+    ) {
+        const token = this.accessToken;
     }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
     // -----------------------------------------------------------------------------------------------------
-
     /**
-     * Setter & getter for access token
+     * Getter for access token
      */
-    set accessToken(token: string)
-    {
-        localStorage.setItem('accessToken', token);
+    get accessToken(): string {
+        const token = localStorage.getItem('accessToken');
+
+        if (token && token.split('.').length === 3) {
+            return token;
+        } else {
+            console.error('Token inválido encontrado en localStorage:', token);
+            return '';
+        }
     }
 
-    get accessToken(): string
-    {
-        return localStorage.getItem('accessToken') ?? '';
+    /**
+     * Setter for access token
+     */
+    set accessToken(token: string) {
+        if (token && token.trim()) {
+            if (token.split('.').length === 3) {
+                localStorage.setItem('accessToken', token);
+            } else {
+                console.error('Intentando guardar un token inválido (sin tres partes):', token);
+            }
+        } else {
+            // console.error('Token recibido es undefined o vacío:', token);
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -45,9 +64,9 @@ export class AuthService
      *
      * @param email
      */
-    forgotPassword(email: string): Observable<any>
-    {
-        return this._httpClient.post('api/auth/forgot-password', email);
+    forgotPassword(email: string): Observable<any> {
+        const apiURL = this.getApiUrl('auth/forgot-password');
+        return this._httpClient.post(apiURL, email);
     }
 
     /**
@@ -55,9 +74,9 @@ export class AuthService
      *
      * @param password
      */
-    resetPassword(password: string): Observable<any>
-    {
-        return this._httpClient.post('api/auth/reset-password', password);
+    resetPassword(password: string): Observable<any> {
+        const apiURL = this.getApiUrl('auth/reset-password');
+        return this._httpClient.post(apiURL, password);
     }
 
     /**
@@ -65,58 +84,47 @@ export class AuthService
      *
      * @param credentials
      */
-    signIn(credentials: { email: string; password: string }): Observable<any>
-    {
-        // Throw error, if the user is already logged in
-        if ( this._authenticated )
-        {
-            return throwError('User is already logged in.');
-        }
+    signIn(credentials: { username: string; password: string }): Observable<any> {
+        const apiURL = this.getApiUrl('auth');
 
-        return this._httpClient.post('api/auth/sign-in', credentials).pipe(
+        return this._httpClient.post(apiURL, credentials).pipe(
             switchMap((response: any) => {
+                if (response && response.token) {
+                    // Guardar el token
+                    this.accessToken = response.token;
+                    this._authenticated = true;
 
-                // Store the access token in the local storage
-                this.accessToken = response.accessToken;
+                    const user = {
+                        name: response.name,
+                        lastname: response.lastname,
+                        email: response.email,
+                    };
+                    localStorage.setItem('userData', JSON.stringify(user));
+                    localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
 
-                // Set the authenticated flag to true
-                this._authenticated = true;
+                    this._userService.user = user;
 
-                // Store the user on the user service
-                this._userService.user = response.user;
-
-                // Return a new observable with the response
-                return of(response);
-            })
+                    return of(response);
+                } else {
+                    return throwError(() => new Error('Token no encontrado'));
+                }
+            }),
+            catchError(error => throwError(() => new Error('Autenticación fallida')))
         );
     }
 
     /**
      * Sign in using the access token
      */
-    signInUsingToken(): Observable<any>
-    {
-        // Renew token
-        return this._httpClient.post('api/auth/refresh-access-token', {
-            accessToken: this.accessToken
-        }).pipe(
-            catchError(() =>
+    signInUsingToken(): Observable<any> {
+        const apiURL = this.getApiUrl('refresh');
 
-                // Return false
-                of(false)
-            ),
+        return this._httpClient.post(apiURL, null).pipe(
+            catchError(() => of(false)),
             switchMap((response: any) => {
-
-                // Store the access token in the local storage
                 this.accessToken = response.accessToken;
-
-                // Set the authenticated flag to true
                 this._authenticated = true;
-
-                // Store the user on the user service
                 this._userService.user = response.user;
-
-                // Return true
                 return of(true);
             })
         );
@@ -125,26 +133,22 @@ export class AuthService
     /**
      * Sign out
      */
-    signOut(): Observable<any>
-    {
-        // Remove the access token from the local storage
+    signOut(): Observable<any> {
         localStorage.removeItem('accessToken');
-
-        // Set the authenticated flag to false
+        localStorage.removeItem('userData');
+        localStorage.removeItem('userPermissions');
         this._authenticated = false;
-
-        // Return the observable
         return of(true);
-    }
+    }    
 
     /**
      * Sign up
      *
      * @param user
      */
-    signUp(user: { name: string; email: string; password: string; company: string }): Observable<any>
-    {
-        return this._httpClient.post('api/auth/sign-up', user);
+    signUp(user: { name: string; email: string; password: string; company: string }): Observable<any> {
+        const apiURL = this.getApiUrl('auth/sign-up');
+        return this._httpClient.post(apiURL, user);
     }
 
     /**
@@ -152,35 +156,55 @@ export class AuthService
      *
      * @param credentials
      */
-    unlockSession(credentials: { email: string; password: string }): Observable<any>
-    {
-        return this._httpClient.post('api/auth/unlock-session', credentials);
+    unlockSession(credentials: { email: string; password: string }): Observable<any> {
+        const apiURL = this.getApiUrl('auth/unlock-session');
+        return this._httpClient.post(apiURL, credentials);
     }
 
     /**
      * Check the authentication status
      */
-    check(): Observable<boolean>
-    {
-        // Check if the user is logged in
-        if ( this._authenticated )
-        {
+    check(): Observable<boolean> {
+        if (this._authenticated) {
             return of(true);
         }
 
-        // Check the access token availability
-        if ( !this.accessToken )
-        {
+        if (!this.accessToken) {
+            console.error('No se encontró un token de acceso');
             return of(false);
         }
 
-        // Check the access token expire date
-        if ( AuthUtils.isTokenExpired(this.accessToken) )
-        {
+        if (AuthUtils.isTokenExpired(this.accessToken)) {
+            console.error('El token ha expirado');
             return of(false);
         }
 
-        // If the access token exists and it didn't expire, sign in using it
         return this.signInUsingToken();
+    }
+
+    hasPermission(permission: string): boolean {
+        return this._userPermissions.includes(permission);
+    }
+
+    handleLoginSuccess(response: any): void {
+        if (response && response.permissions) {
+            localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
+        }
+    }
+
+    getUserPermissions(): string[] {
+        return JSON.parse(localStorage.getItem('userPermissions') || '[]');
+    }
+
+    getUserData(): { name: string; lastname: string; email: string } | null {
+        const userData = localStorage.getItem('userData');
+        return userData ? JSON.parse(userData) : null;
+    }
+
+    // -----------------------------------------------------------------------------------------------------
+    // @ Private helper method to get API URL
+    // -----------------------------------------------------------------------------------------------------
+    private getApiUrl(endpoint: string): string {
+        return `${environment.server}${endpoint}`;
     }
 }

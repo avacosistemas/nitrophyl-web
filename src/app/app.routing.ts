@@ -3,20 +3,15 @@ import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 import { InitialDataResolver } from 'app/app.resolvers';
+import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
 // @formatter:off
 /* eslint-disable max-len */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
-  // Redirect empty path to '/example'
-  { path: '', pathMatch: 'full', redirectTo: 'example' },
+  { path: '', pathMatch: 'full', redirectTo: 'welcome' },
 
-  // Redirect signed in user to the '/example'
-  //
-  // After the user signs in, the sign in page will redirect the user to the 'signed-in-redirect'
-  // path. Below is another redirection for that path to redirect the user to the desired
-  // location. This is a small convenience to keep all main routes together here on this file.
-  { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'example' },
+  // { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'usuarios/grid' },
 
   // Auth routes for guests
   {
@@ -93,32 +88,40 @@ export const appRoutes: Route[] = [
     ],
   },
 
-  // Landing routes
   {
     path: '',
-    component: LayoutComponent,
-    data: {
-      layout: 'empty',
-    },
-    children: [
-      {
-        path: 'home',
-        loadChildren: () =>
-          import('app/modules/landing/home/home.module').then(
-            (m: any) => m.LandingHomeModule
-          ),
-      },
-    ],
-  },
-  {
-    path: '',
+    canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
     component: LayoutComponent,
     resolve: {
       initialData: InitialDataResolver,
     },
     children: [
       {
+        path: 'example',
+        loadChildren: () =>
+          import('app/modules/admin/example/example.module').then(
+            (m: any) => m.ExampleModule
+          ),
+      },
+      {
+        path: 'welcome',
+        loadChildren: () =>
+          import('app/modules/admin/welcome/welcome.module').then(
+            (m: any) => m.WelcomeModule
+          ),
+      },
+      {
+        path: 'permission-denied',
+        loadChildren: () =>
+          import('app/modules/admin/permission-denied/permission-denied.module').then(
+            (m: any) => m.PermissionDeniedModule
+          ),
+      },
+      {
         path: 'usuarios',
+        canActivate: [PermissionGuard],
+        data: { permission: 'USUARIO_READ' },
         loadChildren: () =>
           import('app/modules/abm/abm-usuarios/abm-usuarios.module').then(
             (m: any) => m.ABMUsuariosModule
@@ -133,6 +136,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'permisos',
+        canActivate: [PermissionGuard],
+        data: { permission: 'PERMISOS_READ' },
         loadChildren: () =>
           import('app/modules/abm/abm-permisos/abm-permisos.module').then(
             (m: any) => m.ABMPermisosModule
@@ -168,6 +173,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'clientes',
+        canActivate: [PermissionGuard],
+        data: { permission: 'LISTADO_CLIENTE_CREATE' },
         loadChildren: () =>
           import('app/modules/abm/abm-clientes/abm-clientes.module').then(
             (m: any) => m.ABMClientesModule
@@ -219,26 +226,6 @@ export const appRoutes: Route[] = [
           import('app/modules/abm/abm-configuracion/abm-configuracion.module').then(
             (m: any) => m.ABMConfiguracionModule
           )
-      },
-    ],
-  },
-
-  // Admin routes
-  {
-    path: '',
-    canActivate: [AuthGuard],
-    canActivateChild: [AuthGuard],
-    component: LayoutComponent,
-    resolve: {
-      initialData: InitialDataResolver,
-    },
-    children: [
-      {
-        path: 'example',
-        loadChildren: () =>
-          import('app/modules/admin/example/example.module').then(
-            (m: any) => m.ExampleModule
-          ),
       },
     ],
   },

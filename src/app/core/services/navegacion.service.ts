@@ -1,18 +1,13 @@
 import { Injectable } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation';
+import { AuthService } from 'app/core/auth/auth.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NavegacionService {
+
   private vistas: FuseNavigationItem[] = [
-    // {
-    //     icon: "heroicons_outline:chart-pie",
-    //     id: "example",
-    //     link: "/example",
-    //     title: "Example",
-    //     type: "basic"
-    // },
     {
       icon: 'heroicons_outline:document-report',
       id: 'informes',
@@ -26,7 +21,6 @@ export class NavegacionService {
           type: 'basic',
         },
         {
-          // icon: 'heroicons_outline:clipboard-list',
           id: 'configuracion',
           link: '/configuracion/grid',
           title: 'Configuración Calidad',
@@ -68,7 +62,7 @@ export class NavegacionService {
           title: 'Monitor',
           type: 'basic',
         }
-      ],
+      ]
     },
     {
       icon: 'heroicons_outline:briefcase',
@@ -140,6 +134,7 @@ export class NavegacionService {
           link: '/permisos/grid',
           title: 'Permisos',
           type: 'basic',
+          permissionCode: 'PERMISOS_READ',
         },
         {
           icon: 'heroicons_outline:view-grid',
@@ -152,7 +147,26 @@ export class NavegacionService {
     },
   ];
 
+  constructor(private authService: AuthService) {}
+
   public get(): FuseNavigationItem[] {
-    return this.vistas;
+    const userPermissions: string[] = this.authService.getUserPermissions();
+
+    return this.vistas.map((vista) => {
+      if (vista.children) {
+        vista.children = vista.children.filter((child) => {
+          if (child.permissionCode) {
+            return userPermissions.includes(child.permissionCode);
+          }
+          return true;
+        });
+      }
+
+      if (vista.permissionCode) {
+        return userPermissions.includes(vista.permissionCode) ? vista : null;
+      }
+
+      return vista;
+    }).filter(Boolean);
   }
 }

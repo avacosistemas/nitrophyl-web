@@ -1,29 +1,22 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
-import { UserLogin } from 'app/core/models/user-login.model';
-import { AutorizacionService } from 'app/core/services/autorizacion.service';
 
 @Component({
-    selector     : 'auth-sign-in',
-    templateUrl  : './sign-in.component.html',
-    encapsulation: ViewEncapsulation.None,
-    animations   : fuseAnimations
+    selector: 'auth-sign-in',
+    templateUrl: './sign-in.component.html',
+    animations: fuseAnimations
 })
-export class AuthSignInComponent implements OnInit
-{
-    @ViewChild('signInNgForm') signInNgForm: NgForm;
+export class AuthSignInComponent implements OnInit {
     @ViewChild('loginNgForm') loginNgForm: NgForm;
 
     alert: { type: FuseAlertType; message: string } = {
-        type   : 'success',
+        type: 'success',
         message: ''
     };
-
-    signInForm: FormGroup;
     loginForm: FormGroup;
     showAlert: boolean = false;
 
@@ -31,124 +24,51 @@ export class AuthSignInComponent implements OnInit
      * Constructor
      */
     constructor(
-        private _activatedRoute: ActivatedRoute,
-        private _authService: AuthService,
         private _formBuilder: FormBuilder,
-        private _router: Router,
-        private loginService: AutorizacionService
-    )
-    {
-    }
+        private _authService: AuthService,
+        private _activatedRoute: ActivatedRoute,
+        private _router: Router
+    ) { }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Lifecycle hooks
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * On init
-     */
-    ngOnInit(): void
-    {
-        // Create the form
-        this.signInForm = this._formBuilder.group({
-            email     : ['hughes.brian@company.com', [Validators.required, Validators.email]],
-            password  : ['admin', Validators.required],
-            rememberMe: ['']
-        });
+    ngOnInit(): void {
         this.loginForm = this._formBuilder.group({
-            username     : ['', [Validators.required]],
-            password  : ['', Validators.required]
+            username: ['', [Validators.required]],
+            password: ['', Validators.required]
         });
     }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods
-    // -----------------------------------------------------------------------------------------------------
-
     /**
-     * Sign in
+     * Manejar el inicio de sesión
      */
-    login() {
-        if ( this.loginForm.invalid ) {
+    login(event: Event): void {
+        event.preventDefault();
+
+        if (this.loginForm.invalid) {
             return;
-        };
+        }
 
         this.loginForm.disable();
         this.showAlert = false;
 
-        let model: UserLogin = {
-            username: this.loginForm.controls.username.value,
-            password: this.loginForm.controls.password.value
-        }
-
-        this.loginService.login(model).subscribe(res => {
-            const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('usuarios') || '/usuarios/grid';
-            let userModel = {
-                name: `${res.name} ${res.lastname}`,
-                email: res.email
-            }
-            this.loginService.setUser(userModel);
-            this._router.navigateByUrl(redirectURL);
-        },
-        err => {
-            this.loginForm.enable();
-            this.loginNgForm.resetForm();
-            this.alert = {
-                type   : 'error',
-                message: 'Wrong email or password'
-            };
-            this.showAlert = true;
-        })
-
-        
-    }
-
-    signIn(): void
-    {
-        // Return if the form is invalid
-        if ( this.signInForm.invalid )
-        {
-            return;
-        }
-
-        // Disable the form
-        this.signInForm.disable();
-
-        // Hide the alert
-        this.showAlert = false;
-
-        // Sign in
-        this._authService.signIn(this.signInForm.value)
-            .subscribe(
-                () => {
-
-                    // Set the redirect url.
-                    // The '/signed-in-redirect' is a dummy url to catch the request and redirect the user
-                    // to the correct page after a successful sign in. This way, that url can be set via
-                    // routing file and we don't have to touch here.
-                    const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
-
-                    // Navigate to the redirect url
+        this._authService.signIn(this.loginForm.value).subscribe({
+            next: (response) => {
+                if (response && response.permissions) {
+                    localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
+                    this._authService.handleLoginSuccess(response);
+                    const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('welcome') || 'welcome';
                     this._router.navigateByUrl(redirectURL);
-
-                },
-                (response) => {
-
-                    // Re-enable the form
-                    this.signInForm.enable();
-
-                    // Reset the form
-                    this.signInNgForm.resetForm();
-
-                    // Set the alert
-                    this.alert = {
-                        type   : 'error',
-                        message: 'Wrong email or password'
-                    };
-
-                    // Show the alert
-                    this.showAlert = true;
                 }
-            );
+            },
+            error: (error) => {
+                this.loginForm.enable();
+                this.loginForm.reset();
+
+                this.alert = {
+                    type: 'error',
+                    message: 'Usuario o contraseña incorrectos. Por favor, intenta de nuevo.'
+                };
+                this.showAlert = true;
+            }
+        });
     }
 }
