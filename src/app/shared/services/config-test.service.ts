@@ -34,7 +34,7 @@ export class ConfigTestService {
     id: number
   ): Observable<IConfigTestsResponse | IConfigTestResponse> {
     return this.http.get<IConfigTestsResponse | IConfigTestResponse>(
-      `${this._url}/formula/${id}/vigentes`
+      `${this._url}/lote/${id}/vigentes`
     );
   }
 

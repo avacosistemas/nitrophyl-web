@@ -8,6 +8,7 @@ export interface ILot {
   fecha?: string;
   fechaEstado?: string;
   nroLote: string;
+  revision: number;
 }
 
 export interface ILotAutocomplete {

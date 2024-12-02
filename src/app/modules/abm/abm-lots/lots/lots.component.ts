@@ -229,11 +229,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       nroLote: string;
       observaciones: string;
       fecha: string;
+      revision: number;
     } = {
       idFormula: this.form.controls['formula'].value.id,
       nroLote: this.form.controls['lot'].value,
       observaciones: this.form.controls['observation'].value ?? '',
       fecha: date,
+      revision: 0
     };
 
     this._post(lot);
@@ -278,12 +280,14 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       observaciones: string;
       fecha: string;
       id: number;
+      revision: number;
     } = {
       idFormula: this.form.controls['formula'].value.id,
       nroLote: this.form.controls['lot'].value,
       observaciones: this.form.controls['observation'].value ?? '',
       fecha: date,
       id: this.form.controls['id'].value,
+      revision: 0
     };
 
     this._put(lot);

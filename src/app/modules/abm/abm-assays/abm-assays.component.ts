@@ -69,7 +69,7 @@ export class ABMAssaysComponent
       next: (response: { data: any }) => {
         if (response && response.data) {
           this.formula = response.data;
-          this.subtitle = `Fórmula: ${this.formula.labelCombo}`;
+          this.subtitle = `Fórmula: ${this.formula.labelCombo} - R${this.assayService.lot?.revision}`;
         }
       },
       error: (error: any) => {
@@ -78,7 +78,7 @@ export class ABMAssaysComponent
     });
 
     this.machines$ = this.configTestService
-      .getMachinesVigentes(this.assayService.lot.idFormula)
+      .getMachinesVigentes(this.assayService.lot.id)
       .pipe(
         map((res: IConfigTestsResponse | IConfigTestResponse) =>
           Array.isArray(res.data) ? res.data : [res.data]
