@@ -12,13 +12,22 @@ import { ABMClientesGrillaComponent } from './grilla/abm-clientes-grilla.compone
 // * Material.
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
+import { CoreSharedModule } from 'app/core/shared/shared.module';
+import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
+
 const abmUsuariosRoutes: Route[] = [
   {
     path: '',
     component: ABMClientesComponent,
     children: [
-      { path: 'grid', component: ABMClientesGrillaComponent },
-      { path: 'create', component: ABMClientesCrearComponent },
+      { path: 'grid',
+        component: ABMClientesGrillaComponent,
+        data: { permission: 'MENU_ADMINISTRACION_CLIENTES' },
+        canActivate: [PermissionGuard]
+      },
+      { path: 'create',
+        component: ABMClientesCrearComponent,
+      },
       {
         path: ':idCliente/grid-contactos',
         component: ABMClientesGrillaContactosComponent,
@@ -29,7 +38,7 @@ const abmUsuariosRoutes: Route[] = [
       },
       {
         path: ':idCliente/contacto/:idContacto',
-        component: ABMClientesContactoComponent,
+        component: ABMClientesContactoComponent
       },
     ],
   },
@@ -53,6 +62,7 @@ const maskConfig: Partial<IConfig> = {
     ABMSharedModule,
     NgxMaskModule.forRoot(maskConfig),
     MatSlideToggleModule,
+    CoreSharedModule
   ],
 })
 export class ABMClientesModule {}

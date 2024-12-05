@@ -49,8 +49,8 @@
         <span class="mat-button-focus-overlay"></span>
       </button>
 
-      <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-        (click)="create()" *ngIf="title === 'Consultar Máquinas'">
+      <button *ngIf="('MAQUINAS_CREAR' | hasPermission) && (title === 'Consultar Máquinas')" mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+        (click)="create()" >
         <span class="mat-button-wrapper"> Crear nueva máquina </span>
         <span matripple="" class="mat-ripple mat-button-ripple"></span>
         <span class="mat-button-focus-overlay"></span>

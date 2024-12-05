@@ -33,7 +33,7 @@
                         <button>
                             <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver" [routerLink]="['../user', row.id]" (click)="openUser(2)"></mat-icon>
                         </button>
-                        <button>
+                        <button *ngIf="'USUARIO_DELETE' | hasPermission">
                             <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(row)"></mat-icon>
                         </button>
                     </td>

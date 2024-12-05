@@ -5,14 +5,20 @@ import { ABMPerfilesComponent } from './abm-perfiles.component';
 import { ABMPerfilesGrillaComponent } from './grilla/abm-perfiles-grilla.component';
 import { ABMCrearPerfil } from './crear-perfil/abm-perfiles-crear.component';
 import { ABMPerfilesPerfil } from './perfil/abm-perfiles-perfil.component';
+import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
 const abmPerfilesRoutes: Route[] = [
     {
         path     : '',
         component: ABMPerfilesComponent,
         children: [
-            {path: 'profile/:id', component: ABMPerfilesPerfil},
-            {path: 'grid', component: ABMPerfilesGrillaComponent},
+            {
+                path: 'profile/:id', component: ABMPerfilesPerfil
+            },
+            {path: 'grid', component: ABMPerfilesGrillaComponent,
+                canActivate: [PermissionGuard],
+                data: { permission: 'MENU_SEGURIDAD_PERFILES' }
+            },
             {path: 'create', component: ABMCrearPerfil},
         ]
     }

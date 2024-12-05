@@ -6,8 +6,7 @@ import { FuseNavigationService, FuseVerticalNavigationComponent } from '@fuse/co
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { User } from 'app/core/user/user.types';
-import { UserService } from 'app/core/user/user.service';
-import { AutorizacionService } from 'app/core/services/autorizacion.service';
+import { AuthService } from 'app/core/auth/auth.service';
 
 @Component({
     selector     : 'classy-layout',
@@ -25,13 +24,11 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
      * Constructor
      */
     constructor(
-        private _activatedRoute: ActivatedRoute,
         private _router: Router,
         private _navigationService: NavigationService,
-        private _userService: UserService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fuseNavigationService: FuseNavigationService,
-        private loginService: AutorizacionService
+        private _authService: AuthService
     )
     {
     }
@@ -76,8 +73,15 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
             });
         */
 
-        this.user = this.loginService.getUser()
-        
+        const userData = this._authService.getUserData();
+        if (userData) {
+            this.user = {
+                name: `${userData.name} ${userData.lastname}`,
+                email: userData.email,
+                avatar: '', // Puedes configurar un avatar predeterminado si es necesario
+                status: 'active',
+            };
+        }
 
         // Subscribe to media changes
         this._fuseMediaWatcherService.onMediaChange$
@@ -125,8 +129,8 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
         this._router.navigate(['/sign-out']);
     }
 
-    hideHeader() {
-        var header = document.getElementById('header');
+    hideHeader(): void {
+        const header = document.getElementById('header');
         header.style.setProperty('display', 'none', 'important');
     }
 }

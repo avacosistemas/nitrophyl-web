@@ -21,35 +21,35 @@
             </div>
         </div>
         <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
-            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="edit()" *ngIf="titulo == 'Edición Permiso'">
+            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="edit()" *ngIf="(titulo === 'Edición Permiso')">
                 <span class="mat-button-wrapper">
                     Guardar 
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="titulo == 'Nuevo Permiso'">
+            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="(titulo === 'Nuevo Permiso')">
                 <span class="mat-button-wrapper">
                     Guardar 
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="editContinue()" *ngIf="titulo == 'Edición Permiso'">
+            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="editContinue()" *ngIf="(titulo === 'Edición Permiso')">
                 <span class="mat-button-wrapper">
                     Guardar y continuar 
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()" *ngIf="titulo != 'Consulta Permisos'">
+            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()" *ngIf="titulo !== 'Consulta Permisos'">
                 <span class="mat-button-wrapper">
                     Cerrar 
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="create()" *ngIf="titulo == 'Consulta Permisos'">
+            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="create()" *ngIf="(titulo === 'Consulta Permisos')">
                 <span class="mat-button-wrapper">
                     Crear nuevo permiso 
                 </span>

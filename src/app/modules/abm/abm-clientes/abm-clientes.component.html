@@ -29,42 +29,42 @@
             </div>
         </div>
         <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
-            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="titulo == 'Nuevo Cliente'">
+            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Cliente')">
                 <span class="mat-button-wrapper">
                     Guardar Cliente
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()" *ngIf="titulo != 'Consulta Clientes' && titulo != 'Consulta Contactos'">
+            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()" *ngIf="titulo !== 'Consulta Clientes' && titulo !== 'Consulta Contactos'">
                 <span class="mat-button-wrapper">
                     Cerrar 
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" [routerLink]="['../clientes/grid']" *ngIf="titulo == 'Consulta Contactos'">
+            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" [routerLink]="['../clientes/grid']" *ngIf="titulo === 'Consulta Contactos'">
                 <span class="mat-button-wrapper">
                     Volver a ABM Clientes 
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="create()" *ngIf="titulo == 'Consulta Clientes'">
+            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="create()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Consulta Clientes')">
                 <span class="mat-button-wrapper">
                     Agregar nuevo cliente 
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="createContacto()" *ngIf="titulo == 'Consulta Contactos'">
+            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="createContacto()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Consulta Contactos')">
                 <span class="mat-button-wrapper">
                     Agregar nuevo contacto
                 </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                 <span class="mat-button-focus-overlay"></span>
             </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="titulo == 'Nuevo Contacto' || titulo == 'Edición Contacto'">
+            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Contacto') || (titulo === 'Edición Contacto')">
                 <span class="mat-button-wrapper">
                     Guardar contacto
                 </span>

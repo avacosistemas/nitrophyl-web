@@ -64,12 +64,12 @@
                 (click)="mode(2)">
               </mat-icon>
             </button>
-            <button>
+            <button *ngIf="'MAQUINAS_EDITAR' | hasPermission">
               <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar" [routerLink]="['../edit', row.id]"
                 (click)="mode(1)">
               </mat-icon>
             </button>
-            <button class="mr-2">
+            <button class="mr-2" *ngIf="'MAQUINAS_PRUEBAS' | hasPermission">
               <mat-icon svgIcon="heroicons_solid:clipboard" matTooltip="Pruebas" [routerLink]="['../test', row.id]"
                 (click)="mode(3, row)">
               </mat-icon>

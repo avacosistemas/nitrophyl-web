@@ -6,14 +6,28 @@ import { ABMPermisosGrillaComponent } from './grilla/abm-permisos-grilla.compone
 import { ABMPermisosPermiso } from './permiso/abm-permisos-permiso.component';
 import { ABMCrearPermiso } from './crear-permiso/abm-permisos-crear.component';
 
+import { CoreSharedModule } from 'app/core/shared/shared.module';
+import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
+
 const abmPermisosRoutes: Route[] = [
     {
-        path     : '',
+        path: '',
         component: ABMPermisosComponent,
         children: [
-            {path: 'permission/:id', component: ABMPermisosPermiso},
-            {path: 'create', component: ABMCrearPermiso},
-            { path: 'grid', component: ABMPermisosGrillaComponent},
+            {
+                path: 'permission/:id',
+                component: ABMPermisosPermiso
+            },
+            {
+                path: 'create',
+                component: ABMCrearPermiso,
+                canActivate: [PermissionGuard],
+                data: { permission: 'MENU_SEGURIDAD_PERMISOS' }
+            },
+            {
+                path: 'grid',
+                component: ABMPermisosGrillaComponent
+            },
         ]
     }
 ];
@@ -25,11 +39,11 @@ const abmPermisosRoutes: Route[] = [
         ABMPermisosPermiso,
         ABMCrearPermiso
     ],
-    imports     : [
+    imports: [
         RouterModule.forChild(abmPermisosRoutes),
-        ABMSharedModule
+        ABMSharedModule,
+        CoreSharedModule
     ]
 })
-export class ABMPermisosModule
-{
+export class ABMPermisosModule {
 }
