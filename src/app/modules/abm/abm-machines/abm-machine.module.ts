@@ -8,6 +8,7 @@ import { ABMSharedModule } from '../abm-shared.module';
 import { ABMMachineComponent } from './abm-machine.component';
 import { MachinesComponent } from './machines/machines.component';
 import { MachineComponent } from './machine/machine.component';
+import { CoreSharedModule } from 'app/core/shared/shared.module';
 
 const routes: Route[] = [
   {
@@ -27,12 +28,13 @@ const routes: Route[] = [
   declarations: [
       ABMMachineComponent,
       MachinesComponent,
-      MachineComponent
+      MachineComponent,
   ],
   imports: [
     RouterModule.forChild(routes),
     ABMSharedModule,
     DragDropModule,
+    CoreSharedModule
   ],
 })
 export class ABMMachineModule {}

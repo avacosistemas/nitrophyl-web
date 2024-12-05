@@ -12,6 +12,7 @@ export class NavegacionService {
       icon: 'heroicons_outline:document-report',
       id: 'informes',
       title: 'Informes',
+      permissionCode: 'MENU_INFORMES',
       type: 'collapsable',
       children: [
         {
@@ -19,11 +20,13 @@ export class NavegacionService {
           link: '/reports',
           title: 'Calidad',
           type: 'basic',
+          permissionCode: 'MENU_INFORME_CALIDAD',
         },
         {
           id: 'configuracion',
           link: '/configuracion/grid',
           title: 'Configuración Calidad',
+          permissionCode: 'MENU_CONF_INFORME_CALIDAD',
           type: 'basic',
         }
       ]
@@ -33,12 +36,14 @@ export class NavegacionService {
       id: 'laboratorio',
       title: 'Laboratorio',
       type: 'collapsable',
+      permissionCode: 'MENU_LABORATORIO',
       children: [
         {
           icon: 'heroicons_outline:calculator',
           id: 'maquinas',
           link: '/maquinas/grid',
           title: 'Máquinas',
+          permissionCode: 'MENU_LABORATORIO_MAQUINAS',
           type: 'basic',
         },
         {
@@ -46,6 +51,7 @@ export class NavegacionService {
           id: 'formulas',
           link: '/formulas/grid',
           title: 'Fórmulas',
+          permissionCode: 'MENU_LABORATORIO_FORMULAS',
           type: 'basic',
         },
         {
@@ -53,6 +59,7 @@ export class NavegacionService {
           id: 'lotes',
           link: '/lotes/grid',
           title: 'Lotes',
+          permissionCode: 'MENU_LABORATORIO_LOTES',
           type: 'basic',
         },
         {
@@ -60,6 +67,7 @@ export class NavegacionService {
           id: 'monitor',
           link: '/monitor/full',
           title: 'Monitor',
+          permissionCode: 'MENU_LABORATORIO_MONITOR',
           type: 'basic',
         }
       ]
@@ -69,12 +77,14 @@ export class NavegacionService {
       id: 'administracion',
       title: 'Administración',
       type: 'collapsable',
+      permissionCode: 'MENU_ADMINISTRACION',
       children: [
         {
           icon: 'heroicons_solid:identification',
           id: 'clientes',
           link: '/clientes/grid',
           title: 'Clientes',
+          permissionCode: 'MENU_ADMINISTRACION_CLIENTES',
           type: 'basic',
         },
       ],
@@ -84,12 +94,14 @@ export class NavegacionService {
       id: 'produccion',
       title: 'Producción',
       type: 'collapsable',
+      permissionCode: 'MENU_PRODUCCION',
       children: [
         {
           icon: 'mat_solid:app_registration',
           id: 'moldes',
           link: '/moldes/grid',
           title: 'Moldes',
+          permissionCode: 'MENU_PRODUCCION_MOLDES',
           type: 'basic',
         },
         {
@@ -97,6 +109,7 @@ export class NavegacionService {
           id: 'piezas',
           link: '/piezas/grid',
           title: 'Piezas',
+          permissionCode: 'MENU_PRODUCCION_PIEZAS',
           type: 'basic',
         },
         {
@@ -104,6 +117,7 @@ export class NavegacionService {
           id: 'productos',
           link: '/productos/grid',
           title: 'Productos',
+          permissionCode: 'MENU_PRODUCCION_PRODUCTOS',
           type: 'basic',
         },
       ],
@@ -112,6 +126,7 @@ export class NavegacionService {
       icon: 'heroicons_outline:cog',
       id: 'security',
       title: 'Seguridad',
+      permissionCode: 'MENU_SEGURIDAD',
       type: 'collapsable',
       children: [
         {
@@ -119,6 +134,7 @@ export class NavegacionService {
           id: 'usuarios',
           link: '/usuarios/grid',
           title: 'Usuarios',
+          permissionCode: 'MENU_SEGURIDAD_USUARIOS',
           type: 'basic',
         },
         {
@@ -126,6 +142,7 @@ export class NavegacionService {
           id: 'roles',
           link: '/roles/grid',
           title: 'Roles',
+          permissionCode: 'MENU_SEGURIDAD_ROLES',
           type: 'basic',
         },
         {
@@ -134,7 +151,7 @@ export class NavegacionService {
           link: '/permisos/grid',
           title: 'Permisos',
           type: 'basic',
-          permissionCode: 'PERMISOS_READ',
+          permissionCode: 'MENU_SEGURIDAD_PERMISOS',
         },
         {
           icon: 'heroicons_outline:view-grid',
@@ -142,6 +159,7 @@ export class NavegacionService {
           link: '/perfiles/grid',
           title: 'Perfiles',
           type: 'basic',
+          permissionCode: 'MENU_SEGURIDAD_PERFILES',
         },
       ],
     },

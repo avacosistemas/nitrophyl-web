@@ -17,20 +17,16 @@ const abmUsuariosRoutes: Route[] = [
             {
                 path: 'user/:id',
                 component: ABMUsuariosUserComponent,
-                canActivate: [PermissionGuard],
-                data: { permission: 'USUARIO_MODIFY' },
             },
             {
                 path: 'grid',
                 component: ABMUsuariosGrillaComponent,
                 canActivate: [PermissionGuard],
-                data: { permission: 'USUARIO_READ' },
+                data: { permission: 'MENU_SEGURIDAD_USUARIOS' },
             },
             {
                 path: 'create',
                 component: ABMUsuariosCrearComponent,
-                canActivate: [PermissionGuard],
-                data: { permission: 'USUARIO_CREATE' },
             },
         ],
     }

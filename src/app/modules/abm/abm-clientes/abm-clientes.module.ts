@@ -22,31 +22,23 @@ const abmUsuariosRoutes: Route[] = [
     children: [
       { path: 'grid',
         component: ABMClientesGrillaComponent,
-        canActivate: [PermissionGuard],
-        data: { permission: 'LISTADO_CLIENTE_READ' }
+        data: { permission: 'MENU_ADMINISTRACION_CLIENTES' },
+        canActivate: [PermissionGuard]
       },
       { path: 'create',
         component: ABMClientesCrearComponent,
-        canActivate: [PermissionGuard],
-        data: { permission: 'LISTADO_CLIENTE_CREATE' }
       },
       {
         path: ':idCliente/grid-contactos',
         component: ABMClientesGrillaContactosComponent,
-        canActivate: [PermissionGuard],
-        data: { permission: 'LISTADO_CLIENTE_DELETE' }
       },
       {
         path: ':idCliente/crear-contacto',
         component: ABMClientesCrearContactoComponent,
-        canActivate: [PermissionGuard],
-        data: { permission: 'LISTADO_CLIENTE_DELETE' }
       },
       {
         path: ':idCliente/contacto/:idContacto',
-        component: ABMClientesContactoComponent,
-        canActivate: [PermissionGuard],
-        data: { permission: 'LISTADO_CLIENTE_DELETE' }
+        component: ABMClientesContactoComponent
       },
     ],
   },

@@ -16,21 +16,17 @@ const abmPermisosRoutes: Route[] = [
         children: [
             {
                 path: 'permission/:id',
-                component: ABMPermisosPermiso,
-                canActivate: [PermissionGuard],
-                data: { permission: 'PERMISOS_MODIFY' }
+                component: ABMPermisosPermiso
             },
             {
                 path: 'create',
                 component: ABMCrearPermiso,
                 canActivate: [PermissionGuard],
-                data: { permission: 'PERMISOS_CREATE' }
+                data: { permission: 'MENU_SEGURIDAD_PERMISOS' }
             },
             {
                 path: 'grid',
-                component: ABMPermisosGrillaComponent,
-                canActivate: [PermissionGuard],
-                data: { permission: 'PERMISOS_READ' }
+                component: ABMPermisosGrillaComponent
             },
         ]
     }

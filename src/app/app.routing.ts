@@ -121,7 +121,7 @@ export const appRoutes: Route[] = [
       {
         path: 'usuarios',
         canActivate: [PermissionGuard],
-        data: { permission: 'USUARIO_READ' },
+        data: { permission: 'MENU_SEGURIDAD_USUARIOS' },
         loadChildren: () =>
           import('app/modules/abm/abm-usuarios/abm-usuarios.module').then(
             (m: any) => m.ABMUsuariosModule
@@ -129,6 +129,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'roles',
+        canActivate: [PermissionGuard],
+        data: { permission: 'MENU_SEGURIDAD_ROLES' },
         loadChildren: () =>
           import('app/modules/abm/abm-roles/abm-roles.module').then(
             (m: any) => m.ABMRolesModule
@@ -137,7 +139,7 @@ export const appRoutes: Route[] = [
       {
         path: 'permisos',
         canActivate: [PermissionGuard],
-        data: { permission: 'PERMISOS_READ' },
+        data: { permission: 'MENU_SEGURIDAD_PERMISOS' },
         loadChildren: () =>
           import('app/modules/abm/abm-permisos/abm-permisos.module').then(
             (m: any) => m.ABMPermisosModule
@@ -145,6 +147,8 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'perfiles',
+        canActivate: [PermissionGuard],
+        data: { permission: 'MENU_SEGURIDAD_PERFILES' },
         loadChildren: () =>
           import('app/modules/abm/abm-perfiles/abm-perfiles.module').then(
             (m: any) => m.ABMPerfilesModule
@@ -174,7 +178,7 @@ export const appRoutes: Route[] = [
       {
         path: 'clientes',
         canActivate: [PermissionGuard],
-        data: { permission: 'LISTADO_CLIENTE_CREATE' },
+        data: { permission: 'MENU_ADMINISTRACION_CLIENTES' },
         loadChildren: () =>
           import('app/modules/abm/abm-clientes/abm-clientes.module').then(
             (m: any) => m.ABMClientesModule
