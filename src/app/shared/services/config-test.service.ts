@@ -49,4 +49,8 @@ export class ConfigTestService {
   public post(body: any): Observable<any> {
     return this.http.post<any>(`${this._url}`, body);
   }
+
+  public put(body: any): Observable<any> {
+    return this.http.put<any>(`${this._url}`, body);
+  }
 }

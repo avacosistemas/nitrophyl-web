@@ -14,6 +14,7 @@ import { FormulaComponent } from './formula/formula.component';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { FuseCardModule } from '@fuse/components/card';
 import { MatIconModule } from '@angular/material/icon';
+import { TestModifyDialogComponent } from 'app/modules/prompts/test-modify/test-modify-dialog.component';
 
 const routes: Route[] = [
   {
@@ -30,7 +31,8 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent],
+  declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent,TestModifyDialogComponent],
   imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule, MatIconModule, FuseCardModule ],
+  entryComponents: [TestModifyDialogComponent]
 })
 export class ABMFormulaModule {}

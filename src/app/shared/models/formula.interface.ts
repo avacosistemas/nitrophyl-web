@@ -14,19 +14,21 @@ export interface IFormula {
 
 export interface IConfiguracionPruebaParametro
 { id: number;
-  maquinaPrueba: { id: number; nombre: string };
+  maquinaPrueba: { id: number; nombre?: string ; idMaquina?: number ; posicion?: number };
   minimo: number;
   maximo: number;
   norma: string;
+  orden?: number;
 }
 
 export interface ITestFormula {
-  idFormula: number;
-  idMaquina: number;
+  id?: number;
+  idFormula?: number;
+  idMaquina?: number;
   parametros: IConfiguracionPruebaParametro[];
   condiciones: IConditions[];
   observacionesReporte: string;
-  mostrarResultadosReporte: boolean;
+  mostrarResultadosReporte?: boolean;
 }
 
 // export interface IParams {
@@ -37,18 +39,21 @@ export interface ITestFormula {
 // }
 
 export interface IConditions {
+  id?: number;
   nombre: string;
-  valor: number;
+  valor: number | null;
 }
 
 export interface ITestTitle {
   fecha: Date;
+  fechaHasta?: string;
   id: number;
   idMaterial: number;
   material: string;
   nombre: string;
   norma: string;
   version: number;
+  vigencia?: boolean;
 }
 
 export type IFormulasResponse = IResponse<IFormula[]>;

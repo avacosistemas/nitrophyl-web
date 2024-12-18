@@ -1,0 +1,29 @@
+<div>
+    <div class="w-full flex justify-between">
+        <div class="flex mt-3">
+            <div class="warning-icon">
+                <mat-icon svgIcon="heroicons_outline:exclamation"></mat-icon>
+            </div>
+            <h1 class="font-semibold mt-2 ml-2">
+                {{ data.type === 'edit' ? 'Modificar Configuración de Prueba' : 'Confirmar Modificación' }}
+            </h1>
+        </div>
+        <button mat-flat-button (click)="close()">
+            <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
+        </button>
+    </div>
+    <div class="ml-11 mr-15">
+        <ng-container *ngIf="data.type === 'edit'">
+            <h1>La modificación de las condiciones, valores máximos, mínimos y normas podría afectar resultados de ensayos en lotes e informes de calidad. ¿Modificar de todas maneras?</h1>
+        </ng-container>
+        <ng-container *ngIf="data.type === 'save'">
+            <h1>Estás a punto de modificar los valores de parámetros y/o condiciones que pueden afectar a resultados de ensayos en lotes e informes de calidad. ¿Está seguro que desea continuar?</h1>
+        </ng-container>
+    </div>
+    <mat-dialog-actions style="display: flex; justify-content: flex-end;">
+        <button mat-raised-button color="warn" class="mr-2" (click)="save()">
+            {{ data.type === 'edit' ? 'Modificar' : 'Continuar' }}
+        </button>
+        <button mat-stroked-button (click)="close()">Cancelar</button>
+    </mat-dialog-actions>
+</div>
