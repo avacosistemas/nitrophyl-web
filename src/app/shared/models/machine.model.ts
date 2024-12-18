@@ -8,6 +8,7 @@ export interface IMachine {
   nombre?: string;
   estado?: string;
   posicion?: number;
+  norma?: string;
   versionable?: boolean;
   observacionesReporte?: string;
   idMaquina?: number;

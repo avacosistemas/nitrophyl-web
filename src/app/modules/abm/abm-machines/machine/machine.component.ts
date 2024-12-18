@@ -306,6 +306,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
             : [res.data as IMachine];
           this.form.controls.name.setValue(data[0].nombre);
           this.form.controls.status.setValue(data[0].estado);
+          this.form.controls.norma.setValue(data[0].norma);
           this.form.controls.versionable.setValue(!!data[0].versionable);
           this.form.controls.observacionesReporte.setValue(data[0].observacionesReporte);
           this.cd.detectChanges();
@@ -319,6 +320,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     const body: IMachine = {
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
+      norma: this.form.controls.norma.value,
       versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
     };
@@ -329,6 +331,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
             ? (res.data as IMachine[])
             : [res.data as IMachine];
           this.openSnackBar(true);
+          this.form.markAsPristine();
           // this._machines.setMode('Edit');
           // this.router.navigate([`/maquinas/edit/${data[0].id}`]);
           this.router.navigate(['/maquinas/grid']);
@@ -346,6 +349,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       id: this.id,
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
+      norma: this.form.controls.norma.value,
       versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
     };
@@ -356,6 +360,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
             ? (res.data as IMachine[])
             : [res.data as IMachine];
           this.openSnackBar(true);
+          this.form.markAsPristine();
           this._machines.setMode('Edit');
           this.router.navigate([`/maquinas/edit/${data[0].id}`]);
         }
@@ -389,6 +394,12 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       status: [
         { value: null, disabled: this.mode === 'View' },
         Validators.required,
+      ],
+      norma: [
+        { value: null, disabled: this.mode === 'View' },
+        Validators.compose([
+          Validators.maxLength(100),
+        ]),
       ],
       versionable: [
         { value: false, disabled: this.mode === 'View' }

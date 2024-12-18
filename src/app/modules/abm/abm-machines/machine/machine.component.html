@@ -35,10 +35,21 @@
         </mat-form-field>
       </div>
 
+      <div class="row flex gap-3 justify-around">
+        <mat-form-field class="w-1/2" appearance="outline">
+          <mat-label>Norma</mat-label>
+          <input matInput [formControlName]="'norma'" placeholder="Norma" minlength="3" maxlength="100">
+          <mat-error class="mb-1" *ngIf="form.get('norma').hasError('maxlength')">
+            Máximo 100 caracteres.
+          </mat-error>
+        </mat-form-field>
 
-        <mat-checkbox [formControlName]="'versionable'">
-          Versionable
-        </mat-checkbox>
+        <div class="w-1/2">
+          <mat-checkbox [formControlName]="'versionable'">
+            Versionable
+          </mat-checkbox>
+        </div>
+      </div>
 
       <mat-form-field class="w-full mt-4">
         <mat-label>Observaciones generales para reporte</mat-label>

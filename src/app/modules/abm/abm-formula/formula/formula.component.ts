@@ -405,6 +405,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     const machine: any = this.formTestMachine.controls.machine;
     const machineId = machine.value.id;
     const machineName = machine.value.nombre;
+    const machineNorma = machine.value.norma;
     const machineVersionable = machine.value.versionable;
 
     this._configTest.getMachines(this.id).subscribe({
@@ -414,11 +415,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         );
 
         if (isMachineAlreadyAdded && !machineVersionable) {
-          this.openSnackBar(false, 'La maquina no es versionable y ya existe.');
+          this.openSnackBar(false, 'La máquina no es versionable y ya existe.');
           return;
         }
 
-        this._formulas.events.next([4, machineId, machineName]);
+        this._formulas.events.next([4, machineId, machineName, machineNorma]);
 
         machine.reset();
       },
@@ -546,12 +547,12 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this.mostrarResultadosReporte = mostrarResultadosReporte;
   }
 
-  private addMachine(id: number): void {
+  private addMachine(id: number, machineNorma: string): void {
     const error: string = 'formula.component.ts => getMachines() => ';
     this._testService.getTest(id).subscribe({
       next: (res: any) => {
         this.formTest.enable();
-        this.formTest = this.formBuilder.group({});
+
         this.formTest = this.formBuilder.group({
           condition: [null],
           observacionesReporte: [null]
@@ -564,7 +565,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
           this.params$.push(param);
           this.formTest.addControl(`${param.id}.min`, new FormControl(null));
           this.formTest.addControl(`${param.id}.max`, new FormControl(null));
-          this.formTest.addControl(`${param.id}.norma`, new FormControl(null));
+
+          const normaControl = new FormControl(machineNorma);
+          this.formTest.addControl(`${param.id}.norma`, normaControl);
+
           this.configureValidators(param.id);
         }
 
@@ -794,7 +798,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       if (data[0] === 4) {
         this.idMachine = data[1];
-        this.addMachine(data[1]);
+        this.addMachine(data[1],data[3]);
         this.machine = data[2];
       }
     });
