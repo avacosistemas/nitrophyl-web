@@ -16,6 +16,7 @@ import { FuseCardModule } from '@fuse/components/card';
 import { MatIconModule } from '@angular/material/icon';
 import { TestModifyDialogComponent } from 'app/modules/prompts/test-modify/test-modify-dialog.component';
 import { CheckParamDialogComponent } from 'app/modules/prompts/check-param/check-param-dialog.component';
+import { FormulaTestModalComponent } from './formula-test-modal/formula-test-modal.component';
 
 const routes: Route[] = [
   {
@@ -32,7 +33,7 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent,TestModifyDialogComponent, CheckParamDialogComponent],
+  declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent, FormulaTestModalComponent, TestModifyDialogComponent, CheckParamDialogComponent],
   imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule, MatIconModule, FuseCardModule ],
   entryComponents: [TestModifyDialogComponent, CheckParamDialogComponent]
 })

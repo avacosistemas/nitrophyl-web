@@ -1,0 +1,123 @@
+<div class="p-4 w-full">
+    <div class="flex w-full p-4 row gap-3 justify-between items-baseline">
+        <h1 class="text-2xl font-semibold mb-2 ml-4">{{ data.machine }}</h1>
+        <div>
+            <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
+                (click)="editTest()" *ngIf="formTest.disabled">
+                <span class="mat-button-wrapper"> Editar </span>
+            </button>
+
+            <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
+                (click)="saveTestModify()" *ngIf="!formTest.disabled && isEditing">
+                <span class="mat-button-wrapper">Guardar Edición</span>
+            </button>
+
+            <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
+                (click)="saveTest()" *ngIf="!formTest.disabled && !isEditing">
+                <span class="mat-button-wrapper"> Guardar </span>
+            </button>
+
+            <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base"
+                (click)="onClose()">
+                <span class="mat-button-wrapper"> Cerrar </span>
+            </button>
+        </div>
+    </div>
+
+    <form [formGroup]="formTest" style="overflow-y: auto; max-height: 70vh;">
+        <mat-tab-group [(selectedIndex)]="selectedIndex">
+            <mat-tab label="Pruebas">
+                <table mat-table [dataSource]="params$" class="border-2 rounded-2xl w-full overflow-y-scroll">
+                    <!-- Columna de nombres -->
+                    <ng-container matColumnDef="name">
+                        <th mat-header-cell *matHeaderCellDef> Prueba </th>
+                        <td mat-cell *matCellDef="let param">{{ param.nombre }}</td>
+                    </ng-container>
+
+                    <!-- Columna de valores mínimos -->
+                    <ng-container matColumnDef="min">
+                        <th mat-header-cell *matHeaderCellDef class="text-center"> Mínimo </th>
+                        <td mat-cell *matCellDef="let param" class="text-center">
+                            <mat-form-field class="w-3/4 mt-4 text-center">
+                                <input matInput [formControlName]="param.id + '.min'"
+                                    [placeholder]="formTest.disabled ? '' : 'Mínimo'">
+                                <mat-error></mat-error>
+                            </mat-form-field>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna de valores máximos -->
+                    <ng-container matColumnDef="max">
+                        <th mat-header-cell *matHeaderCellDef class="text-center"> Máximo </th>
+                        <td mat-cell *matCellDef="let param" class="text-center">
+                            <mat-form-field class="w-3/4 mt-4 text-center">
+                                <input matInput [formControlName]="param.id + '.max'"
+                                    [placeholder]="formTest.disabled ? '' : 'Maximo'">
+                                <mat-error></mat-error>
+                            </mat-form-field>
+                        </td>
+                    </ng-container>
+
+                    <!-- Columna de Norma -->
+                    <ng-container matColumnDef="norma">
+                        <th mat-header-cell *matHeaderCellDef class="text-center"> Norma </th>
+                        <td mat-cell *matCellDef="let param" class="text-center">
+                            <mat-form-field class="w-3/4 mt-4 text-center">
+                                <input matInput [formControlName]="param.id + '.norma'"
+                                    [placeholder]="formTest.disabled ? '' : 'Norma'">
+                                <mat-error> No valido. </mat-error>
+                            </mat-form-field>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsParams"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsParams;"></tr>
+                </table>
+            </mat-tab>
+
+            <mat-tab label="Condiciones">
+                <div class="row flex gap-3 justify-around items-baseline" *ngIf="!formTest.disabled">
+                    <mat-form-field class="w-full">
+                        <input matInput [formControlName]="'condition'" placeholder="Condición">
+                    </mat-form-field>
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                        (click)="addCondition()">
+                        <span class="mat-button-wrapper"> Agregar </span>
+                    </button>
+                </div>
+
+                <table mat-table [dataSource]="conditions$" class="border-2 rounded-2xl w-full">
+                    <ng-container matColumnDef="condition">
+                        <th mat-header-cell *matHeaderCellDef> Condición </th>
+                        <td mat-cell *matCellDef="let condition">{{ condition.nombre }}</td>
+                    </ng-container>
+                    <ng-container matColumnDef="value">
+                        <th mat-header-cell *matHeaderCellDef> Valor </th>
+                        <td mat-cell *matCellDef="let condition">
+                            <mat-form-field class="w-3/4 mt-4">
+                                <input matInput [formControlName]="condition.nombre + '.value'" placeholder="Valor">
+                            </mat-form-field>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="actions">
+                        <th mat-header-cell *matHeaderCellDef class="text-right"></th>
+                        <td mat-cell *matCellDef="let row" class="text-right">
+                            <button class="mr-2" matTooltip="Eliminar" (click)="deleteCondition(row)"
+                                *ngIf="!formTest.disabled">
+                                <mat-icon svgIcon="heroicons_solid:trash"></mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumnsConditions"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumnsConditions;"></tr>
+                </table>
+            </mat-tab>
+        </mat-tab-group>
+
+        <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded fuse-mat-bold w-full p-4">
+            <mat-label>Observaciones para informe</mat-label>
+            <textarea matInput [formControlName]="'observacionesReporte'" placeholder="Observaciones"
+                maxlength="256"></textarea>
+        </mat-form-field>
+    </form>
+</div>

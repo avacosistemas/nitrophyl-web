@@ -16,11 +16,20 @@
     Las siguientes pruebas no tienen valores mínimos ni máximos. ¿Está seguro de que desea guardarlas sin valores?
   </p>
 
-  <p class="font-extrabold text-xl mt-2">Pruebas:</p>
-
-  <ul class="font-extrabold list-style">
-    <li *ngFor="let param of data.params">{{ param.nombre }}</li>
-  </ul>
+  <table class="w-full mt-5">
+    <thead>
+      <tr>
+        <th class="font-extrabold p-2 text-left">Prueba</th>
+        <th class="font-extrabold p-2 text-left">Campo faltante</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let param of data.params">
+        <td class="border px-4 py-2">{{ param.nombre }}</td>
+        <td class="border px-4 py-2">{{ param.campo }}</td>
+      </tr>
+    </tbody>
+  </table>
 
   <mat-dialog-actions align="end">
     <button mat-raised-button color="warn" (click)="continue()">Guardar</button>

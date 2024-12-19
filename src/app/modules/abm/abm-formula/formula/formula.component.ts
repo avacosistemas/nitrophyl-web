@@ -8,9 +8,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   catchError,
-  combineLatest,
   forkJoin,
-  merge,
   of,
   Subscription,
 } from 'rxjs';
@@ -25,10 +23,7 @@ import { MachinesService } from 'app/shared/services/machines.service';
 // * Interfaces.
 import {
   IFormula,
-  IFormulaResponse,
-  IConfiguracionPruebaParametro,
-  ITestFormula,
-  IConditions
+  IFormulaResponse
 } from 'app/shared/models/formula.interface';
 import {
   IMaterial,
@@ -38,9 +33,7 @@ import {
 // * Forms.
 import {
   FormBuilder,
-  FormControl,
   FormGroup,
-  PatternValidator,
   Validators,
 } from '@angular/forms';
 
@@ -50,26 +43,19 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-import { TestModifyDialogComponent } from 'app/modules/prompts/test-modify/test-modify-dialog.component';
-import { CheckParamDialogComponent } from 'app/modules/prompts/check-param/check-param-dialog.component';
-import { MatDrawer } from '@angular/material/sidenav';
+import { FormulaTestModalComponent } from '../formula-test-modal/formula-test-modal.component';
 
 @Component({
   selector: 'app-formula',
   templateUrl: './formula.component.html',
 })
 export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('drawer') drawer: MatDrawer;
 
-  // * mode: Edit.
   public mode: string;
   public form: FormGroup;
   public materialsFail: boolean = false;
   public materials$: IMaterial[] | undefined;
 
-  // * mode: Test.
-  public drawerOpened: boolean = false;
-  public selectedIndex: number = 0;
   public machine: string = '';
   public formTest: FormGroup;
   public formTestMachine: FormGroup;
@@ -80,16 +66,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public machinesForm$: any[] = [];
   public displayedColumnsMachines: string[] = ['name', 'vigente', 'fecha', 'fechaHasta', 'revision'];
 
-  public params$: any[] = [];
-  public displayedColumnsParams: string[] = ['name', 'min', 'max', 'norma'];
-
-  public conditions$: any;
-  public displayedColumnsConditions: string[] = [];
-  public mostrarResultadosReporte: boolean;
   public component: string = 'Mode';
 
   public currentTestId: number;
-  public isEditing: boolean = false;
 
   private suscripcion: Subscription;
   private formula$: IFormula;
@@ -99,7 +78,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private _materials: MaterialsService,
     private _formulas: FormulasService,
-    private _testService: TestService,
     private _configTest: ConfigTestService,
     private _machines: MachinesService,
     private activeRoute: ActivatedRoute,
@@ -127,7 +105,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       if (this.mode === 'Test') {
         this.setFormMachine();
-        this.initializeForm();
       }
     }
 
@@ -153,44 +130,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       default:
         break;
     }
-  }
-
-  public changeDrawer(option: boolean): void {
-    if (option) {
-      this.drawer.open();
-      this._formulas.work(true);
-    } else if (this.formTest.enabled) {
-      const dialog = this.dialog.open(RemoveDialogComponent, {
-        maxWidth: '50%',
-        data: { data: null, seccion: 'formulas', boton: 'Cerrar' },
-      });
-      dialog.afterClosed().subscribe((res: boolean) => {
-        if (res) {
-          this.drawer.close();
-          this._formulas.work(false);
-        }
-      });
-    } else {
-      this.drawer.close();
-      this._formulas.work(false);
-    }
-  }
-
-  public editTest(): void {
-    const dialogRef = this.dialog.open(TestModifyDialogComponent, {
-      width: '450px',
-      data: {
-        type: 'edit'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.isEditing = true;
-        this.formTest.enable();
-        this.displayedColumnsConditions = ['condition', 'value', 'actions'];
-      }
-    });
   }
 
   public ngOnDestroy(): void {
@@ -241,57 +180,19 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public getTest(id: number): void {
-    const error: string = 'formula.component.ts => getTest() => ';
     this.currentTestId = id;
-    this._configTest.get(id).subscribe({
-      next: (res: any) => {
-        this.displayedColumnsConditions = ['condition', 'value'];
-        this.formTest = this.formBuilder.group({});
-        this.formTest = this.formBuilder.group({
-          condition: null,
-          observacionesReporte: null
-        });
-        this.setValues(res.data.parametros,
-          res.data.condiciones,
-          res.data.observacionesReporte,
-          res.data.mostrarResultadosReporte);
-        this.formTest.disable();
-        this.machine = res.data.maquina;
-        this.selectedIndex = 0;
-        this.changeDrawer(true);
-      },
-      error: (err: any) => console.error(error, err),
-      complete: () => { },
-    });
-  }
-
-  public deleteCondition(row: any): void {
-    this.formTest.removeControl(row);
-    this.conditions$ = this.conditions$.filter((x: any) => x !== row);
-  }
-
-  public addCondition(): void {
-    const condition = this.formTest.controls.condition.value;
-
-    if (!condition || typeof condition !== 'string') {
-      console.error('El valor de condition no es válido:', condition);
-      return;
-    }
-
-    if (this.conditions$.some((c: { nombre: string }) => c.nombre === condition)) {
-      return;
-    }
-
-    this.formTest.addControl(`${condition}.value`, new FormControl(null));
-
-    this.conditions$.push({
-      nombre: condition,
-      valor: null
+    const dialogRef = this.dialog.open(FormulaTestModalComponent, {
+      width: '50%',
+      data: { testId: id, machine: this.machine, currentTestId: this.currentTestId, id: this.id, machineId: this.idMachine },
+      disableClose: true,
     });
 
-    this.conditions$ = [...this.conditions$];
-
-    this.formTest.controls.condition.setValue(null);
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.getMachines();
+        this._formulas.work(false);
+      }
+    });
   }
 
   public addMachineForm(): void {
@@ -300,7 +201,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const machine: any = this.formTestMachine.controls.machine;
-    const machineId = machine.value.id;
+    this.idMachine = machine.value.id;
     const machineName = machine.value.nombre;
     const machineNorma = machine.value.norma;
     const machineVersionable = machine.value.versionable;
@@ -308,16 +209,15 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this._configTest.getMachines(this.id).subscribe({
       next: (response: any) => {
         const isMachineAlreadyAdded = response.data.some(
-          (m: any) => m.idMaquina === machineId
+          (m: any) => m.idMaquina === this.idMachine
         );
 
         if (isMachineAlreadyAdded && !machineVersionable) {
           this.openSnackBar(false, 'La máquina no es versionable y ya existe.');
           return;
         }
-
-        this._formulas.events.next([4, machineId, machineName, machineNorma]);
-
+        this.machine = machineName;
+        this.openTestModal(this.idMachine, machineName, machineNorma);
         machine.reset();
       },
       error: (err: any) => {
@@ -341,129 +241,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public mostrarRevision(rpdto: any): void {
     this.rpdto = rpdto;
-  }
-
-  public saveTest(): void {
-    const body: ITestFormula = {
-      idFormula: this.id,
-      idMaquina: this.idMachine,
-      parametros: [],
-      condiciones: [],
-      observacionesReporte: null,
-      mostrarResultadosReporte: false,
-    };
-
-    const controls = this.formTest?.controls;
-    if (!controls) {
-      console.error('El formulario no está inicializado correctamente');
-      return;
-    }
-
-    const missingValues: { nombre: string }[] = [];
-
-    for (const param of this.params$) {
-      const minControl = controls[`${param.id}.min`];
-      const maxControl = controls[`${param.id}.max`];
-      const normaControl = controls[`${param.id}.norma`];
-
-      if (!minControl || !maxControl) {
-        this.openSnackBar(false, `Error al procesar el parámetro '${param.nombre}'`);
-        return;
-      }
-
-      const minvparam = minControl.value;
-      const maxvparam = maxControl.value;
-
-      if (!minvparam && !maxvparam) {
-        missingValues.push({ nombre: param.nombre });
-      }
-
-      const minvparamnum = Number(minvparam);
-      const maxvparamnum = Number(maxvparam);
-
-      if (
-        minvparam !== null &&
-        maxvparam !== null &&
-        minvparam.toString().trim().length > 0 &&
-        maxvparam.toString().trim().length > 0 &&
-        minvparamnum > maxvparamnum
-      ) {
-        this.openSnackBar(false, `El valor mínimo del parámetro '${param.nombre}' no puede ser mayor al valor máximo.`);
-        return;
-      }
-
-      body.parametros.push({
-        id: null,
-        maquinaPrueba: {
-          id: param.id,
-          nombre: param.nombre,
-        },
-        minimo: minvparam,
-        maximo: maxvparam,
-        norma: normaControl?.value || null,
-      });
-    }
-
-    if (missingValues.length > 0) {
-      this.openDialogForMissingValues(missingValues, body);
-      return;
-    }
-
-    this.saveTestRequest(body);
-  }
-
-  public saveTestModify(): void {
-    const { body, missingValues } = this.prepareTestForPut();
-
-    if (!body) {
-      return;
-    }
-
-    const openModifyDialog = (): void => {
-      const dialogRef = this.dialog.open(TestModifyDialogComponent, {
-        width: '450px',
-        data: { type: 'save' },
-      });
-
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          this.putTest(body);
-          this.isEditing = false;
-        }
-      });
-    };
-
-    if (missingValues.length > 0) {
-      const dialogRef = this.dialog.open(CheckParamDialogComponent, {
-        width: '500px',
-        data: { params: missingValues },
-      });
-
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          openModifyDialog();
-        }
-      });
-    } else {
-      openModifyDialog();
-    }
-  }
-
-  private openDialogForMissingValues(missingValues: { nombre: string }[], body: ITestFormula): void {
-    const dialogRef = this.dialog.open(CheckParamDialogComponent, {
-      width: '500px',
-      data: { params: missingValues },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.saveTestRequest(body);
-      }
-    });
-  }
-
-  private saveTestRequest(body: ITestFormula): void {
-    this.postMachine(body);
   }
 
   private getRevision(): void {
@@ -492,23 +269,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private postMachine(body: ITestFormula): void {
-    const error: string = 'formula.component.ts => postTest() => ';
-    this._configTest.post(body).subscribe({
-      next: () => {
-        this.getMachines();
-        this.drawer.close();
-        this._formulas.work(false);
-        this.openSnackBar(true);
-      },
-      error: (err: any) => {
-        console.error(error, err);
-        this.openSnackBar(false);
-      },
-      complete: () => { },
-    });
-  }
-
   private getMachines(): void {
     const error: string = 'formula.component.ts => getMachines() => ';
     this._configTest.getMachines(this.id).subscribe({
@@ -517,136 +277,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err: any) => console.error(error, err),
       complete: () => { },
-    });
-  }
-
-  private setValues(
-    params: IConfiguracionPruebaParametro[],
-    conditions: IConditions[],
-    observacionesReporte: string,
-    mostrarResultadosReporte: boolean
-  ): void {
-    this.params$ = [];
-    for (const param of params) {
-      this.formTest.addControl(
-        `${param.maquinaPrueba.id}.min`,
-        new FormControl(param.minimo)
-      );
-      this.formTest.addControl(
-        `${param.maquinaPrueba.id}.max`,
-        new FormControl(param.maximo)
-      );
-      this.formTest.addControl(
-        `${param.maquinaPrueba.id}.norma`,
-        new FormControl(param.norma)
-      );
-      this.params$.push({
-        id: param.maquinaPrueba.id,
-        nombre: param.maquinaPrueba.nombre,
-        testParamId: param.id,
-        position: param.maquinaPrueba.posicion,
-        orden: param.orden,
-        min: param.minimo,
-        max: param.maximo,
-        norma: param.norma
-      });
-    }
-    this.params$ = [...this.params$];
-
-    this.conditions$ = [];
-    for (const condition of conditions) {
-      this.formTest.addControl(
-        `${condition.nombre}.value`,
-        new FormControl(condition.valor)
-      );
-      this.conditions$.push(condition);
-    }
-    this.conditions$ = [...this.conditions$];
-
-    this.formTest.controls['observacionesReporte'].setValue(observacionesReporte);
-    this.mostrarResultadosReporte = mostrarResultadosReporte;
-  }
-
-  private addMachine(id: number, machineNorma: string): void {
-    const error: string = 'formula.component.ts => getMachines() => ';
-    this._testService.getTest(id).subscribe({
-      next: (res: any) => {
-        this.formTest.enable();
-
-        this.formTest = this.formBuilder.group({
-          condition: [null],
-          observacionesReporte: [null]
-        });
-        this.displayedColumnsConditions = ['condition', 'value', 'actions'];
-        this.params$ = [];
-        this.conditions$ = [];
-
-        for (const param of res.data) {
-          this.params$.push(param);
-          this.formTest.addControl(`${param.id}.min`, new FormControl(null));
-          this.formTest.addControl(`${param.id}.max`, new FormControl(null));
-
-          const normaControl = new FormControl(machineNorma);
-          this.formTest.addControl(`${param.id}.norma`, normaControl);
-
-          this.configureValidators(param.id);
-        }
-
-        this.params$ = [...this.params$];
-        this.selectedIndex = 0;
-
-        this.changeDrawer(true);
-      },
-      error: (err: any) => console.error(error, err),
-      complete: () => { },
-    });
-  }
-
-  private configureValidators(param: string): void {
-    const controls = this.formTest.controls;
-    const pattern: RegExp = /^\d+(\.\d{1,4})?$/;
-
-    const min = controls[param + '.min'];
-    const max = controls[param + '.max'];
-
-    merge(min.valueChanges, max.valueChanges).subscribe(() => {
-      if (min.value && max.value) {
-        if (!pattern.test(min.value) || !pattern.test(max.value)) {
-          if (!pattern.test(min.value)) {
-            min.setErrors({ pattern: true });
-          } else {
-            min.setErrors(null);
-          }
-          if (!pattern.test(max.value)) {
-            max.setErrors({ pattern: true });
-          } else {
-            max.setErrors(null);
-          }
-        } else {
-          const minVal: number = parseFloat(min.value);
-          const maxVal: number = parseFloat(max.value);
-          if (minVal > maxVal) {
-            max.setErrors({ max: true });
-          } else {
-            max.setErrors(null);
-          }
-        }
-      } else {
-        if (min.value) {
-          if (!pattern.test(min.value)) {
-            min.setErrors({ pattern: true });
-          } else {
-            min.setErrors(null);
-          }
-        }
-        if (max.value) {
-          if (!pattern.test(max.value)) {
-            max.setErrors({ pattern: true });
-          } else {
-            max.setErrors(null);
-          }
-        }
-      }
     });
   }
 
@@ -816,93 +446,21 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       if (data === 3) {
         this.create();
       }
-      if (data[0] === 4) {
-        this.idMachine = data[1];
-        this.addMachine(data[1], data[3]);
-        this.machine = data[2];
-      }
     });
   }
 
-  private prepareTestForPut(): { body: ITestFormula | null; missingValues: { nombre: string }[] } {
-    const body: ITestFormula = {
-      id: this.currentTestId,
-      parametros: [],
-      condiciones: [],
-      observacionesReporte: this.formTest.controls['observacionesReporte'].value || null,
-    };
+  private openTestModal(machineId: number, machineName: string, machineNorma: string): void {
+    const dialogRef = this.dialog.open(FormulaTestModalComponent, {
+      width: '50%',
+      data: { machineId, machine: machineName, machineNorma, currentTestId: this.currentTestId, id: this.id },
+      disableClose: true,
+    });
 
-    const controls = this.formTest.controls;
-    const missingValues: { nombre: string }[] = [];
-
-    for (const param of this.params$) {
-      const minControl = controls[param.id + '.min'];
-      const maxControl = controls[param.id + '.max'];
-      const normaControl = controls[param.id + '.norma'];
-
-      const minValue = minControl.value !== null && minControl.value !== '' ? Number(minControl.value) : null;
-      const maxValue = maxControl.value !== null && maxControl.value !== '' ? Number(maxControl.value) : null;
-
-      if (minValue === null && maxValue === null) {
-        missingValues.push({ nombre: param.nombre });
-      }
-
-      if (minValue !== null && maxValue !== null && minValue > maxValue) {
-        this.openSnackBar(false, `El valor mínimo del parámetro '${param.nombre}' no puede ser mayor al valor máximo.`);
-        return { body: null, missingValues: [] };
-      }
-
-      body.parametros.push({
-        id: param.testParamId || null,
-        maquinaPrueba: {
-          id: param.id,
-          posicion: param.position,
-        },
-        minimo: minValue,
-        maximo: maxValue,
-        norma: normaControl?.value || null,
-        orden: param.orden,
-      });
-    }
-
-    for (const condition of this.conditions$) {
-      const controlName = `${condition.nombre}.value`;
-      const controlValue = controls[controlName]?.value;
-
-      const valor = controlValue !== null && controlValue !== '' ? Number(controlValue) : null;
-
-      body.condiciones.push({
-        id: condition.id || null,
-        nombre: condition.nombre,
-        valor: valor,
-      });
-    }
-
-    return { body, missingValues };
-  }
-
-  private putTest(body: ITestFormula): void {
-    const error: string = 'formula.component.ts => putTest() => ';
-    this._configTest.put(body).subscribe({
-      next: () => {
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
         this.getMachines();
-        this.drawer.close();
         this._formulas.work(false);
-        this.openSnackBar(true, 'Prueba actualizada exitosamente');
-        this.formTest.disable();
-      },
-      error: (err: any) => {
-        console.error(error, err);
-        this.openSnackBar(false, 'No se pudo actualizar la prueba');
-      },
-      complete: () => { },
-    });
-  }
-
-  private initializeForm(): void {
-    this.formTest = this.formBuilder.group({
-      condition: [null],
-      observacionesReporte: [null]
+      }
     });
   }
 
