@@ -16,7 +16,7 @@ import { LotService } from 'app/shared/services/lot.service';
     class="absolute inset-0 flex flex-col min-w-0 overflow-hidden"
   >
     <div
-      class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-6 sm:py-8 sm:px-10 border-b bg-card dark:bg-transparent"
+      class="bg-card border-b dark:bg-transparent flex flex-0 flex-col p-4 sm:flex-row sm:items-center sm:justify-between sm:px-10"
     >
       <div class="flex-1 min-w-0">
         <div class="hidden sm:flex flex-wrap items-center font-medium">
