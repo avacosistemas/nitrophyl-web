@@ -103,7 +103,8 @@
         align-items: center;
         justify-content: center;
         height: 100%;
-        z-index: 2; /* Move mat-button-wrapper above the ripple and focus overlay */
+        z-index: 2;
+        /* Move mat-button-wrapper above the ripple and focus overlay */
     }
 
     .mat-button-focus-overlay,
@@ -336,7 +337,7 @@
 
     &.mat-button-toggle-group-appearance-standard {
 
-        .mat-button-toggle + .mat-button-toggle {
+        .mat-button-toggle+.mat-button-toggle {
             background-clip: padding-box;
         }
     }
@@ -405,6 +406,7 @@
 /* ----------------------------------------------------------------------------------------------------- */
 .mat-dialog-container {
     border-radius: 16px !important;
+    padding: 15px 5px !important;
 }
 
 /* ----------------------------------------------------------------------------------------------------- */
@@ -527,42 +529,42 @@
 
             .mat-form-field-prefix {
 
-                > .mat-icon {
+                >.mat-icon {
                     margin-right: 12px;
                 }
 
-                > .mat-icon-button {
+                >.mat-icon-button {
                     margin: 0 4px 0 -10px;
                 }
 
-                > .mat-select {
+                >.mat-select {
                     margin-right: 10px;
                 }
 
-                > .mat-datepicker-toggle {
+                >.mat-datepicker-toggle {
                     margin-left: -8px;
                 }
 
-                > *:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
+                >*:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
                     margin-right: 12px;
                 }
             }
 
             .mat-form-field-suffix {
 
-                > .mat-icon {
+                >.mat-icon {
                     margin-left: 12px;
                 }
 
-                > .mat-icon-button {
+                >.mat-icon-button {
                     margin: 0 -10px 0 4px;
                 }
 
-                > .mat-select {
+                >.mat-select {
                     margin-left: 10px;
                 }
 
-                > .mat-datepicker-toggle {
+                >.mat-datepicker-toggle {
                     margin-right: -8px;
                 }
             }
@@ -702,7 +704,7 @@
                             .mat-select-value-text {
                                 display: inline-flex;
 
-                                > * {
+                                >* {
                                     overflow: hidden;
                                     white-space: nowrap;
                                     text-overflow: ellipsis;
@@ -765,8 +767,9 @@
             font-weight: 500;
             line-height: 1;
 
-            > div {
-                display: contents; /* Remove the div from flow to stop the subscript animation */
+            >div {
+                display: contents;
+                /* Remove the div from flow to stop the subscript animation */
             }
 
             .mat-error,
@@ -838,23 +841,23 @@
                     .mat-form-field-prefix {
                         border-radius: 24px 0 0 24px;
 
-                        > .mat-icon {
+                        >.mat-icon {
                             margin-right: 12px;
                         }
 
-                        > .mat-icon-button {
+                        >.mat-icon-button {
                             margin-right: 2px;
                         }
 
-                        > .mat-select {
+                        >.mat-select {
                             margin-right: 8px;
                         }
 
-                        > .mat-datepicker-toggle {
+                        >.mat-datepicker-toggle {
                             margin-right: 4px;
                         }
 
-                        > *:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
+                        >*:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
                             margin-right: 12px;
                         }
                     }
@@ -862,23 +865,23 @@
                     .mat-form-field-suffix {
                         border-radius: 0 24px 24px 0;
 
-                        > .mat-icon {
+                        >.mat-icon {
                             margin-left: 12px !important;
                         }
 
-                        > .mat-icon-button {
+                        >.mat-icon-button {
                             margin-left: 2px !important;
                         }
 
-                        > .mat-select {
+                        >.mat-select {
                             margin-left: 12px !important;
                         }
 
-                        > .mat-datepicker-toggle {
+                        >.mat-datepicker-toggle {
                             margin-left: 4px !important;
                         }
 
-                        > *:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
+                        >*:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
                             margin-left: 12px !important;
                         }
                     }
@@ -908,7 +911,7 @@
 
                 .mat-form-field-prefix {
 
-                    > .mat-icon-button {
+                    >.mat-icon-button {
                         margin-left: -6px;
                         margin-right: 12px;
                     }
@@ -916,7 +919,7 @@
 
                 .mat-form-field-suffix {
 
-                    > .mat-icon-button {
+                    >.mat-icon-button {
                         margin-left: 12px;
                         margin-right: -6px;
                     }
@@ -974,23 +977,23 @@
                     border-radius: 6px 0 0 6px;
                     border-right-width: 1px;
 
-                    > .mat-icon {
+                    >.mat-icon {
                         margin-right: 16px;
                     }
 
-                    > .mat-icon-button {
+                    >.mat-icon-button {
                         margin: 0 6px 0 -10px;
                     }
 
-                    > .mat-select {
+                    >.mat-select {
                         margin-right: 12px;
                     }
 
-                    > .mat-datepicker-toggle {
+                    >.mat-datepicker-toggle {
                         margin-right: 8px;
                     }
 
-                    > *:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
+                    >*:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
                         margin-right: 16px;
                     }
                 }
@@ -1001,23 +1004,23 @@
                     border-radius: 0 6px 6px 0;
                     border-left-width: 1px;
 
-                    > .mat-icon {
+                    >.mat-icon {
                         margin-left: 16px;
                     }
 
-                    > .mat-icon-button {
+                    >.mat-icon-button {
                         margin: 0 -10px 0 6px;
                     }
 
-                    > .mat-select {
+                    >.mat-select {
                         margin: 0 -4px 0 16px;
                     }
 
-                    > .mat-datepicker-toggle {
+                    >.mat-datepicker-toggle {
                         margin-left: 8px;
                     }
 
-                    > *:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
+                    >*:not(.mat-icon):not(.mat-icon-button):not(.mat-select):not(.mat-datepicker-toggle) {
                         margin-left: 16px;
                     }
                 }
@@ -1063,7 +1066,7 @@
 .mat-calendar-body-cell:not(.mat-calendar-body-disabled):hover,
 .cdk-keyboard-focused .mat-calendar-body-active,
 .cdk-program-focused .mat-calendar-body-active {
-    & > .mat-calendar-body-cell-content {
+    &>.mat-calendar-body-cell-content {
         &:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
             @apply bg-primary bg-opacity-30 #{'!important'};
         }
@@ -1242,7 +1245,7 @@
             .mat-select-value-text {
                 display: inline-flex;
 
-                > * {
+                >* {
                     overflow: hidden;
                     white-space: nowrap;
                     text-overflow: ellipsis;
@@ -1342,7 +1345,7 @@
                             @apply text-default #{'!important'};
                         }
 
-                        + .mat-tab-label {
+                        +.mat-tab-label {
                             margin-left: 4px;
                         }
 
