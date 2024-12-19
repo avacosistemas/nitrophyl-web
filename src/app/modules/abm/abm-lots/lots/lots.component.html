@@ -1,6 +1,7 @@
 <mat-drawer-container hasBackdrop="true" class="w-full">
 
-  <mat-drawer mode="over" position="end" [opened]="drawerEdit" [autoFocus]="false" disableClose="true" class="w-1/2" style="position: fixed; top:198px; height: fit-content; width: 420px !important;">
+  <mat-drawer mode="over" position="end" [opened]="drawerEdit" [autoFocus]="false" disableClose="true" class="w-1/2"
+    style="position: fixed; top:198px; height: fit-content; width: 420px !important;">
     <div class="w-full">
       <div class="p-4 w-full">
         <div class="flex w-full py-4 row gap-3 justify-between items-center">
@@ -18,7 +19,8 @@
             </button>
 
             <!-- Close -->
-            <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="closeEdit()">
+            <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base"
+              (click)="closeEdit()">
               <span class="mat-button-wrapper"> Cerrar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
               <span class="mat-button-focus-overlay"></span>
@@ -62,25 +64,26 @@
               <mat-icon> close </mat-icon>
             </button>
             <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
-                <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
-                  V{{formula.version}} ({{ formula.norma }})</mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
+              <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
+                V{{formula.version}} ({{ formula.norma }})</mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
 
           <mat-form-field class="w-full" appearance="outline">
             <mat-label> Observaciones </mat-label>
             <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
           </mat-form-field>
 
-            <input type="text" matInput formControlName="id" [hidden]="true" [ngModel]="" >
-          
-           
+          <input type="text" matInput formControlName="id" [hidden]="true" [ngModel]="">
+
+
         </form>
       </div>
     </div>
   </mat-drawer>
 
-  <mat-drawer mode="over" position="end" [opened]="drawer" [autoFocus]="false" disableClose="true" class="w-1/2" style="position: fixed; top:198px; height: fit-content; width: 420px !important;">
+  <mat-drawer mode="over" position="end" [opened]="drawer" [autoFocus]="false" disableClose="true" class="w-1/2"
+    style="position: fixed; top:198px; height: fit-content; width: 420px !important;">
     <div class="w-full">
       <div class="p-4 w-full">
         <div class="flex w-full py-4 row gap-3 justify-between items-center">
@@ -169,56 +172,78 @@
               </mat-panel-title>
             </mat-expansion-panel-header>
 
-            <form [formGroup]="formFilter" class="mt-2">
+            <form [formGroup]="formFilter" class="mt-2" (keydown.enter)="onEnter($event)">
               <div class="row flex gap-3 justify-around">
                 <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
-                  <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Fecha Desde"
-                    readonly>
+                  <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Desde">
+                  <button mat-icon-button matSuffix *ngIf="formFilter.controls['fechaDesde'].value"
+                    (click)="limpiarCampo('fechaDesde')">
+                    <mat-icon>close</mat-icon>
+                  </button>
                   <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
                   <mat-datepicker #pickerDesde></mat-datepicker>
-                  <mat-error>Fecha Desde requerida</mat-error>
+                  <mat-error *ngIf="formFilter.get('fechaDesde')?.hasError('required')">Fecha Desde
+                    requerida</mat-error>
+                  <mat-error *ngIf="formFilter.get('fechaDesde')?.hasError('matDatepickerParse')">Fecha
+                    inválida</mat-error>
                 </mat-form-field>
 
                 <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
-                  <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Fecha Hasta"
-                    readonly>
+                  <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Hasta">
+                  <button mat-icon-button matSuffix *ngIf="formFilter.controls['fechaHasta'].value"
+                    (click)="limpiarCampo('fechaHasta')">
+                    <mat-icon>close</mat-icon>
+                  </button>
                   <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
                   <mat-datepicker #pickerHasta></mat-datepicker>
-                  <mat-error>Fecha Hasta requerida</mat-error>
+                  <mat-error *ngIf="formFilter.get('fechaHasta')?.hasError('required')">Fecha Hasta
+                    requerida</mat-error>
+                  <mat-error *ngIf="formFilter.get('fechaHasta')?.hasError('matDatepickerParse')">Fecha
+                    inválida</mat-error>
                 </mat-form-field>
 
-                
-
-
                 <mat-form-field class="w-full">
-                  <input type="text" placeholder="Ingrese o seleccione un estado" matInput formControlName="estado"
-                    [matAutocomplete]="auto2">
+                  <mat-select placeholder="Estado" formControlName="estado">
+                    <mat-option *ngFor="let estado2 of estados" [value]="estado2.value">
+                      {{ estado2.value }}
+                    </mat-option>
+                  </mat-select>
                   <button matSuffix *ngIf="formFilter.controls['estado'].value"
                     (click)="formFilter.controls['estado'].setValue('')">
-                    <mat-icon> close </mat-icon>
+                    <mat-icon>close</mat-icon>
                   </button>
-                  <mat-autocomplete #auto2="matAutocomplete" autoActiveFirstOption>
-                    <mat-option *ngFor="let estado2 of estados" [value]="estado2.value">{{ estado2.value }}
+                </mat-form-field>
+
+                <mat-form-field class="w-1/2">
+                  <input type="text" #campoInput formControlName="idFormula"
+                    [placeholder]="formulaFail ? 'No se han podido cargar las formulas.' : 'Fórmula'" matInput
+                    [matAutocomplete]="formulaAuto">
+
+                  <button mat-icon-button matSuffix *ngIf="formFilter.controls['idFormula'].value !== null"
+                    (click)="limpiarCampo('idFormula')">
+                    <mat-icon>close</mat-icon>
+                  </button>
+
+                  <mat-error *ngIf="formFilter.controls['idFormula'].hasError('invalidFormula')">
+                    Debe seleccionar una fórmula válida
+                  </mat-error>
+
+                  <mat-autocomplete #formulaAuto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+                    <!-- <mat-option *ngIf="!formFilter.controls['idFormula'].value" [value]="0">
+                      Todos
+                    </mat-option> -->
+                    <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
+                      {{ formula.nombre }}
                     </mat-option>
                   </mat-autocomplete>
                 </mat-form-field>
 
-                <mat-form-field class="w-full">
-                  <input type="text" placeholder="Ingrese o seleccione una fórmula" matInput formControlName="idFormula"
-                    [matAutocomplete]="auto">
-                  <button matSuffix *ngIf="formFilter.controls['idFormula'].value"
-                    (click)="formFilter.controls['idFormula'].setValue('')">
-                    <mat-icon> close </mat-icon>
+                <mat-form-field class="w-1/2">
+                  <input type="text" placeholder="Lote (LNNNN)" matInput formControlName="nroLote" maxlength="5">
+                  <button mat-icon-button matSuffix *ngIf="formFilter.controls['nroLote'].value"
+                    (click)="limpiarCampo('nroLote')">
+                    <mat-icon>close</mat-icon>
                   </button>
-                  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
-                    <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">{{ formula.nombre }}
-                      V{{formula.version}} ({{ formula.norma }})</mat-option>
-                  </mat-autocomplete>
-                </mat-form-field>
-
-                <mat-form-field class="w-full">
-                  <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="nroLote"
-                    maxlength="5">
                   <mat-error>
                     {{
                     formFilter.controls['nroLote'].hasError('minlength')
@@ -232,8 +257,8 @@
                   </mat-error>
                 </mat-form-field>
               </div>
-              <div class="row flex justify-end">
-                <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+              <div class="row flex gap-2 justify-end">
+                <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base"
                   (click)="limpiar()">
                   <span class="mat-button-wrapper"> Limpiar </span>
                   <span matripple="" class="mat-ripple mat-button-ripple"></span>
@@ -302,18 +327,18 @@
               <button (click)="edit(lot.id)">
                 <mat-icon matTooltip="Editar">edit</mat-icon>
               </button>
-              <button (click)="get(lot)" matTooltip="Ensayos" >
+              <button (click)="get(lot)" matTooltip="Ensayos">
                 <!-- <mat-icon svgIcon="mat_solid:network_check"></mat-icon> -->
                 <mat-icon>speed</mat-icon>
               </button>
-              <button >
+              <button>
                 <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="delete(lot)"></mat-icon>
               </button>
               <ng-container *ngIf="lot.estado === 'PENDIENTE_APROBACION'">
-                <button (click)="set(lot, 'APPROVE')" >
+                <button (click)="set(lot, 'APPROVE')">
                   <mat-icon>done</mat-icon>
                 </button>
-                <button (click)="set(lot, 'REJECT')" >
+                <button (click)="set(lot, 'REJECT')">
                   <mat-icon>close</mat-icon>
                 </button>
               </ng-container>
@@ -322,8 +347,9 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
-        <mat-paginator #paginator (page)="pageChangeEvent($event)" [length]="totalRecords" [pageSize]="pageSize" style="display: flex; justify-content: right;"
-          [pageIndex]="pageIndex" [length]="totalRecords" [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons>
+        <mat-paginator #paginator (page)="pageChangeEvent($event)" [length]="totalRecords" [pageSize]="pageSize"
+          style="display: flex; justify-content: right;" [pageIndex]="pageIndex" [length]="totalRecords"
+          [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons>
         </mat-paginator>
       </div>
     </div>

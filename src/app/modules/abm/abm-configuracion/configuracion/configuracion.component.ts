@@ -195,14 +195,16 @@ export class ConfiguracionComponent implements OnInit {
     return formula ? `${formula.nombre} V${formula.version} (${formula.norma})` : '';
   }
 
-  public displayMachineFn(machine: IMachine): string {
-    if (typeof machine === 'number' && machine === 0) { return 'Todos'; }
-    return machine && machine.nombre ? machine.nombre : '';
+  public displayMachineFn(machine: IMachine | number | null): string {
+    if (machine === null) { return ''; }
+    if (machine === 0) { return 'Todos'; }
+    return machine && typeof machine === 'object' && machine.nombre ? machine.nombre : '';
   }
 
-  public displayClienteFn(cliente?: Cliente): string {
-    if (typeof cliente === 'number' && cliente === 0) { return 'Todos'; }
-    return cliente && cliente.nombre ? cliente.nombre : '';
+  public displayClienteFn(cliente: Cliente | number | null): string {
+    if (cliente === null) { return ''; }
+    if (cliente === 0) { return 'Todos'; }
+    return cliente && typeof cliente === 'object' && cliente.nombre ? cliente.nombre : '';
   }
 
   limpiarCampo(campo: string): void {
@@ -414,16 +416,18 @@ export class ConfiguracionComponent implements OnInit {
         : configuraciones?.data;
 
       if (configuracion) {
-        const clienteSeleccionado = this.clientes$.find(f => f.id === configuracion.idCliente);
+        const clienteSeleccionado = configuracion.idCliente === null ? 0 :
+          this.clientes$.find(f => f.id === configuracion.idCliente);
         this.form.controls.cliente.setValue(clienteSeleccionado);
 
         const formulaSeleccionada = this.formulas.find(f => f.id === configuracion.idFormula);
         this.form.controls.formula.setValue(formulaSeleccionada);
 
-        const maquinaSeleccionada = this.machines$.find(f => f.id === configuracion.idMaquina);
+        const maquinaSeleccionada = configuracion.idMaquina === null ? 0 :
+          this.machines$.find(f => f.id === configuracion.idMaquina);
         this.form.controls.machine.setValue(maquinaSeleccionada);
 
-        this.selectedMachineName = maquinaSeleccionada?.nombre;
+        this.selectedMachineName = maquinaSeleccionada === 0 ? 'Todos' : maquinaSeleccionada?.nombre;
 
         this.form.controls.mostrarCondiciones.setValue(configuracion.mostrarCondiciones);
         this.form.controls.mostrarObservacionesParametro.setValue(configuracion.mostrarObservacionesParametro);
@@ -432,22 +436,31 @@ export class ConfiguracionComponent implements OnInit {
 
         this.configuracion$ = configuracion;
 
-        if (this.mode !== 'View') {
-          this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
-            this.tests = response.data.map((test: ITest) => ({
-              ...test,
-              selected: configuracion.idsPruebas.includes(test.id)
-            }));
-          });
+        if (this.mode === 'View') {
+          this.form.disable();
+
+          if (maquinaSeleccionada === 0) {
+            this.tests = [];
+          } else {
+            this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
+              this.tests = response.data.map((test: ITest) => ({
+                ...test,
+                selected: configuracion.idsPruebas.includes(test.id),
+                disabled: true
+              }));
+            });
+          }
         } else {
-          this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
-            this.tests = response.data.map((test: ITest) => ({
-              ...test,
-              selected: configuracion.idsPruebas.includes(test.id),
-              disabled: true
-            }));
-            this.form.disable();
-          });
+          if (maquinaSeleccionada === 0) {
+            this.tests = [];
+          } else {
+            this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
+              this.tests = response.data.map((test: ITest) => ({
+                ...test,
+                selected: configuracion.idsPruebas.includes(test.id)
+              }));
+            });
+          }
         }
       } else {
         this.openSnackBar(false, 'Configuración no encontrada.');
