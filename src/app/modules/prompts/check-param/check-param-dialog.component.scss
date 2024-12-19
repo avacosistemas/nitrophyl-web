@@ -1,0 +1,19 @@
+.warning-icon {
+    border-radius: 50%; 
+    background: pink; 
+    width: 2.5rem; 
+    height: 2.5rem; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
+
+.warning-icon mat-icon {
+    color: red;
+}
+
+.list-style {
+    list-style: circle;
+    margin: 5px;
+    padding-left: 20px;
+}

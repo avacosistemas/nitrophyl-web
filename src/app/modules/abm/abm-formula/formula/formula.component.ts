@@ -51,6 +51,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { TestModifyDialogComponent } from 'app/modules/prompts/test-modify/test-modify-dialog.component';
+import { CheckParamDialogComponent } from 'app/modules/prompts/check-param/check-param-dialog.component';
 import { MatDrawer } from '@angular/material/sidenav';
 
 @Component({
@@ -190,110 +191,6 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         this.displayedColumnsConditions = ['condition', 'value', 'actions'];
       }
     });
-  }
-
-  public saveTestModify(): void {
-    const dialogRef = this.dialog.open(TestModifyDialogComponent, {
-      width: '450px',
-      data: {
-        type: 'save'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const body: ITestFormula = this.prepareTestForPut();
-
-        if (body) {
-          this.putTest(body);
-        }
-        this.isEditing = false;
-      }
-    });
-  }
-
-  public saveTest(): void {
-    const body: ITestFormula = {
-      idFormula: this.id,
-      idMaquina: this.idMachine,
-      parametros: [],
-      condiciones: [],
-      observacionesReporte: null,
-      mostrarResultadosReporte: false
-    };
-
-    const controls = this.formTest?.controls;
-    if (!controls) {
-      console.error('El formulario no está inicializado correctamente');
-      return;
-    }
-
-    for (const param of this.params$) {
-      const minControl = controls[`${param.id}.min`];
-      const maxControl = controls[`${param.id}.max`];
-      const normaControl = controls[`${param.id}.norma`];
-
-      if (!minControl || !maxControl) {
-        this.openSnackBar(false, `Error al procesar el parámetro '${param.nombre}'`);
-        return;
-      }
-
-      const minvparam = minControl.value;
-      const maxvparam = maxControl.value;
-
-      if (!minvparam && !maxvparam && !Number(minvparam) && !Number(maxvparam)) {
-        this.openSnackBar(false, `El parámetro '${param.nombre}' debe contener al menos un valor asignado.`);
-        return;
-      }
-
-      const minvparamnum = Number(minvparam);
-      const maxvparamnum = Number(maxvparam);
-
-      if (
-        minvparam !== null &&
-        maxvparam !== null &&
-        minvparam.toString().trim().length > 0 &&
-        maxvparam.toString().trim().length > 0 &&
-        minvparamnum > maxvparamnum
-      ) {
-        this.openSnackBar(false, `El valor mínimo del parámetro '${param.nombre}' no puede ser mayor al valor máximo.`);
-        return;
-      }
-
-      body.parametros.push({
-        id: null,
-        maquinaPrueba: {
-          id: param.id,
-          nombre: param.nombre
-        },
-        minimo: minvparam,
-        maximo: maxvparam,
-        norma: normaControl?.value || null
-      });
-    }
-
-    if (this.conditions$) {
-      for (const condition of this.conditions$) {
-        const controlName = `${condition.nombre}.value`;
-        const conditionControl = controls[controlName];
-
-        if (!conditionControl) {
-          console.warn(`Control no encontrado para la condición: ${condition.nombre}`);
-          continue;
-        }
-
-        body.condiciones.push({
-          nombre: condition.nombre,
-          valor: conditionControl.value
-        });
-      }
-    }
-
-    const observacionesControl = controls['observacionesReporte'];
-    body.observacionesReporte = observacionesControl?.value || null;
-    body.mostrarResultadosReporte = this.mostrarResultadosReporte || false;
-
-    this.postMachine(body);
   }
 
   public ngOnDestroy(): void {
@@ -444,6 +341,129 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public mostrarRevision(rpdto: any): void {
     this.rpdto = rpdto;
+  }
+
+  public saveTest(): void {
+    const body: ITestFormula = {
+      idFormula: this.id,
+      idMaquina: this.idMachine,
+      parametros: [],
+      condiciones: [],
+      observacionesReporte: null,
+      mostrarResultadosReporte: false,
+    };
+
+    const controls = this.formTest?.controls;
+    if (!controls) {
+      console.error('El formulario no está inicializado correctamente');
+      return;
+    }
+
+    const missingValues: { nombre: string }[] = [];
+
+    for (const param of this.params$) {
+      const minControl = controls[`${param.id}.min`];
+      const maxControl = controls[`${param.id}.max`];
+      const normaControl = controls[`${param.id}.norma`];
+
+      if (!minControl || !maxControl) {
+        this.openSnackBar(false, `Error al procesar el parámetro '${param.nombre}'`);
+        return;
+      }
+
+      const minvparam = minControl.value;
+      const maxvparam = maxControl.value;
+
+      if (!minvparam && !maxvparam) {
+        missingValues.push({ nombre: param.nombre });
+      }
+
+      const minvparamnum = Number(minvparam);
+      const maxvparamnum = Number(maxvparam);
+
+      if (
+        minvparam !== null &&
+        maxvparam !== null &&
+        minvparam.toString().trim().length > 0 &&
+        maxvparam.toString().trim().length > 0 &&
+        minvparamnum > maxvparamnum
+      ) {
+        this.openSnackBar(false, `El valor mínimo del parámetro '${param.nombre}' no puede ser mayor al valor máximo.`);
+        return;
+      }
+
+      body.parametros.push({
+        id: null,
+        maquinaPrueba: {
+          id: param.id,
+          nombre: param.nombre,
+        },
+        minimo: minvparam,
+        maximo: maxvparam,
+        norma: normaControl?.value || null,
+      });
+    }
+
+    if (missingValues.length > 0) {
+      this.openDialogForMissingValues(missingValues, body);
+      return;
+    }
+
+    this.saveTestRequest(body);
+  }
+
+  public saveTestModify(): void {
+    const { body, missingValues } = this.prepareTestForPut();
+
+    if (!body) {
+      return;
+    }
+
+    const openModifyDialog = (): void => {
+      const dialogRef = this.dialog.open(TestModifyDialogComponent, {
+        width: '450px',
+        data: { type: 'save' },
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.putTest(body);
+          this.isEditing = false;
+        }
+      });
+    };
+
+    if (missingValues.length > 0) {
+      const dialogRef = this.dialog.open(CheckParamDialogComponent, {
+        width: '500px',
+        data: { params: missingValues },
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          openModifyDialog();
+        }
+      });
+    } else {
+      openModifyDialog();
+    }
+  }
+
+  private openDialogForMissingValues(missingValues: { nombre: string }[], body: ITestFormula): void {
+    const dialogRef = this.dialog.open(CheckParamDialogComponent, {
+      width: '500px',
+      data: { params: missingValues },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.saveTestRequest(body);
+      }
+    });
+  }
+
+  private saveTestRequest(body: ITestFormula): void {
+    this.postMachine(body);
   }
 
   private getRevision(): void {
@@ -798,47 +818,50 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       }
       if (data[0] === 4) {
         this.idMachine = data[1];
-        this.addMachine(data[1],data[3]);
+        this.addMachine(data[1], data[3]);
         this.machine = data[2];
       }
     });
   }
 
-  private prepareTestForPut(): ITestFormula | null {
+  private prepareTestForPut(): { body: ITestFormula | null; missingValues: { nombre: string }[] } {
     const body: ITestFormula = {
       id: this.currentTestId,
       parametros: [],
       condiciones: [],
-      observacionesReporte: this.formTest.controls['observacionesReporte'].value || null
+      observacionesReporte: this.formTest.controls['observacionesReporte'].value || null,
     };
 
     const controls = this.formTest.controls;
+    const missingValues: { nombre: string }[] = [];
 
     for (const param of this.params$) {
       const minControl = controls[param.id + '.min'];
       const maxControl = controls[param.id + '.max'];
       const normaControl = controls[param.id + '.norma'];
 
-      const minValue = minControl.value !== null && minControl.value !== '' ?
-        Number(minControl.value) : null;
-      const maxValue = maxControl.value !== null && maxControl.value !== '' ?
-        Number(maxControl.value) : null;
+      const minValue = minControl.value !== null && minControl.value !== '' ? Number(minControl.value) : null;
+      const maxValue = maxControl.value !== null && maxControl.value !== '' ? Number(maxControl.value) : null;
+
+      if (minValue === null && maxValue === null) {
+        missingValues.push({ nombre: param.nombre });
+      }
 
       if (minValue !== null && maxValue !== null && minValue > maxValue) {
         this.openSnackBar(false, `El valor mínimo del parámetro '${param.nombre}' no puede ser mayor al valor máximo.`);
-        return null;
+        return { body: null, missingValues: [] };
       }
 
       body.parametros.push({
         id: param.testParamId || null,
         maquinaPrueba: {
           id: param.id,
-          posicion: param.position
+          posicion: param.position,
         },
         minimo: minValue,
         maximo: maxValue,
         norma: normaControl?.value || null,
-        orden: param.orden
+        orden: param.orden,
       });
     }
 
@@ -846,21 +869,16 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       const controlName = `${condition.nombre}.value`;
       const controlValue = controls[controlName]?.value;
 
-      const valor = controlValue !== null && controlValue !== '' ?
-        Number(controlValue) : null;
+      const valor = controlValue !== null && controlValue !== '' ? Number(controlValue) : null;
 
       body.condiciones.push({
         id: condition.id || null,
         nombre: condition.nombre,
-        valor: valor
+        valor: valor,
       });
     }
 
-    delete body['idFormula'];
-    delete body['idMaquina'];
-    delete body['mostrarResultadosReporte'];
-
-    return body;
+    return { body, missingValues };
   }
 
   private putTest(body: ITestFormula): void {

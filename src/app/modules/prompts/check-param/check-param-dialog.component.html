@@ -1,0 +1,29 @@
+<div>
+  <div class="w-full flex justify-between">
+    <div class="flex mt-3">
+      <div class="warning-icon">
+        <mat-icon svgIcon="heroicons_outline:exclamation"></mat-icon>
+      </div>
+      <h1 class="font-semibold mt-2 ml-2">
+        Advertencia
+      </h1>
+    </div>
+    <button mat-flat-button (click)="cancel()">
+      <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
+    </button>
+  </div>
+  <p class="mt-4">
+    Las siguientes pruebas no tienen valores mínimos ni máximos. ¿Está seguro de que desea guardarlas sin valores?
+  </p>
+
+  <p class="font-extrabold text-xl mt-2">Pruebas:</p>
+
+  <ul class="font-extrabold list-style">
+    <li *ngFor="let param of data.params">{{ param.nombre }}</li>
+  </ul>
+
+  <mat-dialog-actions align="end">
+    <button mat-raised-button color="warn" (click)="continue()">Guardar</button>
+    <button mat-stroked-button (click)="cancel()">Volver</button>
+  </mat-dialog-actions>
+</div>
