@@ -1,69 +1,87 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 import { PermisosService } from 'app/shared/services/permisos.service';
 import { ABMPermisoService } from './abm-permisos.service';
 
 @Component({
-    selector     : 'abm-permisos',
-    templateUrl  : './abm-permisos.component.html',
+    selector: 'abm-permisos',
+    templateUrl: './abm-permisos.component.html',
     styleUrls: ['./abm-permisos.component.scss'],
     encapsulation: ViewEncapsulation.None
 })
 export class ABMPermisosComponent implements OnInit, AfterContentChecked {
-    
-    titulo: string = "";
+
+    titulo: string = '';
 
     constructor(
         private router: Router,
-        private ABMPermisoService: ABMPermisoService,
+        private _abmPermisoService: ABMPermisoService,
         private permisosService: PermisosService,
         private cdref: ChangeDetectorRef
-    ) {}
+    ) { }
 
-    ngOnInit(): void {
-        
-    }
+    ngOnInit(): void { }
 
     ngAfterContentChecked(): void {
-        this.cdref.detectChanges()
+        this.cdref.detectChanges();
     }
 
-    componentAdded(event) {
-        if(event.component == "Grilla") {
-            this.titulo = "Consulta Permisos"
+    handleAction(action: string): void {
+        switch (action) {
+            case 'edit':
+                this.edit();
+                break;
+            case 'save':
+                this.save();
+                break;
+            case 'editContinue':
+                this.editContinue();
+                break;
+            case 'close':
+                this.close();
+                break;
+            case 'create':
+                this.create();
+                break;
         }
-        if(event.component == "Permiso") {
-            if(this.permisosService.getMode() == "Edit"){
-                this.titulo = "Edición Permiso";
+    }
+
+    componentAdded(event): void {
+        if (event.component === 'Grilla') {
+            this.titulo = 'Consulta Permisos';
+        }
+        if (event.component === 'Permiso') {
+            if (this.permisosService.getMode() === 'Edit') {
+                this.titulo = 'Edición Permiso';
             }
-            if(this.permisosService.getMode() == "View" || this.permisosService.getMode() == undefined) {
-                this.titulo = "Vista Permiso";
+            if (this.permisosService.getMode() === 'View' || this.permisosService.getMode() === undefined) {
+                this.titulo = 'Vista Permiso';
             }
         }
-        if(event.component == "Create") {
-            this.titulo = "Nuevo Permiso"
+        if (event.component === 'Create') {
+            this.titulo = 'Nuevo Permiso';
         }
     }
 
-    edit() {
-        this.ABMPermisoService.events.next(2)
+    edit(): void {
+        this._abmPermisoService.events.next(2);
     }
 
-    editContinue() {
-        this.ABMPermisoService.events.next(3)
+    editContinue(): void {
+        this._abmPermisoService.events.next(3);
     }
 
-    close() {
-        this.ABMPermisoService.events.next(1)
+    close(): void {
+        this._abmPermisoService.events.next(1);
     }
 
-    create() {
-        this.permisosService.setMode("Create")
+    create(): void {
+        this.permisosService.setMode('Create');
         this.router.navigate(['../permisos/create']);
     }
 
-    save() {
-        this.ABMPermisoService.events.next(4)
+    save(): void {
+        this._abmPermisoService.events.next(4);
     }
 
 }

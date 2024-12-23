@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMPermisosComponent } from './abm-permisos.component';
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { ABMPermisosGrillaComponent } from './grilla/abm-permisos-grilla.component';
 import { ABMPermisosPermiso } from './permiso/abm-permisos-permiso.component';
 import { ABMCrearPermiso } from './crear-permiso/abm-permisos-crear.component';
@@ -42,7 +43,8 @@ const abmPermisosRoutes: Route[] = [
     imports: [
         RouterModule.forChild(abmPermisosRoutes),
         ABMSharedModule,
-        CoreSharedModule
+        CoreSharedModule,
+        HeaderSharedModule
     ]
 })
 export class ABMPermisosModule {

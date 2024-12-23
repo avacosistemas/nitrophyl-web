@@ -14,17 +14,17 @@ export class ABMConfiguracionComponent implements OnInit {
   public component: string = 'all';
   public title: string = '';
   public testObj: any = {};
-
-  private action$: Subscription;
   public action: boolean = false;
   public formTest: FormGroup;
+
+  private action$: Subscription;
 
   constructor(
     private configuracionService: ConfiguracionService,
     private router: Router,
     private cdref: ChangeDetectorRef
   ) {
- this.action$ = this.configuracionService.actions$.subscribe((option: boolean) => {
+    this.action$ = this.configuracionService.actions$.subscribe((option: boolean) => {
       option ? this.formTest.disable() : this.formTest.enable();
       this.action = option;
     });
@@ -73,4 +73,19 @@ export class ABMConfiguracionComponent implements OnInit {
   public save(): void {
     this.configuracionService.events.next(3);
   }
+
+  handleAction(action: string): void {
+    switch (action) {
+      case 'save':
+        this.save();
+        break;
+      case 'create':
+        this.create();
+        break;
+      case 'close':
+        this.close();
+        break;
+    }
+  }
+
 }

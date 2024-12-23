@@ -1,64 +1,49 @@
 <div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
-    <div class="bg-card border-b dark:bg-transparent flex flex-0 flex-col p-4 sm:flex-row sm:items-center sm:justify-between sm:px-10">
-        <div class="flex-1 min-w-0">
-            <div>
-                <div class="hidden sm:flex flex-wrap items-center font-medium">
-                    <div>
-                        <a class="whitespace-nowrap text-primary-500">ABM</a>
-                    </div>
-                    <div class="flex items-center ml-1 whitespace-nowrap">
-                        <mat-icon role="img" class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color" aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="chevron-right" data-mat-icon-namespace="heroicons_solid">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        </mat-icon>
-                        <span class="ml-1 text-secondary">Perfiles</span>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">{{ titulo }}</h2>
-            </div>
-        </div>
-        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
-            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="edit()" *ngIf="titulo == 'Edición Perfil'">
-                <span class="mat-button-wrapper">
-                    Guardar 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="titulo == 'Nuevo Perfil'">
-                <span class="mat-button-wrapper">
-                    Guardar 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="editContinue()" *ngIf="titulo == 'Edición Perfil'">
-                <span class="mat-button-wrapper">
-                    Guardar y continuar 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()" *ngIf="titulo != 'Consulta Perfiles'">
-                <span class="mat-button-wrapper">
-                    Cerrar 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="create()" *ngIf="titulo == 'Consulta Perfiles'">
-                <span class="mat-button-wrapper">
-                    Crear nuevo perfil 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-        </div>
-    </div>
+    <app-header
+      [title]="titulo"
+      [breadcrumbs]="[
+        { title: 'ABM', route: ['/perfiles/grid'], condition: true },
+        { title: 'Perfiles', route: ['/perfiles/grid'], condition: true },
+        { title: 'Editar', route: [], condition: titulo === 'Edición Perfil' },
+        { title: 'Crear', route: [], condition: titulo === 'Nuevo Perfil' },
+        { title: 'Ver', route: [], condition: titulo === 'Vista Perfil' },
+        { title: 'Consultar', route: [], condition: titulo === 'Consulta Perfiles' },
+      ]"
+      [buttons]="[
+        {
+          type: 'flat',
+          label: 'Guardar',
+          condition: titulo === 'Edición Perfil' || titulo === 'Nuevo Perfil',
+          isDisabled: false,
+          action: titulo === 'Edición Perfil' ? 'edit' : 'save'
+        },
+        {
+          type: 'flat',
+          label: 'Guardar y continuar',
+          condition: titulo === 'Edición Perfil',
+          isDisabled: false,
+          action: 'editContinue'
+        },
+        {
+          type: 'stroked',
+          label: 'Cerrar',
+          condition: titulo !== 'Consulta Perfiles',
+          isDisabled: false,
+          action: 'close'
+        },
+        {
+          type: 'flat',
+          label: 'Crear nuevo perfil',
+          condition: titulo === 'Consulta Perfiles',
+          isDisabled: false,
+          action: 'create'
+        }
+      ]"
+      (buttonAction)="handleAction($event)"
+    >
+    </app-header>
+  
     <div class="content-scroll">
-        <router-outlet (activate)="componentAdded($event)"></router-outlet>
+      <router-outlet (activate)="componentAdded($event)"></router-outlet>
     </div>
-</div>
+  </div>

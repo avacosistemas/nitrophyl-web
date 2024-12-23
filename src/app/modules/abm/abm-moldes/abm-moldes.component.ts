@@ -1,8 +1,8 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
-import { MoldesService } from "app/shared/services/moldes.service";
-import { Subscription } from "rxjs";
-import { ABMMoldeService } from "./abm-moldes-service";
+import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { MoldesService } from 'app/shared/services/moldes.service';
+import { Subscription } from 'rxjs';
+import { ABMMoldeService } from './abm-moldes-service';
 
 @Component({
     selector: 'abm-moldes',
@@ -10,83 +10,103 @@ import { ABMMoldeService } from "./abm-moldes-service";
     styleUrls: ['./abm-moldes.component.scss']
 })
 
-export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestroy{
-    titulo: string = "";
+export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestroy {
+    titulo: string = '';
     suscripcion: Subscription;
-    botonEdicion: string = "";
+    botonEdicion: string = '';
     moldeTitulo: string = null;
 
     constructor(
         private activatedRoute: ActivatedRoute,
         private moldesService: MoldesService,
-        private ABMMoldesService: ABMMoldeService,
+        private _abmMoldesService: ABMMoldeService,
         private router: Router,
         private cdref: ChangeDetectorRef
     ) {
-        this.suscripcion = this.ABMMoldesService.viewEvents.subscribe(
+        this.suscripcion = this._abmMoldesService.viewEvents.subscribe(
             (data: string) => {
                 this.botonEdicion = data;
             }
-        )
+        );
     }
 
     ngOnInit(): void {
-        this.botonEdicion = "Guardar Molde"
+        this.botonEdicion = 'Guardar Molde';
     }
 
     ngAfterContentChecked(): void {
-        this.cdref.detectChanges()
+        this.cdref.detectChanges();
     }
 
     ngOnDestroy(): void {
         this.suscripcion.unsubscribe();
     }
 
-    componentAdded(event) {
-        if (event.component == "Grilla") {
-            this.titulo = "Consulta Moldes";
+    handleAction(action: string): void {
+        switch (action) {
+            case 'edit':
+                this.edit();
+                break;
+            case 'save':
+                this.save();
+                break;
+            case 'ingresoEgreso':
+                this.ingresoEgreso();
+                break;
+            case 'close':
+                this.close();
+                break;
+            case 'create':
+                this.create();
+                break;
+        }
+    }
+
+    componentAdded(event): void {
+        if (event.component === 'Grilla') {
+            this.titulo = 'Consulta Moldes';
             this.moldeTitulo = null;
         }
-        if (event.component == "Molde") {
+        if (event.component === 'Molde') {
             this.moldeTitulo = null;
-            if (this.moldesService.getMode() == "Edit") {
-                this.titulo = "Edición Molde";
+            if (this.moldesService.getMode() === 'Edit') {
+                this.titulo = 'Edición Molde';
             }
-            if (this.moldesService.getMode() == "View" || this.moldesService.getMode() == undefined) {
-                this.titulo = "Vista Molde";
+            if (this.moldesService.getMode() === 'View' || this.moldesService.getMode() === undefined) {
+                this.titulo = 'Vista Molde';
             }
         }
-        if (event.component == "Create") {
+        if (event.component === 'Create') {
             this.moldeTitulo = null;
-            this.titulo = "Nuevo Molde"
+            this.titulo = 'Nuevo Molde';
         }
-        if(event.component == "Ingresos / Egresos") {
-            this.titulo = "...";
-            this.moldesService.getMoldeById(this.activatedRoute.snapshot.children[0].params['id']).subscribe(d => {
-                this.moldeTitulo = "Ingresos / Egresos";
+        if (event.component === 'Ingresos / Egresos') {
+            this.titulo = '...';
+            this.moldesService.getMoldeById(this.activatedRoute.snapshot.children[0].params['id']).subscribe((d) => {
+                this.moldeTitulo = 'Ingresos / Egresos';
                 this.titulo = d.data.nombre;
             });
         }
     }
 
-    edit() {
-        this.ABMMoldesService.events.next(2)
+    edit(): void {
+        this._abmMoldesService.events.next(2);
     }
 
-    close() {
-        this.ABMMoldesService.events.next(1)
+    close(): void {
+        this._abmMoldesService.events.next(1);
     }
 
-    create() {
-        this.moldesService.setMode("Create")
+    create(): void {
+        this.moldesService.setMode('Create');
         this.router.navigate(['../moldes/create']);
     }
 
-    save() {
-        this.ABMMoldesService.events.next(4)
+    save(): void {
+        this._abmMoldesService.events.next(4);
     }
 
-    ingresoEgreso() {
-        this.ABMMoldesService.events.next(5)
+    ingresoEgreso(): void {
+        this._abmMoldesService.events.next(5);
     }
 }

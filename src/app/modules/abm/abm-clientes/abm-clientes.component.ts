@@ -1,8 +1,8 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from "@angular/core";
-import { ActivatedRoute, Router } from "@angular/router";
-import { ClientesService } from "app/shared/services/clientes.service";
-import { Subscription } from "rxjs";
-import { ABMClientesService } from "./abm-clientes.service";
+import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ClientesService } from 'app/shared/services/clientes.service';
+import { Subscription } from 'rxjs';
+import { ABMClientesService } from './abm-clientes.service';
 
 @Component({
     selector: 'abm-clientes',
@@ -10,82 +10,105 @@ import { ABMClientesService } from "./abm-clientes.service";
     styleUrls: ['./abm-clientes.component.scss']
 })
 
-export class ABMClientesComponent implements OnInit, AfterContentChecked, OnDestroy{
-    titulo: string = "";
+export class ABMClientesComponent implements OnInit, AfterContentChecked, OnDestroy {
+    titulo: string = '';
     suscripcion: Subscription;
-    botonEdicion: string = "";
+    botonEdicion: string = '';
     subTitulo: string = null;
 
     constructor(
         private clientesService: ClientesService,
-        private ABMClientesService: ABMClientesService,
+        private abmClientesSvc: ABMClientesService,
         private router: Router,
         private cdref: ChangeDetectorRef
     ) {
-        this.suscripcion = this.ABMClientesService.viewEvents.subscribe(
+        this.suscripcion = this.abmClientesSvc.viewEvents.subscribe(
             (data: string) => {
                 this.subTitulo = data;
             }
-        )
+        );
+    }
+
+    handleAction(action: string): void {
+        switch (action) {
+            case 'save':
+                this.save();
+                break;
+            case 'close':
+                this.close();
+                break;
+            case 'goToClientes':
+                this.router.navigate(['../clientes/grid']);
+                break;
+            case 'createCliente':
+                this.create();
+                break;
+            case 'createContacto':
+                this.createContacto();
+                break;
+            case 'saveContacto':
+                this.save();
+                break;
+        }
     }
 
     ngOnInit(): void {
-        this.botonEdicion = "Guardar Molde"
+        this.botonEdicion = 'Guardar Molde';
     }
 
     ngAfterContentChecked(): void {
-        this.cdref.detectChanges()
+        this.cdref.detectChanges();
     }
 
     ngOnDestroy(): void {
         this.suscripcion.unsubscribe();
     }
 
-    componentAdded(event) {
+    componentAdded(event: { component: string }): void {
         this.subTitulo = null;
-        if (event.component == "Grilla") {
-            this.titulo = "Consulta Clientes";
+        if (event.component === 'Grilla') {
+            this.titulo = 'Consulta Clientes';
         }
-        if (event.component == "Molde") {
-            if (this.clientesService.getMode() == "Edit") {
-                this.titulo = "Edición Cliente";
+        if (event.component === 'Molde') {
+            if (this.clientesService.getMode() === 'Edit') {
+                this.titulo = 'Edición Cliente';
             }
-            if (this.clientesService.getMode() == "View" || this.clientesService.getMode() == undefined) {
-                this.titulo = "Vista Cliente";
+            if (this.clientesService.getMode() === 'View' || this.clientesService.getMode() === undefined) {
+                this.titulo = 'Vista Cliente';
             }
         }
-        if (event.component == "CreateCliente") {
-            this.titulo = "Nuevo Cliente"
+        if (event.component === 'CreateCliente') {
+            this.titulo = 'Nuevo Cliente';
         }
-        if (event.component == "GrillaContactos") {
-            this.titulo = "Consulta Contactos";
+        if (event.component === 'GrillaContactos') {
+            this.titulo = 'Consulta Contactos';
         }
-        if (event.component == "CreateContacto") {
-            this.titulo = "Nuevo Contacto";
+        if (event.component === 'CreateContacto') {
+            this.titulo = 'Nuevo Contacto';
         }
-        if (event.component == "EditContacto") {
-            this.titulo = "Edición Contacto";
+        if (event.component === 'EditContacto') {
+            this.titulo = 'Edición Contacto';
         }
     }
 
-    edit() {
-        this.ABMClientesService.events.next(2)
+    edit(): void {
+        this.abmClientesSvc.events.next(2);
     }
 
-    close() {
-        this.ABMClientesService.events.next(1)
+    close(): void  {
+        this.abmClientesSvc.events.next(1);
     }
 
-    create() {
-        this.clientesService.setMode("Create")
+    create(): void  {
+        this.clientesService.setMode('Create');
         this.router.navigate(['../clientes/create']);
     }
 
-    createContacto() {
-        this.ABMClientesService.events.next(5);
+    createContacto(): void  {
+        this.abmClientesSvc.events.next(5);
     }
 
-    save() {
-        this.ABMClientesService.events.next(4)
+    save(): void  {
+        this.abmClientesSvc.events.next(4);
     }
 }

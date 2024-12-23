@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMUsuariosComponent } from './abm-usuarios.component';
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { ABMUsuariosUserComponent } from './user/abm-usuarios-user.component';
 import { ABMUsuariosGrillaComponent } from './grilla/abm-usuarios-grilla.component';
 import { ABMUsuariosCrearComponent } from './crear-user/abm-usuarios-crear.component';
@@ -42,7 +43,8 @@ const abmUsuariosRoutes: Route[] = [
     imports: [
         RouterModule.forChild(abmUsuariosRoutes),
         ABMSharedModule,
-        CoreSharedModule
+        CoreSharedModule,
+        HeaderSharedModule
     ]
 })
 export class ABMUsuariosModule {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ProductsService } from 'app/shared/services/products.service';
 import { ProductsEventService } from '../products-event.service';
@@ -8,9 +8,9 @@ import { ProductsEventService } from '../products-event.service';
   templateUrl: './products-grilla.component.html',
   styleUrls: ['./products-grilla.component.scss']
 })
-export class ProductsGrillaComponent implements OnInit {
+export class ProductsGrillaComponent implements OnInit, AfterViewInit {
 
-  component = "Grilla";
+  component = 'Grilla';
   products = [];
   productsBackup = [];
   displayedColumns: string[] = ['code', 'type', 'acciones'];
@@ -28,40 +28,40 @@ export class ProductsGrillaComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    localStorage.removeItem("navPiezas");
-    this.productsService.getProducts().subscribe(d => {
+    localStorage.removeItem('navPiezas');
+    this.productsService.getProducts().subscribe((d) => {
       this.products = d.data;
       this.productsBackup = this.products;
     });
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     let top = document.getElementById('top');
     if (top !== null) {
       top.scrollIntoView();
       top = null;
     }
-}
+  }
 
-  search() {
+  search(): void {
     let searchProducts = [];
-    if(this.searchForm.controls.tipo.value == 'SIMPLE') {
-      searchProducts = this.productsBackup.filter(p => p.tipo == 'SIMPLE');
-    } else if (this.searchForm.controls.tipo.value == 'COMPUESTA') {
-      searchProducts = this.productsBackup.filter(p => p.tipo == 'COMPUESTA');
+    if (this.searchForm.controls.tipo.value === 'SIMPLE') {
+      searchProducts = this.productsBackup.filter(p => p.tipo === 'SIMPLE');
+    } else if (this.searchForm.controls.tipo.value === 'COMPUESTA') {
+      searchProducts = this.productsBackup.filter(p => p.tipo === 'COMPUESTA');
     } else {
       searchProducts = this.productsBackup;
     };
     this.products = searchProducts.filter(element => element.codigoPieza.toLowerCase().includes(this.searchForm.controls.codigo.value.toLowerCase()));
   }
 
-  openProduct(id: number) {
-    if (id == 1) {
+  openProduct(id: number): void {
+    if (id === 1) {
       //Editar
-      this.productsEventService.setMode("Edit");
+      this.productsEventService.setMode('Edit');
     } else {
       //Ver
-      this.productsEventService.setMode("View");
+      this.productsEventService.setMode('View');
     }
   }
 

@@ -1,80 +1,63 @@
 <div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
-    <div class="bg-card border-b dark:bg-transparent flex flex-0 flex-col p-4 sm:flex-row sm:items-center sm:justify-between sm:px-10">
-        <div class="flex-1 min-w-0">
-            <div>
-                <div class="hidden sm:flex flex-wrap items-center font-medium">
-                    <div>
-                        <a class="whitespace-nowrap text-primary-500">ABM</a>
-                    </div>
-                    <div class="flex items-center ml-1 whitespace-nowrap">
-                        <mat-icon role="img" class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color" aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="chevron-right" data-mat-icon-namespace="heroicons_solid">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        </mat-icon>
-                        <span class="ml-1 text-secondary">Clientes</span>
-                    </div>
-                    <div class="flex items-center ml-1 whitespace-nowrap" *ngIf="subTitulo">
-                        <mat-icon role="img" class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color" aria-hidden="true" data-mat-icon-type="svg" data-mat-icon-name="chevron-right" data-mat-icon-namespace="heroicons_solid">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
-                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
-                            </svg>
-                        </mat-icon>
-                        <span class="ml-1 text-secondary">{{ subTitulo }}</span>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">{{ titulo }}</h2>
-            </div>
-        </div>
-        <div class="flex shrink-0 items-center mt-6 sm:mt-0 sm:ml-4">
-            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Cliente')">
-                <span class="mat-button-wrapper">
-                    Guardar Cliente
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()" *ngIf="titulo !== 'Consulta Clientes' && titulo !== 'Consulta Contactos'">
-                <span class="mat-button-wrapper">
-                    Cerrar 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-stroked-button="" class="ml-3 mat-focus-indicator mat-stroked-button mat-button-base" [routerLink]="['../clientes/grid']" *ngIf="titulo === 'Consulta Contactos'">
-                <span class="mat-button-wrapper">
-                    Volver a ABM Clientes 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="create()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Consulta Clientes')">
-                <span class="mat-button-wrapper">
-                    Agregar nuevo cliente 
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="createContacto()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Consulta Contactos')">
-                <span class="mat-button-wrapper">
-                    Agregar nuevo contacto
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            <button mat-flat-button="" class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="save()" *ngIf="('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Contacto') || (titulo === 'Edición Contacto')">
-                <span class="mat-button-wrapper">
-                    Guardar contacto
-                </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                <span class="mat-button-focus-overlay"></span>
-            </button>
-            
-        </div>
-    </div>
+    <app-header
+      [title]="titulo"
+      [subtitle]="subTitulo || ''"
+      [breadcrumbs]="[
+        { title: 'ABM', route: ['/clientes/grid'], condition: true },
+        { title: 'Clientes', route: ['/clientes/grid'], condition: true },
+        { title: 'Crear', route: [], condition: titulo === 'Nuevo Cliente' },
+        { title: 'Consultar', route: [], condition: titulo === 'Consulta Clientes' },
+        { title: 'Consultar', route: [], condition: titulo === 'Consulta Contactos' },
+        { title: 'Editar', route: [], condition: titulo === 'Edición Contacto' }
+        ]"
+      [buttons]="[
+        {
+          type: 'flat',
+          label: 'Guardar Cliente',
+          condition: ('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Cliente'),
+          isDisabled: false,
+          action: 'save'
+        },
+        {
+          type: 'stroked',
+          label: 'Cerrar',
+          condition: titulo !== 'Consulta Clientes' && titulo !== 'Consulta Contactos',
+          isDisabled: false,
+          action: 'close'
+        },
+        {
+          type: 'stroked',
+          label: 'Volver a ABM Clientes',
+          condition: titulo === 'Consulta Contactos',
+          isDisabled: false,
+          action: 'goToClientes'
+        },
+        {
+          type: 'flat',
+          label: 'Agregar nuevo cliente',
+          condition: ('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Consulta Clientes'),
+          isDisabled: false,
+          action: 'createCliente'
+        },
+        {
+          type: 'flat',
+          label: 'Agregar nuevo contacto',
+          condition: ('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Consulta Contactos'),
+          isDisabled: false,
+          action: 'createContacto'
+        },
+        {
+          type: 'flat',
+          label: 'Guardar contacto',
+          condition: ('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Contacto' || titulo === 'Edición Contacto'),
+          isDisabled: false,
+          action: 'saveContacto'
+        }
+      ]"
+      (buttonAction)="handleAction($event)">
+    </app-header>
     <div class="content-scroll">
-        <router-outlet (activate)="componentAdded($event)"></router-outlet>
+      <router-outlet (activate)="componentAdded($event)"></router-outlet>
     </div>
-</div>
+  </div>
+  

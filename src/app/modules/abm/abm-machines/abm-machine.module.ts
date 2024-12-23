@@ -3,6 +3,7 @@ import { Route, RouterModule } from '@angular/router';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 // * Shared module.
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 
 // * Components.
 import { ABMMachineComponent } from './abm-machine.component';
@@ -34,7 +35,8 @@ const routes: Route[] = [
     RouterModule.forChild(routes),
     ABMSharedModule,
     DragDropModule,
-    CoreSharedModule
+    CoreSharedModule,
+    HeaderSharedModule
   ],
 })
 export class ABMMachineModule {}

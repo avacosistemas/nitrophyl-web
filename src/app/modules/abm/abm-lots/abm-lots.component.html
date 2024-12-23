@@ -1,0 +1,19 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <app-header [title]="title" [breadcrumbs]="[
+        { title: 'ABM', route: [], condition: true },
+        { title: 'Lotes', route: [], condition: true }
+      ]" [buttons]="[
+        {
+          type: 'flat',
+          label: 'Crear nuevo lote',
+          condition: true,
+          isDisabled: drawer,
+          action: 'create'
+        }
+      ]" (buttonAction)="handleAction($event)">
+    </app-header>
+
+    <div class="content-scroll">
+        <router-outlet></router-outlet>
+    </div>
+</div>

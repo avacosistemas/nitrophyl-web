@@ -5,6 +5,7 @@ import { MatTableModule } from '@angular/material/table';
 
 // * Shared module.
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 
 // * Components.
 import { ABMConfiguracionComponent } from './abm-configuracion.component';
@@ -36,7 +37,8 @@ const abmConfiguracionRoutes: Route[] = [
         ABMSharedModule,
         MatPaginatorModule,
         MatSortModule,
-        MatTableModule
+        MatTableModule,
+        HeaderSharedModule
     ]
 })
 export class ABMConfiguracionModule { }

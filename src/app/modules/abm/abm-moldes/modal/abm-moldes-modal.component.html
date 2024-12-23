@@ -3,16 +3,18 @@
         <mat-label>Descipción</mat-label>
         <input matInput [(ngModel)]="description" [ngModelOptions]="{standalone: true}">
     </mat-form-field>
-    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="elegirArchivo()" >
+    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+        (click)="elegirArchivo()">
         <span class="mat-button-wrapper">
-            Elegir {{tipo == 'pdf' ? 'plano' : 'foto'}}
+            Elegir {{tipo === 'pdf' ? 'plano' : 'foto'}}
         </span>
         <span matripple="" class="mat-ripple mat-button-ripple"></span>
         <span class="mat-button-focus-overlay"></span>
     </button>
 </form>
 <div mat-dialog-actions class="flex justify-end">
-    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" cdkFocusInitial (click)="subir()" [disabled]="file == undefined || uploading">
+    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" cdkFocusInitial
+        (click)="subir()" [disabled]="file === undefined || uploading">
         <span class="mat-button-wrapper">
             Subir
         </span>

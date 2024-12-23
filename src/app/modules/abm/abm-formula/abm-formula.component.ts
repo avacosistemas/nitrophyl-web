@@ -59,6 +59,20 @@ export class ABMFormulaComponent implements AfterContentChecked {
     this.setForm();
   }
 
+  handleAction(action: string): void {
+    switch (action) {
+      case 'save':
+        this.save();
+        break;
+      case 'create':
+        this.create();
+        break;
+      case 'close':
+        this.close();
+        break;
+    }
+  }
+
   public ngAfterContentChecked(): void {
     this.cdref.detectChanges();
   }
@@ -104,7 +118,7 @@ export class ABMFormulaComponent implements AfterContentChecked {
   }
 
   public addMachine(): void {
-    if (this.formTest.invalid) {return;}
+    if (this.formTest.invalid) { return; }
     const machine: any = this.formTest.controls.machine;
     this._formulas.events.next([4, machine.value.id, machine.value.nombre]);
     machine.reset();
@@ -126,7 +140,7 @@ export class ABMFormulaComponent implements AfterContentChecked {
         this.formTest.disable();
         this.status = true;
       },
-      complete: () => {},
+      complete: () => { },
     });
   }
 

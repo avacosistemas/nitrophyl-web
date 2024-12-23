@@ -23,6 +23,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 // * Pipes.
 import { DatePipe } from '@angular/common';
 
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
+
 const routes: Route[] = [
   {
     path: '',
@@ -45,6 +47,7 @@ const routes: Route[] = [
     MatDatepickerModule,
     MatNativeDateModule,
     MatDialogModule,
+    HeaderSharedModule
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })

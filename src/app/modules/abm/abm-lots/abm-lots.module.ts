@@ -3,6 +3,7 @@ import { Route, RouterModule } from '@angular/router';
 
 // * Shared module.
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 
 // * Components.
 import { ABMLotsComponent } from './abm-lots.component';
@@ -38,7 +39,8 @@ const routes: Route[] = [
     MatSidenavModule,
     MatDatepickerModule,
     MatNativeDateModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    HeaderSharedModule
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })

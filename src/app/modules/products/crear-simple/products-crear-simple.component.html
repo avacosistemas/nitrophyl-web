@@ -33,7 +33,7 @@
                             El nombre es requerido
                         </mat-error>
                     </mat-form-field>
-                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [disabled]="disableButton" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [disabled]="disableButton" (click)="save()" *ngIf="mode !== 'View'">{{buttonAction}}</button>
                 </form>
             </div>
         </mat-tab>

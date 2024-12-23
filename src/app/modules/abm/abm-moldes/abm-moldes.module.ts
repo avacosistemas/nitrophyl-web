@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { ABMMoldesComponent } from './abm-moldes.component';
 import { ABMMoldesCrear } from './crear-molde/abm-moldes-crear.component';
 import { ABMMoldesGrillaComponent } from './grilla/abm-moldes-grilla.component.';
@@ -32,7 +33,8 @@ const abmUsuariosRoutes: Route[] = [
     ],
     imports     : [
         RouterModule.forChild(abmUsuariosRoutes),
-        ABMSharedModule
+        ABMSharedModule,
+        HeaderSharedModule
     ]
 })
 export class ABMMoldesModule

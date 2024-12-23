@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from 'app/shared/models/product.model';
@@ -12,16 +12,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   templateUrl: './products-crear-simple.component.html',
   styleUrls: ['./products-crear-simple.component.scss']
 })
-export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
+export class ProductsCrearSimpleComponent implements OnInit, OnDestroy, AfterViewInit {
 
-  component = "Producto simple";
+  component = 'Producto simple';
   productoSimpleForm: FormGroup;
   suscripcion: Subscription;
   saved: boolean = false;
   showErrorCode: boolean = false;
   showErrorName: boolean = false;
-  mode: string = "";
-  buttonAction: string = "";
+  mode: string = '';
+  buttonAction: string = '';
   id: number = null;
   disableButton: boolean = true;
 
@@ -40,7 +40,7 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
     });
     this.suscripcion = this.productsEventService.events.subscribe(
       (data: any) => {
-        if (data == 4) {
+        if (data === 4) {
           this.return();
         }
       }
@@ -48,13 +48,13 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.productoSimpleForm.valueChanges.subscribe(x => {
+    this.productoSimpleForm.valueChanges.subscribe((x) => {
       this.disableButton = false;
     });
-    this.buttonAction = "Guardar";
+    this.buttonAction = 'Guardar';
     this.mode = this.productsEventService.getMode();
-    if(this.mode == null) {
-      this.mode = "View";
+    if (this.mode === null) {
+      this.mode = 'View';
     };
     this.inicializar();
   }
@@ -63,91 +63,90 @@ export class ProductsCrearSimpleComponent implements OnInit, OnDestroy {
     this.suscripcion.unsubscribe();
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     let top = document.getElementById('top');
     if (top !== null) {
       top.scrollIntoView();
       top = null;
     }
-}
+  }
 
-  inicializar() {
-    if(this.route.snapshot.params.id != undefined) {
+  inicializar(): void {
+    if (this.route.snapshot.params.id !== undefined) {
       this.id = this.route.snapshot.params.id;
       this.saved = true;
       this.productsEventService.viewEvents.next(7);
-      this.productsService.getProducts().subscribe(d => {
-        let busqueda = d.data.find(pieza => pieza.id == this.id);
+      this.productsService.getProducts().subscribe((d) => {
+        const busqueda = d.data.find((pieza: { id: number }) => pieza.id === this.id);
         this.productoSimpleForm.patchValue({
           codigoPieza: busqueda.codigoPieza,
           codigoInterno: busqueda.codigoInterno,
           nombre: busqueda.nombre
         });
-        this.buttonAction = "Guardar";
+        this.buttonAction = 'Guardar';
       });
-      if(this.mode == "View") {
+      if (this.mode === 'View') {
         this.productoSimpleForm.disable();
       };
     } else {
-      this.mode = "Create";
+      this.mode = 'Create';
     }
   }
 
-  return() {
-    let nav = JSON.parse(localStorage.getItem("navPiezas"));
-    if(nav == null) {
+  return(): void {
+    const nav = JSON.parse(localStorage.getItem('navPiezas'));
+    if (nav === null) {
       this.router.navigate(['/productos/grid']);
-    } else if (nav.length == 0) {
+    } else if (nav.length === 0) {
       this.router.navigate(['/productos/grid']);
     } else {
       this.router.navigateByUrl(`/${nav[nav.length - 1].uri}/createComposed/${nav[nav.length - 1].id}`);
     }
   }
 
-  save() {
+  save(): void {
     this.productoSimpleForm.markAllAsTouched();
-    if(!this.productoSimpleForm.valid) {
+    if (!this.productoSimpleForm.valid) {
       return;
     };
-    let model: Product = {
+    const model: Product = {
       codigoPieza: this.productoSimpleForm.controls.codigoPieza.value,
       codigoInterno: this.productoSimpleForm.controls.codigoInterno.value,
       nombre: this.productoSimpleForm.controls.nombre.value,
       esProducto: true,
       id: 0,
       piezas: [],
-      tipo: "SIMPLE"
+      tipo: 'SIMPLE'
     };
-    if (this.saved == true) {
-      this.productsService.updateSimpleProduct(model, this.id).subscribe(d => {
-        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+    if (this.saved === true) {
+      this.productsService.updateSimpleProduct(model, this.id).subscribe((d) => {
+        this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
         this.disableButton = true;
       },
-      err => {
-        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
-        console.log(err.error.message);
-      });
+        (err) => {
+          this.openSnackBar('No se pudieron realizar los cambios', 'X', 'red-snackbar');
+          console.log(err.error.message);
+        });
     } else {
-      this.buttonAction = "Guardar";
-      this.productsService.createSimpleProduct(model).subscribe(d => {
+      this.buttonAction = 'Guardar';
+      this.productsService.createSimpleProduct(model).subscribe((d) => {
         this.id = d.data.id;
-        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
         this.disableButton = true;
         this.productsEventService.viewEvents.next(7);
       },
-      err => {
-        this.openSnackBar("No se pudieron realizar los cambios", "X", "red-snackbar");
-        console.log(err.error.message);
-      });
+        (err) => {
+          this.openSnackBar('No se pudieron realizar los cambios', 'X', 'red-snackbar');
+          console.log(err.error.message);
+        });
       this.saved = true;
     }
   }
 
-  openSnackBar(message: string, action: string, className: string) {
+  openSnackBar(message: string, action: string, className: string): void {
     this.snackBar.open(message, action, {
       duration: 5000,
       panelClass: className
     });
   };
-
 }

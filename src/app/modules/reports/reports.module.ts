@@ -11,6 +11,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { GenerarInformesComponent } from './generar-informes/generar-informes.component';
 import { VerInformesComponent } from './ver-informes/ver-informes.component';
 import { ReportsComponent } from './reports.component';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 
 const informesRoutes: Route[] = [
   {
@@ -19,7 +20,7 @@ const informesRoutes: Route[] = [
     children: [
       { path: '', redirectTo: 'generar-informes', pathMatch: 'full' },
       { path: 'generar-informes', component: GenerarInformesComponent,  data: { subtitle: 'Generar Informe' } },
-      { path: 'ver-informes', component: VerInformesComponent, data: { subtitle: 'Ver Informe' } },
+      // { path: 'ver-informes', component: VerInformesComponent, data: { subtitle: 'Ver Informe' } },
     ],
   },
 ];
@@ -41,6 +42,7 @@ const informesRoutes: Route[] = [
     MatIconModule,
     MatAutocompleteModule,
     RouterModule.forChild(informesRoutes),
+    HeaderSharedModule
   ],
 })
 export class ReportsModule { }

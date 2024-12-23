@@ -12,82 +12,16 @@ import { LotService } from 'app/shared/services/lot.service';
 
 @Component({
   selector: 'abm-lots',
-  template: `<div
-    class="absolute inset-0 flex flex-col min-w-0 overflow-hidden"
-  >
-    <div
-      class="bg-card border-b dark:bg-transparent flex flex-0 flex-col p-4 sm:flex-row sm:items-center sm:justify-between sm:px-10"
-    >
-      <div class="flex-1 min-w-0">
-        <div class="hidden sm:flex flex-wrap items-center font-medium">
-          <div><a class="whitespace-nowrap text-primary-500"> ABM </a></div>
-          <div class="flex items-center ml-1 whitespace-nowrap">
-            <mat-icon
-              role="img"
-              class="mat-icon notranslate icon-size-5 mat-icon-no-color"
-              aria-hidden="true"
-              data-mat-icon-type="svg"
-              data-mat-icon-name="chevron-right"
-              data-mat-icon-namespace="heroicons_solid"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-                fit=""
-                height="100%"
-                width="100%"
-                preserveAspectRatio="xMidYMid meet"
-                focusable="false"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clip-rule="evenodd"
-                ></path>
-              </svg>
-            </mat-icon>
-            <span class="ml-1 text-secondary"> Lotes </span>
-          </div>
-        </div>
-
-        <h2
-          class="text-3xl md:text-4xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate mt-2"
-        >
-          {{ title }}
-        </h2>
-      </div>
-
-      <div
-        class="flex shrink-0 justify-end items-center mt-6 sm:mt-0 sm:ml-4 w-1/2"
-      >
-        <button
-          mat-flat-button=""
-          class="ml-3 mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-          (click)="create()"
-          [disabled]="drawer"
-        >
-          <span class="mat-button-wrapper"> Crear nuevo lote </span>
-          <span matripple="" class="mat-ripple mat-button-ripple"></span>
-          <span class="mat-button-focus-overlay"></span>
-        </button>
-      </div>
-    </div>
-
-    <div
-      style="display: flex; flex-direction: column; flex-wrap: wrap; overflow-y: scroll; height: 100%;"
-    >
-      <router-outlet></router-outlet>
-    </div>
-  </div>`,
+  templateUrl: './abm-lots.component.html',
+  styleUrls: ['./abm-lots.component.css'],
 })
 export class ABMLotsComponent
   implements OnInit, AfterContentChecked, OnDestroy
 {
   public title: string = 'Consultar Lotes';
-  public drawer: boolean; // Drawer state.
+  public drawer: boolean;
 
-  private subscription: Subscription; // Drawer subscription.
+  private subscription: Subscription;
 
   constructor(
     private lotService: LotService,
@@ -102,6 +36,14 @@ export class ABMLotsComponent
 
   public ngAfterContentChecked(): void {
     this.cdref.detectChanges();
+  }
+
+  handleAction(action: string): void {
+    switch (action) {
+      case 'create':
+        this.create();
+        break;
+    }
   }
 
   public create(): void {

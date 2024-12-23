@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMRolesComponent } from './abm-roles.component';
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { ABMRolesGrillaComponent } from './grilla/abm-roles-grilla.component';
 import { ABMCrearRol } from './crear-rol/abm-roles-crear.component';
 import { ABMRolesRol } from './rol/abm-roles-rol.component';
@@ -27,7 +28,8 @@ const abmRolesRoutes: Route[] = [
     ],
     imports     : [
         RouterModule.forChild(abmRolesRoutes),
-        ABMSharedModule
+        ABMSharedModule,
+        HeaderSharedModule
     ]
 })
 export class ABMRolesModule

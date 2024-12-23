@@ -8,7 +8,8 @@
                 <form class="mt-8" [formGroup]="productoCompuestoForm">
                     <mat-form-field class="w-full">
                         <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
-                        <input id="codigoPieza" matInput [formControlName]="'codigoPieza'" placeholder="Código Producto">
+                        <input id="codigoPieza" matInput [formControlName]="'codigoPieza'"
+                            placeholder="Código Producto">
                         <mat-error class="mb-1" *ngIf="productoCompuestoForm.get('codigoPieza').hasError('required')">
                             El código es requerido
                         </mat-error>
@@ -18,11 +19,13 @@
                     </mat-form-field>
                     <mat-form-field class="w-full">
                         <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
-                        <input id="codigoInterno" matInput [formControlName]="'codigoInterno'" placeholder="Código Interno">
+                        <input id="codigoInterno" matInput [formControlName]="'codigoInterno'"
+                            placeholder="Código Interno">
                         <mat-error class="mb-1" *ngIf="productoCompuestoForm.get('codigoInterno').hasError('required')">
                             El código es requerido
                         </mat-error>
-                        <mat-error class="mb-1" *ngIf="productoCompuestoForm.get('codigoInterno').hasError('maxlength')">
+                        <mat-error class="mb-1"
+                            *ngIf="productoCompuestoForm.get('codigoInterno').hasError('maxlength')">
                             El campo Código permite hasta 30 caracteres máximo.
                         </mat-error>
                     </mat-form-field>
@@ -33,51 +36,56 @@
                             El nombre es requerido
                         </mat-error>
                     </mat-form-field>
-                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [disabled]="disableButton" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+                        [disabled]="disableButton" (click)="save()" *ngIf="mode !== 'View'">{{buttonAction}}</button>
                 </form>
                 <form class="mt-8" [formGroup]="piezaCompuestaExtendidaForm">
                     <div class="flex space-x-4">
                         <mat-form-field appearance="fill" class="w-1/5">
                             <mat-label>Tipo de pieza</mat-label>
                             <mat-select (selectionChange)="typeSelectChange($event)" [formControlName]="'listaTipos'">
-                              <mat-option *ngFor="let tipo of tiposPiezas" [value]="tipo">
-                                {{tipo}}
-                              </mat-option>
+                                <mat-option *ngFor="let tipo of tiposPiezas" [value]="tipo">
+                                    {{tipo}}
+                                </mat-option>
                             </mat-select>
                         </mat-form-field>
                         <mat-form-field appearance="fill" class="w-1/5">
                             <mat-label>Código de pieza</mat-label>
-                            <input type="text"
-                                   placeholder="Código de pieza"
-                                   aria-label="Number"
-                                   matInput
-                                   [formControlName]="'listaPiezas'"
-                                   [matAutocomplete]="auto">
+                            <input type="text" placeholder="Código de pieza" aria-label="Number" matInput
+                                [formControlName]="'listaPiezas'" [matAutocomplete]="auto">
                             <mat-autocomplete #auto="matAutocomplete">
-                              <mat-option *ngFor="let option of listaPiezasFiltradas | async" [value]="option.codigoPieza">
-                                {{option.codigoPieza}}
-                              </mat-option>
+                                <mat-option *ngFor="let option of listaPiezasFiltradas | async"
+                                    [value]="option.codigoPieza">
+                                    {{option.codigoPieza}}
+                                </mat-option>
                             </mat-autocomplete>
                         </mat-form-field>
                         <div class="w-1/7">
-                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full" [disabled]="mode == 'View' || id == null" (click)="addPart()">
+                            <button mat-flat-button=""
+                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full"
+                                [disabled]="mode  === 'View' || id  === null" (click)="addPart()">
                                 <mat-icon svgIcon="heroicons_solid:plus"></mat-icon> Agregar
                             </button>
                         </div>
                         <div class="w-1/5"></div>
                         <div class="w-1/7">
-                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full" [disabled]="mode == 'View' || id == null" (click)="createSimplePart()">
+                            <button mat-flat-button=""
+                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full"
+                                [disabled]="mode  === 'View' || id  === null" (click)="createSimplePart()">
                                 Crear Simple
                             </button>
                         </div>
                         <div class="w-1/7">
-                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full" [disabled]="mode == 'View' || id == null" (click)="createComposedPart()">
+                            <button mat-flat-button=""
+                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-7 w-full"
+                                [disabled]="mode  === 'View' || id  === null" (click)="createComposedPart()">
                                 Crear Compuesta
                             </button>
                         </div>
                     </div>
                     <div>
-                        <table mat-table [dataSource]="parts" style="width: 100%;" class="border-2 rounded-2xl" *ngIf="parts.length > 0">
+                        <table mat-table [dataSource]="parts" style="width: 100%;" class="border-2 rounded-2xl"
+                            *ngIf="parts.length > 0">
                             <ng-container matColumnDef="code">
                                 <th mat-header-cell *matHeaderCellDef> Código </th>
                                 <td mat-cell *matCellDef="let element"> {{element.codigoPieza}} </td>
@@ -92,10 +100,10 @@
                                     <button (click)="viewPart(row)">
                                         <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"></mat-icon>
                                     </button>
-                                    <button (click)="editPart(row)" *ngIf="mode != 'View'">
+                                    <button (click)="editPart(row)" *ngIf="mode !== 'View'">
                                         <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"></mat-icon>
                                     </button>
-                                    <button (click)="deletePart(i, row)" *ngIf="mode != 'View'">
+                                    <button (click)="deletePart(i, row)" *ngIf="mode !== 'View'">
                                         <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar"></mat-icon>
                                     </button>
                                 </td>

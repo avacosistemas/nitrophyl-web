@@ -36,19 +36,19 @@
                     <td mat-cell *matCellDef="let row" class="text-right">
                         <button>
                             <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
-                                [routerLink]="['../createSimple', row.id]" (click)="openProduct(1)" *ngIf="row.tipo == 'SIMPLE'"></mat-icon>
+                                [routerLink]="['../createSimple', row.id]" (click)="openProduct(1)" *ngIf="row.tipo ===  'SIMPLE'"></mat-icon>
                         </button>
                         <button>
                             <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
-                                [routerLink]="['../createComposed', row.id]" (click)="openProduct(1)" *ngIf="row.tipo == 'COMPUESTA'"></mat-icon>
+                                [routerLink]="['../createComposed', row.id]" (click)="openProduct(1)" *ngIf="row.tipo ===  'COMPUESTA'"></mat-icon>
                         </button>
                         <button>
                             <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"
-                                [routerLink]="['../createSimple', row.id]" (click)="openProduct(2)" *ngIf="row.tipo == 'SIMPLE'"></mat-icon>
+                                [routerLink]="['../createSimple', row.id]" (click)="openProduct(2)" *ngIf="row.tipo ===  'SIMPLE'"></mat-icon>
                         </button>
                         <button>
                             <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"
-                                [routerLink]="['../createComposed', row.id]" (click)="openProduct(2)" *ngIf="row.tipo == 'COMPUESTA'"></mat-icon>
+                                [routerLink]="['../createComposed', row.id]" (click)="openProduct(2)" *ngIf="row.tipo ===  'COMPUESTA'"></mat-icon>
                         </button>
                     </td>
                 </ng-container>

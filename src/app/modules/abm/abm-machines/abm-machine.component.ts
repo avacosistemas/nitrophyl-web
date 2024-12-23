@@ -67,4 +67,18 @@ export class ABMMachineComponent implements AfterContentChecked {
   public save(): void {
     this._machines.events.next(3);
   }
+
+  handleAction(action: string): void {
+    switch (action) {
+      case 'save':
+        this.save();
+        break;
+      case 'close':
+        this.close();
+        break;
+      case 'create':
+        this.create();
+        break;
+    }
+  }
 }

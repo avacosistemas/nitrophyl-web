@@ -15,6 +15,8 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CoreSharedModule } from 'app/core/shared/shared.module';
 import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
+
 const abmUsuariosRoutes: Route[] = [
   {
     path: '',
@@ -62,7 +64,8 @@ const maskConfig: Partial<IConfig> = {
     ABMSharedModule,
     NgxMaskModule.forRoot(maskConfig),
     MatSlideToggleModule,
-    CoreSharedModule
+    CoreSharedModule,
+    HeaderSharedModule
   ],
 })
 export class ABMClientesModule {}

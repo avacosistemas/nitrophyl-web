@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMSharedModule } from '../abm/abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { ProductsCrearCompuestaComponent } from './crear-compuesta/products-crear-compuesta.component';
 import { ProductsCrearSimpleComponent } from './crear-simple/products-crear-simple.component';
 import { ProductsGrillaComponent } from './grilla/products-grilla.component';
@@ -29,7 +30,8 @@ const productsRoutes: Route[] = [
   ],
     imports     : [
         RouterModule.forChild(productsRoutes),
-        ABMSharedModule
+        ABMSharedModule,
+        HeaderSharedModule
     ]
 })
 export class ProductsModule

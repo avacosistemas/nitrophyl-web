@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Route, RouterModule } from '@angular/router';
 import { ABMSharedModule } from '../abm-shared.module';
+import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { ABMPerfilesComponent } from './abm-perfiles.component';
 import { ABMPerfilesGrillaComponent } from './grilla/abm-perfiles-grilla.component';
 import { ABMCrearPerfil } from './crear-perfil/abm-perfiles-crear.component';
@@ -9,17 +10,18 @@ import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
 const abmPerfilesRoutes: Route[] = [
     {
-        path     : '',
+        path: '',
         component: ABMPerfilesComponent,
         children: [
             {
                 path: 'profile/:id', component: ABMPerfilesPerfil
             },
-            {path: 'grid', component: ABMPerfilesGrillaComponent,
+            {
+                path: 'grid', component: ABMPerfilesGrillaComponent,
                 canActivate: [PermissionGuard],
                 data: { permission: 'MENU_SEGURIDAD_PERFILES' }
             },
-            {path: 'create', component: ABMCrearPerfil},
+            { path: 'create', component: ABMCrearPerfil },
         ]
     }
 ];
@@ -31,11 +33,11 @@ const abmPerfilesRoutes: Route[] = [
         ABMCrearPerfil,
         ABMPerfilesPerfil
     ],
-    imports     : [
+    imports: [
         RouterModule.forChild(abmPerfilesRoutes),
-        ABMSharedModule
+        ABMSharedModule,
+        HeaderSharedModule
     ]
 })
-export class ABMPerfilesModule
-{
+export class ABMPerfilesModule {
 }

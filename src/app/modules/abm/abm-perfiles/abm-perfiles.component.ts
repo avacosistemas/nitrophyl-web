@@ -5,19 +5,18 @@ import { UserService } from 'app/shared/services/user.service';
 import { ABMPerfilService } from './abm-perfiles.service';
 
 @Component({
-    selector     : 'abm-perfiles',
-    templateUrl  : './abm-perfiles.component.html',
+    selector: 'abm-perfiles',
+    templateUrl: './abm-perfiles.component.html',
     styleUrls: ['./abm-perfiles.component.scss'],
     encapsulation: ViewEncapsulation.None
 })
 
-export class ABMPerfilesComponent implements OnInit, AfterContentChecked
-{
-    titulo: string = "";
+export class ABMPerfilesComponent implements OnInit, AfterContentChecked {
+    titulo: string = '';
 
     constructor(
         private perfilesService: PerfilesService,
-        private ABMPerfilesService: ABMPerfilService,
+        private _abmPerfilesService: ABMPerfilService,
         private router: Router,
         private cdref: ChangeDetectorRef
     ) { }
@@ -26,44 +25,64 @@ export class ABMPerfilesComponent implements OnInit, AfterContentChecked
     }
 
     ngAfterContentChecked(): void {
-        this.cdref.detectChanges()
+        this.cdref.detectChanges();
     }
 
-    componentAdded(event) {
-        if(event.component == "Grilla") {
-            this.titulo = "Consulta Perfiles"
+    handleAction(action: string): void {
+        switch (action) {
+            case 'edit':
+                this.edit();
+                break;
+            case 'save':
+                this.save();
+                break;
+            case 'editContinue':
+                this.editContinue();
+                break;
+            case 'close':
+                this.close();
+                break;
+            case 'create':
+                this.create();
+                break;
         }
-        if(event.component == "Perfil") {
-            if(this.perfilesService.getMode() == "Edit"){
-                this.titulo = "Edición Perfil";
+    }
+
+    componentAdded(event): void {
+        if (event.component === 'Grilla') {
+            this.titulo = 'Consulta Perfiles';
+        }
+        if (event.component === 'Perfil') {
+            if (this.perfilesService.getMode() === 'Edit') {
+                this.titulo = 'Edición Perfil';
             }
-            if(this.perfilesService.getMode() == "View" || this.perfilesService.getMode() == undefined) {
-                this.titulo = "Vista Perfil";
+            if (this.perfilesService.getMode() === 'View' || this.perfilesService.getMode() === undefined) {
+                this.titulo = 'Vista Perfil';
             }
         }
-        if(event.component == "Create") {
-            this.titulo = "Nuevo Perfil"
+        if (event.component === 'Create') {
+            this.titulo = 'Nuevo Perfil';
         }
     }
 
-    edit() {
-        this.ABMPerfilesService.events.next(2)
+    edit(): void {
+        this._abmPerfilesService.events.next(2);
     }
 
-    editContinue() {
-        this.ABMPerfilesService.events.next(3)
+    editContinue(): void {
+        this._abmPerfilesService.events.next(3);
     }
 
-    close() {
-        this.ABMPerfilesService.events.next(1)
+    close(): void {
+        this._abmPerfilesService.events.next(1);
     }
 
-    create() {
-        this.perfilesService.setMode("Create")
+    create(): void {
+        this.perfilesService.setMode('Create');
         this.router.navigate(['../perfiles/create']);
     }
 
-    save() {
-        this.ABMPerfilesService.events.next(4)
+    save(): void {
+        this._abmPerfilesService.events.next(4);
     }
 }

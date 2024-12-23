@@ -56,6 +56,17 @@ export class ABMAssaysComponent
     private snackBar: MatSnackBar,
   ) {}
 
+  handleAction(action: string): void {
+    switch (action) {
+      case 'close':
+        this.close();
+        break;
+      default:
+        console.log('Acción desconocida:', action);
+        break;
+    }
+  }
+
   public ngOnInit(): void {
     if (!this.assayService.lot || !this.assayService.lot.idFormula) {
       this.router.navigate(['../../lotes/grid']);
@@ -74,7 +85,7 @@ export class ABMAssaysComponent
       },
       error: (error: any) => {
         console.error('Error al obtener la fórmula:', error);
-      } 
+      }
     });
 
     this.machines$ = this.configTestService

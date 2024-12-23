@@ -1,4 +1,4 @@
-import { EventEmitter, Injectable } from "@angular/core";
+import { EventEmitter, Injectable } from '@angular/core';
 
 @Injectable({
     providedIn: 'root'
@@ -10,11 +10,11 @@ export class ProductsEventService {
 
     private mode: string = null;
 
-    public setMode(mode: string) {
+    public setMode(mode: string): void {
         this.mode = mode;
     }
 
-    public getMode() {
+    public getMode(): string {
         return this.mode;
     }
 }
