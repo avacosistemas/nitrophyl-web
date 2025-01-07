@@ -23,6 +23,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DatePipe } from '@angular/common';
 import { MatPaginatorModule } from '@angular/material/paginator';
 
+import { LotModalComponent } from './lot-modal/lot-modal.component';
+
+import { A11yModule } from '@angular/cdk/a11y';
+import { LotUpdateService } from 'app/shared/services/lot-update.service';
+
 const routes: Route[] = [
   {
     path: '',
@@ -32,7 +37,7 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMLotsComponent, LotsComponent, LotDialogComponent],
+  declarations: [ABMLotsComponent, LotsComponent, LotDialogComponent, LotModalComponent],
   imports: [
     RouterModule.forChild(routes),
     ABMSharedModule,
@@ -40,8 +45,9 @@ const routes: Route[] = [
     MatDatepickerModule,
     MatNativeDateModule,
     MatPaginatorModule,
-    HeaderSharedModule
+    HeaderSharedModule,
+    A11yModule,
   ],
-  providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
+  providers: [LotsComponent, { provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe, LotUpdateService],
 })
 export class ABMLotsModule {}

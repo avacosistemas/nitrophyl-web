@@ -12,7 +12,6 @@ import {
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 
 // * Components.
-import { LotsComponent } from '../lots/lots.component';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
 
@@ -31,7 +30,7 @@ import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAda
       deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
     },
     { provide: MAT_DATE_FORMATS, useValue: MAT_MOMENT_DATE_FORMATS },],
-    templateUrl: './lot-dialog.component.html',
+  templateUrl: './lot-dialog.component.html',
 })
 export class LotDialogComponent {
   public form: FormGroup;
@@ -39,7 +38,7 @@ export class LotDialogComponent {
 
   constructor(
     private _formBuilder: FormBuilder,
-    public _dialogRef: MatDialogRef<LotsComponent>,
+    public _dialogRef: MatDialogRef<LotDialogComponent>,
     @Inject(MAT_DIALOG_DATA) public data?: any
   ) {
     this._form();

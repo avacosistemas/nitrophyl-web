@@ -1,0 +1,79 @@
+<div class="dialog-content">
+  <div class="flex w-full py-4 row gap-3 justify-between items-center">
+    <h1 class="text-2xl font-semibold">{{ title }}</h1>
+
+    <div>
+      <!-- Create/Edit lot -->
+      <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
+        (click)="onAction()" [disabled]="form.invalid">
+        <span class="mat-button-wrapper">{{ actionButtonText }}</span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        <span class="mat-button-focus-overlay"></span>
+      </button>
+
+      <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()"
+        tabindex="-1">
+        <span class="mat-button-wrapper"> Cerrar </span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        <span class="mat-button-focus-overlay"></span>
+      </button>
+    </div>
+  </div>
+
+  <form [formGroup]="form">
+    <mat-form-field class="w-full" appearance="outline">
+      <mat-label> Lote </mat-label>
+      <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="lot" required minlength="5"
+        maxlength="5" cdkFocusInitial>
+      <mat-error>
+        {{
+        form.controls['lot'].hasError('required')
+        ? 'Lote requerido.'
+        : form.controls['lot'].hasError('minlength')
+        ? 'Mínimo 5 caracteres.'
+        : form.controls['lot'].hasError('maxlength')
+        ? 'Máximo 5 caracteres.'
+        : form.controls['lot'].hasError('pattern')
+        ? 'Formato inválido.'
+        : ''
+        }}
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full fuse-mat-emphasized-affix">
+      <input matInput [matDatepicker]="picker" formControlName="date" [placeholder]="isEditing ? 'Fecha' : 'Fecha'"
+        [readonly]="!isEditing">
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-hint>DD/MM/YYYY</mat-hint>
+      <mat-error *ngIf="form.controls['date'].hasError('required')">Fecha requerida</mat-error>
+    </mat-form-field>
+
+    <mat-form-field class="w-full" appearance="outline">
+      <input type="text" #campoInput formControlName="formula"
+        [placeholder]="formulaFail ? 'No se han podido cargar las formulas.' : 'Fórmula'" matInput
+        [matAutocomplete]="formulaCreateAuto" required>
+
+      <button mat-icon-button matSuffix *ngIf="form.controls['formula'].value" (click)="limpiarCampo('formula')">
+        <mat-icon>close</mat-icon>
+      </button>
+
+      <mat-error *ngIf="form.controls['formula'].hasError('invalidFormula')">
+        Debe seleccionar una fórmula válida
+      </mat-error>
+
+      <mat-autocomplete #formulaCreateAuto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+        <mat-option *ngFor="let formula of formulasCreate$ | async" [value]="formula">
+          {{ formula.nombre }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+
+    <mat-form-field class="w-full" appearance="outline">
+      <mat-label> Observaciones </mat-label>
+      <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
+    </mat-form-field>
+
+    <input type="hidden" formControlName="id">
+  </form>
+</div>

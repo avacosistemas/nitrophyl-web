@@ -7,13 +7,12 @@
           type: 'flat',
           label: 'Crear nuevo lote',
           condition: true,
-          isDisabled: drawer,
           action: 'create'
         }
       ]" (buttonAction)="handleAction($event)">
     </app-header>
 
-    <div class="content-scroll">
-        <router-outlet></router-outlet>
+    <div class="content-scroll" [hidden]="false">
+      <router-outlet></router-outlet>
     </div>
 </div>

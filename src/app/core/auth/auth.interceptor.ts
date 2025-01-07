@@ -38,7 +38,7 @@ export class AuthInterceptor implements HttpInterceptor {
                     const currentUrl = this.router.url;
                     if (currentUrl !== '/sign-in') {
                         this._authService.signOut();
-                        location.reload();
+                        // location.reload();
                     }
                 }
                 return throwError(error);

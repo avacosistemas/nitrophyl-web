@@ -116,4 +116,9 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
     toggleNavigationAppearance(): void {
         this.navigationAppearance = (this.navigationAppearance === 'default' ? 'dense' : 'default');
     }
+
+    signOut(): void
+    {
+        this._router.navigate(['/sign-out']);
+    }
 }
