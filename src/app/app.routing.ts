@@ -225,6 +225,11 @@ export const appRoutes: Route[] = [
           import('app/modules/reports/reports.module').then(m => m.ReportsModule)
       },
       {
+        path: 'resultados',
+        loadChildren: () =>
+          import('app/modules/resultados-maquina/resultados.module').then(m => m.ResultadosModule)
+      },
+      {
         path: 'configuracion',
         loadChildren: () =>
           import('app/modules/abm/abm-configuracion/abm-configuracion.module').then(

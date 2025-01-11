@@ -1,0 +1,175 @@
+<div class="bg-gray-100 w-full">
+    <div class="p-6 sm:p-10" *ngIf="machineService.getSelectedMachine()">
+        <mat-accordion *ngIf="lotes.length !== 0 && machineService.getSelectedMachine()">
+            <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+                <mat-expansion-panel-header class="h-12">
+                    <mat-panel-title>
+                        <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                            Filtrar datos
+                        </span>
+                    </mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <form [formGroup]="form">
+                    <div class="flex gap-4">
+                        <div class="w-full flex gap-4">
+                            <mat-form-field appearance="outline" class="w-1/2 fuse-mat-emphasized-affix">
+                                <mat-label>Fecha Desde</mat-label>
+                                <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" />
+                                <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                                <mat-datepicker #pickerDesde></mat-datepicker>
+                                <button mat-icon-button matSuffix *ngIf="form.get('fechaDesde').value"
+                                    (click)="limpiarControl('fechaDesde')">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-1/2 fuse-mat-emphasized-affix">
+                                <mat-label>Fecha Hasta</mat-label>
+                                <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" />
+                                <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                                <mat-datepicker #pickerHasta></mat-datepicker>
+                                <button mat-icon-button matSuffix *ngIf="form.get('fechaHasta').value"
+                                    (click)="limpiarControl('fechaHasta')">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </mat-form-field>
+                        </div>
+                        <div class="w-full flex gap-4">
+                            <mat-form-field appearance="outline" class="w-1/3 fuse-mat-emphasized-affix">
+                                <mat-label>Fórmula</mat-label>
+                                <input type="text" matInput formControlName="nombreFormula"
+                                    [matAutocomplete]="autoFormula" />
+                                <mat-autocomplete #autoFormula="matAutocomplete">
+                                    <mat-option *ngFor="let formula of filteredFormulas | async" [value]="formula">
+                                        {{ formula }}
+                                    </mat-option>
+                                </mat-autocomplete>
+                                <button mat-icon-button matSuffix *ngIf="form.get('nombreFormula').value"
+                                    (click)="limpiarControl('nombreFormula')">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-1/3 fuse-mat-emphasized-affix">
+                                <mat-label>Nro. Lote</mat-label>
+                                <input type="text" matInput formControlName="nroLote" maxlength="5" />
+                                <button mat-icon-button matSuffix *ngIf="form.get('nroLote').value"
+                                    (click)="limpiarControl('nroLote')">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-1/3 fuse-mat-emphasized-affix">
+                                <mat-label>Estado</mat-label>
+                                <mat-select formControlName="estadoLote">
+                                    <mat-option value="">Todos</mat-option>
+                                    <mat-option value="APROBADO">APROBADO</mat-option>
+                                    <mat-option value="RECHAZADO">RECHAZADO</mat-option>
+                                    <mat-option value="APROBADO_OBSERVADO">APROBADO_OBSERVADO</mat-option>
+                                </mat-select>
+                                <button mat-icon-button matSuffix *ngIf="form.get('estadoLote').value"
+                                    (click)="limpiarControl('estadoLote')">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </form>
+            </mat-expansion-panel>
+        </mat-accordion>
+
+        <div *ngIf="lotes.length === 0 && machineService.getSelectedMachine()" class="flex justify-center w-full mb-4">
+            <div class="bg-gray-50 border border-gray-200 text-sm text-gray-600 rounded-lg p-4 dark:bg-white/10 dark:border-white/10 dark:text-neutral-400"
+                role="alert" tabindex="-1" aria-labelledby="hs-link-on-right-label">
+                <div class="flex">
+                    <div class="shrink-0">
+                        <svg class="shrink-0 size-4 mt-0.5" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1 md:flex md:justify-between items-center ml-2">
+                        <p id="hs-link-on-right-label" class="text-xl">
+                            No hay registros para la búsqueda actual.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table mat-table [dataSource]="lotes" matSort
+            (matSortChange)="ordenar($event.active, $event.direction === 'asc' ? true : false)"
+            class="border-2 rounded-2xl w-full mt-5">
+            <!-- Definir columnas -->
+            <ng-container *ngFor="let columna of cabecerasDinamicas" [matColumnDef]="columna">
+                <ng-container *ngIf="columna !== '#'">
+                    <th mat-header-cell *matHeaderCellDef
+                        [mat-sort-header]="(columna === 'Fecha' || columna === 'Formula' || columna === 'Lote') ? columna : ''"
+                        class="cursor-pointer">
+                        {{ columna }}
+                    </th>
+                </ng-container>
+                <ng-container *ngIf="columna === '#'">
+                    <th mat-header-cell *matHeaderCellDef> {{ columna }} </th>
+                </ng-container>
+
+                <ng-container *ngIf="!['#', 'Fecha', 'Formula', 'Lote', 'Observaciones', 'Estado'].includes(columna)">
+                    <td mat-cell *matCellDef="let element">
+                        {{ obtenerValorResultado(element, columna) }}
+                    </td>
+                </ng-container>
+
+                <ng-container *ngIf="['#', 'Fecha', 'Formula', 'Lote', 'Observaciones', 'Estado'].includes(columna)">
+                    <td mat-cell *matCellDef="let element; let i = index">
+                        <ng-container [ngSwitch]="columna">
+                            <ng-container *ngSwitchCase="'#'">{{ i + 1 }}</ng-container>
+                            <ng-container *ngSwitchCase="'Fecha'">
+                                {{ element.fecha }}
+                            </ng-container>
+                            <ng-container *ngSwitchCase="'Formula'">{{ element.nombreFormula }}</ng-container>
+                            <ng-container *ngSwitchCase="'Lote'">{{ element.nroLote }}</ng-container>
+                            <ng-container *ngSwitchCase="'Observaciones'">{{ element.observaciones }}
+                            </ng-container>
+                            <ng-container *ngSwitchCase="'Estado'">
+                                <mat-icon [style.color]="
+                                element.estadoLote === 'PENDIENTE_APROBACION'
+                                  ? '#50c5e9'
+                                  : element.estadoLote === 'APROBADO'
+                                  ? 'green'
+                                  : element.estadoLote === 'APROBADO_OBSERVADO'
+                                  ? 'yellow'
+                                  : element.estadoLote === 'RECHAZADO'
+                                  ? 'red'
+                                  : ''
+                              ">
+                                    {{
+                                    element.estadoLote === "PENDIENTE_APROBACION"
+                                    ? "schedule"
+                                    : element.estadoLote === "APROBADO"
+                                    ? "check_circle"
+                                    : element.estadoLote === "APROBADO_OBSERVADO"
+                                    ? "warning"
+                                    : element.estadoLote === "RECHAZADO"
+                                    ? "error"
+                                    : ""
+                                    }}
+                                </mat-icon>
+                            </ng-container>
+                        </ng-container>
+                    </td>
+                </ng-container>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="cabecerasDinamicas"></tr>
+            <tr mat-row *matRowDef="let row; columns: cabecerasDinamicas;"></tr>
+        </table>
+
+        <mat-paginator #paginator (page)="pageChanged($event)" [length]="totalRegistros" [pageSize]="50"
+            [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons>
+        </mat-paginator>
+    </div>
+</div>

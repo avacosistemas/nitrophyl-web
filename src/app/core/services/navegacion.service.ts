@@ -16,6 +16,13 @@ export class NavegacionService {
       type: 'collapsable',
       children: [
         {
+          id: 'resultados',
+          link: '/resultados/maquina',
+          title: 'Resultados',
+          type: 'basic',
+          permissionCode: 'MENU_INFORME_CALIDAD',
+        },
+        {
           id: 'calidad',
           link: '/reports',
           title: 'Calidad',

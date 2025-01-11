@@ -1,4 +1,4 @@
-import { HttpClient, HttpBackend } from '@angular/common/http';
+import { HttpClient, HttpBackend, HttpParams } from '@angular/common/http';
 import { EventEmitter, Injectable } from '@angular/core';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -7,6 +7,8 @@ import { environment } from 'environments/environment';
 
 // * Interfaces.
 import { IMachineResponse, IMachine } from '../models/machine.model';
+import { ILotePorMaquinaReporteParams, LotePorMaquinaResponse } from '../models/lote-por-maquina-reporte.model';
+import { MaquinaPruebaResponse } from '../models/maquina-prueba.model';
 
 @Injectable({
   providedIn: 'root',
@@ -17,6 +19,9 @@ export class MachinesService {
 
   private selectedMachine: IMachine | null = null;
   private url: string = `${environment.server}maquina`;
+  private lotePorMaquinaUrl: string = `${environment.server}lotePorMaquinaReporte`;
+  private maquinaPruebaUrl: string = `${environment.server}maquina/prueba`;
+
   private mode: string = '';
 
   constructor(private http: HttpClient, private handler: HttpBackend) {
@@ -28,16 +33,15 @@ export class MachinesService {
   public get(body?: IMachine): Observable<IMachineResponse> {
     let url: string;
 
-    if (!body) {return this.http.get<IMachineResponse>(`${this.url}s`);}
+    if (!body) { return this.http.get<IMachineResponse>(`${this.url}s`); }
 
-    if (body.id)
-      {return this.http.get<IMachineResponse>(`${this.url}/${body.id}`);}
+    if (body.id) { return this.http.get<IMachineResponse>(`${this.url}/${body.id}`); }
 
     if (body.nombre && body.estado) {
       url = `${this.url}?nombre=${body.nombre}&estado=${body.estado}`;
     } else {
-      if (body.nombre) {url = `${this.url}?nombre=${body.nombre}`;}
-      if (body.estado) {url = `${this.url}?estado=${body.estado}`;}
+      if (body.nombre) { url = `${this.url}?nombre=${body.nombre}`; }
+      if (body.estado) { url = `${this.url}?estado=${body.estado}`; }
     }
 
     return this.http.get<IMachineResponse>(`${url}`);
@@ -59,9 +63,9 @@ export class MachinesService {
     );
     return forkJoin(requests).pipe(
       map(responses => ({
-          status: 'OK',
-          data: responses.map(response => response.data),
-        }))
+        status: 'OK',
+        data: responses.map(response => response.data),
+      }))
     );
   }
 
@@ -79,5 +83,21 @@ export class MachinesService {
 
   public getSelectedMachine(): IMachine | null {
     return this.selectedMachine;
+  }
+
+  public getLotesPorMaquina(params: ILotePorMaquinaReporteParams): Observable<LotePorMaquinaResponse> {
+    let httpParams = new HttpParams();
+
+    Object.keys(params).forEach((key) => {
+      if (params[key] !== undefined && params[key] !== null) {
+        httpParams = httpParams.append(key, params[key]?.toString());
+    }
+    });
+
+    return this.http.get<LotePorMaquinaResponse>(this.lotePorMaquinaUrl, { params: httpParams });
+  }
+
+  public getPruebasPorMaquina(idMaquina: number): Observable<MaquinaPruebaResponse> {
+    return this.http.get<MaquinaPruebaResponse>(`${this.maquinaPruebaUrl}/${idMaquina}`);
   }
 }

@@ -1372,6 +1372,10 @@
     backdrop-filter: blur(2px) !important;
 }
 
+.mat-field-custom .mat-form-field-wrapper {
+    padding: 0px !important;
+}
+
 .mat-tab-label {
     opacity: 1 !important;
     text-transform: uppercase;

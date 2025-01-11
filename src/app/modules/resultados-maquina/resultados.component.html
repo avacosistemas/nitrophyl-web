@@ -1,0 +1,31 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <app-header [title]="title" [subtitle]="subtitle" [breadcrumbs]="[
+      { title: 'Informes', label: 'Informes', route: ['/resultados/maquina'], condition: true },
+      { title: 'Resultados de máquina', label: subtitle, route: ['/resultados/maquina'], condition: true }
+    ]" [extraContent]="extraContent">
+  </app-header>
+
+  <div class="content-scroll">
+    <router-outlet></router-outlet>
+  </div>
+
+</div>
+
+<ng-template #extraContent>
+  <div *ngIf="showMachineInput">
+    <mat-form-field appearance="outline" class="w-full mat-field-custom">
+      <mat-label>Máquina</mat-label>
+      <input type="text" matInput #campoInput [formControl]="idMaquinaControl" [matAutocomplete]="autoMaquina">
+      <button mat-icon-button matSuffix *ngIf="idMaquinaControl.value"
+        (mousedown)="limpiarMaquina(); $event.preventDefault()">
+        <mat-icon>close</mat-icon>
+      </button>
+      <mat-autocomplete #autoMaquina="matAutocomplete" [displayWith]="displayFn"
+        (optionSelected)="onMachineChange($event.option.value)">
+        <mat-option *ngFor="let maquina of filteredMaquinas | async" [value]="maquina">
+          {{ maquina.nombre }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  </div>
+</ng-template>
