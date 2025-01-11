@@ -1,6 +1,6 @@
 <div class="bg-gray-100 w-full">
     <div class="p-6 sm:p-10" *ngIf="machineService.getSelectedMachine()">
-        <mat-accordion *ngIf="lotes.length !== 0 && machineService.getSelectedMachine()">
+       <mat-accordion>
             <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
                 <mat-expansion-panel-header class="h-12">
                     <mat-panel-title>
@@ -12,8 +12,8 @@
 
                 <form [formGroup]="form">
                     <div class="flex gap-4">
-                        <div class="w-full flex gap-4">
-                            <mat-form-field appearance="outline" class="w-1/2 fuse-mat-emphasized-affix">
+                        <div class="row flex gap-3 justify-around">
+                            <mat-form-field appearance="outline" class="fuse-mat-emphasized-affix">
                                 <mat-label>Fecha Desde</mat-label>
                                 <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" />
                                 <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
@@ -24,7 +24,7 @@
                                 </button>
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/2 fuse-mat-emphasized-affix">
+                            <mat-form-field appearance="outline" class="fuse-mat-emphasized-affix">
                                 <mat-label>Fecha Hasta</mat-label>
                                 <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" />
                                 <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
@@ -34,9 +34,8 @@
                                     <mat-icon>close</mat-icon>
                                 </button>
                             </mat-form-field>
-                        </div>
-                        <div class="w-full flex gap-4">
-                            <mat-form-field appearance="outline" class="w-1/3 fuse-mat-emphasized-affix">
+               
+                            <mat-form-field appearance="outline" class="w-32 fuse-mat-emphasized-affix">
                                 <mat-label>Fórmula</mat-label>
                                 <input type="text" matInput formControlName="nombreFormula"
                                     [matAutocomplete]="autoFormula" />
@@ -51,7 +50,7 @@
                                 </button>
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/3 fuse-mat-emphasized-affix">
+                            <mat-form-field appearance="outline" class="w-32 fuse-mat-emphasized-affix">
                                 <mat-label>Nro. Lote</mat-label>
                                 <input type="text" matInput formControlName="nroLote" maxlength="5" />
                                 <button mat-icon-button matSuffix *ngIf="form.get('nroLote').value"
@@ -60,7 +59,7 @@
                                 </button>
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/3 fuse-mat-emphasized-affix">
+                            <mat-form-field appearance="outline" class="fuse-mat-emphasized-affix">
                                 <mat-label>Estado</mat-label>
                                 <mat-select formControlName="estadoLote">
                                     <mat-option value="">Todos</mat-option>
@@ -79,7 +78,7 @@
             </mat-expansion-panel>
         </mat-accordion>
 
-        <div *ngIf="lotes.length === 0 && machineService.getSelectedMachine()" class="flex justify-center w-full mb-4">
+        <div *ngIf="lotes.length === 0 && machineService.getSelectedMachine()" class="flex justify-center w-full my-4">
             <div class="bg-gray-50 border border-gray-200 text-sm text-gray-600 rounded-lg p-4 dark:bg-white/10 dark:border-white/10 dark:text-neutral-400"
                 role="alert" tabindex="-1" aria-labelledby="hs-link-on-right-label">
                 <div class="flex">
