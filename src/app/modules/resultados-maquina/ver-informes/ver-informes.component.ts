@@ -232,13 +232,13 @@ export class VerInformesComponent implements OnInit, OnDestroy {
   ordenar(columna: string, asc: boolean): void {
     switch (columna) {
       case 'Fecha':
-        this.ordenColumna = 'l.fecha';
+        this.ordenColumna = 'lo.fecha';
         break;
       case 'Formula':
-        this.ordenColumna = 'l.id_formula';
+        this.ordenColumna = 'f.nombre';
         break;
       case 'Lote':
-        this.ordenColumna = 'l.nro_lote';
+        this.ordenColumna = 'lo.nro_lote';
         break;
       default:
         this.ordenColumna = '';
