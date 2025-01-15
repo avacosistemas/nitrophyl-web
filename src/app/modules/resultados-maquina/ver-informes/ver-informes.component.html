@@ -10,7 +10,7 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
 
-                <form [formGroup]="form" class="" (keydown.enter)="buscar($event)">
+                <form [formGroup]="form" class="" (keydown.enter)="onEnter($event)">
                     <div class="flex gap-3 justify-around">
                   
                       <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
