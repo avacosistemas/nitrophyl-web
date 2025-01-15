@@ -1,6 +1,5 @@
-
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
+import { FormBuilder, FormGroup, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import {
   LotePorMaquinaResponse,
   LoteConResultadosCombinados,
@@ -8,13 +7,19 @@ import {
 import { MaquinaPrueba } from 'app/shared/models/maquina-prueba.model';
 import { MachinesService } from 'app/shared/services/machines.service';
 import { Observable, Subscription } from 'rxjs';
-import { tap, switchMap, debounceTime, startWith, map, filter } from 'rxjs/operators';
+import { tap, switchMap, startWith, map, filter } from 'rxjs/operators';
 import { IMachine } from 'app/shared/models/machine.model';
 import { DatePipe } from '@angular/common';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MachineService } from 'app/shared/services/machine.service';
-import { NavigationEnd, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import {
+  IFormula,
+  IFormulaResponse,
+  IFormulasResponse,
+} from 'app/shared/models/formula.interface';
+import { FormulasService } from 'app/shared/services/formulas.service';
 
 @Component({
   selector: 'app-ver-informes',
@@ -32,18 +37,21 @@ export class VerInformesComponent implements OnInit, OnDestroy {
   panelOpenState = false;
 
   form: FormGroup;
-  filteredFormulas: Observable<string[]>;
+  filteredFormulas: Observable<IFormula[]>;
+  formulas: IFormula[] = [];
 
   pageSize: number = 50;
   pageIndex: number = 0;
 
   ordenColumna: string = '';
   ordenAscendente: boolean = true;
+  cargaCompleta: boolean = false;
 
   private unsubscribe$ = new Subscription();
 
   constructor(
     private machinesService: MachinesService,
+    private formulasService: FormulasService,
     private fb: FormBuilder,
     private datePipe: DatePipe,
     public machineService: MachineService,
@@ -54,54 +62,43 @@ export class VerInformesComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       fechaDesde: [null],
       fechaHasta: [null],
-      nombreFormula: [''],
+      idFormula: [null, [this.createFormulaValidator()]],
       nroLote: [''],
       estadoLote: [''],
     });
 
-    this.filteredFormulas = this.form.get('nombreFormula').valueChanges.pipe(
-      startWith(''),
-      map(value => this._filterFormulas(value))
+    this.formulasService.get().pipe(
+      map((res: IFormulasResponse | IFormulaResponse) => Array.isArray(res.data) ? res.data : [res.data]),
+      tap((formulas: IFormula[]) => this.formulas = formulas)
+    ).subscribe(
+      () => {
+        this.filteredFormulas = this.form.get('idFormula').valueChanges.pipe(
+          startWith(''),
+          map((value: string | IFormula) => {
+            const nombre = typeof value === 'string' ? value : (value?.nombre || '');
+            return nombre ? this._filterFormulas(nombre) : this.formulas.slice();
+          })
+        );
+      }
     );
 
     this.unsubscribe$.add(
       this.machineService.selectedMachine$
         .pipe(
           filter(machine => !!machine),
-          debounceTime(300)
         )
         .subscribe((maquina) => {
 
           if (this.router.url.includes('/resultados/maquina')) {
+            this.cargaCompleta = false;
             this.cargarDatos(maquina);
           }
         })
     );
 
-    this.unsubscribe$.add(
-      this.form.valueChanges
-        .pipe(debounceTime(400))
-        .subscribe(() => {
-
-          this.cargarDatos(this.machineService.getSelectedMachine());
-        })
-    );
-
-    this.unsubscribe$.add(
-      this.router.events
-        .pipe(
-          filter(event => event instanceof NavigationEnd),
-          tap(() => {
-            if (this.router.url.includes('/reports/resultados')) {
-              this.cargarDatos(this.machineService.getSelectedMachine());
-            }
-          })
-        )
-        .subscribe()
-    );
-
     const initialMachine = this.machineService.getSelectedMachine();
     if (initialMachine) {
+      this.cargaCompleta = false;
       this.cargarDatos(initialMachine);
     }
   }
@@ -142,11 +139,9 @@ export class VerInformesComponent implements OnInit, OnDestroy {
       asc: this.ordenAscendente,
     };
 
-    if (this.form.get('nombreFormula').value) {
-      const formulaSeleccionada = this.lotes.find(
-        lote => lote.nombreFormula === this.form.get('nombreFormula').value
-      );
-      params.idFormula = formulaSeleccionada ? formulaSeleccionada.idFormula : null;
+    const formulaSeleccionada = this.form.get('idFormula').value;
+    if (formulaSeleccionada && typeof formulaSeleccionada === 'object' && formulaSeleccionada.id) {
+      params.idFormula = formulaSeleccionada.id;
     }
 
     this.machinesService
@@ -186,14 +181,15 @@ export class VerInformesComponent implements OnInit, OnDestroy {
             }
             this.combinarResultados();
           } else {
-
             this.lotes = [];
             this.totalRegistros = 0;
             this.machineService.setSubtitle('');
           }
+          this.cargaCompleta = true;
         },
         (error) => {
           console.error('Error al cargar los datos:', error);
+          this.cargaCompleta = true;
         }
       );
   }
@@ -207,6 +203,32 @@ export class VerInformesComponent implements OnInit, OnDestroy {
         control.setValue(null);
       }
     }
+  }
+
+  buscar(): void {
+    if (this.form.valid) {
+      this.cargarDatos(this.machineService.getSelectedMachine());
+    } else {
+      this.form.markAllAsTouched();
+    }
+  }
+
+  limpiarFiltros(): void {
+    this.form.reset({
+      fechaDesde: null,
+      fechaHasta: null,
+      nombreFormula: '',
+      nroLote: '',
+      estadoLote: '',
+    });
+
+    this.limpiarControl('nombreFormula');
+    this.limpiarControl('nroLote');
+    this.limpiarControl('estadoLote');
+    this.limpiarControl('fechaDesde');
+    this.limpiarControl('fechaHasta');
+
+    this.cargarDatos(this.machineService.getSelectedMachine());
   }
 
   combinarResultados(): void {
@@ -261,12 +283,31 @@ export class VerInformesComponent implements OnInit, OnDestroy {
       : '';
   }
 
-  private _filterFormulas(value: string): string[] {
+  public displayFormulaFn(formula: IFormula | null): string {
+    return formula?.nombre || '';
+  }
+
+  private _filterFormulas(value: string): IFormula[] {
     const filterValue = value.toLowerCase();
-    return this.lotes
-      .map(lote => lote.nombreFormula)
-      .filter(formula => formula && formula.toLowerCase().includes(filterValue))
-      // eslint-disable-next-line @typescript-eslint/no-shadow
-      .filter((value, index, self) => self.indexOf(value) === index);
+    return this.formulas.filter(formula => formula.nombre.toLowerCase().includes(filterValue));
+  }
+
+  private createFormulaValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) {
+        return null;
+      }
+      if (typeof value === 'string') {
+        return { invalidFormula: true };
+      }
+      if (value === 0) {
+        return null;
+      }
+      if (value?.id) {
+        return null;
+      }
+      return { invalidFormula: true };
+    };
   }
 }

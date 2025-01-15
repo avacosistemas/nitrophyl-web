@@ -111,9 +111,6 @@ export class ResultadosComponent implements OnInit, AfterViewInit {
   limpiarMaquina(): void {
     this.idMaquinaControl.setValue('');
     this.selectedMachine = null;
-    this.machineService.setSelectedMachine(null);
-    this.machineService.setSubtitle('');
-    this.updateTitle();
 
     if (this.campoInput) {
       setTimeout(() => this.campoInput.nativeElement.blur(), 0);
