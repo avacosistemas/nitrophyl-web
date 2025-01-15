@@ -52,6 +52,13 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
      * On init
      */
     ngOnInit(): void {
+        const storedAppearance = localStorage.getItem('navigationAppearance');
+        if (storedAppearance) {
+            this.navigationAppearance = storedAppearance as 'default' | 'dense';
+        } else {
+            this.navigationAppearance = this.isScreenSmall ? 'default' : 'dense';
+        }
+
         // Subscribe to navigation data
         this._navigationService.navigation$
             .pipe(takeUntil(this._unsubscribeAll))
@@ -68,7 +75,7 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
                 this.isScreenSmall = !matchingAliases.includes('md');
 
                 // Change the navigation appearance
-                this.navigationAppearance = this.isScreenSmall ? 'default' : 'dense';
+                //this.navigationAppearance = this.isScreenSmall ? 'default' : 'dense';
             });
 
         const userData = this._authService.getUserData();
@@ -101,11 +108,9 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
      * @param name
      */
     toggleNavigation(name: string): void {
-        // Get the navigation
         const navigation = this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>(name);
 
         if (navigation) {
-            // Toggle the opened status
             navigation.toggle();
         }
     }
@@ -115,6 +120,7 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
      */
     toggleNavigationAppearance(): void {
         this.navigationAppearance = (this.navigationAppearance === 'default' ? 'dense' : 'default');
+        localStorage.setItem('navigationAppearance', this.navigationAppearance);
     }
 
     signOut(): void
