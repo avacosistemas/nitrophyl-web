@@ -44,14 +44,14 @@
               </mat-autocomplete>
             </mat-form-field>
 
-            <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+            <mat-form-field class="w-1/2 ">
               <input style="font-size: 24px;" matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Fecha Desde" readonly>
               <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
               <mat-datepicker #pickerDesde></mat-datepicker>
               <mat-error>Fecha Desde requerida</mat-error>
             </mat-form-field>
             
-            <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
+            <mat-form-field class="w-1/2 ">
               <input style="font-size: 24px;" matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Fecha Hasta" readonly>
               <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
               <mat-datepicker #pickerHasta></mat-datepicker>

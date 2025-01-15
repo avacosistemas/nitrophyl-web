@@ -77,7 +77,8 @@
 
             <mat-tab label="Condiciones">
                 <div class="row flex gap-3 justify-around items-baseline" *ngIf="!formTest.disabled">
-                    <mat-form-field class="w-full">
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Condición</mat-label>
                         <input matInput [formControlName]="'condition'" placeholder="Condición">
                     </mat-form-field>
                     <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
@@ -114,7 +115,7 @@
             </mat-tab>
         </mat-tab-group>
 
-        <mat-form-field class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded fuse-mat-bold w-full p-4">
+        <mat-form-field  appearance="outline"  class="fuse-mat-dense fuse-mat-no-subscript fuse-mat-rounded fuse-mat-bold w-full p-4">
             <mat-label>Observaciones para informe</mat-label>
             <textarea matInput [formControlName]="'observacionesReporte'" placeholder="Observaciones"
                 maxlength="256"></textarea>

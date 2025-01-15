@@ -4,17 +4,18 @@
 
     <form class="mt-4" [formGroup]="form">
       <div class="flex gap-6" *ngIf="mode === 'Edit'">
-        <mat-form-field class="w-full">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Versión </mat-label>
           <input matInput [formControlName]="'version'">
         </mat-form-field>
-        <mat-form-field class="w-full">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Fecha </mat-label>
           <input matInput [formControlName]="'date'">
         </mat-form-field>
       </div>
 
       <mat-form-field class="w-full" appearance="outline">
         <mat-label>Nombre </mat-label>
-        <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
         <input matInput [formControlName]="'name'" placeholder="Nombre">
         <mat-error class="mb-1" *ngIf="form.get('name').hasError('required')">
           El nombre es requerido.
@@ -29,7 +30,6 @@
 
       <mat-form-field class="w-full" appearance="outline">
         <mat-label>Material </mat-label>
-        <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
         <mat-select [formControlName]="'material'"
           [placeholder]="(!materials$ && !materialsFail) ? 'Materiales: Cargando...' : ((!materials$ && materialsFail) ? 'No se ha podido cargar la lista de materiales' : 'Materiales')">
           <mat-option *ngFor="let material of materials$" [value]="material.id">
@@ -43,7 +43,6 @@
 
       <mat-form-field class="w-full" appearance="outline">
         <mat-label>Norma </mat-label>
-        <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
         <input matInput [formControlName]="'norma'" placeholder="Norma">
         <mat-error class="mb-1" *ngIf="form.get('norma').hasError('required')">
           La norma es requerida.
@@ -58,7 +57,6 @@
 
       <mat-form-field class="w-full" appearance="outline">
         <mat-label>Observaciones </mat-label>
-        <!-- <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon> -->
         <textarea matInput [formControlName]="'observaciones'" placeholder="Observaciones" maxlength="256"></textarea>
         <mat-error class="mb-1" *ngIf="form.get('norma').hasError('maxlength')">
           Máximo 255 caracteres.

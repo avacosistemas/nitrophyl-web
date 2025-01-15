@@ -7,7 +7,7 @@
                 </div>
                 <form [formGroup]="clienteForm">
                     <div class="row flex gap-3 justify-around">
-                        <mat-form-field class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/3">
                             <mat-label>Nombre</mat-label>
                             <input
                                 id="nombre"
@@ -18,7 +18,7 @@
                                     El nombre es requerido
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/3">
                             <mat-label>Razón Social</mat-label>
                             <input
                                 id="razonSocial"
@@ -29,7 +29,7 @@
                                     La razón social es requerida
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/3">
                             <mat-label>Mail</mat-label>
                             <input
                                 id="email"
@@ -42,7 +42,7 @@
                         </mat-form-field>
                     </div>
                     <div class="row flex gap-3 justify-around">
-                        <mat-form-field class="w-2/5">
+                        <mat-form-field appearance="outline" class="w-2/5">
                             <mat-label>Dirección</mat-label>
                             <input
                                 id="domicilio"
@@ -53,7 +53,7 @@
                                     La dirección es requerida
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/5">
+                        <mat-form-field appearance="outline" class="w-1/5">
                             <mat-label>Localidad</mat-label>
                             <input
                                 id="localidad"
@@ -64,7 +64,7 @@
                                     La localidad es requerida
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/5">
+                        <mat-form-field appearance="outline" class="w-1/5">
                             <mat-label>Código Postal</mat-label>
                             <input
                                 id="codigoPostal"
@@ -75,7 +75,7 @@
                                     El código postal es requerido
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/5">
+                        <mat-form-field appearance="outline" class="w-1/5">
                             <mat-label>Provincia</mat-label>
                             <mat-select [formControlName]="'provincia'" placeholder='Provincia'>
                                 <mat-option *ngFor="let provincia of provincias" [value]="provincia.codigo">{{provincia.nombre}}</mat-option>
@@ -86,7 +86,7 @@
                         </mat-form-field>
                     </div>
                     <div class="row flex gap-3 left-around">
-                        <mat-form-field class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/3">
                             <mat-label>Teléfono</mat-label>
                             <input
                                 id="telefono"
@@ -97,7 +97,7 @@
                                     El teléfono es requerido
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/3">
                             <mat-label>CUIT</mat-label>
                             <input
                                 id="cuit"
@@ -109,7 +109,7 @@
                                     El cuit es requerido
                                 </mat-error>
                         </mat-form-field>          
-                        <mat-form-field class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/3">
                             <mat-label>Empresa</mat-label>
                             <mat-select [formControlName]="'empresa'" placeholder="Empresa">
                               <mat-option *ngFor="let emp of empresa" [value]="emp.nombre">
@@ -120,7 +120,7 @@
                               La empresa es requerida
                             </mat-error>
                           </mat-form-field>    
-                        <mat-form-field class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/3">
                             <mat-label>Página</mat-label>
                             <input
                                 id="webSite"
@@ -133,7 +133,7 @@
                         </mat-form-field>   
                     </div>
                     <div class="row flex gap-3 justify-around">
-                        <mat-form-field class="w-1/2">
+                        <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Observaciones Cobranzas</mat-label>
                             <textarea
                                 id="observacionesCobranzas"
@@ -144,7 +144,7 @@
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/2">
+                        <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Observaciones Entrega</mat-label>
                             <textarea
                                 id="observacionesEntrega"
@@ -155,7 +155,7 @@
                                     El código es requerido
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field class="w-1/2">
+                        <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Observaciones Facturación</mat-label>
                             <textarea
                                 id="observacionesFacturacion"

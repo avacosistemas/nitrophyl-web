@@ -6,8 +6,8 @@
                     <h1 class="text-2xl font-semibold mb-2">Pieza</h1>
                 </div>
                 <form class="mt-8" [formGroup]="parteSimpleForm">
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Código Pieza</mat-label>
                         <input id="codigoPieza" matInput [formControlName]="'codigoPieza'" placeholder="Código Pieza">
                         <mat-error class="mb-1" *ngIf="parteSimpleForm.get('codigoPieza').hasError('required')">
                             El código es requerido
@@ -16,8 +16,8 @@
                             El campo Código permite hasta 30 caracteres máximo.
                         </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Código Interno</mat-label>
                         <input id="codigoInterno" matInput [formControlName]="'codigoInterno'" placeholder="Código Interno">
                         <mat-error class="mb-1" *ngIf="parteSimpleForm.get('codigoInterno').hasError('required')">
                             El código es requerido
@@ -26,14 +26,14 @@
                             El campo Código permite hasta 30 caracteres máximo.
                         </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Nombre</mat-label>
                         <input id="nombre" matInput [formControlName]="'nombre'" placeholder="Nombre">
                         <mat-error class="mb-1" *ngIf="parteSimpleForm.get('nombre').hasError('required')">
                             El nombre es requerido
                         </mat-error>
                     </mat-form-field>
-                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [disabled]="disableButton" (click)="save()" *ngIf="mode != 'View'">{{buttonAction}}</button>
+                    <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" [disabled]="disableButton" (click)="save()" *ngIf="mode !== 'View'">{{buttonAction}}</button>
                 </form>
             </div>
         </mat-tab>

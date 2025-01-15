@@ -6,8 +6,8 @@
                     <h1 class="text-2xl font-semibold mb-2">Perfil</h1>
                 </div>
                 <form class="mt-8" [formGroup]="rolForm">
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label> Código </mat-label>
                         <input id="code" matInput [formControlName]="'code'" placeholder="Código">
                         <mat-error class="mb-1" *ngIf="rolForm.get('code').hasError('required')">
                             El código es requerido
@@ -16,8 +16,9 @@
                             El campo Código permite hasta 10 caracteres máximo.
                         </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label> Nombre </mat-label>
+                        <mat-icon matSuffix>account_circle</mat-icon>
                         <input id="name" matInput [formControlName]="'name'" placeholder="Nombre">
                         <mat-error class="mb-1" *ngIf="rolForm.get('name').hasError('required')">
                             El nombre es requerido

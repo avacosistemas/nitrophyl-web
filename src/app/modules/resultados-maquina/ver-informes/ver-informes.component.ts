@@ -283,6 +283,11 @@ export class VerInformesComponent implements OnInit, OnDestroy {
       : '';
   }
 
+  onEnter(event: KeyboardEvent): void {
+    event.preventDefault();
+    this.buscar();
+  }
+
   public displayFormulaFn(formula: IFormula | null): string {
     return formula?.nombre || '';
   }

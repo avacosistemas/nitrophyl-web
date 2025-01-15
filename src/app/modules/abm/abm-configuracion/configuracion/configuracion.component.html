@@ -7,7 +7,8 @@
 
     <form [formGroup]="form" class="mt-2">
       <div class="row flex flex-col gap-1 justify-around">
-        <mat-form-field class="w-full">
+        <mat-form-field appearance="outline" class="w-full ">
+          <mat-label>Fórmula</mat-label>
           <input type="text" required #campoInput placeholder="Ingrese o seleccione una fórmula" matInput
             formControlName="formula" [matAutocomplete]="formulaAuto">
           <mat-error class="mb-1" *ngIf="form.get('formula').hasError('required')">
@@ -27,7 +28,8 @@
           </mat-autocomplete>
         </mat-form-field>
 
-        <mat-form-field class="w-full">
+        <mat-form-field appearance="outline" class="w-full ">
+          <mat-label>Máquina</mat-label>
           <input type="text" required #campoInput formControlName="machine"
             [placeholder]="machinesFail ? 'No se han podido cargar las maquinas.' :  'Seleccione una maquina'" matInput
             [matAutocomplete]="machineAuto">
@@ -50,7 +52,8 @@
           </mat-autocomplete>
         </mat-form-field>
 
-        <mat-form-field class="w-full">
+        <mat-form-field appearance="outline" class="w-full ">
+          <mat-label>Cliente</mat-label>
           <input type="text" required #campoInput formControlName="cliente"
             [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'" matInput
             [matAutocomplete]="clienteAuto">

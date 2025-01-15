@@ -6,8 +6,8 @@
                     <h1 class="text-2xl font-semibold mb-2">Producto</h1>
                 </div>
                 <form class="mt-8" [formGroup]="productoCompuestoForm">
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Código Pieza</mat-label>
                         <input id="codigoPieza" matInput [formControlName]="'codigoPieza'"
                             placeholder="Código Producto">
                         <mat-error class="mb-1" *ngIf="productoCompuestoForm.get('codigoPieza').hasError('required')">
@@ -17,8 +17,8 @@
                             El campo Código permite hasta 30 caracteres máximo.
                         </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Código Interno</mat-label>
                         <input id="codigoInterno" matInput [formControlName]="'codigoInterno'"
                             placeholder="Código Interno">
                         <mat-error class="mb-1" *ngIf="productoCompuestoForm.get('codigoInterno').hasError('required')">
@@ -29,8 +29,8 @@
                             El campo Código permite hasta 30 caracteres máximo.
                         </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-full">
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Nombre</mat-label>
                         <input id="nombre" matInput [formControlName]="'nombre'" placeholder="Nombre">
                         <mat-error class="mb-1" *ngIf="productoCompuestoForm.get('nombre').hasError('required')">
                             El nombre es requerido
@@ -41,7 +41,7 @@
                 </form>
                 <form class="mt-8" [formGroup]="piezaCompuestaExtendidaForm">
                     <div class="flex space-x-4">
-                        <mat-form-field appearance="fill" class="w-1/5">
+                        <mat-form-field appearance="outline" class="w-1/5">
                             <mat-label>Tipo de pieza</mat-label>
                             <mat-select (selectionChange)="typeSelectChange($event)" [formControlName]="'listaTipos'">
                                 <mat-option *ngFor="let tipo of tiposPiezas" [value]="tipo">
@@ -49,7 +49,7 @@
                                 </mat-option>
                             </mat-select>
                         </mat-form-field>
-                        <mat-form-field appearance="fill" class="w-1/5">
+                        <mat-form-field appearance="outline" class="w-1/5">
                             <mat-label>Código de pieza</mat-label>
                             <input type="text" placeholder="Código de pieza" aria-label="Number" matInput
                                 [formControlName]="'listaPiezas'" [matAutocomplete]="auto">

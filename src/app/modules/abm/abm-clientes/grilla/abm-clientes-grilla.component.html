@@ -53,14 +53,14 @@
                       <mat-slide-toggle formControlName="activo"></mat-slide-toggle>
                     </div>
 
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Nombre</mat-label>
                       <input id="nombre" matInput [formControlName]="'nombre'" placeholder="Nombre" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('nombre').hasError('required')">
                         El nombre es requerido
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Razón Social</mat-label>
                       <input id="razonSocial" matInput [formControlName]="'razonSocial'" placeholder="Razón Social" />
                       <mat-error class="mb-1" *ngIf="
@@ -69,7 +69,7 @@
                         La razón social es requerida
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Mail</mat-label>
                       <input id="email" matInput [formControlName]="'email'" placeholder="Mail" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('email').hasError('required')">
@@ -78,7 +78,7 @@
                     </mat-form-field>
                   </div>
                   <div class="row flex gap-3 justify-around">
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Dirección</mat-label>
                       <input id="domicilio" matInput [formControlName]="'domicilio'" placeholder="Dirección" />
                       <mat-error class="mb-1" *ngIf="
@@ -87,7 +87,7 @@
                         La dirección es requerida
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Localidad</mat-label>
                       <input id="localidad" matInput [formControlName]="'localidad'" placeholder="Localidad" />
                       <mat-error class="mb-1" *ngIf="
@@ -96,7 +96,7 @@
                         La localidad es requerida
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Código Postal</mat-label>
                       <input id="codigoPostal" matInput [formControlName]="'codigoPostal'"
                         placeholder="Código Postal" />
@@ -106,7 +106,7 @@
                         El código postal es requerido
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Provincia</mat-label>
                       <mat-select [formControlName]="'provincia'" placeholder="Provincia">
                         <mat-option *ngFor="let provincia of provincias" [value]="provincia.codigo">{{ provincia.nombre
@@ -120,21 +120,21 @@
                     </mat-form-field>
                   </div>
                   <div class="row flex gap-3 justify-around">
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Teléfono</mat-label>
                       <input id="telefono" matInput [formControlName]="'telefono'" placeholder="Teléfono" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('telefono').hasError('required')">
                         El teléfono es requerido
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>CUIT</mat-label>
                       <input id="cuit" matInput [formControlName]="'cuit'" placeholder="CUIT" mask="00-00000000-0" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('cuit').hasError('required')">
                         El CUIT es requerido
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Empresa</mat-label>
                       <mat-select [formControlName]="'empresa'" placeholder="Empresa">
                         <mat-option *ngFor="let emp of empresa" [value]="emp.nombre">
@@ -145,7 +145,7 @@
                         La empresa es requerida
                       </mat-error>
                     </mat-form-field>                    
-                    <mat-form-field class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Página</mat-label>
                       <input id="webSite" matInput [formControlName]="'webSite'" placeholder="Página" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('webSite').hasError('required')">
@@ -154,7 +154,7 @@
                     </mat-form-field>
                   </div>
                   <div class="row flex gap-3 justify-around">
-                    <mat-form-field class="w-1/2">
+                    <mat-form-field appearance="outline" class="w-1/2">
                       <mat-label>Observaciones Cobranzas</mat-label>
                       <textarea id="observacionesCobranzas" matInput [formControlName]="'observacionesCobranzas'"
                         placeholder="Observaciones Cobranzas"></textarea>
@@ -166,7 +166,7 @@
                         El código es requerido
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/2">
+                    <mat-form-field appearance="outline" class="w-1/2">
                       <mat-label>Observaciones Entrega</mat-label>
                       <textarea id="observacionesEntrega" matInput [formControlName]="'observacionesEntrega'"
                         placeholder="Observaciones Entrega"></textarea>
@@ -178,7 +178,7 @@
                         El código es requerido
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-1/2">
+                    <mat-form-field appearance="outline" class="w-1/2">
                       <mat-label>Observaciones Facturación</mat-label>
                       <textarea id="observacionesFacturacion" matInput [formControlName]="'observacionesFacturacion'"
                         placeholder="Observaciones Facturación"></textarea>

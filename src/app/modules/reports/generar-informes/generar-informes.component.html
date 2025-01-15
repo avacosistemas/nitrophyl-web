@@ -2,7 +2,7 @@
   <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
     <form [formGroup]="informesForm" (ngSubmit)="onSubmit()">
 
-      <mat-form-field class="w-full">
+      <mat-form-field appearance="outline" class="w-full ">
         <mat-label>Cliente</mat-label>
         <input type="text" placeholder="Buscar cliente..." aria-label="Cliente" matInput
           [formControl]="clientFilterControl" [matAutocomplete]="autoCliente" />
@@ -15,7 +15,7 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      <mat-form-field class="w-full">
+      <mat-form-field appearance="outline" class="w-full ">
         <mat-label>Lote</mat-label>
         <input matInput placeholder="Buscar lote..." [formControl]="lotFilterControl" [matAutocomplete]="autoLote" />
         <mat-icon matSuffix>find_in_page</mat-icon>

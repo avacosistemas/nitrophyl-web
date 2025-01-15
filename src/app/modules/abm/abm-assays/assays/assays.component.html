@@ -23,13 +23,16 @@
           </div>
         </div>
 
-        <form [formGroup]="form" *ngIf="mode === 'create' && form">
-          <mat-form-field class="w-full fuse-mat-emphasized-affix">
-            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha" required readonly />
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <form [formGroup]="form" class="" *ngIf="mode === 'create' && form">
+
+          <mat-form-field appearance="outline" class="w-full ">
+            <mat-label>Fecha</mat-label>
+            <input  matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha" required readonly />
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
             <mat-error>Fecha requerida</mat-error>
-          </mat-form-field>
+        </mat-form-field>
+
 
           <table mat-table [dataSource]="paramsArray" formArrayName="params" class="border-2 rounded-2xl w-full">
             <ng-container matColumnDef="nombre">

@@ -15,6 +15,7 @@ export class ProductsGrillaComponent implements OnInit, AfterViewInit {
   productsBackup = [];
   displayedColumns: string[] = ['code', 'type', 'acciones'];
   searchForm: FormGroup;
+  panelOpenState = true;
 
   constructor(
     private productsService: ProductsService,
@@ -29,6 +30,10 @@ export class ProductsGrillaComponent implements OnInit, AfterViewInit {
 
   ngOnInit(): void {
     localStorage.removeItem('navPiezas');
+    this.getProductos();
+  }
+
+  public getProductos(): void {
     this.productsService.getProducts().subscribe((d) => {
       this.products = d.data;
       this.productsBackup = this.products;
@@ -64,5 +69,15 @@ export class ProductsGrillaComponent implements OnInit, AfterViewInit {
       this.productsEventService.setMode('View');
     }
   }
+
+  limpiarFiltros(): void {
+    this.searchForm.reset({
+      codigo: [''],
+      tipo: ['']
+    });
+
+    this.getProductos();
+  }
+
 
 }

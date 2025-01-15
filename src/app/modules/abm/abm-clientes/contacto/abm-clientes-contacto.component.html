@@ -8,8 +8,9 @@
                 <form
                     class="mt-8"
                     [formGroup]="contactoFrom">
-                    <mat-form-field class="w-full">
+                    <mat-form-field appearance="outline" class="w-full">
                         <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <mat-label>Nombre</mat-label>
                         <input
                             id="nombre"
                             matInput
@@ -33,8 +34,9 @@
                             El tipo es requerido
                         </mat-error>
                     </div>
-                    <mat-form-field class="w-full">
+                    <mat-form-field appearance="outline" class="w-full">
                         <mat-icon svgIcon="heroicons_solid:mail" class="mr-3"></mat-icon>
+                        <mat-label>Email</mat-label>
                         <input
                             id="email"
                             matInput
@@ -44,8 +46,9 @@
                             El mail es requerido
                         </mat-error>
                     </mat-form-field>
-                    <mat-form-field class="w-full">
+                    <mat-form-field appearance="outline" class="w-full">
                         <mat-icon svgIcon="heroicons_solid:phone" class="mr-3"></mat-icon>
+                        <mat-label>Teléfono</mat-label>
                         <input
                             id="telefono"
                             matInput

@@ -6,6 +6,7 @@ import { ProductsCrearCompuestaComponent } from './crear-compuesta/products-crea
 import { ProductsCrearSimpleComponent } from './crear-simple/products-crear-simple.component';
 import { ProductsGrillaComponent } from './grilla/products-grilla.component';
 import { ProductsComponent } from './products.component';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 const productsRoutes: Route[] = [
     {
@@ -31,7 +32,8 @@ const productsRoutes: Route[] = [
     imports     : [
         RouterModule.forChild(productsRoutes),
         ABMSharedModule,
-        HeaderSharedModule
+        HeaderSharedModule,
+        MatExpansionModule
     ]
 })
 export class ProductsModule

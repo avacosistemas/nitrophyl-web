@@ -13,10 +13,12 @@
 
           <form [formGroup]="form" class="mt-2">
             <div class="row flex gap-3 justify-around">
-              <mat-form-field class="w-1/2">
-                <input matInput [formControlName]="'name'" placeholder="Nombre">
+              <mat-form-field appearance="outline" class="w-1/2 ">
+                <mat-label>Nombre</mat-label>
+                <input matInput [formControlName]="'name'" placeholder="Escribir nombre de máquina">
               </mat-form-field>
-              <mat-form-field class="w-1/2">
+              <mat-form-field appearance="outline" class="w-1/2 ">
+                <mat-label>Estado</mat-label>
                 <mat-select [formControlName]="'status'" placeholder="Estado">
                   <mat-option value=""> Todas </mat-option>
                   <mat-option value="ACTIVA"> Activa </mat-option>

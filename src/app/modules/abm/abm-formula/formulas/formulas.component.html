@@ -15,10 +15,12 @@
 
           <form [formGroup]="form" class="mt-2">
             <div class="row flex gap-3 justify-around">
-              <mat-form-field class="w-1/2">
-                <input matInput [formControlName]="'name'" placeholder="Nombre" maxlength="100">
+              <mat-form-field appearance="outline" class="w-1/2">
+                <mat-label>Nombre</mat-label>
+                <input matInput [formControlName]="'name'" placeholder="Nombre de fórmula" maxlength="100">
               </mat-form-field>
-              <mat-form-field class="w-1/2">
+              <mat-form-field appearance="outline" class="w-1/2">
+                <mat-label>Material</mat-label>
                 <mat-select [formControlName]="'material'"
                   [placeholder]="(!materials$ && !materialsFail) ? 'Materiales: Cargando...' : ((!materials$ && materialsFail) ? 'No se ha podido cargar la lista de materiales' : 'Materiales')">
                   <mat-option [value]="0">Todos</mat-option>
@@ -29,10 +31,10 @@
               </mat-form-field>
             </div>
             <div class="row flex justify-end">
-              <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+              <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
                 (click)="search()">
                 <span class="mat-button-wrapper"> Buscar </span>
-                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                <span matripple class="mat-ripple mat-button-ripple"></span>
                 
               </button>
             </div>

@@ -27,7 +27,8 @@
 </div>
 
 <ng-template #extraContent>
-  <mat-form-field class="mt-4 w-full max-w-60">
+  <mat-form-field appearance="outline" class="w-full max-w-60 mat-field-custom">
+    <mat-label>Máquina</mat-label>
     <mat-select [formControl]="machine" placeholder="Seleccione una maquina">
       <mat-option *ngFor="let machine of machines$ | async" [value]="machine.id">
         {{ machine.maquina }} - V{{machine.version}}

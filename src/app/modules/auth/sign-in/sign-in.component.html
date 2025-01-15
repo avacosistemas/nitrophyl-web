@@ -22,7 +22,7 @@
             <!-- Sign in form -->
             <form class="mt-8" (ngSubmit)="login($event)" [formGroup]="loginForm" #loginNgForm="ngForm">
                 <!-- Username field -->
-                <mat-form-field class="w-full">
+                <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Usuario</mat-label>
                     <input id="username" matInput [formControlName]="'username'">
                     <mat-error *ngIf="loginForm.get('username').hasError('required')">
@@ -31,7 +31,7 @@
                 </mat-form-field>
 
                 <!-- Password field -->
-                <mat-form-field class="w-full">
+                <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Contraseña</mat-label>
                     <input id="password" matInput type="password" [formControlName]="'password'" #passwordField>
                     <button mat-icon-button type="button"

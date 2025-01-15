@@ -11,37 +11,33 @@
           </mat-panel-title>
         </mat-expansion-panel-header>
 
-        <form [formGroup]="formFilter" class="mt-2" (keydown.enter)="onEnter($event)">
-          <div class="row flex gap-3 justify-around">
-            <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
-              <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" placeholder="Desde">
+        <form [formGroup]="formFilter" class="mt-2 " (keydown.enter)="onEnter($event)">
+          <div class="flex gap-3 justify-around">
+
+            <mat-form-field appearance="outline" class=" w-[calc(100%/5-12px*4/5)] ">
+              <mat-label>Fecha Desde</mat-label>
+              <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" />
+              <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+              <mat-datepicker #pickerDesde></mat-datepicker>
               <button mat-icon-button matSuffix *ngIf="formFilter.controls['fechaDesde'].value"
                 (click)="limpiarCampo('fechaDesde')">
                 <mat-icon>close</mat-icon>
               </button>
-              <mat-datepicker-toggle matIconSuffix [for]="pickerDesde"></mat-datepicker-toggle>
-              <mat-datepicker #pickerDesde></mat-datepicker>
-              <mat-error *ngIf="formFilter.get('fechaDesde')?.hasError('required')">Fecha Desde
-                requerida</mat-error>
-              <mat-error *ngIf="formFilter.get('fechaDesde')?.hasError('matDatepickerParse')">Fecha
-                inválida</mat-error>
             </mat-form-field>
 
-            <mat-form-field class="w-1/2 fuse-mat-emphasized-affix">
-              <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" placeholder="Hasta">
+            <mat-form-field appearance="outline" class=" w-[calc(100%/5-12px*4/5)] ">
+              <mat-label>Fecha Hasta</mat-label>
+              <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" />
+              <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+              <mat-datepicker #pickerHasta></mat-datepicker>
               <button mat-icon-button matSuffix *ngIf="formFilter.controls['fechaHasta'].value"
                 (click)="limpiarCampo('fechaHasta')">
                 <mat-icon>close</mat-icon>
               </button>
-              <mat-datepicker-toggle matIconSuffix [for]="pickerHasta"></mat-datepicker-toggle>
-              <mat-datepicker #pickerHasta></mat-datepicker>
-              <mat-error *ngIf="formFilter.get('fechaHasta')?.hasError('required')">Fecha Hasta
-                requerida</mat-error>
-              <mat-error *ngIf="formFilter.get('fechaHasta')?.hasError('matDatepickerParse')">Fecha
-                inválida</mat-error>
             </mat-form-field>
 
-            <mat-form-field class="w-full">
+            <mat-form-field appearance="outline" class=" w-[calc(100%/5-12px*4/5)] ">
+              <mat-label>Estado</mat-label>
               <mat-select placeholder="Estado" formControlName="estado">
                 <mat-option *ngFor="let estado2 of estados" [value]="estado2.value">
                   {{ estado2.value }}
@@ -53,36 +49,30 @@
               </button>
             </mat-form-field>
 
-            <mat-form-field class="w-1/2">
-              <input type="text" 
-                     #campoInput 
-                     formControlName="idFormula"
-                     [placeholder]="formulaFail ? 'No se han podido cargar las formulas.' : 'Fórmula'" 
-                     matInput
-                     [matAutocomplete]="formulaAuto">
-            
-              <button mat-icon-button 
-                      matSuffix 
-                      *ngIf="formFilter.controls['idFormula'].value !== null"
-                      (click)="limpiarCampo('idFormula')">
+            <mat-form-field appearance="outline" class=" w-[calc(100%/5-12px*4/5)]">
+              <mat-label>Fórmula</mat-label>
+              <input type="text" #campoInput formControlName="idFormula"
+                [placeholder]="formulaFail ? 'No se han podido cargar las formulas.' : 'Fórmula'" matInput
+                [matAutocomplete]="formulaAuto">
+
+              <button mat-icon-button matSuffix *ngIf="formFilter.controls['idFormula'].value !== null"
+                (click)="limpiarCampo('idFormula')">
                 <mat-icon>close</mat-icon>
               </button>
-            
+
               <mat-error *ngIf="formFilter.controls['idFormula'].hasError('invalidFormula')">
                 Debe seleccionar una fórmula válida
               </mat-error>
-            
-              <mat-autocomplete #formulaAuto="matAutocomplete" 
-                               [displayWith]="displayFn" 
-                               autoActiveFirstOption>
-                <mat-option *ngFor="let formula of formulas$ | async" 
-                            [value]="formula">
+
+              <mat-autocomplete #formulaAuto="matAutocomplete" [displayWith]="displayFn" autoActiveFirstOption>
+                <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
                   {{ formula.nombre }}
                 </mat-option>
               </mat-autocomplete>
             </mat-form-field>
 
-            <mat-form-field class="w-1/2">
+            <mat-form-field appearance="outline" class=" w-[calc(100%/5-12px*4/5)]">
+              <mat-label>Lote (LNNNN)</mat-label>
               <input type="text" placeholder="Lote (LNNNN)" matInput formControlName="nroLote" maxlength="5">
               <button mat-icon-button matSuffix *ngIf="formFilter.controls['nroLote'].value"
                 (click)="limpiarCampo('nroLote')">
@@ -106,13 +96,13 @@
               (click)="limpiar()">
               <span class="mat-button-wrapper"> Limpiar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
-              
+
             </button>
             <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
               (click)="search()">
               <span class="mat-button-wrapper"> Buscar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
-              
+
             </button>
           </div>
         </form>

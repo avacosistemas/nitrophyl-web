@@ -10,94 +10,86 @@
                     </mat-panel-title>
                 </mat-expansion-panel-header>
 
-                <form [formGroup]="form">
-                    <div class="flex gap-4">
-                        <div class="row flex gap-3 justify-around">
-                            <mat-form-field appearance="outline" class="fuse-mat-emphasized-affix">
-                                <mat-label>Fecha Desde</mat-label>
-                                <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" />
-                                <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
-                                <mat-datepicker #pickerDesde></mat-datepicker>
-                                <button mat-icon-button matSuffix *ngIf="form.get('fechaDesde').value"
-                                    (click)="limpiarControl('fechaDesde')">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                            </mat-form-field>
-
-                            <mat-form-field appearance="outline" class="fuse-mat-emphasized-affix">
-                                <mat-label>Fecha Hasta</mat-label>
-                                <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" />
-                                <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
-                                <mat-datepicker #pickerHasta></mat-datepicker>
-                                <button mat-icon-button matSuffix *ngIf="form.get('fechaHasta').value"
-                                    (click)="limpiarControl('fechaHasta')">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                            </mat-form-field>
-               
-                            <mat-form-field appearance="outline" class="w-32 fuse-mat-emphasized-affix">
-                                <mat-label>Fórmula</mat-label>
-                                <input type="text"
-                                        placeholder="Fórmula"
-                                        matInput
-                                        formControlName="idFormula"
-                                        [matAutocomplete]="autoFormula"
-                                        (keydown.enter)="buscar()">
-                                <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFormulaFn" autoActiveFirstOption>
-                                    <mat-option *ngFor="let formula of filteredFormulas | async" [value]="formula">
-                                        {{ formula.nombre }}
-                                    </mat-option>
-                                </mat-autocomplete>
-                                <button mat-icon-button matSuffix *ngIf="form.get('idFormula').value"
-                                        (click)="limpiarControl('idFormula')">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                                <mat-error *ngIf="form.get('idFormula').hasError('invalidFormula')">
-                                  Debe seleccionar una fórmula válida
-                                </mat-error>
-                            </mat-form-field>
-
-                            <mat-form-field appearance="outline" class="w-32 fuse-mat-emphasized-affix">
-                                <mat-label>Nro. Lote</mat-label>
-                                <input type="text" matInput formControlName="nroLote" maxlength="5" />
-                                <button mat-icon-button matSuffix *ngIf="form.get('nroLote').value"
-                                    (click)="limpiarControl('nroLote')">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                            </mat-form-field>
-
-                            <mat-form-field appearance="outline" class="fuse-mat-emphasized-affix">
-                                <mat-label>Estado</mat-label>
-                                <mat-select formControlName="estadoLote">
-                                    <mat-option value="">Todos</mat-option>
-                                    <mat-option value="APROBADO">APROBADO</mat-option>
-                                    <mat-option value="RECHAZADO">RECHAZADO</mat-option>
-                                    <mat-option value="APROBADO_OBSERVADO">APROBADO_OBSERVADO</mat-option>
-                                </mat-select>
-                                <button mat-icon-button matSuffix *ngIf="form.get('estadoLote').value"
-                                    (click)="limpiarControl('estadoLote')">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                            </mat-form-field>
-                        </div>
+                <form [formGroup]="form" class="" (keydown.enter)="buscar($event)">
+                    <div class="flex gap-3 justify-around">
+                  
+                      <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
+                        <mat-label>Fecha Desde</mat-label>
+                        <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" />
+                        <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerDesde></mat-datepicker>
+                        <button mat-icon-button matSuffix *ngIf="form.get('fechaDesde').value" (click)="limpiarControl('fechaDesde')">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </mat-form-field>
+                  
+                      <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
+                        <mat-label>Fecha Hasta</mat-label>
+                        <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta" />
+                        <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerHasta></mat-datepicker>
+                        <button mat-icon-button matSuffix *ngIf="form.get('fechaHasta').value" (click)="limpiarControl('fechaHasta')">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </mat-form-field>
+                  
+                      <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
+                        <mat-label>Fórmula</mat-label>
+                        <input type="text" placeholder="Fórmula" matInput formControlName="idFormula" [matAutocomplete]="autoFormula"
+                          (keydown.enter)="buscar()">
+                        <button mat-icon-button matSuffix *ngIf="form.get('idFormula').value" (click)="limpiarControl('idFormula')">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                        <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFormulaFn" autoActiveFirstOption>
+                          <mat-option *ngFor="let formula of filteredFormulas | async" [value]="formula">
+                            {{ formula.nombre }}
+                          </mat-option>
+                        </mat-autocomplete>
+                        <mat-error *ngIf="form.get('idFormula').hasError('invalidFormula')">
+                          Debe seleccionar una fórmula válida
+                        </mat-error>
+                      </mat-form-field>
+                  
+                      <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
+                        <mat-label>Nro. Lote</mat-label>
+                        <input type="text" matInput formControlName="nroLote" maxlength="5" />
+                        <button mat-icon-button matSuffix *ngIf="form.get('nroLote').value" (click)="limpiarControl('nroLote')">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </mat-form-field>
+                  
+                      <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
+                        <mat-label>Estado</mat-label>
+                        <mat-select formControlName="estadoLote">
+                          <mat-option value="">Todos</mat-option>
+                          <mat-option value="APROBADO">APROBADO</mat-option>
+                          <mat-option value="RECHAZADO">RECHAZADO</mat-option>
+                          <mat-option value="APROBADO_OBSERVADO">APROBADO_OBSERVADO</mat-option>
+                        </mat-select>
+                        <button mat-icon-button matSuffix *ngIf="form.get('estadoLote').value" (click)="limpiarControl('estadoLote')">
+                          <mat-icon>close</mat-icon>
+                        </button>
+                      </mat-form-field>
                     </div>
+                  
                     <div class="row flex justify-end">
-                        <button mat-flat-button class="mat-focus-indicator mat-stroked-button mat-button-base mr-2" (click)="limpiarFiltros()">
-                            <span class="mat-button-wrapper"> Limpiar </span>
-                            <span matripple class="mat-ripple mat-button-ripple"></span>
-                            
-                        </button>
-                        <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="buscar()">
-                            <span class="mat-button-wrapper"> Buscar </span>
-                            <span matripple class="mat-ripple mat-button-ripple"></span>
-                            
-                        </button>
+                      <button mat-flat-button class="mat-focus-indicator mat-stroked-button mat-button-base mr-2"
+                        (click)="limpiarFiltros()">
+                        <span class="mat-button-wrapper"> Limpiar </span>
+                        <span matripple class="mat-ripple mat-button-ripple"></span>
+                      </button>
+                      <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="buscar()">
+                        <span class="mat-button-wrapper"> Buscar </span>
+                        <span matripple class="mat-ripple mat-button-ripple"></span>
+                      </button>
                     </div>
-                </form>
+                  
+                  </form>
             </mat-expansion-panel>
         </mat-accordion>
 
-        <div *ngIf="cargaCompleta && lotes.length === 0 && machineService.getSelectedMachine()" class="flex justify-center w-full my-4">
+        <div *ngIf="cargaCompleta && lotes.length === 0 && machineService.getSelectedMachine()"
+            class="flex justify-center w-full my-4">
             <div class="bg-red-100 border border-red-600 text-sm text-red-600 rounded-lg p-4 w-full flex justify-center"
                 role="alert" tabindex="-1" aria-labelledby="hs-link-on-right-label">
                 <div class="flex">

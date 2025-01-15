@@ -2,24 +2,28 @@
 <div class="flex flex-col w-full" id="top">
     <mat-tab-group class="mt-2 col-span-12 grid-rows-1">
         <mat-tab label="Usuario">
-            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8" [formGroup]="controlGroup">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 w-1/2" [formGroup]="controlGroup">
                 <div>
                     <h1 class="text-2xl font-semibold mb-2">Usuario</h1>
                 </div>
-                <mat-form-field class="fuse-mat-textarea">
-                    <mat-icon svgIcon="mat_solid:mail" class="mr-3"></mat-icon>
+                <mat-form-field appearance="outline" class="fuse-mat-textarea">
+                    <mat-label> E-Mail </mat-label>
+                    <mat-icon matSuffix>mail</mat-icon>
                     <input matInput formControlName="mail" placeholder="E-Mail" [(ngModel)]="data.email">
                 </mat-form-field>
-                <mat-form-field class="fuse-mat-textarea">
-                    <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                <mat-form-field appearance="outline" class="fuse-mat-textarea">
+                    <mat-label> Usuario </mat-label>
+                    <mat-icon matSuffix>account_circle</mat-icon>
                     <input matInput formControlName="username" placeholder="Usuario" [(ngModel)]="data.username">
                 </mat-form-field>
-                <mat-form-field class="fuse-mat-textarea">
-                    <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                <mat-form-field appearance="outline" class="fuse-mat-textarea">
+                    <mat-label> Nombre </mat-label>
+                    <mat-icon matSuffix>account_circle</mat-icon>
                     <input matInput formControlName="name" placeholder="Nombre" [(ngModel)]="data.name">
                 </mat-form-field>
-                <mat-form-field class="fuse-mat-textarea">
-                    <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                <mat-form-field appearance="outline" class="fuse-mat-textarea">
+                    <mat-label> Apellido </mat-label>
+                    <mat-icon matSuffix>account_circle</mat-icon>
                     <input matInput formControlName="surname" placeholder="Apellido" [(ngModel)]="data.lastname">
                 </mat-form-field>
                 <section class="fuse-mat-textarea">
@@ -36,7 +40,7 @@
                 </div>
                 <div class="grid grid-cols-5 gap-4 max-h-60">
                     <div class="col-span-2">
-                        <mat-form-field class="w-full">
+                        <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Perfiles Disponibles</mat-label>
                             <input matInput (keyup)="onKeyDisponibles($event.target.value)" [(ngModel)]="inputDisponibles">
                         </mat-form-field>
@@ -47,14 +51,14 @@
                                       <mat-checkbox (change)="$event ? masterToggle(1) : null"
                                                     [checked]="selection.hasValue() && isAllSelected(1)"
                                                     [indeterminate]="selection.hasValue() && !isAllSelected(1)"
-                                                    [disabled]="mode == 'View'" >
+                                                    [disabled]="mode === 'View'" >
                                       </mat-checkbox>
                                     </th>
                                     <td mat-cell *matCellDef="let row">
                                       <mat-checkbox (click)="$event.stopPropagation()"
                                                     (change)="$event ? selection.toggle(row) : null"
                                                     [checked]="selection.isSelected(row)"
-                                                    [disabled]="mode == 'View'" >
+                                                    [disabled]="mode === 'View'" >
                                       </mat-checkbox>
                                     </td>
                                 </ng-container>
@@ -68,11 +72,11 @@
                         </div>
                     </div>
                     <div class="col-span-1 text-center flex flex-col space-y-4">
-                        <button mat-raised-button (click)="add()" [disabled]="selection.selected.length == 0" class="justify-self-center">Agregar</button>
-                        <button mat-raised-button (click)="remove()" [disabled]="selectionIncluidos.selected.length == 0" class="justify-self-center">Quitar</button>
+                        <button mat-raised-button (click)="add()" [disabled]="selection.selected.length === 0" class="justify-self-center">Agregar</button>
+                        <button mat-raised-button (click)="remove()" [disabled]="selectionIncluidos.selected.length === 0" class="justify-self-center">Quitar</button>
                     </div>
                     <div class="col-span-2">
-                        <mat-form-field class="w-full">
+                        <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Perfiles Incluidos</mat-label>
                             <input matInput (keyup)="onKeyIncluidos($event.target.value)" [(ngModel)]="inputIncluidos">
                         </mat-form-field>
@@ -83,14 +87,14 @@
                                       <mat-checkbox (change)="$event ? masterToggle(2) : null"
                                                     [checked]="selectionIncluidos.hasValue() && isAllSelected(2)"
                                                     [indeterminate]="selectionIncluidos.hasValue() && !isAllSelected(2)"
-                                                    [disabled]="mode == 'View'" >
+                                                    [disabled]="mode === 'View'" >
                                       </mat-checkbox>
                                     </th>
                                     <td mat-cell *matCellDef="let row">
                                       <mat-checkbox (click)="$event.stopPropagation()"
                                                     (change)="$event ? selectionIncluidos.toggle(row) : null"
                                                     [checked]="selectionIncluidos.isSelected(row)"
-                                                    [disabled]="mode == 'View'" >
+                                                    [disabled]="mode === 'View'" >
                                       </mat-checkbox>
                                     </td>
                                 </ng-container>

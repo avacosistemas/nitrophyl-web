@@ -12,13 +12,16 @@
                     </mat-expansion-panel-header>
                     <form [formGroup]="searchForm" class="mt-2">
                         <div class="row flex gap-3 justify-around">
-                            <mat-form-field class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label> Código </mat-label>
                                 <input id="code" matInput [formControlName]="'code'" placeholder="Código">
                             </mat-form-field>
-                            <mat-form-field class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label> Descripción </mat-label>
                                 <input id="name" matInput [formControlName]="'name'" placeholder="Descripción">
                             </mat-form-field>
-                            <mat-form-field class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label> Estado </mat-label>
                                 <mat-select [formControlName]="'status'" placeholder='Estado'>
                                     <mat-option value="ACTIVO">Activo</mat-option>
                                     <mat-option value="INACTIVO">Inactivo</mat-option>
@@ -28,7 +31,8 @@
                             </mat-form-field>
                         </div>
                         <div class="row flex gap-3 justify-around">
-                            <mat-form-field class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label> Dimensión </mat-label>
                                 <mat-select [formControlName]="'measurements'" placeholder='Dimensión'>
                                     <mat-option value="ALTO">Alto</mat-option>
                                     <mat-option value="ANCHO">Ancho</mat-option>
@@ -36,10 +40,12 @@
                                     <mat-option value="DIAMETRO">Diámetro</mat-option>
                                   </mat-select>
                             </mat-form-field>
-                            <mat-form-field class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label> Mínimo </mat-label>
                                 <input type="number" id="min" matInput [formControlName]="'min'" placeholder="Mínimo">
                             </mat-form-field>
-                            <mat-form-field class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label> Máximo </mat-label>
                                 <input type="number" id="max" matInput [formControlName]="'max'" placeholder="Máximo">
                             </mat-form-field>
                         </div>

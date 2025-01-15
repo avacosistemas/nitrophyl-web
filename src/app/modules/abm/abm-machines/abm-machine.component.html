@@ -4,7 +4,7 @@
     [subtitle]="title === 'Pruebas' ? 'Maquina: ' + titleMachine : ''"
     [breadcrumbs]="[
       { title: 'ABM', route: ['/maquinas/grid'], condition: true },
-      { title: 'Máquinas', route: [], condition: true },
+      { title: 'Máquinas', route: ['/maquinas/grid'], condition: true },
       { title: 'Crear', route: [], condition: title === 'Crear Máquina' },
       { title: 'Ver', route: [], condition: title === 'Consultar Máquina' },
       { title: 'Consultar', route: [], condition: title === 'Consultar Máquinas' },

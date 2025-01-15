@@ -48,13 +48,12 @@
     <ng-container *ngTemplateOutlet="extraContent"></ng-container>
   
     <ng-container *ngFor="let button of buttons">
-      <button *ngIf="button.condition"
+      <button mat-flat-button  *ngIf="button.condition"
         [ngClass]="getButtonClass(button.type)"
         [disabled]="button.isDisabled"
         (click)="handleButtonClick(button.action)">
         <span class="mat-button-wrapper">{{ button.label }}</span>
-        <span matripple="" class="mat-ripple mat-button-ripple"></span>
-        
+        <span matripple class="mat-ripple mat-button-ripple"></span>
       </button>
     </ng-container>
   </div>
