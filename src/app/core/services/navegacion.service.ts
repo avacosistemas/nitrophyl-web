@@ -20,7 +20,7 @@ export class NavegacionService {
           link: '/resultados/maquina',
           title: 'Resultados',
           type: 'basic',
-          permissionCode: 'MENU_INFORME_CALIDAD',
+          permissionCode: 'MENU_INFORME_MAQUINAS',
         },
         {
           id: 'calidad',
