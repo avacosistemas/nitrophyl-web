@@ -1,3 +1,12 @@
 .cursor-pointer {
     cursor: pointer;
 }
+
+// ::ng-deep #informe-maquina-table .mat-table .mat-row td:nth-child(n+7) {
+//   text-align: center;
+// }
+
+#informe-maquina-table tr.mat-row:nth-child(n+1) > td:nth-child(n+7) {
+    text-align: center;
+    color: blue($color: #000000);
+}

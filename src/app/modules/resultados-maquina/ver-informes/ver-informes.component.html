@@ -111,7 +111,7 @@
             </div>
         </div>
 
-        <table mat-table [dataSource]="lotes" matSort
+        <table mat-table [dataSource]="lotes" matSort id="informe-maquina-table"
             (matSortChange)="ordenar($event.active, $event.direction === 'asc' ? true : false)"
             class="border-2 rounded-2xl w-full mt-5">
             <!-- Definir columnas -->
