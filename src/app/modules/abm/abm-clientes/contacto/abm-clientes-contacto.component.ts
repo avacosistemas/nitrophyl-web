@@ -41,7 +41,7 @@ export class ABMClientesContactoComponent implements OnInit, OnDestroy {
             tipo: [null, [Validators.required]],
             nombre: [null, [Validators.required]],
             email: [null, [Validators.required]],
-            telefono: [null, [Validators.required]]
+            telefono: [null]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
             (data: any) => {

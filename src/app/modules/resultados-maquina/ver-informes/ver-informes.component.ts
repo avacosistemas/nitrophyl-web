@@ -64,7 +64,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
       fechaHasta: [null],
       idFormula: [null, [this.createFormulaValidator()]],
       nroLote: [''],
-      estadoLote: [''],
+      estadoEnsayo: [''],
     });
 
     this.formulasService.get().pipe(
@@ -134,7 +134,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
       fechaHasta: fechaHasta,
       idFormula: null,
       nroLote: this.form.get('nroLote').value,
-      estadoLote: this.form.get('estadoLote').value,
+      estadoEnsayo: this.form.get('estadoEnsayo').value,
       idx: this.ordenColumna,
       asc: this.ordenAscendente,
     };
@@ -197,7 +197,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
   limpiarControl(controlName: string): void {
     const control = this.form.get(controlName);
     if (control) {
-      if (controlName === 'estadoLote') {
+      if (controlName === 'estadoEnsayo') {
         control.setValue('');
       } else {
         control.setValue(null);
@@ -219,12 +219,12 @@ export class VerInformesComponent implements OnInit, OnDestroy {
       fechaHasta: null,
       nombreFormula: '',
       nroLote: '',
-      estadoLote: '',
+      estadoEnsayo: '',
     });
 
     this.limpiarControl('nombreFormula');
     this.limpiarControl('nroLote');
-    this.limpiarControl('estadoLote');
+    this.limpiarControl('estadoEnsayo');
     this.limpiarControl('fechaDesde');
     this.limpiarControl('fechaHasta');
 

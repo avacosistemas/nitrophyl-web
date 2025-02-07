@@ -60,13 +60,13 @@
                   
                       <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
                         <mat-label>Estado</mat-label>
-                        <mat-select formControlName="estadoLote">
+                        <mat-select formControlName="estadoEnsayo">
                           <mat-option value="">Todos</mat-option>
                           <mat-option value="APROBADO">APROBADO</mat-option>
                           <mat-option value="RECHAZADO">RECHAZADO</mat-option>
                           <mat-option value="APROBADO_OBSERVADO">APROBADO_OBSERVADO</mat-option>
                         </mat-select>
-                        <button mat-icon-button matSuffix *ngIf="form.get('estadoLote').value" (click)="limpiarControl('estadoLote')">
+                        <button mat-icon-button matSuffix *ngIf="form.get('estadoEnsayo').value" (click)="limpiarControl('estadoEnsayo')">
                           <mat-icon>close</mat-icon>
                         </button>
                       </mat-form-field>
@@ -146,24 +146,24 @@
                             </ng-container>
                             <ng-container *ngSwitchCase="'Estado'">
                                 <mat-icon [style.color]="
-                                element.estadoLote === 'PENDIENTE_APROBACION'
+                                element.estadoEnsayo === 'PENDIENTE_APROBACION'
                                   ? '#50c5e9'
-                                  : element.estadoLote === 'APROBADO'
+                                  : element.estadoEnsayo === 'APROBADO'
                                   ? 'green'
-                                  : element.estadoLote === 'APROBADO_OBSERVADO'
+                                  : element.estadoEnsayo === 'APROBADO_OBSERVADO'
                                   ? 'yellow'
-                                  : element.estadoLote === 'RECHAZADO'
+                                  : element.estadoEnsayo === 'RECHAZADO'
                                   ? 'red'
                                   : ''
                               ">
                                     {{
-                                    element.estadoLote === "PENDIENTE_APROBACION"
+                                    element.estadoEnsayo === "PENDIENTE_APROBACION"
                                     ? "schedule"
-                                    : element.estadoLote === "APROBADO"
+                                    : element.estadoEnsayo === "APROBADO"
                                     ? "check_circle"
-                                    : element.estadoLote === "APROBADO_OBSERVADO"
+                                    : element.estadoEnsayo === "APROBADO_OBSERVADO"
                                     ? "warning"
-                                    : element.estadoLote === "RECHAZADO"
+                                    : element.estadoEnsayo === "RECHAZADO"
                                     ? "error"
                                     : ""
                                     }}
