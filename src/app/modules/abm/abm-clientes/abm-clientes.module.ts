@@ -16,18 +16,22 @@ import { CoreSharedModule } from 'app/core/shared/shared.module';
 import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
+import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { MaterialModule } from 'app/material.module';
 
 const abmUsuariosRoutes: Route[] = [
   {
     path: '',
     component: ABMClientesComponent,
     children: [
-      { path: 'grid',
+      {
+        path: 'grid',
         component: ABMClientesGrillaComponent,
         data: { permission: 'MENU_ADMINISTRACION_CLIENTES' },
         canActivate: [PermissionGuard]
       },
-      { path: 'create',
+      {
+        path: 'create',
         component: ABMClientesCrearComponent,
       },
       {
@@ -65,7 +69,9 @@ const maskConfig: Partial<IConfig> = {
     NgxMaskModule.forRoot(maskConfig),
     MatSlideToggleModule,
     CoreSharedModule,
-    HeaderSharedModule
+    HeaderSharedModule,
+    PromptsModule,
+    MaterialModule
   ],
 })
-export class ABMClientesModule {}
+export class ABMClientesModule { }

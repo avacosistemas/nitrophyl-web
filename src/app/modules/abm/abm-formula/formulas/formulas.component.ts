@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 
 // * Services.
@@ -14,12 +14,14 @@ import { IMaterialsResponse } from 'app/shared/models/material.interface';
 
 // * Forms.
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
 
 @Component({
   selector: 'app-formulas',
   templateUrl: './formulas.component.html',
 })
 export class FormulasComponent implements OnInit, AfterViewInit {
+  @ViewChild(ExportDataComponent) exportDataComponent: ExportDataComponent;
   public component: string = 'all';
 
   public form: FormGroup;
@@ -66,8 +68,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     const filteredFormulas = this.formulas$.filter(
       (formula: any) => formula.nombre === name
     );
-    if (filteredFormulas.length > 0)
-      {return Math.max(...filteredFormulas.map(formula => formula.version));}
+    if (filteredFormulas.length > 0) { return Math.max(...filteredFormulas.map(formula => formula.version)); }
     return 0;
   }
 
@@ -89,17 +90,54 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   }
 
   public search(): void {
-    if (!this.form.controls.name.value && !this.form.controls.material.value)
-      {this.formulas$ = this.formulasBackUp$;}
+    if (!this.form.controls.name.value && !this.form.controls.material.value) { this.formulas$ = this.formulasBackUp$; }
 
-    if (this.form.controls.name.value && this.form.controls.material.value)
-      {this.compare();}
+    if (this.form.controls.name.value && this.form.controls.material.value) { this.compare(); }
 
-    if (this.form.controls.name.value && !this.form.controls.material.value)
-      {this.compareFormulas();}
+    if (this.form.controls.name.value && !this.form.controls.material.value) { this.compareFormulas(); }
 
-    if (!this.form.controls.name.value && this.form.controls.material.value)
-      {this.compareMaterials();}
+    if (!this.form.controls.name.value && this.form.controls.material.value) { this.compareMaterials(); }
+  }
+
+  onGetAllData(event: { tipo: string; scope: string }): void {
+    if (this.formulas$) {
+      const formattedData = this.formatDataForExport(this.formulas$);
+      this.procesarExportacion(event.tipo, formattedData);
+    }
+  }
+
+  formatDataForExport(data: IFormula[]): any[] {
+    return data.map((item) => {
+      let materialNombre = '';
+      if (this.materials$ && item.idMaterial) {
+        const material = this.materials$.find(m => m.id === item.idMaterial);
+        materialNombre = material ? material.nombre : 'N/A';
+      }
+
+      return {
+        'Nombre': item.nombre || '',
+        'Material': materialNombre,
+        'Norma': item.norma || '',
+        'Versión': item.version || '',
+        'Fecha': item.fecha || '',
+      };
+    });
+  }
+
+  procesarExportacion(tipo: string, data: any[]): void {
+    switch (tipo) {
+      case 'csv':
+        this.exportDataComponent.descargarCsv(data);
+        break;
+      case 'excel':
+        this.exportDataComponent.descargarExcel(data);
+        break;
+      case 'pdf':
+        this.exportDataComponent.descargarPdf(data);
+        break;
+      default:
+        console.warn('Tipo de exportación no soportado:', tipo);
+    }
   }
 
   private loadData(): void {
@@ -129,7 +167,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
         this.formulasBackUp$ = formulas.data;
       },
       error: (err: any) => console.error(error, err),
-      complete: () => {},
+      complete: () => { },
     });
   }
 

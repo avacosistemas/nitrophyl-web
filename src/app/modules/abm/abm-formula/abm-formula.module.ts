@@ -18,6 +18,8 @@ import { TestModifyDialogComponent } from 'app/modules/prompts/test-modify/test-
 import { CheckParamDialogComponent } from 'app/modules/prompts/check-param/check-param-dialog.component';
 import { FormulaTestModalComponent } from './formula-test-modal/formula-test-modal.component';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
+import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { MaterialModule } from 'app/material.module';
 
 const routes: Route[] = [
   {
@@ -35,7 +37,7 @@ const routes: Route[] = [
 
 @NgModule({
   declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent, FormulaTestModalComponent, TestModifyDialogComponent, CheckParamDialogComponent],
-  imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule, MatIconModule, FuseCardModule, HeaderSharedModule ],
+  imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule, MatIconModule, FuseCardModule, HeaderSharedModule, PromptsModule, MaterialModule],
   entryComponents: [TestModifyDialogComponent, CheckParamDialogComponent]
 })
-export class ABMFormulaModule {}
+export class ABMFormulaModule { }

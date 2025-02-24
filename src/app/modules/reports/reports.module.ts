@@ -11,6 +11,8 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { GenerarInformesComponent } from './generar-informes/generar-informes.component';
 import { ReportsComponent } from './reports.component';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
+import { MatDialogModule } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 
 const informesRoutes: Route[] = [
   {
@@ -27,6 +29,7 @@ const informesRoutes: Route[] = [
   declarations: [
     GenerarInformesComponent,
     ReportsComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     CommonModule,
@@ -39,7 +42,11 @@ const informesRoutes: Route[] = [
     MatIconModule,
     MatAutocompleteModule,
     RouterModule.forChild(informesRoutes),
-    HeaderSharedModule
+    HeaderSharedModule,
+    MatDialogModule
+  ],
+  exports: [
+    ConfirmDialogComponent
   ],
 })
 export class ReportsModule { }

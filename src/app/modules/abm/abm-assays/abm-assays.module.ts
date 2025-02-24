@@ -24,6 +24,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { DatePipe } from '@angular/common';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
+import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { MaterialModule } from 'app/material.module';
 
 const routes: Route[] = [
   {
@@ -47,7 +49,9 @@ const routes: Route[] = [
     MatDatepickerModule,
     MatNativeDateModule,
     MatDialogModule,
-    HeaderSharedModule
+    HeaderSharedModule,
+    PromptsModule,
+    MaterialModule
   ],
   providers: [{ provide: MAT_DATE_LOCALE, useValue: 'en-GB' }, DatePipe],
 })

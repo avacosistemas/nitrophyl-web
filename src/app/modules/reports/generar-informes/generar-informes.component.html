@@ -1,12 +1,16 @@
-<div class="flex flex-col w-1/2 max-w-3xl p-6" id="top">
-  <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+<div class="flex flex-col w-[500px] p-6" id="top">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 w-fit">
     <form [formGroup]="informesForm" (ngSubmit)="onSubmit()">
 
-      <mat-form-field appearance="outline" class="w-full ">
+      <mat-form-field appearance="outline" class="w-[500px]">
         <mat-label>Cliente</mat-label>
         <input type="text" placeholder="Buscar cliente..." aria-label="Cliente" matInput
-          [formControl]="clientFilterControl" [matAutocomplete]="autoCliente" />
-        <mat-icon matSuffix>person_search</mat-icon>
+          [formControl]="clientFilterControl" [matAutocomplete]="autoCliente" #clientInput>
+        <mat-icon matPrefix>person_search</mat-icon>
+        <button mat-icon-button matSuffix *ngIf="clientFilterControl.value"
+          (click)="clearClientInput(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="_displayClientName"
           (optionSelected)="onClientSelected($event)">
           <mat-option *ngFor="let client of filteredClients | async" [value]="client">
@@ -15,10 +19,15 @@
         </mat-autocomplete>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="w-full ">
+      <mat-form-field appearance="outline" class="w-[500px]">
         <mat-label>Lote</mat-label>
-        <input matInput placeholder="Buscar lote..." [formControl]="lotFilterControl" [matAutocomplete]="autoLote" />
-        <mat-icon matSuffix>find_in_page</mat-icon>
+        <input matInput placeholder="Buscar lote..." [formControl]="lotFilterControl" [matAutocomplete]="autoLote"
+          #lotInput>
+        <mat-icon matPrefix>find_in_page</mat-icon>
+        <button mat-icon-button matSuffix *ngIf="lotFilterControl.value"
+          (click)="clearLotInput(); $event.stopPropagation()">
+          <mat-icon>close</mat-icon>
+        </button>
         <mat-autocomplete #autoLote="matAutocomplete" [displayWith]="_displayLotName"
           (optionSelected)="onLotSelected($event)">
           <mat-option *ngFor="let lote of filteredLots | async" [value]="lote">
@@ -26,10 +35,67 @@
           </mat-option>
         </mat-autocomplete>
       </mat-form-field>
+
+      <div *ngIf="selectedLotDetails">
+        <div class="flex gap-2 w-[500px]">
+          <mat-form-field appearance="outline" class="w-1/2">
+            <mat-label>Fecha</mat-label>
+            <input matInput [value]="selectedLotDetails.fecha" disabled>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="w-1/2">
+            <mat-label>Grado</mat-label>
+            <input matInput [value]="selectedLotDetails.formula" disabled>
+          </mat-form-field>
+        </div>
+        <mat-form-field appearance="outline" class="w-[500px]">
+          <mat-label>Material</mat-label>
+          <input matInput [value]="selectedLotDetails.material" disabled>
+        </mat-form-field>
+      </div>
     </form>
 
+    <div *ngIf="showErrorAlert"
+      class="relative bg-red-50 border border-red-200 text-sm text-red-800 rounded-lg p-4 mb-4 dark:bg-red-800/10 dark:border-red-900 dark:text-red-500"
+      role="alert" tabindex="-1" aria-labelledby="hs-with-list-label">
+      <button type="button"
+        class="absolute right-3 top-3 ms-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg focus:ring-2 focus:ring-red-400 p-1.5 hover:bg-red-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-gray-700"
+        (click)="closeError()">
+        <span class="sr-only">Close</span>
+        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+        </svg>
+      </button>
+      <div class="flex">
+        <div class="shrink-0">
+          <svg class="shrink-0 size-4 mt-0.5" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="m15 9-6 6"></path>
+            <path d="m9 9 6 6"></path>
+          </svg>
+        </div>
+        <div class="ml-2">
+          <h3 id="hs-with-list-label" class="text-sm font-semibold">
+            <p *ngIf="errorMessage">{{ errorMessage }}</p>
+          </h3>
+          <div class="mt-2 text-sm text-red-700 dark:text-red-400">
+            <ul class="list-disc space-y-1 pl-5" *ngIf="errorList.length > 0">
+              <li *ngFor="let error of errorList">{{ error }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="flex inline-flex justify-end gap-2">
-      <button mat-raised-button color="primary" disabled (click)="onEnviarInforme()">
+      <button mat-stroked-button [disabled]="informesForm.invalid" (click)="onVistaPreviaInforme()"
+        class="mat-focus-indicator mat-stroked-button mat-button-base">
+        <mat-icon class="text-xl mr-1" matSuffix>visibility</mat-icon>
+        Vista Previa
+      </button>
+      <button mat-raised-button color="primary" [disabled]="informesForm.invalid" (click)="onEnviarInforme()">
         <mat-icon class="text-xl mr-1" matSuffix>send</mat-icon>
         Enviar informe
       </button>
@@ -38,5 +104,7 @@
         Descargar
       </button>
     </div>
+
   </div>
+
 </div>
