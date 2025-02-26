@@ -14,6 +14,8 @@ import { AppComponent } from 'app/app.component';
 import { appRoutes } from 'app/app.routing';
 import { PromptsModule } from './modules/prompts/prompts.modules';
 import { CoreSharedModule } from './core/shared/shared.module';
+import { MaterialModule } from './material.module';
+import { MatMenuModule } from '@angular/material/menu';
 
 const routerConfig: ExtraOptions = {
     preloadingStrategy       : PreloadAllModules,
@@ -41,12 +43,12 @@ const routerConfig: ExtraOptions = {
         LayoutModule,
         PromptsModule,
         // 3rd party modules that require global configuration via forRoot
-        MarkdownModule.forRoot({})
+        MarkdownModule.forRoot({}),
+        MaterialModule,
+        MatMenuModule
     ],
     bootstrap   : [
         AppComponent
     ]
 })
-export class AppModule
-{
-}
+export class AppModule { }

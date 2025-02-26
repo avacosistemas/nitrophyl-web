@@ -111,9 +111,11 @@
             </div>
         </div>
 
-        <table mat-table [dataSource]="lotes" matSort id="informe-maquina-table"
-            (matSortChange)="ordenar($event.active, $event.direction === 'asc' ? true : false)"
-            class="border-2 rounded-2xl w-full mt-5">
+<div class="relative w-full">
+          <app-export-data tableId="tablaContenido"
+          (getAllData)="onGetAllData($event)"></app-export-data>
+          <table mat-table [dataSource]="lotes" matSort            (matSortChange)="ordenar($event.active, $event.direction === 'asc' ? true : false)"
+                class="border-2 rounded-2xl w-full mt-5" id="tablaContenido">
             <!-- Definir columnas -->
             <ng-container *ngFor="let columna of cabecerasDinamicas" [matColumnDef]="columna">
                 <ng-container *ngIf="columna !== '#'">
@@ -177,7 +179,7 @@
             <tr mat-header-row *matHeaderRowDef="cabecerasDinamicas"></tr>
             <tr mat-row *matRowDef="let row; columns: cabecerasDinamicas;"></tr>
         </table>
-
+        </div>
         <mat-paginator #paginator (page)="pageChanged($event)" [length]="totalRegistros" [pageSize]="50"
             [pageSizeOptions]="[5, 10, 20, 50, 100]" showFirstLastButtons>
         </mat-paginator>

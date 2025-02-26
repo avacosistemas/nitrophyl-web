@@ -10,16 +10,16 @@
                     [formGroup]="contactoFrom">
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Nombre</mat-label>
-                        <mat-icon svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+                        <mat-icon matPrefix svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
                         <input
-                            id="nombre"
-                            matInput
-                            [formControlName]="'nombre'"
-                            placeholder="Nombre">
+                          id="nombre"
+                          matInput
+                          [formControlName]="'nombre'"
+                          placeholder="Nombre">
                         <mat-error class="mb-1" *ngIf="contactoFrom.get('nombre').hasError('required')">
-                            El nombre es requerido
+                          El nombre es requerido
                         </mat-error>
-                    </mat-form-field>
+                      </mat-form-field>
                     <div class="w-full mb-3">
                         <mat-label class="ml-3">Tipo: </mat-label>
                         <mat-radio-group aria-label="Select an option" formControlName="tipo">
@@ -36,29 +36,30 @@
                         </mat-error>
                     </div>
                     <mat-form-field appearance="outline" class="w-full">
-                        <mat-icon svgIcon="heroicons_solid:mail" class="mr-3"></mat-icon>
-                        <mat-label>Nombre</mat-label>
+                        <mat-label>Email</mat-label>
+                        <mat-icon matPrefix svgIcon="heroicons_solid:mail" class="mr-3"></mat-icon>
                         <input
-                            id="email"
-                            matInput
-                            [formControlName]="'email'"
-                            placeholder="Mail">
+                          id="email"
+                          matInput
+                          [formControlName]="'email'"
+                          placeholder="Email">
                         <mat-error class="mb-1" *ngIf="contactoFrom.get('email').hasError('required')">
-                            El mail es requerido
+                          El email es requerido
                         </mat-error>
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="w-full">
-                        <mat-icon svgIcon="heroicons_solid:phone" class="mr-3"></mat-icon>
+                      </mat-form-field>
+                      
+                      <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Teléfono</mat-label>
+                        <mat-icon matPrefix svgIcon="heroicons_solid:phone" class="mr-3"></mat-icon>
                         <input
-                            id="telefono"
-                            matInput
-                            [formControlName]="'telefono'"
-                            placeholder="Teléfono">
+                          id="telefono"
+                          matInput
+                          [formControlName]="'telefono'"
+                          placeholder="Teléfono">
                         <mat-error class="mb-1" *ngIf="contactoFrom.get('telefono').hasError('required')">
-                            El teléfomo es requerido
+                          El teléfono es requerido
                         </mat-error>
-                    </mat-form-field>
+                      </mat-form-field>
                 </form>
             </div>
         </mat-tab>

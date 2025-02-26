@@ -96,4 +96,8 @@ export class ClientesService {
   public setMode(mode: string): void {
     this.mode = mode;
   }
+
+  getCorreoInforme(idCliente: number): Observable<any> {
+    return this.http.get<any>(`${environment.server}cliente/correoinforme/${idCliente}`);
+  }
 }

@@ -62,6 +62,8 @@ import {
 } from '@angular/core';
 
 import { LotModalComponent } from 'app/modules/abm/abm-lots/lot-modal/lot-modal.component';
+import { LotGraphicDialogComponent } from '../lot-graphic-dialog/lot-graphic-dialog.component';
+import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
 
 export interface Estado {
   idEstado: string;
@@ -89,6 +91,7 @@ export interface Estado {
   ],
 })
 export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild(ExportDataComponent) exportDataComponent: ExportDataComponent;
   @ViewChild('paginator', { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChildren('campoInput') inputs!: QueryList<ElementRef>;
@@ -548,6 +551,103 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.search();
   }
 
+  onGetAllData(event: { tipo: string; scope: string }): void {
+    if (event.scope === 'pagina') {
+      this.exportarPaginaActual(event.tipo);
+    } else if (event.scope === 'todo') {
+      this.cargarTodosLosDatosParaExportar(event.tipo);
+    }
+  }
+
+  exportarPaginaActual(tipo: string): void {
+    const formattedData = this.formatDataForExport(this.dataSource.data);
+    this.procesarExportacion(tipo, formattedData);
+  }
+
+  cargarTodosLosDatosParaExportar(tipo: string): void {
+
+    const dateT: string = this._dPipe.transform(
+      this.formFilter.controls['fechaDesde']?.value,
+      'dd/MM/yyyy'
+    );
+
+    const dateF: string = this._dPipe.transform(
+      this.formFilter.controls['fechaHasta']?.value,
+      'dd/MM/yyyy'
+    );
+
+    const estadoFind = this.estados.find(
+      value => value.value === this.formFilter.controls['estado']?.value
+    );
+
+    this.lotService
+      .getByFilter(
+        this.formFilter.controls['idFormula']?.value?.id || null,
+        this.formFilter.controls['nroLote']?.value || null,
+        dateT || null,
+        dateF || null,
+        estadoFind?.idEstado || null,
+        999999,
+        0,
+        this.sort.active ? this.sort.active : 'nroLote',
+        this.sort.direction === 'asc' ? true : false
+      )
+      .pipe(
+        map((res: ILotsResponse) => res.data)
+      )
+      .subscribe({
+        next: (value) => {
+          const formattedData = this.formatDataForExport(value);
+          this.procesarExportacion(tipo, formattedData);
+        },
+        error: (err) => {
+          console.error('Error al cargar datos para exportar', err);
+        }
+      });
+  }
+
+  procesarExportacion(tipo: string, data: any[]): void {
+    switch (tipo) {
+      case 'csv':
+        this.exportDataComponent.descargarCsv(data);
+        break;
+      case 'excel':
+        this.exportDataComponent.descargarExcel(data);
+        break;
+      case 'pdf':
+        this.exportDataComponent.descargarPdf(data);
+        break;
+      default:
+        console.warn('Tipo de exportación no soportado:', tipo);
+    }
+  }
+
+  formatDataForExport(data: ILot[]): any[] {
+    return data.map((item) => ({
+        'Estado': item['estado'],
+        'Nro Lote': item.nroLote,
+        'Formula': item.formula,
+        'Fecha': item.fecha,
+        'Observaciones': item.observaciones,
+        'Fecha Estado': item.fechaEstado,
+        'Observaciones Estado': item['observacionesEstado'],
+      }));
+  }
+
+  public openGraphicModal(lote: ILot): void {
+    const dialogRef = this.dialog.open(LotGraphicDialogComponent, {
+      width: '420px',
+      data: { lotId: lote.id, lotNroLote: lote.nroLote },
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.action === 'upload') {
+        this.forceSearch();
+      }
+    });
+  }
+
   private _filter(value: string): IFormula[] {
     const filterValue = value.toLowerCase();
     return this.formulas.filter((formula: IFormula) =>
@@ -675,6 +775,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       panelClass: `${css}-snackbar`,
     });
   }
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   @HostListener('window:scroll', ['$event'])
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

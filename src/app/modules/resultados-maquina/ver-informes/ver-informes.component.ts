@@ -20,6 +20,7 @@ import {
   IFormulasResponse,
 } from 'app/shared/models/formula.interface';
 import { FormulasService } from 'app/shared/services/formulas.service';
+import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
 
 @Component({
   selector: 'app-ver-informes',
@@ -27,6 +28,7 @@ import { FormulasService } from 'app/shared/services/formulas.service';
   styleUrls: ['./ver-informes.component.scss'],
 })
 export class VerInformesComponent implements OnInit, OnDestroy {
+  @ViewChild(ExportDataComponent) exportDataComponent: ExportDataComponent;
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild(MatSort) sort: MatSort;
 
@@ -169,17 +171,22 @@ export class VerInformesComponent implements OnInit, OnDestroy {
       .subscribe(
         (lotesResponse: LotePorMaquinaResponse) => {
           if (lotesResponse && lotesResponse.data) {
-            this.lotes = lotesResponse.data.page.map(lote => ({
+            const lotesProcesados = lotesResponse.data.page.map(lote => ({
               ...lote,
               resultadosCombinados: [],
             }));
+
+            this.lotes = lotesProcesados;
+            this.combinarResultados(this.lotes);
+
             this.totalRegistros = lotesResponse.data.totalReg;
             if (this.totalRegistros > 0) {
               this.machineService.setSubtitle(`Total: ${this.totalRegistros}`);
             } else {
               this.machineService.setSubtitle('');
             }
-            this.combinarResultados();
+
+
           } else {
             this.lotes = [];
             this.totalRegistros = 0;
@@ -231,8 +238,8 @@ export class VerInformesComponent implements OnInit, OnDestroy {
     this.cargarDatos(this.machineService.getSelectedMachine());
   }
 
-  combinarResultados(): void {
-    this.lotes.forEach((lote) => {
+  combinarResultados(lotes: LoteConResultadosCombinados[]): void {
+    lotes.forEach((lote) => {
       lote.resultadosCombinados = this.pruebas.map((prueba) => {
         const resultado = lote.resultados.find(
           r => r.idMaquinaPrueba === prueba.id
@@ -286,6 +293,114 @@ export class VerInformesComponent implements OnInit, OnDestroy {
   onEnter(event: KeyboardEvent): void {
     event.preventDefault();
     this.buscar();
+  }
+
+
+  onGetAllData(event: { tipo: string; scope: string }): void {
+    if (event.scope === 'pagina') {
+      this.exportarPaginaActual(event.tipo);
+    } else if (event.scope === 'todo') {
+      this.cargarTodosLosDatosParaExportar(event.tipo);
+    }
+  }
+
+  exportarPaginaActual(tipo: string): void {
+    const formattedData = this.formatDataForExport(this.lotes);
+    this.procesarExportacion(tipo, formattedData);
+  }
+
+  cargarTodosLosDatosParaExportar(tipo: string): void {
+    const maquina = this.machineService.getSelectedMachine();
+    if (!maquina) {
+      console.warn('No hay máquina seleccionada para exportar.');
+      return;
+    }
+
+    const idMaquinaSeleccionada = maquina.id;
+
+    const fechaDesde = this.form.get('fechaDesde').value
+      ? this.datePipe.transform(this.form.get('fechaDesde').value, 'dd/MM/yyyy')
+      : null;
+    const fechaHasta = this.form.get('fechaHasta').value
+      ? this.datePipe.transform(this.form.get('fechaHasta').value, 'dd/MM/yyyy')
+      : null;
+
+    const params = {
+      first: 1,
+      rows: 999999,
+      idMaquina: idMaquinaSeleccionada,
+      fechaDesde: fechaDesde,
+      fechaHasta: fechaHasta,
+      idFormula: null,
+      nroLote: this.form.get('nroLote').value,
+      estadoLote: this.form.get('estadoLote').value,
+      idx: this.ordenColumna,
+      asc: this.ordenAscendente,
+    };
+
+    const formulaSeleccionada = this.form.get('idFormula').value;
+    if (formulaSeleccionada && typeof formulaSeleccionada === 'object' && formulaSeleccionada.id) {
+      params.idFormula = formulaSeleccionada.id;
+    }
+
+    this.machinesService.getLotesPorMaquina(params)
+      .pipe(
+        map((lotesResponse: LotePorMaquinaResponse) => {
+          if (lotesResponse && lotesResponse.data) {
+            return lotesResponse.data.page.map(lote => ({
+              ...lote,
+              resultadosCombinados: [],
+            }));
+          } else {
+            return [];
+          }
+        }),
+        tap(lotes => this.combinarResultados(lotes))
+      )
+      .subscribe(
+        (lotes: LoteConResultadosCombinados[]) => {
+          const formattedData = this.formatDataForExport(lotes);
+          this.procesarExportacion(tipo, formattedData);
+        },
+        (error) => {
+          console.error('Error al cargar los datos para la exportación:', error);
+        }
+      );
+  }
+
+  procesarExportacion(tipo: string, data: any[]): void {
+    switch (tipo) {
+      case 'csv':
+        this.exportDataComponent.descargarCsv(data);
+        break;
+      case 'excel':
+        this.exportDataComponent.descargarExcel(data);
+        break;
+      case 'pdf':
+        this.exportDataComponent.descargarPdf(data);
+        break;
+      default:
+        console.warn('Tipo de exportación no soportado:', tipo);
+    }
+  }
+
+  formatDataForExport(data: any[]): any[] {
+    return data.map(item => {
+      const formattedItem: any = {
+        'Fecha': item.fecha,
+        'Formula': item.nombreFormula,
+        'Lote': item.nroLote,
+        'Observaciones': item.observaciones,
+        'Estado': item.estadoLote
+      };
+
+      this.pruebas.forEach(prueba => {
+        const resultado = item.resultadosCombinados.find((r: { id: number }) => r.id === prueba.id);
+        formattedItem[prueba.nombre] = resultado ? resultado.valor : '';
+      });
+
+      return formattedItem;
+    });
   }
 
   public displayFormulaFn(formula: IFormula | null): string {

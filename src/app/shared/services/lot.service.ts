@@ -10,7 +10,8 @@ import {
   ILot,
   ILotResponse,
   ILotsResponse,
-  ILotResponseAutocomplete
+  ILotResponseAutocomplete,
+  IInformeLoteResponse
 } from 'app/shared/models/lot.interface';
 import { IResponse } from '../models/response.interface';
 
@@ -133,6 +134,10 @@ export class LotService {
     return this.http.get<ILotResponseAutocomplete>(`${this._apiUrlLotes}/autocomplete`);
   }
 
+  getInformeLote(id: string): Observable<IInformeLoteResponse> {
+    return this.http.get<IInformeLoteResponse>(`${this._url}/${id}`);
+  }
+
   getLotesByNroLote(nroLote: string): Observable<ILotResponseAutocomplete> {
     const url = `${this._apiUrlLotes}/autocomplete?estados=APROBADO&estados=APROBADO_OBSERVADO&nroLote=${nroLote}`;
     return this.http.get<ILotResponseAutocomplete>(url);
@@ -153,20 +158,20 @@ export class LotService {
     );
   }
 
-  public getByFilterMonitor(formula: string, lot: string, fechaDesde: string, fechaHasta:string, rows, first, idx, asc): Observable<ILotsResponse> {
-    var url = this._url + "?asc="+ asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+  public getByFilterMonitor(formula: string, lot: string, fechaDesde: string, fechaHasta: string, rows, first, idx, asc): Observable<ILotsResponse> {
+    var url = this._url + "?asc=" + asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
 
     if (formula != null && formula != "") {
-      url = url + "&idFormula="+formula;
+      url = url + "&idFormula=" + formula;
     }
     if (lot != null && lot != "") {
-      url = url + "&nroLote="+lot;
+      url = url + "&nroLote=" + lot;
     }
     if (fechaDesde != null && fechaDesde != "") {
-      url = url + "&fechaDesde="+fechaDesde;
+      url = url + "&fechaDesde=" + fechaDesde;
     }
     if (fechaHasta != null && fechaHasta != "") {
-      url = url + "&fechaHasta="+fechaHasta;
+      url = url + "&fechaHasta=" + fechaHasta;
     }
 
     return this.http.get<ILotsResponse>(url);
@@ -194,4 +199,21 @@ export class LotService {
     return this.http.get<IResponse<number>>(url);
   }
 
+  enviarInformePorCorreo(idCliente: number, idLote: string): Observable<any> {
+    const params = new HttpParams()
+      .set('idCliente', idCliente)
+      .set('idLote', idLote);
+
+    const url = `${this._apiUrl}loteReporte/enviar`;
+    return this.http.get<any>(url, { params });
+  }
+
+  uploadGrafico(idLote: number, archivo: string): Observable<any> {
+    const url = `${this._url}/grafico`;
+    const body = {
+      idLote: idLote,
+      archivo: archivo
+    };
+    return this.http.post(url, body);
+  }
 }

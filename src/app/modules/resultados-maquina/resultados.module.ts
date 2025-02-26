@@ -18,6 +18,8 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSortModule } from '@angular/material/sort';
+import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { MaterialModule } from 'app/material.module';
 
 registerLocaleData(localeEs);
 
@@ -58,7 +60,9 @@ const resultadosRoutes: Route[] = [
     HeaderSharedModule,
     MatPaginatorModule,
     MatExpansionModule,
-    MatSortModule
+    MatSortModule,
+    PromptsModule,
+    MaterialModule
   ],
   providers: [
     DatePipe,
