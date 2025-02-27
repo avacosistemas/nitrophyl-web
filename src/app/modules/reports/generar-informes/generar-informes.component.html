@@ -6,7 +6,6 @@
         <mat-label>Cliente</mat-label>
         <input type="text" placeholder="Buscar cliente..." aria-label="Cliente" matInput
           [formControl]="clientFilterControl" [matAutocomplete]="autoCliente" #clientInput>
-        <mat-icon matPrefix>person_search</mat-icon>
         <button mat-icon-button matSuffix *ngIf="clientFilterControl.value"
           (click)="clearClientInput(); $event.stopPropagation()">
           <mat-icon>close</mat-icon>
@@ -23,7 +22,6 @@
         <mat-label>Lote</mat-label>
         <input matInput placeholder="Buscar lote..." [formControl]="lotFilterControl" [matAutocomplete]="autoLote"
           #lotInput>
-        <mat-icon matPrefix>find_in_page</mat-icon>
         <button mat-icon-button matSuffix *ngIf="lotFilterControl.value"
           (click)="clearLotInput(); $event.stopPropagation()">
           <mat-icon>close</mat-icon>
