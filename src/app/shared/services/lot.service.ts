@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpBackend, HttpParams } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, throwError, map } from 'rxjs';
 
 // * Environment.
 import { environment } from 'environments/environment';
@@ -215,5 +215,16 @@ export class LotService {
       archivo: archivo
     };
     return this.http.post(url, body);
+  }
+
+  downloadGrafico(idLote: number): Observable<string> {
+    const url = `${environment.server}lote/grafico?idLote=${idLote}`;
+    return this.http.get(url, { responseType: 'text' })
+      .pipe(
+        map((response: string) => {
+          const jsonResponse = JSON.parse(response);
+          return jsonResponse.data.archivo;
+        })
+      );
   }
 }

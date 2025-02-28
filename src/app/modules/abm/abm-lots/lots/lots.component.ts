@@ -64,6 +64,8 @@ import {
 import { LotModalComponent } from 'app/modules/abm/abm-lots/lot-modal/lot-modal.component';
 import { LotGraphicDialogComponent } from '../lot-graphic-dialog/lot-graphic-dialog.component';
 import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { saveAs } from 'file-saver';
 
 export interface Estado {
   idEstado: string;
@@ -107,7 +109,6 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public formulas: IFormula[];
 
-  // * Table.
   public displayedColumns: string[] = [
     'estado',
     'nroLote',
@@ -132,7 +133,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     { idEstado: 'APROBADO', value: 'Aprobado' },
     { idEstado: 'APROBADO_OBSERVADO', value: 'Aprobado con observaciones' },
   ];
-
+  exporting: boolean = false;
   private updateSubscription: Subscription;
 
   constructor(
@@ -147,6 +148,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private formBuilder: FormBuilder,
     private cdref: ChangeDetectorRef,
     private lotUpdateService: LotUpdateService,
+    private sanitizer: DomSanitizer
   ) {
     this.dateAdapter.setLocale('es');
   }
@@ -165,8 +167,6 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe((formulas: IFormula[]) => {
         this.formulas = formulas;
-
-        // Configurar autocomplete para el filtro
         this.formulas$ = this.formFilter.controls['idFormula'].valueChanges.pipe(
           startWith(''),
           map((value: string | IFormula) => {
@@ -321,7 +321,6 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       'dd/MM/yyyy'
     );
     if (strFechaAprobacion < strFechaCreacion) {
-      // || strFechaAprobacion == strFechaCreacion
       return false;
     }
     return true;
@@ -364,6 +363,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.lots$.subscribe({
       next: (value) => {
         this.dataSource = new MatTableDataSource<ILot>(value);
+        this.cdref.detectChanges();
       },
     });
 
@@ -470,10 +470,10 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
             this.lots$ = this.lotService
               .get()
               .pipe(map((res: ILotsResponse) => res.data));
-            this._snackBar(true, null);
+            this.openSnackBar(true, null);
             this.search();
           } else {
-            this._snackBar(false, response.error);
+            this.openSnackBar(false, response.error);
           }
         });
       }
@@ -580,6 +580,8 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       value => value.value === this.formFilter.controls['estado']?.value
     );
 
+    this.exporting = true;
+
     this.lotService
       .getByFilter(
         this.formFilter.controls['idFormula']?.value?.id || null,
@@ -599,9 +601,11 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         next: (value) => {
           const formattedData = this.formatDataForExport(value);
           this.procesarExportacion(tipo, formattedData);
+          this.exporting = false;
         },
         error: (err) => {
           console.error('Error al cargar datos para exportar', err);
+          this.exporting = false;
         }
       });
   }
@@ -624,14 +628,14 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   formatDataForExport(data: ILot[]): any[] {
     return data.map((item) => ({
-        'Estado': item['estado'],
-        'Nro Lote': item.nroLote,
-        'Formula': item.formula,
-        'Fecha': item.fecha,
-        'Observaciones': item.observaciones,
-        'Fecha Estado': item.fechaEstado,
-        'Observaciones Estado': item['observacionesEstado'],
-      }));
+      'Estado': item['estado'],
+      'Nro Lote': item.nroLote,
+      'Formula': item.formula,
+      'Fecha': item.fecha,
+      'Observaciones': item.observaciones,
+      'Fecha Estado': item.fechaEstado,
+      'Observaciones Estado': item['observacionesEstado'],
+    }));
   }
 
   public openGraphicModal(lote: ILot): void {
@@ -644,6 +648,38 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.action === 'upload') {
         this.forceSearch();
+      }
+    });
+  }
+
+  downloadGrafico(lot: ILot): void {
+    this.lotService.downloadGrafico(lot.id).subscribe({
+      next: (base64Data: string) => {
+        if (!base64Data) {
+          this.openSnackBar(false, 'Error al intentar descargar PDF, archivo no válido.');
+          return;
+        }
+
+        const byteCharacters = atob(base64Data);
+        const byteArrays = [];
+
+        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+          const slice = byteCharacters.slice(offset, offset + 512);
+          const byteNumbers = new Array(slice.length);
+          for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          byteArrays.push(byteArray);
+        }
+
+        const blob = new Blob(byteArrays, { type: 'application/pdf' });
+
+        saveAs(blob, `grafico_lote_${lot.id}.pdf`);
+      },
+      error: (error) => {
+        console.error('Error al descargar el gráfico:', error);
+        this.openSnackBar(false, 'Error al intentar descargar PDF.');
       }
     });
   }
@@ -663,12 +699,12 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.lotService.approve(id, body).subscribe({
       next: () => {
-        this._snackBar(true, null);
+        this.openSnackBar(true, null);
         this.search();
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false, null);
+        this.openSnackBar(false, null);
       },
     });
   }
@@ -678,12 +714,12 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.lotService.reject(id, observaciones, fecha).subscribe({
       next: () => {
-        this._snackBar(true, null);
+        this.openSnackBar(true, null);
         this.search();
       },
       error: (err: any) => {
         console.log(error, err);
-        this._snackBar(false, null);
+        this.openSnackBar(false, null);
       },
     });
   }
@@ -712,9 +748,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
                 observaciones: result.observation,
                 fecha: result.fecha,
               });
-              this._snackBar(true, null);
+              this.openSnackBar(true, null);
             } else {
-              this._snackBar(
+              this.openSnackBar(
                 false,
                 'La fecha de aprobación no puede ser anterior a la de creación del lote.'
               );
@@ -724,7 +760,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
             if (this.validarFechas(result.fecha, lote.fecha)) {
               this._reject(lote.id, result.observation, result.fecha);
             } else {
-              this._snackBar(
+              this.openSnackBar(
                 false,
                 'La fecha de rechazo no puede ser anterior a la de creación del lote.'
               );
@@ -763,16 +799,16 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private _snackBar(option: boolean, errorMsg: string): void {
-    const message: string = option
-      ? 'Cambios realizados correctamente.'
-      : errorMsg == null
-        ? 'No se han podido realizar los cambios.'
-        : errorMsg;
-    const css: string = option ? 'green' : 'red';
-    this.snackBar.open(message, 'X', {
-      duration: 5000,
-      panelClass: `${css}-snackbar`,
+  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
+    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
+    const defaultCss: string = option ? 'green' : 'red';
+    const snackBarMessage = message ? message : defaultMessage;
+    const snackBarCss = css ? css : defaultCss;
+    const snackBarDuration = duration ? duration : 5000;
+
+    this.snackBar.open(snackBarMessage, 'X', {
+      duration: snackBarDuration,
+      panelClass: `${snackBarCss}-snackbar`,
     });
   }
 

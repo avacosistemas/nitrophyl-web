@@ -6,39 +6,14 @@ import { MatMenuTrigger } from '@angular/material/menu';
 
 @Component({
   selector: 'app-export-data',
-  template: `
-<mat-icon [matMenuTriggerFor]="exportMenu" class="!absolute cursor-pointer hover:text-gray-100 mt-1 p-6 right-0 text-white top-0 z-99">cloud_download</mat-icon>
-
-<mat-menu #exportMenu="matMenu">
-    <ng-container *ngIf="!showAllOptions">
-        <button mat-menu-item (click)="exportar('csv', 'pagina')">CSV</button> <!-- scope: 'pagina' -->
-        <button mat-menu-item (click)="exportar('excel', 'pagina')">Excel</button> <!-- scope: 'pagina' -->
-        <button mat-menu-item (click)="exportar('pdf', 'pagina')">PDF</button> <!-- scope: 'pagina' -->
-    </ng-container>
-
-    <ng-container *ngIf="showAllOptions">
-        <button mat-menu-item [matMenuTriggerFor]="paginaActual">Página Actual</button>
-        <button mat-menu-item [matMenuTriggerFor]="todo">Todo</button>
-
-        <mat-menu #paginaActual="matMenu">
-            <button mat-menu-item (click)="exportar('csv', 'pagina')">CSV</button>
-            <button mat-menu-item (click)="exportar('excel', 'pagina')">Excel</button>
-            <button mat-menu-item (click)="exportar('pdf', 'pagina')">PDF</button>
-        </mat-menu>
-
-        <mat-menu #todo="matMenu">
-            <button mat-menu-item (click)="exportar('csv', 'todo')">CSV</button>
-            <button mat-menu-item (click)="exportar('excel', 'todo')">Excel</button>
-            <button mat-menu-item (click)="exportar('pdf', 'todo')">PDF</button>
-        </mat-menu>
-    </ng-container>
-</mat-menu>
-  `,
+  templateUrl: './export-data.component.html',
 })
+
 export class ExportDataComponent implements AfterViewInit {
   @Input() showAllOptions: boolean = true;
   @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;
   @Output() getAllData = new EventEmitter<{ tipo: string; scope: string }>();
+  @Input() exporting: boolean = false;
 
   constructor() { }
 
@@ -162,14 +137,14 @@ export class ExportDataComponent implements AfterViewInit {
 
     let html = '<table><thead><tr>';
     const headers = Object.keys(data[0]);
-    headers.forEach(header => {
+    headers.forEach((header) => {
       html += `<th>${this.escapeHtml(header)}</th>`;
     });
     html += '</tr></thead><tbody>';
 
-    data.forEach(item => {
+    data.forEach((item) => {
       html += '<tr>';
-      headers.forEach(header => {
+      headers.forEach((header) => {
         html += `<td>${this.escapeHtml(item[header])}</td>`;
       });
       html += '</tr>';
@@ -192,7 +167,7 @@ export class ExportDataComponent implements AfterViewInit {
     };
 
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+    return String(text).replace(/[&<>"']/g, function (m) { return map[m]; });
   }
 
   private getFileName(fileType: string): string {

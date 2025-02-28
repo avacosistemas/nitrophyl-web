@@ -23,7 +23,17 @@ export class LotGraphicDialogComponent {
     }
 
     onFileSelected(event: any): void {
-        this.selectedFile = event.target.files[0];
+        const file: File = event.target.files[0];
+
+        if (file && file.type === 'application/pdf') {
+            this.selectedFile = file;
+        } else {
+            this.selectedFile = null;
+            this.openSnackBar(false, 'Por favor, seleccione un archivo PDF.');
+
+            const input = event.target as HTMLInputElement;
+            input.value = '';
+        }
     }
 
     uploadFile(): void {
@@ -36,16 +46,12 @@ export class LotGraphicDialogComponent {
 
                 this.lotService.uploadGrafico(this.lotId, base64Content).subscribe({
                     next: (response) => {
-                        this.snackBar.open('Gráfico cargado correctamente', 'Cerrar', {
-                            duration: 3000,
-                        });
+                        this.openSnackBar(true, 'Gráfico cargado correctamente');
                         this.dialogRef.close({ action: 'upload' });
                     },
                     error: (error) => {
                         console.error('Error al cargar el gráfico', error);
-                        this.snackBar.open('Error al cargar el gráfico', 'Cerrar', {
-                            duration: 3000,
-                        });
+                        this.openSnackBar(false, 'Error al cargar el gráfico');
                     }
                 });
             };
@@ -55,5 +61,18 @@ export class LotGraphicDialogComponent {
 
     onNoClick(): void {
         this.dialogRef.close();
+    }
+
+    private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
+        const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
+        const defaultCss: string = option ? 'green' : 'red';
+        const snackBarMessage = message ? message : defaultMessage;
+        const snackBarCss = css ? css : defaultCss;
+        const snackBarDuration = duration ? duration : 5000;
+
+        this.snackBar.open(snackBarMessage, 'X', {
+            duration: snackBarDuration,
+            panelClass: `${snackBarCss}-snackbar`,
+        });
     }
 }

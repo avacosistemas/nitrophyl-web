@@ -1,0 +1,31 @@
+<div class="relative">
+    <mat-icon [matMenuTriggerFor]="exportMenu" *ngIf="!exporting"
+        class="!absolute cursor-pointer hover:text-gray-100 mt-1 p-6 right-0 text-white top-0 z-99">cloud_download</mat-icon>
+    <mat-spinner *ngIf="exporting" diameter="30"
+        class="!absolute cursor-pointer hover:text-gray-100 mt-3 mr-3 right-0 text-white top-0 z-99 blue-stroke-spinner"></mat-spinner>
+
+    <mat-menu #exportMenu="matMenu">
+        <ng-container *ngIf="!showAllOptions">
+            <button mat-menu-item (click)="exportar('csv', 'pagina')">CSV</button>
+            <button mat-menu-item (click)="exportar('excel', 'pagina')">Excel</button>
+            <button mat-menu-item (click)="exportar('pdf', 'pagina')">PDF</button>
+        </ng-container>
+
+        <ng-container *ngIf="showAllOptions">
+            <button mat-menu-item [matMenuTriggerFor]="paginaActual">Página Actual</button>
+            <button mat-menu-item [matMenuTriggerFor]="todo">Todo</button>
+
+            <mat-menu #paginaActual="matMenu">
+                <button mat-menu-item (click)="exportar('csv', 'pagina')">CSV</button>
+                <button mat-menu-item (click)="exportar('excel', 'pagina')">Excel</button>
+                <button mat-menu-item (click)="exportar('pdf', 'pagina')">PDF</button>
+            </mat-menu>
+
+            <mat-menu #todo="matMenu">
+                <button mat-menu-item (click)="exportar('csv', 'todo')">CSV</button>
+                <button mat-menu-item (click)="exportar('excel', 'todo')">Excel</button>
+                <button mat-menu-item (click)="exportar('pdf', 'todo')">PDF</button>
+            </mat-menu>
+        </ng-container>
+    </mat-menu>
+</div>

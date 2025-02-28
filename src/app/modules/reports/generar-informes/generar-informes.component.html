@@ -7,7 +7,7 @@
         <input type="text" placeholder="Buscar cliente..." aria-label="Cliente" matInput
           [formControl]="clientFilterControl" [matAutocomplete]="autoCliente" #clientInput>
         <button mat-icon-button matSuffix *ngIf="clientFilterControl.value"
-          (click)="clearClientInput(); $event.stopPropagation()">
+          (click)="clearClientInput(); $event.stopPropagation()" [disabled]="isSending">
           <mat-icon>close</mat-icon>
         </button>
         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="_displayClientName"
@@ -17,13 +17,13 @@
           </mat-option>
         </mat-autocomplete>
       </mat-form-field>
-
+    
       <mat-form-field appearance="outline" class="w-[500px]">
         <mat-label>Lote</mat-label>
         <input matInput placeholder="Buscar lote..." [formControl]="lotFilterControl" [matAutocomplete]="autoLote"
           #lotInput>
         <button mat-icon-button matSuffix *ngIf="lotFilterControl.value"
-          (click)="clearLotInput(); $event.stopPropagation()">
+          (click)="clearLotInput(); $event.stopPropagation()" [disabled]="isSending">
           <mat-icon>close</mat-icon>
         </button>
         <mat-autocomplete #autoLote="matAutocomplete" [displayWith]="_displayLotName"
@@ -76,7 +76,7 @@
         </div>
         <div class="ml-2">
           <h3 id="hs-with-list-label" class="text-sm font-semibold">
-            <p *ngIf="errorMessage">{{ errorMessage }}</p>
+            <p *ngIf="errorMessage" class="mr-2">{{ errorMessage }}</p>
           </h3>
           <div class="mt-2 text-sm text-red-700 dark:text-red-400">
             <ul class="list-disc space-y-1 pl-5" *ngIf="errorList.length > 0">
@@ -88,21 +88,21 @@
     </div>
 
     <div class="flex inline-flex justify-end gap-2">
-      <button mat-stroked-button [disabled]="informesForm.invalid" (click)="onVistaPreviaInforme()"
+      <button mat-stroked-button [disabled]="informesForm.invalid || isSending" (click)="onVistaPreviaInforme()"
         class="mat-focus-indicator mat-stroked-button mat-button-base">
         <mat-icon class="text-xl mr-1" matSuffix>visibility</mat-icon>
         Vista Previa
       </button>
-      <button mat-raised-button color="primary" [disabled]="informesForm.invalid" (click)="onEnviarInforme()">
+
+      <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+        [disabled]="informesForm.invalid || isSending" (click)="onEnviarInforme()">
         <mat-icon class="text-xl mr-1" matSuffix>send</mat-icon>
-        Enviar informe
-      </button>
-      <button mat-raised-button color="accent" [disabled]="informesForm.invalid" (click)="onDescargarInforme()">
-        <mat-icon class="text-xl mr-1" matSuffix>download</mat-icon>
-        Descargar
+        <span class="mat-button-wrapper">
+          <ng-container *ngIf="!isSending">Enviar informe</ng-container>
+          <ng-container *ngIf="isSending">Procesando...</ng-container>
+        </span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
       </button>
     </div>
-
   </div>
-
 </div>

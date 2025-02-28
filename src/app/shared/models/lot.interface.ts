@@ -10,6 +10,7 @@ export interface ILot {
   nroLote: string;
   revision: number;
   material?: string;
+  hasGrafico?: boolean;
 }
 
 export interface ILotAutocomplete {

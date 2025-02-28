@@ -11,7 +11,6 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { LotService } from 'app/shared/services/lot.service';
 import { debounceTime, startWith, map, switchMap, delay, tap, takeUntil } from 'rxjs/operators';
 import { Observable, of, Subject } from 'rxjs';
-import * as FileSaver from 'file-saver';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -39,7 +38,7 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   errorList: string[] = [];
   showErrorAlert: boolean = false;
   pdfPreviewUrl: SafeResourceUrl | null = null;
-
+  isSending: boolean = false;
   selectedLotDetails: IInformeLoteData | null = null;
 
   private destroy$ = new Subject<void>();
@@ -133,13 +132,38 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   onEnviarInforme(): void {
     if (this.informesForm.valid) {
       const { idCliente, idLote } = this.getSelectedValues();
-      const selectedClient = this.informesForm.get('selectedClient')?.value;
 
-      if (idCliente && idLote && selectedClient && selectedClient.email) {
-        const correo = selectedClient.email;
-        this.openConfirmationDialog(idCliente, idLote, correo);
+      if (idCliente && idLote) {
+        this.clientsService.getCorreoInforme(idCliente).subscribe({
+          next: (response) => {
+            if (response && response.data) {
+              const correo = response.data;
+
+              this.openConfirmationDialog(idCliente, idLote, correo);
+            } else {
+              this.errorMessage = 'Error: No se pudo obtener el correo electrónico del cliente';
+              this.showErrorAlert = true;
+              this.openSnackBar(false, 'Error: No se pudo obtener el correo electrónico del cliente', 'red');
+            }
+          },
+          error: (errorResponse: HttpErrorResponse) => {
+            console.error('Error al obtener el correo electrónico del cliente', errorResponse);
+
+            if (errorResponse.error && errorResponse.error.message) {
+              this.errorMessage = errorResponse.error.message;
+              this.showErrorAlert = true;
+              this.openSnackBar(false, errorResponse.error.message, 'red');
+            } else {
+              this.errorMessage = 'Error al obtener el correo electrónico del cliente';
+              this.showErrorAlert = true;
+              this.openSnackBar(false, 'Error al obtener el correo electrónico del cliente', 'red');
+            }
+          }
+        });
       } else {
-        this.openSnackBar(false, 'Error: No se pudo obtener el ID del cliente, del lote o el correo electrónico', 'red');
+        this.errorMessage = 'Error: No se pudo obtener el ID del cliente o del lote';
+        this.showErrorAlert = true;
+        this.openSnackBar(false, 'Error: No se pudo obtener el ID del cliente o del lote', 'red');
       }
     }
   }
@@ -161,8 +185,15 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   }
 
   sendEmail(idCliente: number, idLote: string): void {
+    this.isSending = true;
+    this.clientFilterControl.disable();
+    this.lotFilterControl.disable();
+
     this.lotService.enviarInformePorCorreo(idCliente, idLote).subscribe({
       next: (response: any) => {
+        this.isSending = false;
+        this.clientFilterControl.enable();
+        this.lotFilterControl.enable();
         if (response && response.status === 'ERROR') {
           this.handleApiError(response);
         } else {
@@ -174,53 +205,13 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
+        this.isSending = false;
+        this.clientFilterControl.enable();
+        this.lotFilterControl.enable();
         console.error('Error al enviar el informe', error);
         this.openSnackBar(false, 'Error al enviar el informe', 'red');
       }
     });
-  }
-
-  onDescargarInforme(): void {
-    if (this.informesForm.valid) {
-      const { idCliente, idLote } = this.getSelectedValues();
-
-      if (idCliente && idLote) {
-        this.lotService.getInformeCalidad(idCliente, idLote).subscribe({
-          next: (response) => {
-            if (response && response.data && response.data.archivo && response.data.nombre) {
-              const archivoBase64 = response.data.archivo;
-              const nombreArchivo = response.data.nombre;
-              const fileExtension = nombreArchivo.split('.').pop()?.toLowerCase();
-              const byteString = atob(archivoBase64);
-              const ab = new ArrayBuffer(byteString.length);
-              const ia = new Uint8Array(ab);
-
-              for (let i = 0; i < byteString.length; i++) {
-                ia[i] = byteString.charCodeAt(i);
-              }
-
-              const blob = new Blob([ab], {
-                type: fileExtension === 'pdf' ? 'application/pdf' : 'image/' + fileExtension,
-              });
-
-              FileSaver.saveAs(blob, nombreArchivo);
-              this.closeError();
-            } else {
-              this.errorMessage = 'Respuesta inesperada del servidor.';
-              this.errorList = [];
-              this.showErrorAlert = true;
-            }
-
-          },
-          error: (err: any) => {
-            console.error('Error al descargar el informe', err);
-            this.handleError(err);
-          },
-        });
-      } else {
-        this.openSnackBar(false,'Error: No se pudo obtener el ID del cliente o del lote', 'red');
-      }
-    }
   }
 
   onVistaPreviaInforme(): void {
@@ -236,8 +227,12 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
 
               this.dialog.open(PDFModalDialogComponent, {
                 maxWidth: '75%',
-                data: { src: archivoBase64, title: nombreArchivo },
-              });
+                data: {
+                    src: archivoBase64,
+                    title: nombreArchivo,
+                    showDownloadButton: true
+                },
+            });
 
               this.closeError();
             } else {
