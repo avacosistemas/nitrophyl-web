@@ -147,11 +147,9 @@ export class MonitorComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public ngOnInit(): void {
     const navigation = this._fuseNavigationService.getComponent<FuseVerticalNavigationComponent>('mainNavigation');
-	const header = this._fuseNavigationService.getComponent<ClassyLayoutComponent>('header-classy');
 
-    if (navigation) {
-      navigation.close();
-	  header.hideHeader();
+     if (navigation) {
+       navigation.close();
     }
     
     this.get();
