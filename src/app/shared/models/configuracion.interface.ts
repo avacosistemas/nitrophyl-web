@@ -13,6 +13,7 @@ export interface IConfiguracion {
   formula?: string;
   maquina?: string;
   idsPruebas?: number[];
+  enviarGrafico?: boolean;
 }
 
 export interface IConfiguracionesData {

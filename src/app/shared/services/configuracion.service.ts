@@ -51,6 +51,7 @@ export class ConfiguracionService {
     if (body.idFormula) params.push(`idFormula=${body.idFormula}`);
     if (body.idMaquina) params.push(`idMaquina=${body.idMaquina}`);
     if (body.mostrarCondiciones) params.push(`mostrarCondiciones=${body.mostrarCondiciones}`);
+    if (body.enviarGrafico) params.push(`enviarGrafico=${body.enviarGrafico}`);
     if (body.mostrarObservacionesParametro) params.push(`mostrarObservacionesParametro=${body.mostrarObservacionesParametro}`);
     if (body.mostrarParametros) params.push(`mostrarParametros=${body.mostrarParametros}`);
     if (body.mostrarResultados) params.push(`mostrarResultados=${body.mostrarResultados}`);

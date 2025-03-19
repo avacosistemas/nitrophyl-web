@@ -97,6 +97,11 @@
                                     Mostrar condiciones
                                 </mat-checkbox>
                             </section>
+                            <section>
+                                <mat-checkbox formControlName="enviarGrafico">
+                                    Enviar Grafico
+                                </mat-checkbox>
+                            </section>
                         </div>
                         <div class="row flex justify-end">
                             <button mat-flat-button=""
@@ -152,6 +157,12 @@
                     <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Mostrar parámetros </th>
                     <td mat-cell *matCellDef="let element" class="text-center"> {{ element.mostrarParametros === true ?
                         'Si' : 'No' }} </td>
+                </ng-container>
+                <ng-container matColumnDef="enviarGrafico">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Enviar grafico  </th>
+                    <td mat-cell *matCellDef="let element" class="text-center"> {{ element.enviarGrafico === true ?
+                        'Si' : 'No' }}
+                    </td>
                 </ng-container>
 
 

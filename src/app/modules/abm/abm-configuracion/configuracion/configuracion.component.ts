@@ -230,7 +230,8 @@ export class ConfiguracionComponent implements OnInit {
       mostrarParametros: new FormControl(false),
       mostrarObservacionesParametro: new FormControl({ value: false, disabled: true }),
       mostrarResultados: new FormControl({ value: false, disabled: true }),
-      mostrarCondiciones: new FormControl({ value: false, disabled: true })
+      mostrarCondiciones: new FormControl({ value: false, disabled: true }),
+      enviarGrafico: new FormControl({ value: false, disabled: false }),
     });
 
     this.onChanges();
@@ -317,6 +318,7 @@ export class ConfiguracionComponent implements OnInit {
       mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
       mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false,
       idsPruebas: selectedTests,
+      enviarGrafico: formValues.enviarGrafico
     };
 
     this.configuracionService.post(body).subscribe({
@@ -351,6 +353,7 @@ export class ConfiguracionComponent implements OnInit {
       mostrarResultados: formValues.mostrarParametros ? formValues.mostrarResultados : false,
       mostrarCondiciones: (formValues.mostrarParametros && formValues.mostrarResultados) ? formValues.mostrarCondiciones : false,
       idsPruebas: selectedTests,
+      enviarGrafico: formValues.enviarGrafico
     };
 
     this.configuracionService.put(body).subscribe({
@@ -433,6 +436,7 @@ export class ConfiguracionComponent implements OnInit {
         this.form.controls.mostrarObservacionesParametro.setValue(configuracion.mostrarObservacionesParametro);
         this.form.controls.mostrarResultados.setValue(configuracion.mostrarResultados);
         this.form.controls.mostrarParametros.setValue(configuracion.mostrarParametros);
+        this.form.controls.enviarGrafico.setValue(configuracion.enviarGrafico)
 
         this.configuracion$ = configuracion;
 

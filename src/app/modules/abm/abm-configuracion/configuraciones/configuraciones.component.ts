@@ -55,12 +55,14 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     'mostrarResultados',
     'mostrarObservacionesParametro',
     'mostrarParametros',
+    'enviarGrafico',
     'actions',
   ];
   public mostrarParametros: boolean = false;
   public mostrarResultados: boolean = false;
   public mostrarCondiciones: boolean = false;
   public mostrarObservaciones: boolean = false;
+  public enviarGrafico: boolean = false;
 
   public showSuccess: boolean = false;
   public showError: boolean = false;
@@ -94,7 +96,8 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       mostrarParametros: new FormControl(false),
       mostrarObservaciones: new FormControl(false),
       mostrarResultados: new FormControl(false),
-      mostrarCondiciones: new FormControl(false)
+      mostrarCondiciones: new FormControl(false),
+      enviarGrafico: new FormControl(false)
     });
   }
 
@@ -260,6 +263,7 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       mostrarObservacionesParametro: formValues.mostrarObservaciones,
       mostrarResultados: formValues.mostrarResultados,
       mostrarCondiciones: formValues.mostrarCondiciones,
+      enviarGrafico: formValues.enviarGrafico
     };
 
     this.configuracionService.get(body)
@@ -330,6 +334,7 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
         case 'formula': return this.compare(a.formula, b.formula, isAsc);
         case 'maquina': return this.compare(a.maquina, b.maquina, isAsc);
         case 'mostrarCondiciones': return this.compare(a.mostrarCondiciones, b.mostrarCondiciones, isAsc);
+        case 'enviarGrafico': return this.compare(a.enviarGrafico, b.enviarGrafico, isAsc);
         case 'mostrarResultados': return this.compare(a.mostrarResultados, b.mostrarResultados, isAsc);
         case 'mostrarObservacionesParametro': return this.compare(a.mostrarObservacionesParametro, b.mostrarObservacionesParametro, isAsc);
         case 'mostrarParametros': return this.compare(a.mostrarParametros, b.mostrarParametros, isAsc);
