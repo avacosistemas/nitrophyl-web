@@ -199,26 +199,32 @@ export class LotService {
     return this.http.get<IResponse<number>>(url);
   }
 
-  enviarInformePorCorreo(idCliente: number, idLote: string): Observable<any> {
-    const params = new HttpParams()
-      .set('idCliente', idCliente)
-      .set('idLote', idLote);
-
-    const url = `${this._apiUrl}loteReporte/enviar`;
-    return this.http.get<any>(url, { params });
-  }
-
-  uploadGrafico(idLote: number, archivo: string): Observable<any> {
-    const url = `${this._url}/grafico`;
+  enviarInformePorCorreo(idCliente: number, idLote: string, archivo: string | null = null, nombreArchivo: string = '', observaciones: string = ''): Observable<any> {
     const body = {
+      idCliente: idCliente,
       idLote: idLote,
+      nombreArchivo: nombreArchivo,
+      observaciones: observaciones,
       archivo: archivo
     };
-    return this.http.post(url, body);
+
+    const url = `${this._apiUrl}loteReporte/enviar`;
+    return this.http.post<any>(url, body);
+  }
+
+
+  uploadGrafico(payload: any): Observable<any> {
+    const url = `${environment.server}lote/grafico`;
+    return this.http.post(url, payload);
+  }
+
+  getGraficosLote(idLote: number): Observable<any> {
+    const url = `${this._url}/graficos?idLote=${idLote}`;
+    return this.http.get<any>(url);
   }
 
   downloadGrafico(idLote: number): Observable<string> {
-    const url = `${environment.server}lote/grafico?idLote=${idLote}`;
+    const url = `${environment.server}lote/grafico?idLoteGrafico=${idLote}`;
     return this.http.get(url, { responseType: 'text' })
       .pipe(
         map((response: string) => {
@@ -226,5 +232,9 @@ export class LotService {
           return jsonResponse.data.archivo;
         })
       );
+  }
+
+  public deleteGrafico(idGraficoprueba: number): Observable<ILotResponse> {
+    return this.http.delete<ILotResponse>(`${this._url}/graficos/${idGraficoprueba}`);
   }
 }

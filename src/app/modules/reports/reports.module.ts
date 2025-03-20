@@ -13,6 +13,8 @@ import { ReportsComponent } from './reports.component';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
+import { ConfirmSendEmailDialogComponent } from './confirm-send-email-dialog/confirm-send-email-dialog.component';
+import { MatSnackBarModule } from "@angular/material/snack-bar";
 
 const informesRoutes: Route[] = [
   {
@@ -20,7 +22,7 @@ const informesRoutes: Route[] = [
     component: ReportsComponent,
     children: [
       { path: '', redirectTo: 'generar-informes', pathMatch: 'full' },
-      { path: 'generar-informes', component: GenerarInformesComponent,  data: { subtitle: 'Generar Informe' } },
+      { path: 'generar-informes', component: GenerarInformesComponent, data: { subtitle: 'Generar Informe' } },
     ],
   },
 ];
@@ -29,7 +31,8 @@ const informesRoutes: Route[] = [
   declarations: [
     GenerarInformesComponent,
     ReportsComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    ConfirmSendEmailDialogComponent
   ],
   imports: [
     CommonModule,
@@ -43,10 +46,12 @@ const informesRoutes: Route[] = [
     MatAutocompleteModule,
     RouterModule.forChild(informesRoutes),
     HeaderSharedModule,
-    MatDialogModule
+    MatDialogModule,
+    MatSnackBarModule
   ],
   exports: [
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    ConfirmSendEmailDialogComponent
   ],
 })
 export class ReportsModule { }

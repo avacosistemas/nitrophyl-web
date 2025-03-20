@@ -1,0 +1,52 @@
+<div class="relative flex flex-col w-full h-full">
+    <div class="absolute top-0 right-0">
+        <button mat-icon-button (click)="onNoClick()">
+            <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x'"></mat-icon>
+        </button>
+    </div>
+    <h1 mat-dialog-title class="text-lg font-semibold mb-4">Enviar Informe al correo: <strong class="font-extrabold">{{email}}</strong></h1>
+
+    <form [formGroup]="graphicForm" class="flex flex-col">
+        <label for="file-upload" class="cursor-pointer mb-4 relative">
+            <div
+                class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
+                <div class="flex flex-col items-center justify-center">
+                    <mat-icon class="text-gray-500" svgIcon="heroicons_outline:upload" *ngIf="!selectedFile"
+                        style="font-size: 2rem;"></mat-icon>
+                    <span class="text-sm text-gray-600" *ngIf="!selectedFile">Seleccionar archivo PDF</span>
+                    <span class="text-sm text-green-500" *ngIf="selectedFile">{{ selectedFile?.name }}</span>
+                </div>
+                <input id="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept=".pdf">
+            </div>
+
+            <button *ngIf="selectedFile" type="button" mat-icon-button class="absolute top-2 right-2"
+                (click)="removeSelectedFile()">
+                <mat-icon>cancel</mat-icon>
+            </button>
+        </label>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Nombre del Archivo</mat-label>
+            <input matInput formControlName="nombreArchivo">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput formControlName="observaciones" rows="4"></textarea>
+        </mat-form-field>
+
+        <div class="flex shrink-0 justify-end items-center">
+            <button mat-stroked-button (click)="onNoClick()"
+                class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full mr-2 max-w-30">
+                <span class="mat-button-wrapper"> Cancelar </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+            </button>
+
+            <button mat-flat-button (click)="onEnviarInforme()"
+                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
+                <span class="mat-button-wrapper"> Enviar Informe </span>
+                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+            </button>
+        </div>
+    </form>
+</div>

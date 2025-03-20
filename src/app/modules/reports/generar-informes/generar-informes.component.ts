@@ -9,14 +9,14 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { LotService } from 'app/shared/services/lot.service';
-import { debounceTime, startWith, map, switchMap, delay, tap, takeUntil } from 'rxjs/operators';
+import { debounceTime, startWith, map, switchMap, delay, takeUntil } from 'rxjs/operators';
 import { Observable, of, Subject } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { HttpErrorResponse } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
-import { ConfirmDialogComponent } from '../confirm-dialog/confirm-dialog.component';
 import { IInformeLoteData } from 'app/shared/models/lot.interface';
+import { ConfirmSendEmailDialogComponent } from '../confirm-send-email-dialog/confirm-send-email-dialog.component';
 
 @Component({
   selector: 'app-generar-informes',
@@ -38,8 +38,9 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   errorList: string[] = [];
   showErrorAlert: boolean = false;
   pdfPreviewUrl: SafeResourceUrl | null = null;
-  isSending: boolean = false;
   selectedLotDetails: IInformeLoteData | null = null;
+
+  isSending: boolean = false;
 
   private destroy$ = new Subject<void>();
 
@@ -61,7 +62,6 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     this.filteredLots = this.lotFilterControl.valueChanges.pipe(
       debounceTime(300),
       startWith(''),
-      delay(0),
       switchMap((value) => {
         if (typeof value === 'string' && value.length > 0) {
           return this.lotService.getLotesByNroLote(value);
@@ -73,9 +73,9 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
         }
       }),
       map(response => response.data.map((lot: any) => ({
-          nombre: lot.nombre,
-          id: lot.codigo,
-        }))),
+        nombre: lot.nombre,
+        id: lot.codigo,
+      }))),
       takeUntil(this.destroy$)
     );
 
@@ -98,11 +98,15 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
           }));
           this.filteredClients = this.clientFilterControl.valueChanges.pipe(
             startWith(''),
-            delay(0),
-            map(value => this._filterClients(value || ''))
+            switchMap(value => this._filterClients(value || '')),
+            takeUntil(this.destroy$)
           );
         }
       },
+      error: (error) => {
+        console.error('Error al obtener los clientes', error);
+        this.openSnackBar(false, 'Error al obtener los clientes', 'red');
+      }
     });
   }
 
@@ -116,17 +120,43 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
           }));;
           this.filteredLots = this.lotFilterControl.valueChanges.pipe(
             startWith(''),
-            map(value => this._filterLots(value || ''))
+            switchMap(value => this._filterLots(value || '')),
+            takeUntil(this.destroy$)
           );
         }
       },
       error: (error) => {
         console.error('Error al obtener los lotes', error);
-      },
+        this.openSnackBar(false, 'Error al obtener los lotes', 'red');
+      }
     });
   }
 
   onSubmit(): void {
+  }
+
+  openConfirmSendEmailDialog(idCliente: number, idLote: string, email: string): void {
+    this.isSending = true;
+    const dialogRef = this.dialog.open(ConfirmSendEmailDialogComponent, {
+      width: '600px',
+      data: { idCliente: idCliente, idLote: idLote, email: email }
+    });
+
+    dialogRef.beforeClosed().subscribe(() => {
+      this.isSending = false;
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.isSending = false;
+
+      if (result && result.result === 'success') {
+        this.clearClientInput();
+        this.clearLotInput();
+        this.informesForm.reset();
+        this.informesForm.markAsPristine();
+        this.openSnackBar(true, 'Informe enviado correctamente', 'green');
+      }
+    });
   }
 
   onEnviarInforme(): void {
@@ -138,8 +168,7 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
           next: (response) => {
             if (response && response.data) {
               const correo = response.data;
-
-              this.openConfirmationDialog(idCliente, idLote, correo);
+              this.openConfirmSendEmailDialog(idCliente, idLote, correo);
             } else {
               this.errorMessage = 'Error: No se pudo obtener el correo electrónico del cliente';
               this.showErrorAlert = true;
@@ -168,52 +197,6 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     }
   }
 
-  openConfirmationDialog(idCliente: number, idLote: string, correo: string): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '500px',
-      data: {
-        title: 'Confirmar envío de informe',
-        message: `¿Está seguro de que desea enviar el informe al correo electrónico: <b>${correo}</b>?`,
-      },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'confirm') {
-        this.sendEmail(idCliente, idLote);
-      }
-    });
-  }
-
-  sendEmail(idCliente: number, idLote: string): void {
-    this.isSending = true;
-    this.clientFilterControl.disable();
-    this.lotFilterControl.disable();
-
-    this.lotService.enviarInformePorCorreo(idCliente, idLote).subscribe({
-      next: (response: any) => {
-        this.isSending = false;
-        this.clientFilterControl.enable();
-        this.lotFilterControl.enable();
-        if (response && response.status === 'ERROR') {
-          this.handleApiError(response);
-        } else {
-          this.clearClientInput();
-          this.clearLotInput();
-          this.informesForm.reset();
-          this.informesForm.markAsPristine();
-          this.openSnackBar(true, 'Informe enviado correctamente', 'green');
-        }
-      },
-      error: (error) => {
-        this.isSending = false;
-        this.clientFilterControl.enable();
-        this.lotFilterControl.enable();
-        console.error('Error al enviar el informe', error);
-        this.openSnackBar(false, 'Error al enviar el informe', 'red');
-      }
-    });
-  }
-
   onVistaPreviaInforme(): void {
     if (this.informesForm.valid) {
       const { idCliente, idLote } = this.getSelectedValues();
@@ -228,11 +211,11 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
               this.dialog.open(PDFModalDialogComponent, {
                 maxWidth: '75%',
                 data: {
-                    src: archivoBase64,
-                    title: nombreArchivo,
-                    showDownloadButton: true
+                  src: archivoBase64,
+                  title: nombreArchivo,
+                  showDownloadButton: true
                 },
-            });
+              });
 
               this.closeError();
             } else {
@@ -345,19 +328,19 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     }
   }
 
-  private _filterLots(value: string): { nombre: string; id: string }[] {
+  private _filterLots(value: string): Observable<{ nombre: string; id: string }[]> {
     const filterValue = this._normalizeValue(value);
-    return this.lot.filter(lote =>
+    return of(this.lot.filter(lote =>
       this._normalizeValue(lote.nombre).includes(filterValue)
-    );
+    ));
   }
 
   private _filterClients(
     value: string | { id: number; nombre: string; email: string }
-  ): { id: number; nombre: string; email: string }[] {
+  ): Observable<{ id: number; nombre: string; email: string }[]> {
     const filterValue = this._normalizeValue(value);
 
-    return this.clients.filter((client) => {
+    return of(this.clients.filter((client) => {
       if (typeof value === 'object' && value !== null) {
         return this._normalizeValue(client.nombre).includes(
           this._normalizeValue(value.nombre)
@@ -365,7 +348,7 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
       } else {
         return this._normalizeValue(client.nombre).includes(filterValue);
       }
-    });
+    }));
   }
 
   private getSelectedValues(): { idCliente: number | null; idLote: string | null } {

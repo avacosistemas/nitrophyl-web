@@ -25,6 +25,8 @@ import { ABMMoldeService } from '../abm-moldes-service';
 import * as FileSaver from 'file-saver';
 import { ABMMoldesModalComponent } from '../modal/abm-moldes-modal.component';
 import { ClientesService } from 'app/shared/services/clientes.service';
+import { Observacion } from 'app/shared/models/observacion.model';
+import { AuthService } from 'app/core/auth/auth.service';
 
 @Component({
   selector: 'abm-moldes-molde',
@@ -38,6 +40,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   moldeForm: FormGroup;
   bocaForm: FormGroup;
   dimensionForm: FormGroup;
+  observacionForm: FormGroup;
   displayedColumnsBocas: string[] = [
     'boca',
     'estado',
@@ -59,6 +62,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     'fecha',
     'acciones',
   ];
+
+  displayedColumnsObservaciones: string[] = ['observacion', 'fecha', 'usuario'];
+  observaciones: Array<Observacion> = []; 
+  pristineObservaciones: boolean = true;
+
   planos: Array<Planos> = [];
   fotos: Array<Fotos> = [];
   bocas: Array<Boca> = [];
@@ -92,13 +100,14 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     private _clients: ClientesService,
     private _formBuilder: FormBuilder,
     private ABMoldesService: ABMMoldeService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private _authService: AuthService
   ) {
     this.moldeForm = this._formBuilder.group({
       codigo: [null, [Validators.required, Validators.maxLength(30)]],
       estado: [null, [Validators.required]],
       nombre: [null, [Validators.required, Validators.maxLength(100)]],
-      observaciones: [null],
+      observacion: [null, [Validators.required]],
       ubicacion: [null],
       client: [null, [Validators.required]],
     });
@@ -110,6 +119,9 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this.dimensionForm = this._formBuilder.group({
       dimension: [null, [Validators.required]],
       valor: [null, [Validators.required]],
+    });
+    this.observacionForm = this._formBuilder.group({
+      observacion: [null, [Validators.required]],
     });
     this.clientForm = this._formBuilder.group({
       client: [null, [Validators.required]],
@@ -137,7 +149,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       top.scrollIntoView();
       top = null;
     }
-    // Obtiene la lista de clientes a asociar con el molde.
     this._clients
       .getClientes()
       .subscribe((res: any) => (this.clients$ = res.data));
@@ -170,6 +181,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         // 5 - Clients.
         this.ABMoldesService.viewEvents.next('Guardar Clientes');
         break;
+      case 6:
+        // 6 - Observaciones
+        this.ABMoldesService.viewEvents.next('Guardar Observaciones');
+        break;
     }
   }
 
@@ -178,7 +193,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.moldeForm.pristine == true &&
       this.pristineBocas &&
       this.pristineDimensiones &&
-      this.pristineClient
+      this.pristineClient &&
+      this.pristineObservaciones
     ) {
       this.router.navigate(['/moldes/grid']);
     } else {
@@ -211,8 +227,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       case 4:
         this.uploadFoto();
         break;
-      case 5: // Guarda la lista de clientes.
+      case 5:
         this.setClients();
+        break;
+      case 6:
+        this.addObservacion();
         break;
     }
   }
@@ -306,6 +325,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.moldeForm.disable();
       this.bocaGridForm.disable();
       this.clientForm.disable();
+      this.observacionForm.disable();
     }
     this.currentId = this.activatedRoute.snapshot.params['id'];
     this._molds.getMoldeById(this.currentId).subscribe((d) => {
@@ -342,10 +362,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.fotos = d.data;
     });
 
-    // Obtiene la lista de clientes asociados al molde.
     this._molds
       .getClients(this.currentId)
       .subscribe((res: any) => (this.clients = res.data));
+
+    this.getObservaciones();
 
     this.ABMoldesService.viewEvents.next('Guardar Molde');
   }
@@ -620,6 +641,43 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         );
       },
       complete: () => {},
+    });
+  }
+
+  addObservacion() {
+    if (this.observacionForm.invalid) {
+      return;
+    }
+
+    this.pristineObservaciones = false;
+    const observacionText = this.observacionForm.get('observacion').value;
+    const newObservacion: Observacion = {
+      idMolde: this.currentId,
+      observacion: observacionText,
+    };
+
+    this._molds.postObservacion(newObservacion).subscribe({
+      next: (response) => {
+        this.openSnackBar('Observación agregada correctamente', 'X', 'green-snackbar');
+        this.observacionForm.reset();
+        this.getObservaciones();
+      },
+      error: (error) => {
+        this.openSnackBar('Error al agregar la observación', 'X', 'red-snackbar');
+        console.error('Error al agregar la observación:', error);
+      },
+    });
+  }
+
+  getObservaciones() {
+    this._molds.getObservaciones(this.currentId).subscribe({
+      next: (response: any) => {
+        this.observaciones = response.data;
+      },
+      error: (error) => {
+        this.openSnackBar('Error al obtener las observaciones', 'X', 'red-snackbar');
+        console.error('Error al obtener las observaciones:', error);
+      },
     });
   }
 }

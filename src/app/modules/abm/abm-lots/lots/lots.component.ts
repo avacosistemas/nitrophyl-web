@@ -640,7 +640,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public openGraphicModal(lote: ILot): void {
     const dialogRef = this.dialog.open(LotGraphicDialogComponent, {
-      width: '420px',
+      width: '840px',
       data: { lotId: lote.id, lotNroLote: lote.nroLote },
       autoFocus: false,
     });
@@ -648,38 +648,6 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.action === 'upload') {
         this.forceSearch();
-      }
-    });
-  }
-
-  downloadGrafico(lot: ILot): void {
-    this.lotService.downloadGrafico(lot.id).subscribe({
-      next: (base64Data: string) => {
-        if (!base64Data) {
-          this.openSnackBar(false, 'Error al intentar descargar PDF, archivo no válido.');
-          return;
-        }
-
-        const byteCharacters = atob(base64Data);
-        const byteArrays = [];
-
-        for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-          const slice = byteCharacters.slice(offset, offset + 512);
-          const byteNumbers = new Array(slice.length);
-          for (let i = 0; i < slice.length; i++) {
-            byteNumbers[i] = slice.charCodeAt(i);
-          }
-          const byteArray = new Uint8Array(byteNumbers);
-          byteArrays.push(byteArray);
-        }
-
-        const blob = new Blob(byteArrays, { type: 'application/pdf' });
-
-        saveAs(blob, `grafico_lote_${lot.id}.pdf`);
-      },
-      error: (error) => {
-        console.error('Error al descargar el gráfico:', error);
-        this.openSnackBar(false, 'Error al intentar descargar PDF.');
       }
     });
   }

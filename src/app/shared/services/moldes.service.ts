@@ -11,7 +11,7 @@ import {
   ResponseBoca,
   ResponseDimension,
 } from '../models/molde.model';
-import { Perfil } from '../models/perfil.model';
+import { Observacion } from '../models/observacion.model';
 
 @Injectable({
   providedIn: 'root',
@@ -128,5 +128,13 @@ export class MoldesService {
 
   public putClient(id: number, body: any): Observable<any> {
     return this.http.put<any>(`${this.url}molde/clientes/${id}`, body);
+  }
+
+  public postObservacion(observacion: Observacion): Observable<any> {
+    return this.http.post<any>(`${this.url}molde/observacion/`, observacion);
+  }
+
+  public getObservaciones(idMolde: number): Observable<any> {
+    return this.http.get<any>(`${this.url}molde/observacion/${idMolde}`);
   }
 }

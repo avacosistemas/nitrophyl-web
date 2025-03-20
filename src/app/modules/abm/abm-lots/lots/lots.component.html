@@ -175,9 +175,6 @@
                 <mat-icon>image</mat-icon>
               </button>
             </ng-container>
-            <button *ngIf="lot.hasGrafico" (click)="downloadGrafico(lot)" matTooltip="Descargar Gráfico">
-              <mat-icon>download</mat-icon>
-            </button>
             <ng-container *ngIf="lot.estado === 'PENDIENTE_APROBACION'">
               <button (click)="set(lot, 'APPROVE')">
                 <mat-icon>done</mat-icon>

@@ -35,7 +35,6 @@
             </mat-error>
           </mat-form-field>
 
-
           <mat-form-field class="w-full" appearance="outline">
             <mat-label> Propietario </mat-label>
             <mat-select formControlName="client" placeholder="Propietario">
@@ -55,16 +54,12 @@
             <input id="location" matInput [formControlName]="'ubicacion'" placeholder="Ubicación">
           </mat-form-field>
 
-
-
-
-
         </form>
       </div>
     </mat-tab>
     <mat-tab label="Bocas">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div class="flex justify-around" [formGroup]="bocaForm" *ngIf="mode === 'Edit'">
+        <div class="flex justify-around" [formGroup]="bocaForm">
           <mat-form-field class="min-w-[25%]" appearance="outline">
             <mat-label>Número de Boca </mat-label>
             <input id="boca" matInput placeholder="Número de Boca" formControlName="boca">
@@ -116,7 +111,7 @@
             <ng-container matColumnDef="acciones">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row" class="text-right">
-                <button *ngIf="mode === 'Edit'">
+                <button>
                   <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="deleteBoca(row)">
                   </mat-icon>
                 </button>
@@ -130,7 +125,7 @@
     </mat-tab>
     <mat-tab label="Dimensiones">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div class="flex justify-around" [formGroup]="dimensionForm" *ngIf="mode === 'Edit'">
+        <div class="flex justify-around" [formGroup]="dimensionForm">
           <mat-form-field class="min-w-[25%]" appearance="outline">
             <mat-label>Dimensión </mat-label>
             <mat-select id="dimension" placeholder="Dimensión" formControlName="dimension">
@@ -154,13 +149,15 @@
             <ng-container matColumnDef="valor">
               <th mat-header-cell *matHeaderCellDef> Valor en mm </th>
               <td mat-cell *matCellDef="let element">
-                <input type="number" matInput [(ngModel)]="element.valor" [disabled]="mode === 'View'">
+                <mat-form-field class="h-1 w-full">
+                  <input type="number" matInput [(ngModel)]="element.valor" [disabled]="mode === 'View'">
+                </mat-form-field>
               </td>
             </ng-container>
             <ng-container matColumnDef="acciones">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row" class="text-right">
-                <button *ngIf="mode === 'Edit'">
+                <button>
                   <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="deleteDimension(row)">
                   </mat-icon>
                 </button>
@@ -221,16 +218,16 @@
             <td mat-cell *matCellDef="let element"> {{element.descripcion}} </td>
           </ng-container>
           <ng-container matColumnDef="version">
-            <th mat-header-cell *matHeaderCellDef> Versión </th>
-            <td mat-cell *matCellDef="let element"> {{element.version}} </td>
+            <th mat-header-cell *matHeaderCellDef class="w-16"> Revisión </th>
+            <td mat-cell *matCellDef="let element" class="w-16"> {{element.version}} </td>
           </ng-container>
           <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef> Fecha </th>
-            <td mat-cell *matCellDef="let element"> {{element.fecha}} </td>
+            <th mat-header-cell *matHeaderCellDef class="w-22"> Fecha </th>
+            <td mat-cell *matCellDef="let element" class="w-22"> {{element.fecha}} </td>
           </ng-container>
           <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let row" class="text-right">
+            <th mat-header-cell *matHeaderCellDef class="w-10"></th>
+            <td mat-cell *matCellDef="let row" class="w-10 text-right flex flex-col">
               <button>
                 <mat-icon svgIcon="heroicons_outline:eye" matTooltip="Ver" (click)="openFoto(row)">
                 </mat-icon>
@@ -248,9 +245,7 @@
     </mat-tab>
     <mat-tab label="Clientes">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <mat-accordion *ngIf="mode === 'Edit'">
-
-
+        <mat-accordion>
           <form class="form-client" [formGroup]="clientForm">
             <mat-form-field class="w-full" appearance="outline">
               <mat-label>Cliente </mat-label>
@@ -265,10 +260,8 @@
               mat-flat-button (click)="addClient()">
               <span class="mat-button-wrapper"> Agregar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
-              
             </button>
           </form>
-
         </mat-accordion>
 
         <table mat-table [dataSource]="clients" class="border-2 rounded-2xl w-full mt-4">
@@ -283,7 +276,7 @@
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let row" class="text-right">
-              <button *ngIf="mode === 'Edit'">
+              <button>
                 <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar" (click)="deleteClient(row)"></mat-icon>
               </button>
             </td>
@@ -291,6 +284,42 @@
           <tr mat-header-row *matHeaderRowDef="displayedColumnsClients"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumnsClients;"></tr>
         </table>
+      </div>
+    </mat-tab>
+    <mat-tab label="Observaciones">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <div class="flex justify-around gap-2 items-baseline mb-4" [formGroup]="observacionForm">
+          <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Observación</mat-label>
+            <input id="observacion" matInput placeholder="Ingrese una observación" formControlName="observacion">
+            <mat-error *ngIf="observacionForm.get('observacion').hasError('required')">
+              La observación es requerida.
+            </mat-error>
+          </mat-form-field>
+          <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+            mat-flat-button (click)="addObservacion()" [disabled]="!observacionForm.get('observacion').value">
+            <span class="mat-button-wrapper"> Agregar </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+          </button>
+        </div>
+        <div>
+          <table mat-table [dataSource]="observaciones" class="border-2 rounded-2xl w-full">
+            <ng-container matColumnDef="observacion">
+              <th mat-header-cell *matHeaderCellDef> Observación </th>
+              <td mat-cell *matCellDef="let element"> {{element.observacion}} </td>
+            </ng-container>
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef> Fecha </th>
+              <td mat-cell *matCellDef="let element"> {{element.fecha | date}} </td>
+            </ng-container>
+            <ng-container matColumnDef="usuario">
+              <th mat-header-cell *matHeaderCellDef> Usuario </th>
+              <td mat-cell *matCellDef="let element"> {{element.usuario}} </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsObservaciones"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsObservaciones;"></tr>
+          </table>
+        </div>
       </div>
     </mat-tab>
   </mat-tab-group>
