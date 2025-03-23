@@ -25,8 +25,8 @@
           </mat-form-field>
 
           <mat-form-field class="w-full" appearance="outline">
-            <mat-label> Descripción </mat-label>
-            <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Descripción">
+            <mat-label> Nombre </mat-label>
+            <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Nombre">
             <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
               El nombre es requerido
             </mat-error>
@@ -59,12 +59,12 @@
     </mat-tab>
     <mat-tab label="Bocas">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div class="flex justify-around" [formGroup]="bocaForm">
-          <mat-form-field class="min-w-[25%]" appearance="outline">
+        <div class="flex justify-around gap-3" [formGroup]="bocaForm" *ngIf="mode === 'Edit'">
+          <mat-form-field class="w-full" appearance="outline">
             <mat-label>Número de Boca </mat-label>
             <input id="boca" matInput placeholder="Número de Boca" formControlName="boca">
           </mat-form-field>
-          <mat-form-field class="min-w-[25%]" appearance="outline">
+          <mat-form-field class="w-full" appearance="outline">
             <mat-label>Estado </mat-label>
             <mat-select id="estado" placeholder="Estado" formControlName="estado">
               <mat-option [value]='"ACTIVO"'>Activa</mat-option>
@@ -72,51 +72,62 @@
               <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
             </mat-select>
           </mat-form-field>
-          <mat-form-field class="min-w-[25%]" appearance="outline">
+          <mat-form-field class="w-full" appearance="outline">
             <mat-label>Descripción </mat-label>
             <input id="descripcion" matInput placeholder="Descripción" formControlName="descripcion">
             <mat-error class="mb-1" *ngIf="bocaForm.get('descripcion').hasError('maxlength')">
               Máximo 100 caracteres
             </mat-error>
           </mat-form-field>
-          <button mat-flat-button color="primary" (click)="addBoca()">Agregar</button>
+          <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3 px-10"
+            mat-flat-button (click)="addBoca()"
+            [disabled]="!bocaForm.get('boca').value || !bocaForm.get('estado').value === -1">
+            <span class="mat-button-wrapper"> Agregar </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+          </button>
         </div>
         <div>
-          <table mat-table [dataSource]="bocas" class="border-2 rounded-2xl w-full" [formGroup]="bocaGridForm">
+          <table mat-table [dataSource]="bocas" class="border-2 rounded-2xl w-full">
             <ng-container matColumnDef="boca">
               <th mat-header-cell *matHeaderCellDef> Boca </th>
               <td mat-cell *matCellDef="let element"> {{element.nroBoca}} </td>
             </ng-container>
+
             <ng-container matColumnDef="estado">
               <th mat-header-cell *matHeaderCellDef> Estado </th>
               <td mat-cell *matCellDef="let element">
-                <mat-select [(value)]="element.estado" class="border-2 rounded align-middle h-full p-2"
-                  [disabled]="mode === 'View'">
-                  <mat-option [value]='"ACTIVO"'>Activa</mat-option>
-                  <mat-option [value]='"INACTIVO"'>Inactiva</mat-option>
-                  <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
-                </mat-select>
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="descripcion">
-              <th mat-header-cell *matHeaderCellDef> Descripcion </th>
-              <!-- <td mat-cell *matCellDef="let element"> {{element.descripcion}} </td> -->
-              <td mat-cell *matCellDef="let element">
                 <mat-form-field class="h-1 w-full">
-                  <input matInput placeholder="Descripcion"
-                    [formControlName]="'control-' + element.nroBoca + '-' + element.descripcion" class="w-full">
+                  <mat-select [value]="element.estado" [disabled]="mode === 'View'"
+                    (selectionChange)="onStateChange(element, $event.value)">
+                    <mat-option value="ACTIVO">Activa</mat-option>
+                    <mat-option value="INACTIVO">Inactiva</mat-option>
+                    <mat-option value="REPARACION">En Reparación</mat-option>
+                  </mat-select>
                 </mat-form-field>
               </td>
             </ng-container>
+
+            <ng-container matColumnDef="descripcion">
+              <th mat-header-cell *matHeaderCellDef> Descripcion </th>
+              <td mat-cell *matCellDef="let element">
+                <mat-form-field class="h-1 w-full">
+                  <input matInput placeholder="Descripcion" [value]="element.descripcion"
+                    (input)="onDescriptionInput(element, $any($event.target).value)" class="w-full"
+                    [disabled]="mode === 'View'">
+                </mat-form-field>
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="acciones">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let row" class="text-right">
-                <button>
+              <th mat-header-cell *matHeaderCellDef class="text-right w-8"></th>
+              <td mat-cell *matCellDef="let row" class="text-right  w-8">
+                <button *ngIf="mode === 'Edit'">
                   <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="deleteBoca(row)">
                   </mat-icon>
                 </button>
               </td>
             </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumnsBocas"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumnsBocas;"></tr>
           </table>
@@ -125,7 +136,7 @@
     </mat-tab>
     <mat-tab label="Dimensiones">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div class="flex justify-around" [formGroup]="dimensionForm">
+        <div class="flex justify-center gap-3" [formGroup]="dimensionForm" *ngIf="mode === 'Edit'">
           <mat-form-field class="min-w-[25%]" appearance="outline">
             <mat-label>Dimensión </mat-label>
             <mat-select id="dimension" placeholder="Dimensión" formControlName="dimension">
@@ -135,10 +146,15 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field class="min-w-[25%]" appearance="outline">
-            <mat-label>Valor en mm </mat-label>
+            <mat-label>Valor en MM </mat-label>
             <input id="valor" matInput placeholder="Valor en mm" formControlName="valor">
           </mat-form-field>
-          <button mat-flat-button color="primary" (click)="addDimension()">Agregar</button>
+          <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
+            mat-flat-button (click)="addDimension()"
+            [disabled]="!dimensionForm.get('valor').value || !dimensionForm.get('dimension').value">
+            <span class="mat-button-wrapper"> Agregar </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+          </button>
         </div>
         <div>
           <table mat-table [dataSource]="dimensiones" class="border-2 rounded-2xl w-full">
@@ -150,14 +166,15 @@
               <th mat-header-cell *matHeaderCellDef> Valor en mm </th>
               <td mat-cell *matCellDef="let element">
                 <mat-form-field class="h-1 w-full">
-                  <input type="number" matInput [(ngModel)]="element.valor" [disabled]="mode === 'View'">
+                  <input type="number" matInput [disabled]="mode === 'View'" [value]="element.valor"
+                    (input)="onDimensionValueChanged(element, $any($event.target).value)">
                 </mat-form-field>
               </td>
             </ng-container>
             <ng-container matColumnDef="acciones">
               <th mat-header-cell *matHeaderCellDef></th>
               <td mat-cell *matCellDef="let row" class="text-right">
-                <button>
+                <button *ngIf="mode === 'Edit'">
                   <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="deleteDimension(row)">
                   </mat-icon>
                 </button>
@@ -176,21 +193,25 @@
             <th mat-header-cell *matHeaderCellDef> Nombre </th>
             <td mat-cell *matCellDef="let element"> {{element.nombreArchivo}} </td>
           </ng-container>
+          <ng-container matColumnDef="clasificacion">
+            <th mat-header-cell *matHeaderCellDef> Clasificación </th>
+            <td mat-cell *matCellDef="let element"> {{element.clasificacion}} </td>
+          </ng-container>
           <ng-container matColumnDef="descripcion">
             <th mat-header-cell *matHeaderCellDef> Descripción </th>
             <td mat-cell *matCellDef="let element"> {{element.descripcion}} </td>
           </ng-container>
           <ng-container matColumnDef="version">
-            <th mat-header-cell *matHeaderCellDef> Versión </th>
-            <td mat-cell *matCellDef="let element"> {{element.version}} </td>
+            <th mat-header-cell *matHeaderCellDef class="w-16"> Revisión </th>
+            <td mat-cell *matCellDef="let element" class="w-16"> {{element.version}} </td>
           </ng-container>
           <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef> Fecha </th>
-            <td mat-cell *matCellDef="let element"> {{element.fecha}} </td>
+            <th mat-header-cell *matHeaderCellDef class="w-22"> Fecha </th>
+            <td mat-cell *matCellDef="let element" class="w-22"> {{element.fecha}} </td>
           </ng-container>
           <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let row" class="text-right">
+            <th mat-header-cell *matHeaderCellDef class="w-10"></th>
+            <td mat-cell *matCellDef="let row" class="w-10 text-right flex flex-col">
               <button>
                 <mat-icon svgIcon="heroicons_outline:eye" matTooltip="Ver" (click)="openPlano(row)">
                 </mat-icon>
@@ -245,26 +266,23 @@
     </mat-tab>
     <mat-tab label="Clientes">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <mat-accordion>
-          <form class="form-client" [formGroup]="clientForm">
-            <mat-form-field class="w-full" appearance="outline">
+        <mat-accordion *ngIf="mode === 'Edit'">
+          <div class="flex justify-center gap-2 w-full" *ngIf="mode === 'Edit'">
+            <mat-form-field class="min-w-[25%]" appearance="outline" [formGroup]="moldeForm">
               <mat-label>Cliente </mat-label>
               <mat-select placeholder="Seleccione un cliente" formControlName="client">
-                <mat-option *ngFor="let client of clients$" [value]="client">{{ client.nombre }}</mat-option>
+                <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
               </mat-select>
-              <mat-error class="mt-4 ml-4" *ngIf="clientForm.get('client').hasError('required')">
-                El cliente es requerido
-              </mat-error>
             </mat-form-field>
-            <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn"
-              mat-flat-button (click)="addClient()">
+            <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
+              mat-flat-button (click)="addClient()" [disabled]="moldeForm.get('client').value === -1">
               <span class="mat-button-wrapper"> Agregar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
             </button>
-          </form>
+          </div>
         </mat-accordion>
 
-        <table mat-table [dataSource]="clients" class="border-2 rounded-2xl w-full mt-4">
+        <table mat-table [dataSource]="clients" class="border-2 rounded-2xl w-full">
           <ng-container matColumnDef="idCliente">
             <th mat-header-cell *matHeaderCellDef> ID </th>
             <td mat-cell *matCellDef="let element">{{ element.idCliente }} </td>
@@ -276,7 +294,7 @@
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let row" class="text-right">
-              <button>
+              <button *ngIf="mode === 'Edit'">
                 <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar" (click)="deleteClient(row)"></mat-icon>
               </button>
             </td>
@@ -288,16 +306,13 @@
     </mat-tab>
     <mat-tab label="Observaciones">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <div class="flex justify-around gap-2 items-baseline mb-4" [formGroup]="observacionForm">
+        <div class="flex justify-around gap-2" [formGroup]="observacionForm" *ngIf="mode === 'Edit'">
           <mat-form-field class="w-full" appearance="outline">
             <mat-label>Observación</mat-label>
             <input id="observacion" matInput placeholder="Ingrese una observación" formControlName="observacion">
-            <mat-error *ngIf="observacionForm.get('observacion').hasError('required')">
-              La observación es requerida.
-            </mat-error>
           </mat-form-field>
-          <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-            mat-flat-button (click)="addObservacion()" [disabled]="!observacionForm.get('observacion').value">
+          <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-3" mat-flat-button
+            (click)="addObservacion()" [disabled]="!observacionForm.get('observacion').value">
             <span class="mat-button-wrapper"> Agregar </span>
             <span matripple="" class="mat-ripple mat-button-ripple"></span>
           </button>

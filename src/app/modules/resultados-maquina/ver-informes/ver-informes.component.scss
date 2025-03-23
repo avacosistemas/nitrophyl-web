@@ -6,7 +6,13 @@
 //   text-align: center;
 // }
 
-#informe-maquina-table tr.mat-row:nth-child(n+1) > td:nth-child(n+7) {
+#informe-maquina-table tr.mat-row:nth-child(n+1)>td:nth-child(n+7) {
     text-align: center;
     color: blue($color: #000000);
+}
+
+th.mat-header-cell:last-of-type,
+td.mat-cell:last-of-type,
+td.mat-footer-cell:last-of-type {
+    padding-right: 47px !important
 }

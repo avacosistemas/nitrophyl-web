@@ -1,27 +1,24 @@
 <div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
-    <app-header
-      [title]="titulo"
-      [breadcrumbs]="[
+  <app-header [title]="titulo" [breadcrumbs]="[
         { title: 'ABM', route: ['/moldes/grid'], condition: true },
         { title: 'Moldes', route: ['/moldes/grid'], condition: true },
         { title: 'Consultar', route: [], condition: titulo === 'Consulta Moldes' },
-        { title: 'Editar', route: [], condition: titulo === 'Edición Molde' },
+        { title: 'Editar', route: ['/moldes/molde/editar'], condition: titulo === 'Edición Molde' },
         { title: 'Ingresos / Egresos', route: [], condition: moldeTitulo === 'Ingresos / Egresos' },
         { title: 'Crear', route: [], condition: titulo === 'Nuevo Molde' },
-        { title: 'Ver', route: [], condition: titulo === 'Vista Molde' },
-      ]"
-      [buttons]="[
+        { title: 'Ver', route: ['/moldes/molde/ver'], condition: titulo === 'Vista Molde' },
+      ]" [buttons]="[
         {
           type: 'flat',
           label: botonEdicion,
-          condition: titulo === 'Edición Molde',
+          condition: mostrarBotonEdicion || titulo === 'Editar Molde',
           isDisabled: false,
           action: 'edit'
         },
         {
           type: 'flat',
           label: 'Guardar Molde',
-          condition: titulo === 'Nuevo Molde',
+          condition: titulo === 'Nuevo Molde' || titulo === 'Editar Molde',
           isDisabled: false,
           action: 'save'
         },
@@ -46,12 +43,10 @@
           isDisabled: false,
           action: 'create'
         }
-      ]"
-      (buttonAction)="handleAction($event)"
-    >
-    </app-header>
-  
-    <div class="content-scroll">
-      <router-outlet (activate)="componentAdded($event)"></router-outlet>
-    </div>
+      ]" (buttonAction)="handleAction($event)">
+  </app-header>
+
+  <div class="content-scroll">
+    <router-outlet></router-outlet>
   </div>
+</div>

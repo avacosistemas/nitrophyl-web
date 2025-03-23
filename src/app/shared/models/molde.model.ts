@@ -1,22 +1,29 @@
 export interface Molde {
   id: number;
   codigo: string;
-  estado: boolean;
+  estado: string;
   nombre: string;
   observaciones: string;
   ubicacion: string;
   idClienteDuenio: number;
   clienteDuenio: string;
   propio: boolean;
+  alto?: number;
+  ancho?: number;
+  profundidad?: number;
+  diametro?: number;
 }
 
 export interface ResponseMolde {
   status: string;
-  data: Molde;
+  data: {
+    page: Molde[];
+    totalReg: number;
+  };
 }
 
 export interface Boca {
-  estado: boolean;
+  estado: string;
   nroBoca: number;
   descripcion: string;
 }
@@ -44,8 +51,19 @@ export interface Planos {
   descripcion: string;
 }
 
+export interface Plano {
+  id: number;
+  archivo: string;
+  clasificacion: string;
+  descripcion: string;
+  idMolde: number;
+  nombreArchivo: string;
+}
+
 export interface Fotos {
-  nombre: string;
+  id: number;
+  archivo: string;
+  nombreArchivo: string;
   version: string;
   fecha: string;
   data?: any;
@@ -65,4 +83,5 @@ export interface CargaArchivo {
   nombreArchivo: string;
   archivo: any;
   descripcion?: string;
+  clasificacion?: string;
 }

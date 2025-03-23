@@ -42,3 +42,26 @@ export interface ILotePorMaquinaReporteParams {
 export interface LoteConResultadosCombinados extends Lote {
     resultadosCombinados: { valor: number | null; id: number | null }[];
 }
+
+export interface ILotePorMaquinaReporteParams {
+    asc?: boolean;
+    estadoLote?: string;
+    fechaDesde?: string;
+    fechaHasta?: string;
+    first?: number;
+    idFormula?: number;
+    idMaquina?: number;
+    idx?: string;
+    nroLote?: string;
+    rows?: number;
+}
+
+export interface ResultadoCombinado {
+    valor: string | null;
+    id: number | null;
+}
+
+export interface LoteConResultadosCombinadosExtend extends LoteConResultadosCombinados {
+    resultadoGeneral: string | null;
+    redondeoGeneral: string | null;
+}

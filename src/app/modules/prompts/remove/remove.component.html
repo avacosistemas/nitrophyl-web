@@ -5,18 +5,20 @@
                 <mat-icon svgIcon="heroicons_outline:exclamation"></mat-icon>
             </div>
             <h1 class="font-semibold mt-2 ml-2" *ngIf="data.boton === 'Eliminar'">Eliminar {{ data.seccion }}</h1>
-            <h1 class="font-semibold mt-2 ml-2" *ngIf="data.boton === 'Cerrar'">Descartar cambios {{ data.seccion }}</h1>
+            <h1 class="font-semibold mt-2 ml-2" *ngIf="data.boton === 'Cerrar'">Descartar cambios {{ data.seccion }}
+            </h1>
         </div>
         <button mat-flat-button (click)="close()">
             <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
         </button>
     </div>
     <div class="ml-11 mr-15">
-        <h1 *ngIf="data.boton === 'Eliminar'">¿Está seguro que desea eliminar el {{ data.seccion }} <b>{{ data.data }}</b> permanentemente? Esta acción no se
+        <h1 *ngIf="data.boton === 'Eliminar'">¿Está seguro que desea eliminar el {{ data.seccion }} <b>{{ data.data
+                }}</b> permanentemente? Esta acción no se
             puede deshacer.</h1>
         <h1 *ngIf="data.boton === 'Cerrar'">¿Está seguro que desea cerrar y no guardar los cambios realizados?</h1>
     </div>
     <mat-dialog-actions style="display: flex; justify-content: flex-end;">
-        <button mat-raised-button color="warn" class="mr-2" (click)="save()">{{ data.boton }}</button>
+        <button mat-raised-button color="warn" (click)="save()">{{ data.boton }}</button>
     </mat-dialog-actions>
 </div>

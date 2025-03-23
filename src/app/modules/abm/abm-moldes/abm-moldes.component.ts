@@ -1,8 +1,9 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { MoldesService } from 'app/shared/services/moldes.service';
 import { Subscription } from 'rxjs';
 import { ABMMoldeService } from './abm-moldes-service';
+import { filter } from 'rxjs/operators';
 
 @Component({
     selector: 'abm-moldes',
@@ -15,6 +16,7 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
     suscripcion: Subscription;
     botonEdicion: string = '';
     moldeTitulo: string = null;
+    mostrarBotonEdicion: boolean = false;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -28,10 +30,26 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
                 this.botonEdicion = data;
             }
         );
+        this.suscripcion = this._abmMoldesService.events.subscribe(
+            (data: any) => {
+                if (typeof data === 'object' && data !== null && data.hasOwnProperty('mostrarBotonEdicion')) {
+                    this.mostrarBotonEdicion = data.mostrarBotonEdicion;
+                } else if (typeof data === 'string') {
+                    this.botonEdicion = data;
+                }
+
+            }
+        );
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe(() => {
+            this.actualizarTitulo();
+        });
     }
 
     ngOnInit(): void {
         this.botonEdicion = 'Guardar Molde';
+        this.actualizarTitulo();
     }
 
     ngAfterContentChecked(): void {
@@ -55,6 +73,7 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
                 break;
             case 'close':
                 this.close();
+                this.mostrarBotonEdicion = false;
                 break;
             case 'create':
                 this.create();
@@ -62,30 +81,28 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
         }
     }
 
-    componentAdded(event): void {
-        if (event.component === 'Grilla') {
+    actualizarTitulo(): void {
+        const url = this.router.url;
+
+        if (url.includes('/grid')) {
             this.titulo = 'Consulta Moldes';
             this.moldeTitulo = null;
-        }
-        if (event.component === 'Molde') {
+        } else if (url.includes('/molde/ver/')) {
             this.moldeTitulo = null;
-            if (this.moldesService.getMode() === 'Edit') {
-                this.titulo = 'Edición Molde';
-            }
-            if (this.moldesService.getMode() === 'View' || this.moldesService.getMode() === undefined) {
-                this.titulo = 'Vista Molde';
-            }
-        }
-        if (event.component === 'Create') {
+            this.titulo = 'Vista Molde';
+        } else if (url.includes('/molde/editar/')) {
+            this.moldeTitulo = null;
+            this.titulo = 'Edición Molde';
+        } else if (url.includes('/create')) {
             this.moldeTitulo = null;
             this.titulo = 'Nuevo Molde';
-        }
-        if (event.component === 'Ingresos / Egresos') {
-            this.titulo = '...';
+        } else if (url.includes('/ingresos-egresos/')) {
             this.moldesService.getMoldeById(this.activatedRoute.snapshot.children[0].params['id']).subscribe((d) => {
                 this.moldeTitulo = 'Ingresos / Egresos';
                 this.titulo = d.data.nombre;
             });
+        } else {
+            this.titulo = 'Moldes';
         }
     }
 

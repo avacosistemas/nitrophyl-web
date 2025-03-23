@@ -7,6 +7,8 @@ import { PDFModalDialogComponent } from './pdf-modal/pdf-modal.component';
 import { RemoveDialogComponent } from './remove/remove.component';
 import { ExportDataComponent } from './export-data/export-data.component';
 import { MaterialModule } from '../../material.module';
+import { DialogCustomComponent } from './dialog-custom/dialog-custom.component';
+import { CommonModule } from '@angular/common';
 
 @NgModule({
     declarations: [
@@ -15,13 +17,16 @@ import { MaterialModule } from '../../material.module';
         PDFModalDialogComponent,
         ImgModalDialogComponent,
         ExportDataComponent,
+        DialogCustomComponent,
     ],
     imports: [
         ABMSharedModule,
         PdfViewerModule,
-        MaterialModule
+        MaterialModule,
+        CommonModule
     ],
-    exports: [ExportDataComponent]
+    exports: [ExportDataComponent],
+    entryComponents: [DialogCustomComponent]
 })
 
-export class PromptsModule {}
+export class PromptsModule { }

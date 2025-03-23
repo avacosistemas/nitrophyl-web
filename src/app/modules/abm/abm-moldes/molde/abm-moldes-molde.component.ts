@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormControl,
@@ -8,25 +8,29 @@ import {
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
-import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { DialogCustomComponent } from 'app/modules/prompts/dialog-custom/dialog-custom.component';
 import {
   Boca,
-  CargaArchivo,
   Dimension,
   Fotos,
   Molde,
   Planos,
+  Plano
 } from 'app/shared/models/molde.model';
 import { MoldesService } from 'app/shared/services/moldes.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, take } from 'rxjs/operators';
 import { ABMMoldeService } from '../abm-moldes-service';
 import * as FileSaver from 'file-saver';
 import { ABMMoldesModalComponent } from '../modal/abm-moldes-modal.component';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { Observacion } from 'app/shared/models/observacion.model';
 import { AuthService } from 'app/core/auth/auth.service';
+import { ModalFotoComponent } from '../modal-foto/modal-foto.component';
+import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
+import { MatTableDataSource } from '@angular/material/table';
+import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
 
 @Component({
   selector: 'abm-moldes-molde',
@@ -34,6 +38,8 @@ import { AuthService } from 'app/core/auth/auth.service';
   styleUrls: ['./abm-moldes-molde.component.scss'],
 })
 export class ABMMoldesMolde implements OnInit, OnDestroy {
+  @ViewChild(MatTabGroup) tabGroup: MatTabGroup;
+
   component: string = 'Molde';
   mode: string;
   suscripcion: Subscription;
@@ -50,6 +56,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   displayedColumnsDimensiones: string[] = ['dimension', 'valor', 'acciones'];
   displayedColumnsPlanos: string[] = [
     'nombre',
+    'clasificacion',
     'descripcion',
     'version',
     'fecha',
@@ -58,20 +65,19 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   displayedColumnsFotos: string[] = [
     'nombre',
     'descripcion',
-    'version',
     'fecha',
     'acciones',
   ];
 
   displayedColumnsObservaciones: string[] = ['observacion', 'fecha', 'usuario'];
-  observaciones: Array<Observacion> = []; 
+  observaciones: Array<Observacion> = [];
   pristineObservaciones: boolean = true;
 
-  planos: Array<Planos> = [];
-  fotos: Array<Fotos> = [];
+  planos: MatTableDataSource<Planos> = new MatTableDataSource<Planos>([]);
+  fotos: MatTableDataSource<Fotos> = new MatTableDataSource<Fotos>([]);
   bocas: Array<Boca> = [];
   dimensiones: Array<Dimension> = [];
-  estados = ['Activa', 'Inactiva', 'En Reparación'];
+  estados = ['ACTIVO', 'INACTIVO', 'REPARACION'];
   dimensionesSelect = ['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO'];
   currentTab: number = 0;
   pristineBocas: boolean = true;
@@ -92,6 +98,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   ];
   public pristineClient: boolean = true;
 
+  private bocaChanges = new Subject<Boca>();
+  private stateChanges = new Subject<Boca>();
+  private descriptionChanges = new Subject<Boca>();
+
+  private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
+
   constructor(
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog,
@@ -107,18 +119,18 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       codigo: [null, [Validators.required, Validators.maxLength(30)]],
       estado: [null, [Validators.required]],
       nombre: [null, [Validators.required, Validators.maxLength(100)]],
-      observacion: [null, [Validators.required]],
+      observacion: [null],
       ubicacion: [null],
       client: [null, [Validators.required]],
     });
     this.bocaForm = this._formBuilder.group({
-      boca: [null, [Validators.required]],
+      boca: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
       estado: [null, [Validators.required]],
       descripcion: [null, [Validators.maxLength(100)]],
     });
     this.dimensionForm = this._formBuilder.group({
       dimension: [null, [Validators.required]],
-      valor: [null, [Validators.required]],
+      valor: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
     });
     this.observacionForm = this._formBuilder.group({
       observacion: [null, [Validators.required]],
@@ -136,11 +148,77 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.mode = this.activatedRoute.snapshot.data['mode'];
     this.inicializar();
+
+
+    let mostrarBoton = false;
+    if (this.mode !== 'View') {
+      switch (this.currentTab) {
+        case 0:
+          mostrarBoton = true;
+          break;
+      }
+    }
+
+    this.ABMoldesService.events.next({ mostrarBotonEdicion: mostrarBoton });
+
+    if (this.mode === 'View') {
+      this.moldeForm.disable();
+      this.bocaGridForm.disable();
+      this.clientForm.disable();
+      this.observacionForm.disable();
+    }
+
+    this.dimensionValueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged((a, b) => a.dimension.tipoDimension === b.dimension.tipoDimension && a.newValue === b.newValue)
+      )
+      .subscribe(({ dimension, newValue }) => {
+        this.updateDimensionValue(dimension, newValue);
+      });
+
+    this.bocaChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged((a, b) => a.nroBoca === b.nroBoca && a.descripcion === b.descripcion)
+      )
+      .subscribe(boca => {
+        this.updateBocaDescription(boca);
+      });
+
+    this.stateChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged((a, b) => a.nroBoca === b.nroBoca && a.estado === b.estado)
+      )
+      .subscribe(boca => {
+        this.updateBocaState(boca);
+      });
+
+    this.descriptionChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged((a, b) => a.nroBoca === b.nroBoca && a.descripcion === b.descripcion)
+      )
+      .subscribe(boca => {
+        this.updateBocaDescription(boca);
+      });
   }
 
   ngOnDestroy(): void {
     this.suscripcion.unsubscribe();
+    this.dimensionValueChanges.unsubscribe();
+    this.bocaChanges.unsubscribe();
+    this.stateChanges.unsubscribe();
+    this.descriptionChanges.unsubscribe();
+    if (this.planos) {
+      this.planos.data = [];
+    }
+    if (this.fotos) {
+      this.fotos.data = [];
+    }
   }
 
   ngAfterViewInit() {
@@ -154,38 +232,120 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       .subscribe((res: any) => (this.clients$ = res.data));
   }
 
-  tabChange(event) {
-    this.currentTab = event.index;
-    switch (event.index) {
+  allowTabChange: boolean = true;
+
+  tabChange(event: MatTabChangeEvent) {
+    if (this.currentTab === 0 && this.moldeForm.dirty) {
+      const dialogRef = this.dialog.open(DialogCustomComponent, {
+        maxWidth: '450px',
+        data: {
+          title: 'Descartar cambios de Datos del Molde',
+          message: '¿Está seguro que desea continuar sin guardar los cambios realizados?',
+          confirmButtonText: 'Continuar',
+          cancelButtonText: 'Volver',
+        },
+      });
+
+      dialogRef.afterClosed().pipe(take(1)).subscribe(res => {
+        if (res === 'confirm') {
+          this.moldeForm.markAsPristine();
+          this.currentTab = event.index;
+          this.tabGroup.selectedIndex = event.index;
+          this.proceedToTabChange(event.index);
+        } else {
+          this.moldeForm.markAsPristine();
+          this.tabGroup.selectedIndex = this.currentTab;
+        }
+      });
+    } else {
+      this.currentTab = event.index;
+      this.proceedToTabChange(event.index);
+    }
+  }
+
+  proceedToTabChange(newTab: number) {
+    this.currentTab = newTab;
+    let mostrarBoton = false;
+
+    switch (newTab) {
       case 0:
-        //0 - Datos del Molde
+        mostrarBoton = true;
+        break;
+      case 1:
+        mostrarBoton = false;
+        break;
+      case 2:
+        mostrarBoton = false;
+        break;
+      case 3:
+        mostrarBoton = true;
+        break;
+      case 4:
+        mostrarBoton = true;
+        break;
+      case 5:
+        mostrarBoton = true;
+        break;
+      case 6:
+        mostrarBoton = false;
+        break;
+    }
+
+    this.ABMoldesService.events.next({ mostrarBotonEdicion: mostrarBoton });
+    switch (newTab) {
+      case 0:
         this.ABMoldesService.viewEvents.next('Guardar Molde');
         break;
       case 1:
-        //1 - Bocas
-        this.ABMoldesService.viewEvents.next('Guardar Bocas');
         break;
       case 2:
-        //2 - Dimensiones
-        this.ABMoldesService.viewEvents.next('Guardar Dimensiones');
         break;
       case 3:
-        //3 - Planos
         this.ABMoldesService.viewEvents.next('Subir Plano');
         break;
       case 4:
-        //4 - Fotos
         this.ABMoldesService.viewEvents.next('Subir Foto');
         break;
       case 5:
-        // 5 - Clients.
-        this.ABMoldesService.viewEvents.next('Guardar Clientes');
         break;
       case 6:
-        // 6 - Observaciones
-        this.ABMoldesService.viewEvents.next('Guardar Observaciones');
         break;
     }
+  }
+
+  canChangeTab(): boolean {
+    if (this.moldeForm.dirty) {
+
+      const dialogRef = this.dialog.open(RemoveDialogComponent, {
+        maxWidth: '450px',
+        data: {
+          seccion: 'Datos del Molde',
+          message: '¿Está seguro que desea continuar sin guardar los cambios realizados?',
+          confirmButtonText: 'Continuar',
+          showBackButton: true,
+          title: 'Descartar cambios de Datos del Molde',
+        },
+      });
+
+      let result: boolean = false;
+
+      dialogRef.afterClosed().pipe(take(1)).subscribe(res => {
+        if (res === 'confirm') {
+          result = true;
+          this.moldeForm.markAsPristine();
+        } else if (res === 'back') {
+          result = true;
+          this.currentTab = 0;
+
+          this.ABMoldesService.events.next({ mostrarBotonEdicion: true });
+        } else {
+          result = false;
+        }
+      });
+
+      return result;
+    }
+    return true;
   }
 
   close() {
@@ -199,7 +359,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.router.navigate(['/moldes/grid']);
     } else {
       const dialogRef = this.dialog.open(RemoveDialogComponent, {
-        maxWidth: '50%',
+        maxWidth: '450px',
         data: { data: null, seccion: 'molde', boton: 'Cerrar' },
       });
       dialogRef.afterClosed().subscribe((result) => {
@@ -215,20 +375,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       case 0:
         this.editMolde();
         break;
-      case 1:
-        this.editBocas();
-        break;
-      case 2:
-        this.editDimensiones();
-        break;
       case 3:
         this.uploadPlano();
         break;
       case 4:
         this.uploadFoto();
-        break;
-      case 5:
-        this.setClients();
         break;
       case 6:
         this.addObservacion();
@@ -237,7 +388,25 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   editMolde() {
-    if (this.moldeForm.invalid) return;
+    if (this.moldeForm.invalid) {
+
+      if (this.moldeForm.get('codigo').hasError('required')) {
+        this.openSnackBar('El código es requerido.', 'X', 'red-snackbar');
+      } else if (this.moldeForm.get('codigo').hasError('maxlength')) {
+        this.openSnackBar('El código no puede tener más de 30 caracteres.', 'X', 'red-snackbar');
+      } else if (this.moldeForm.get('estado').hasError('required')) {
+        this.openSnackBar('El estado es requerido.', 'X', 'red-snackbar');
+      } else if (this.moldeForm.get('nombre').hasError('required')) {
+        this.openSnackBar('El nombre es requerido.', 'X', 'red-snackbar');
+      } else if (this.moldeForm.get('nombre').hasError('maxlength')) {
+        this.openSnackBar('El nombre no puede tener más de 100 caracteres.', 'X', 'red-snackbar');
+      } else if (this.moldeForm.get('client').hasError('required')) {
+        this.openSnackBar('El propietario es requerido.', 'X', 'red-snackbar');
+      } else {
+        this.openSnackBar('Por favor, corrija los errores en el formulario.', 'X', 'red-snackbar');
+      }
+      return;
+    }
 
     let client: any = this.clients$.find((element: any) => {
       return element.id === this.moldeForm.controls.client.value;
@@ -261,72 +430,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
       } else {
         this.openSnackBar(
-          'No se puedieron realizar los cambios',
+          'No se pudieron realizar los cambios',
           'X',
           'red-snackbar'
         );
       }
     });
-  }
-
-  editBocas() {
-    let model: Array<Boca> = [];
-    this.bocas.forEach((boca) => {
-      model.push({
-        estado: boca.estado,
-        nroBoca: Number(boca.nroBoca),
-        descripcion: this.bocaGridForm.get(
-          `control-${boca.nroBoca}-${boca.descripcion}`
-        ).value,
-      });
-    });
-    this._molds.updateMoldeBocas(this.currentId, model).subscribe((res) => {
-      if (res.status == 'OK') {
-        this.pristineBocas = true;
-        this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
-      } else {
-        this.openSnackBar(
-          'No se puedieron realizar los cambios',
-          'X',
-          'red-snackbar'
-        );
-      }
-    });
-  }
-
-  editDimensiones() {
-    let model: Array<Dimension> = [];
-    this.dimensiones.forEach((dimension) => {
-      model.push({
-        tipoDimension: dimension.tipoDimension,
-        valor: dimension.valor,
-      });
-    });
-    this._molds
-      .updateMoldeDimensiones(this.currentId, model)
-      .subscribe((res) => {
-        if (res.status == 'OK') {
-          this.pristineDimensiones = true;
-          this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
-        } else {
-          this.openSnackBar(
-            'No se puedieron realizar los cambios',
-            'X',
-            'red-snackbar'
-          );
-        }
-      });
   }
 
   inicializar() {
-    this.mode = this._molds.getMode();
-    if (this.mode == undefined || this.mode == 'View') {
-      this.mode = 'View';
-      this.moldeForm.disable();
-      this.bocaGridForm.disable();
-      this.clientForm.disable();
-      this.observacionForm.disable();
-    }
     this.currentId = this.activatedRoute.snapshot.params['id'];
     this._molds.getMoldeById(this.currentId).subscribe((d) => {
       this.moldeForm.patchValue({
@@ -356,10 +468,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.dimensiones = d.data;
     });
     this._molds.getPlanos(this.currentId).subscribe((d) => {
-      this.planos = d.data;
+      this.planos.data = d.data;
     });
-    this._molds.getFotos(this.currentId).subscribe((d) => {
-      this.fotos = d.data;
+    this._molds.getFotos(this.currentId).subscribe((response) => {
+      this.fotos.data = response.data;
     });
 
     this._molds
@@ -371,162 +483,78 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this.ABMoldesService.viewEvents.next('Guardar Molde');
   }
 
-  addBoca() {
-    if (this.bocaForm.invalid) {
-      return;
-    }
-    this.pristineBocas = false;
-    let item: Boca = {
-      nroBoca: this.bocaForm.controls.boca.value,
-      estado: this.bocaForm.controls.estado.value,
-      descripcion: this.bocaForm.controls.descripcion.value,
-    };
-    this.bocaGridForm.addControl(
-      `control-${item.nroBoca}-${item.descripcion}`,
-      new FormControl(item.descripcion, Validators.maxLength(100))
+  public addClient(): void {
+    if (!this.moldeForm.get('client').value) return;
+    let selectedClient = this.clients$.find(
+      (client: any) => client.id === this.moldeForm.get('client').value
     );
-    this.bocas.push(item);
-    this.bocas = [...this.bocas];
-    this.bocaForm.reset();
-  }
 
-  addDimension() {
-    if (this.dimensionForm.invalid) {
-      return;
-    }
-    this.pristineDimensiones = false;
-    let item: Dimension = {
-      tipoDimension: this.dimensionForm.controls.dimension.value,
-      valor: Number(this.dimensionForm.controls.valor.value),
-    };
-    this.dimensiones.push(item);
-    this.dimensiones = [...this.dimensiones];
-    this.dimensionForm.reset();
-  }
-
-  deleteBoca(row) {
-    console.log(row);
-    this.pristineBocas = false;
-    this.bocas.splice(this.bocas.indexOf(row), 1);
-    this.bocas = [...this.bocas];
-    this.bocaGridForm.removeControl(
-      `control-${row.nroBoca}-${row.descripcion}`
+    let exists = this.clients.some(
+      (client: any) => client.idCliente === selectedClient.id
     );
-  }
-
-  deleteDimension(row) {
-    this.pristineDimensiones = false;
-    this.dimensiones.splice(this.dimensiones.indexOf(row), 1);
-    this.dimensiones = [...this.dimensiones];
-  }
-
-  openPlano(row) {
-    console.log(row);
-    let name = row.nombreArchivo.split('.');
-    this._molds.downloadPlano(row.id).subscribe((d) => {
-      if (name[name.length - 1] == 'pdf') {
-        const dialogRef = this.dialog.open(PDFModalDialogComponent, {
-          maxWidth: '75%',
-          data: { src: d.data.archivo, title: d.data.nombreArchivo },
-        });
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            console.log(result);
-          }
-        });
-      } else {
-        const dialogRef = this.dialog.open(ImgModalDialogComponent, {
-          maxWidth: '75%',
-          data: {
-            src: d.data.archivo,
-            imgType: 'array',
-            imgAlt: 'imagen',
-            title: d.data.nombreArchivo,
-            imgExtension: name[name.length - 1],
-          },
-        });
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            console.log(result);
-          }
-        });
-      }
-    });
-  }
-
-  downloadPlano(row) {
-    console.log(row);
-    let name = row.nombreArchivo.split('.');
-    this._molds.downloadPlano(row.id).subscribe((d) => {
-      if (name[name.length - 1] == 'pdf') {
-        let url = 'data:application/pdf;base64,' + d.data.archivo;
-        var byteString = atob(url.split(',')[1]);
-        var ab = new ArrayBuffer(byteString.length);
-        var ia = new Uint8Array(ab);
-
-        for (var i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-        FileSaver.saveAs(
-          new Blob([ab], { type: 'application/pdf' }),
-          row.nombreArchivo
-        );
-      } else {
-        let url =
-          'data:image/' + name[name.length - 1] + ';base64,' + d.data.archivo;
-        var byteString = atob(url.split(',')[1]);
-        var ab = new ArrayBuffer(byteString.length);
-        var ia = new Uint8Array(ab);
-
-        for (var i = 0; i < byteString.length; i++) {
-          ia[i] = byteString.charCodeAt(i);
-        }
-        FileSaver.saveAs(
-          new Blob([ab], { type: 'image/' + name[name.length - 1] }),
-          row.nombreArchivo
-        );
-      }
-    });
-  }
-
-  openFoto(row) {
-    console.log(row);
-    this._molds.downloadFoto(row.id).subscribe((d) => {
-      let name = d.data.nombreArchivo.split('.');
-      const dialogRef = this.dialog.open(ImgModalDialogComponent, {
-        maxWidth: '75%',
-        data: {
-          src: d.data.archivo,
-          imgType: 'array',
-          imgAlt: 'imagen',
-          title: d.data.nombreArchivo,
-          imgExtension: name[name.length - 1],
-        },
-      });
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          console.log(result);
-        }
-      });
-    });
-  }
-
-  downloadFoto(row) {
-    let name = row.nombreArchivo.split('.');
-    this._molds.downloadFoto(row.id).subscribe((d) => {
-      let url =
-        'data:image/' + name[name.length - 1] + ';base64,' + d.data.archivo;
-      var byteString = atob(url.split(',')[1]);
-      var ab = new ArrayBuffer(byteString.length);
-      var ia = new Uint8Array(ab);
-
-      for (var i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
-      }
-      FileSaver.saveAs(
-        new Blob([ab], { type: 'image/' + name[name.length - 1] }),
-        row.nombreArchivo
+    if (exists) {
+      this.openSnackBar(
+        'El cliente ya esta asociado al molde.',
+        'X',
+        'red-snackbar'
       );
+    } else {
+      this.clients.push({
+        idCliente: selectedClient.id,
+        nombre: selectedClient.nombre,
+      });
+      this.clients.sort((a, b) => a.idCliente - b.idCliente);
+      this.clients = [...this.clients];
+      this.pristineClient = false;
+
+      this.updateClientsOnBackend();
+    }
+  }
+
+  public deleteClient(row: any): void {
+    let i = this.clients.findIndex((client: any) => client.id === row.id);
+    if (i >= 0) {
+      this.clients.splice(i, 1);
+      this.clients = [...this.clients];
+      this.pristineClient = false;
+
+
+      this.updateClientsOnBackend();
+    }
+  }
+
+  private updateClientsOnBackend(): void {
+    let body = this.clients.map((client: any) => ({
+      idCliente: client.idCliente,
+    }));
+
+    this._molds.putClient(this.currentId, body).subscribe({
+      next: (res: any) => {
+        if (res.status == 'OK') {
+          this.moldeForm.get('client').setValue(null);
+          this.moldeForm.get('client').markAsUntouched();
+          this.pristineClient = true;
+          this.openSnackBar(
+            'Lista de clientes actualizada. ',
+            'X',
+            'green-snackbar'
+          );
+        } else {
+          this.openSnackBar(
+            'No se pudieron guardar los cambios. ',
+            'X',
+            'red-snackbar'
+          );
+        }
+      },
+      error: (err: any) => {
+        this.openSnackBar(`Se ha producido un error. `, 'X', 'red-snackbar');
+        console.error(
+          `abm-moldes-molde.component.ts => private updateClientsOnBackend(): `,
+          err
+        );
+      },
+      complete: () => { },
     });
   }
 
@@ -545,7 +573,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this._molds.getPlanos(this.currentId).subscribe((d) => {
-          this.planos = d.data;
+          this.planos.data = d.data;
         });
       }
     });
@@ -566,7 +594,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this._molds.getFotos(this.currentId).subscribe((d) => {
-          this.fotos = d.data;
+          this.fotos.data = d.data;
         });
       }
     });
@@ -576,71 +604,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this.snackBar.open(message, action, {
       duration: 5000,
       panelClass: className,
-    });
-  }
-
-  public addClient(): void {
-    if (!this.clientForm.get('client').value) return;
-    let selectedClient = this.clientForm.get('client').value;
-    let exists = this.clients.some(
-      (client: any) => client.idCliente === selectedClient.id
-    );
-    if (exists) {
-      this.openSnackBar(
-        'El cliente ya esta asociado al molde.',
-        'X',
-        'red-snackbar'
-      );
-    } else {
-      this.clients.push({
-        idCliente: this.clientForm.get('client').value.id,
-        nombre: this.clientForm.get('client').value.nombre,
-      });
-      this.clients.sort((a, b) => a.idCliente - b.idCliente);
-      this.clients = [...this.clients];
-      this.pristineClient = false;
-    }
-  }
-
-  public deleteClient(row: any): void {
-    let i = this.clients.findIndex((client: any) => client.id === row.id);
-    if (i >= 0) {
-      this.clients.splice(i, 1);
-      this.clients = [...this.clients];
-      this.pristineClient = false;
-    }
-  }
-
-  private setClients(): void {
-    let body = this.clients.map((client: any) => ({
-      idCliente: client.idCliente,
-    }));
-
-    this._molds.putClient(this.currentId, body).subscribe({
-      next: (res: any) => {
-        if (res.status == 'OK') {
-          this.pristineClient = true;
-          this.openSnackBar(
-            'Lista de clientes guardada. ',
-            'X',
-            'green-snackbar'
-          );
-        } else {
-          this.openSnackBar(
-            'No se pudieron guardar los cambios. ',
-            'X',
-            'red-snackbar'
-          );
-        }
-      },
-      error: (err: any) => {
-        this.openSnackBar(`Se ha producido un error. `, 'X', 'red-snackbar');
-        console.error(
-          `abm-moldes-molde.component.ts => private setClients(): `,
-          err
-        );
-      },
-      complete: () => {},
     });
   }
 
@@ -678,6 +641,412 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         this.openSnackBar('Error al obtener las observaciones', 'X', 'red-snackbar');
         console.error('Error al obtener las observaciones:', error);
       },
+    });
+  }
+
+  public openFoto(foto: Fotos): void {
+    console.log('Abriendo foto:', foto);
+
+    this._molds.downloadFoto(foto.id).subscribe({
+      next: (response: any) => {
+        const base64Image = response?.data?.archivo;
+
+        if (!base64Image) {
+          console.error('No se recibió un string Base64 válido del backend.');
+          this.snackBar.open('Error al obtener la imagen', 'Cerrar', { duration: 3000 });
+          return;
+        }
+
+        let fileExtension = 'jpg';
+        const filename = foto.nombreArchivo;
+        const lastDot = filename.lastIndexOf('.');
+
+        if (lastDot > 0) {
+          fileExtension = filename.substring(lastDot + 1);
+        }
+
+        const dialogRef = this.dialog.open(ModalFotoComponent, {
+          maxWidth: '90%',
+          width: '70%',
+          data: {
+            imgSrc: base64Image,
+            imgAlt: foto.nombreArchivo,
+            imgExtension: fileExtension
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Error al descargar la foto:', error);
+        this.snackBar.open('Error al obtener la imagen', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  public downloadFoto(foto: Fotos): void {
+    console.log('Descargar foto:', foto);
+    this._molds.downloadFoto(foto.id).subscribe((response: any) => {
+      const byteCharacters = atob(response.data.archivo);
+
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+
+      const filename = foto.nombreArchivo;
+      const fileExtension = filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
+
+      let mimeType = 'image/jpeg';
+      if (fileExtension === 'png') {
+        mimeType = 'image/png';
+      } else if (fileExtension === 'jpg' || fileExtension === 'jpeg') {
+        mimeType = 'image/jpeg';
+      }
+
+      const blob = new Blob(byteArrays, { type: mimeType });
+      FileSaver.saveAs(blob, filename);
+    });
+  }
+
+  public downloadPlano(plano: Plano): void {
+    this._molds.downloadPlano(plano.id).subscribe((response: any) => {
+
+      const byteCharacters = atob(response.data.archivo);
+      const byteArrays = [];
+
+      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+
+        for (let i = 0; i < slice.length; i++) {
+          byteNumbers[i] = slice.charCodeAt(i);
+        }
+
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+      }
+
+      const blob = new Blob(byteArrays, { type: 'application/pdf' });
+      FileSaver.saveAs(blob, plano.nombreArchivo);
+    });
+  }
+
+  public openPlano(plano: Plano): void {
+
+    this._molds.downloadPlano(plano.id).subscribe({
+      next: (response: any) => {
+        const base64Content = response?.data?.archivo;
+
+        if (!base64Content) {
+          console.error('No se recibió un string Base64 válido del backend.');
+          this.snackBar.open('Error al obtener el plano', 'Cerrar', { duration: 3000 });
+          return;
+        }
+
+        this.dialog.open(PDFModalDialogComponent, {
+          maxWidth: '75%',
+          width: '80vw',
+          height: '90vh',
+          data: {
+            src: base64Content,
+            title: plano.nombreArchivo,
+            showDownloadButton: true
+          },
+        });
+
+      },
+      error: (error) => {
+        console.error('Error al descargar el plano:', error);
+        this.snackBar.open('Error al obtener el plano', 'Cerrar', { duration: 3000 });
+      }
+    });
+  }
+
+  addDimension(): void {
+    if (this.dimensionForm.invalid) {
+
+      if (this.dimensionForm.get('dimension').hasError('required')) {
+        this.openSnackBar('El tipo de dimensión es obligatorio.', 'X', 'red-snackbar');
+      } else if (this.dimensionForm.get('valor').hasError('required')) {
+        this.openSnackBar('El valor de la dimensión es obligatorio.', 'X', 'red-snackbar');
+      } else if (this.dimensionForm.get('valor').hasError('pattern')) {
+        this.openSnackBar('El valor de la dimensión debe contener solo números.', 'X', 'red-snackbar');
+      } else {
+        this.openSnackBar('Por favor, corrija los errores en el formulario.', 'X', 'red-snackbar');
+      }
+      return;
+    }
+
+    const newDimension: Dimension = {
+      tipoDimension: this.dimensionForm.get('dimension').value,
+      valor: this.dimensionForm.get('valor').value,
+    };
+
+    const dimensionExists = this.dimensiones.some(
+      (dimension) => dimension.tipoDimension === newDimension.tipoDimension
+    );
+
+    if (dimensionExists) {
+      this.openSnackBar(
+        'Ya existe una dimensión con este tipo.',
+        'X',
+        'red-snackbar'
+      );
+      return;
+    }
+
+    const updatedDimensions = [...this.dimensiones, newDimension];
+
+    this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
+      next: (response) => {
+        if (response.status === 'OK') {
+          this.openSnackBar('Dimensión agregada correctamente', 'X', 'green-snackbar');
+          this.dimensionForm.reset();
+          this.pristineDimensiones = false;
+          this.getDimensiones();
+        } else {
+          this.openSnackBar('Error al agregar la dimensión', 'X', 'red-snackbar');
+        }
+      },
+      error: (error) => {
+        this.openSnackBar('Error al agregar la dimensión', 'X', 'red-snackbar');
+        console.error('Error al agregar la dimensión:', error);
+      },
+    });
+  }
+
+  deleteDimension(dimensionToDelete: Dimension): void {
+    const dialogRef = this.dialog.open(RemoveDialogComponent, {
+      maxWidth: '450px',
+      data: { data: null, seccion: 'dimensión', boton: 'Eliminar' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+
+        const updatedDimensions = this.dimensiones.filter(dimension =>
+          dimension.tipoDimension !== dimensionToDelete.tipoDimension
+        );
+
+        this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
+          next: (response) => {
+            if (response.status === 'OK') {
+              this.openSnackBar('Dimensión eliminada correctamente', 'X', 'green-snackbar');
+              this.getDimensiones();
+              this.pristineDimensiones = false;
+            } else {
+              this.openSnackBar('Error al eliminar la dimensión', 'X', 'red-snackbar');
+            }
+          },
+          error: (error) => {
+            this.openSnackBar('Error al eliminar la dimensión', 'X', 'red-snackbar');
+            console.error('Error al eliminar la dimensión:', error);
+          },
+        });
+      }
+    });
+  }
+
+  onDimensionValueChanged(dimension: Dimension, newValue: any): void {
+    this.dimensionValueChanges.next({ dimension, newValue });
+  }
+
+  updateDimensionValue(dimensionToUpdate: Dimension, newValue: any): void {
+
+    const dimensionIndex = this.dimensiones.findIndex(dimension => dimension.tipoDimension === dimensionToUpdate.tipoDimension);
+
+    if (dimensionIndex !== -1) {
+
+      this.dimensiones[dimensionIndex] = { ...this.dimensiones[dimensionIndex], valor: newValue };
+      const updatedDimensions = [...this.dimensiones];
+
+      this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
+        next: (response) => {
+          if (response.status === 'OK') {
+            this.openSnackBar('Dimensión actualizada correctamente', 'X', 'green-snackbar');
+            this.pristineDimensiones = false;
+            this.getDimensiones();
+          } else {
+            this.openSnackBar('Error al actualizar la dimensión', 'X', 'red-snackbar');
+          }
+        },
+        error: (error) => {
+          this.openSnackBar('Error al actualizar la dimensión', 'X', 'red-snackbar');
+          console.error('Error al actualizar la dimensión:', error);
+        },
+      });
+    }
+  }
+
+  getDimensiones(): void {
+    this._molds.getMoldeDimensiones(this.currentId).subscribe((d) => {
+      this.dimensiones = d.data;
+    });
+  }
+
+  addBoca(): void {
+    if (this.bocaForm.invalid) {
+
+      if (this.bocaForm.get('boca').hasError('required')) {
+        this.openSnackBar('El número de boca es obligatorio.', 'X', 'red-snackbar');
+      } else if (this.bocaForm.get('boca').hasError('pattern')) {
+        this.openSnackBar('El número de boca debe contener solo números.', 'X', 'red-snackbar');
+      } else if (this.bocaForm.get('estado').hasError('required')) {
+        this.openSnackBar('El estado es obligatorio.', 'X', 'red-snackbar');
+      } else if (this.bocaForm.get('descripcion').hasError('maxlength')) {
+        this.openSnackBar('La descripción no puede tener más de 100 caracteres.', 'X', 'red-snackbar');
+      } else {
+        this.openSnackBar('Por favor, corrija los errores en el formulario.', 'X', 'red-snackbar');
+      }
+      return;
+    }
+    if (this.bocaForm.invalid) {
+      return;
+    }
+
+    const newBoca: Boca = {
+      nroBoca: parseInt(this.bocaForm.get('boca').value, 10),
+      estado: this.bocaForm.get('estado').value,
+      descripcion: this.bocaForm.get('descripcion').value,
+    };
+
+    if (this.bocas.some(b => b.nroBoca === newBoca.nroBoca)) {
+      this.openSnackBar('Ya existe una boca con ese número.', 'X', 'red-snackbar');
+      return;
+    }
+
+    const updatedBocas = [...this.bocas, newBoca];
+
+    this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
+      next: (response) => {
+        if (response.status === 'OK') {
+          this.openSnackBar('Boca agregada correctamente', 'X', 'green-snackbar');
+          this.bocaForm.reset();
+          this.pristineBocas = false;
+          this.getBocas();
+        } else {
+          this.openSnackBar('Error al agregar la boca', 'X', 'red-snackbar');
+        }
+      },
+      error: (error) => {
+        this.openSnackBar('Error al agregar la boca', 'X', 'red-snackbar');
+        console.error('Error al agregar la boca:', error);
+      },
+    });
+  }
+
+  deleteBoca(bocaToDelete: Boca): void {
+    const dialogRef = this.dialog.open(RemoveDialogComponent, {
+      maxWidth: '450px',
+      data: { data: null, seccion: 'boca', boton: 'Eliminar' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const updatedBocas = this.bocas.filter(boca => boca.nroBoca !== bocaToDelete.nroBoca);
+
+        this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
+          next: (response) => {
+            if (response.status === 'OK') {
+              this.openSnackBar('Boca eliminada correctamente', 'X', 'green-snackbar');
+              this.getBocas();
+              this.pristineBocas = false;
+            } else {
+              this.openSnackBar('Error al eliminar la boca', 'X', 'red-snackbar');
+            }
+          },
+          error: (error) => {
+            this.openSnackBar('Error al eliminar la boca', 'X', 'red-snackbar');
+            console.error('Error al eliminar la boca:', error);
+          },
+        });
+      }
+    });
+  }
+
+  onStateChange(boca: Boca, newState: string): void {
+    boca.estado = newState;
+    this.stateChanges.next(boca);
+    this.pristineBocas = false;
+  }
+
+  onDescriptionInput(boca: Boca, newDescription: string): void {
+    boca.descripcion = newDescription;
+    this.descriptionChanges.next(boca);
+    this.pristineBocas = false;
+  }
+
+  updateBocaDescription(bocaToUpdate: Boca): void {
+
+    const bocaIndex = this.bocas.findIndex(boca => boca.nroBoca === bocaToUpdate.nroBoca);
+    if (bocaIndex !== -1) {
+      this.bocas[bocaIndex] = { ...this.bocas[bocaIndex], descripcion: bocaToUpdate.descripcion };
+      const updatedBocas = [...this.bocas];
+
+      this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
+        next: (response) => {
+          if (response.status === 'OK') {
+            this.openSnackBar('Descripcion actualizada correctamente', 'X', 'green-snackbar');
+            this.getBocas();
+            this.pristineBocas = false;
+          } else {
+            this.openSnackBar('Error al actualizar la descripcion', 'X', 'red-snackbar');
+          }
+        },
+        error: (error) => {
+          this.openSnackBar('Error al actualizar la descripcion', 'X', 'red-snackbar');
+          console.error('Error al actualizar la descripcion:', error);
+        },
+      });
+    }
+  }
+
+  updateBocaState(bocaToUpdate: Boca): void {
+    const bocaIndex = this.bocas.findIndex(boca => boca.nroBoca === bocaToUpdate.nroBoca);
+    if (bocaIndex !== -1) {
+      this.bocas[bocaIndex] = { ...this.bocas[bocaIndex], estado: bocaToUpdate.estado };
+      const updatedBocas = [...this.bocas];
+
+      this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
+        next: (response) => {
+          if (response.status === 'OK') {
+            this.openSnackBar('Estado actualizado correctamente', 'X', 'green-snackbar');
+            this.getBocas();
+            this.pristineBocas = false;
+          } else {
+            this.openSnackBar('Error al actualizar el estado', 'X', 'red-snackbar');
+          }
+        },
+        error: (error) => {
+          this.openSnackBar('Error al actualizar el estado', 'X', 'red-snackbar');
+          console.error('Error al actualizar el estado:', error);
+        },
+      });
+    }
+  }
+
+  getBocas(): void {
+    this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
+      this.bocas = d.data;
+      this.bocas.forEach((b) => {
+        if (!this.bocaGridForm.contains(`control-${b.nroBoca}-${b.descripcion}`)) {
+          this.bocaGridForm.addControl(
+            `control-${b.nroBoca}-${b.descripcion}`,
+            new FormControl(b.descripcion, Validators.maxLength(100))
+          );
+        }
+
+      });
+      if (this.mode == 'View') {
+        this.bocaGridForm.disable();
+      }
     });
   }
 }

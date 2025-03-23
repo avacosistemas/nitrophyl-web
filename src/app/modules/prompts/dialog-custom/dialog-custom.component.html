@@ -1,0 +1,33 @@
+<div>
+    <div class="w-full flex justify-between">
+        <div class="flex mt-3">
+            <div class="warning-icon">
+                <mat-icon svgIcon="heroicons_outline:exclamation"></mat-icon>
+            </div>
+            <h1 class="font-semibold mt-2 ml-2">{{ data.title }}</h1>
+        </div>
+        <button mat-flat-button (click)="onCancel()">
+            <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
+        </button>
+    </div>
+    <div class="ml-11 mr-15">
+        <p>{{ data.message }}</p>
+    </div>
+    <mat-dialog-actions style="display: flex; justify-content: flex-end;" class="flex gap-2">
+        <button mat-flat-button="" class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="onCancel()"
+            cdkFocusInitial>
+            <span class="mat-button-wrapper"> {{ data.cancelButtonText || 'Cancelar' }} </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+        <button mat-flat-button="" *ngIf="data.showBackButton"
+            class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="onBack()">
+            <span class="mat-button-wrapper"> Volver </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+        <button mat-flat-button="" color="warn" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+            (click)="onConfirm()">
+            <span class="mat-button-wrapper"> {{ data.confirmButtonText }} </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+    </mat-dialog-actions>
+</div>

@@ -7,7 +7,8 @@
                 <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
                     <mat-expansion-panel-header class="h-12">
                         <mat-panel-title>
-                            <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">Búsqueda</span>
+                            <span
+                                class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">Búsqueda</span>
                         </mat-panel-title>
                     </mat-expansion-panel-header>
                     <form [formGroup]="searchForm" class="mt-2">
@@ -17,8 +18,8 @@
                                 <input id="code" matInput [formControlName]="'code'" placeholder="Código">
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-1/3">
-                                <mat-label> Descripción </mat-label>
-                                <input id="name" matInput [formControlName]="'name'" placeholder="Descripción">
+                                <mat-label> Nombre </mat-label>
+                                <input id="name" matInput [formControlName]="'name'" placeholder="Nombre">
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-1/3">
                                 <mat-label> Estado </mat-label>
@@ -27,35 +28,81 @@
                                     <mat-option value="INACTIVO">Inactivo</mat-option>
                                     <mat-option value="REPARACION">En Reparación</mat-option>
                                     <mat-option value="">Todos</mat-option>
-                                  </mat-select>
+                                </mat-select>
                             </mat-form-field>
                         </div>
-                        <div class="row flex gap-3 justify-around">
-                            <mat-form-field appearance="outline" class="w-1/3">
-                                <mat-label> Dimensión </mat-label>
-                                <mat-select [formControlName]="'measurements'" placeholder='Dimensión'>
-                                    <mat-option value="ALTO">Alto</mat-option>
-                                    <mat-option value="ANCHO">Ancho</mat-option>
-                                    <mat-option value="PROFUNDIDAD">Profundidad</mat-option>
-                                    <mat-option value="DIAMETRO">Diámetro</mat-option>
-                                  </mat-select>
-                            </mat-form-field>
-                            <mat-form-field appearance="outline" class="w-1/3">
-                                <mat-label> Mínimo </mat-label>
-                                <input type="number" id="min" matInput [formControlName]="'min'" placeholder="Mínimo">
-                            </mat-form-field>
-                            <mat-form-field appearance="outline" class="w-1/3">
-                                <mat-label> Máximo </mat-label>
-                                <input type="number" id="max" matInput [formControlName]="'max'" placeholder="Máximo">
-                            </mat-form-field>
+                        <div class="row flex gap-3 justify-between w-full">
+                            <div class="flex flex-col gap-1 w-[23%]">
+                                <span class="text-base font-extrabold">Alto</span>
+                                <div class="flex gap-2">
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Mínimo</mat-label>
+                                        <input type="number" matInput [formControlName]="'altomin'">
+                                    </mat-form-field>
+
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Máximo</mat-label>
+                                        <input type="number" matInput [formControlName]="'altomax'">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-1 w-[23%]">
+                                <span class="text-base font-extrabold">Ancho</span>
+                                <div class="flex gap-2">
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Mínimo</mat-label>
+                                        <input type="number" matInput [formControlName]="'anchomin'">
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Máximo</mat-label>
+                                        <input type="number" matInput [formControlName]="'anchomax'">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-1 w-[23%]">
+                                <span class="text-base font-extrabold">Profundidad</span>
+                                <div class="flex gap-2">
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Mínima</mat-label>
+                                        <input type="number" matInput [formControlName]="'profumin'">
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Máxima</mat-label>
+                                        <input type="number" matInput [formControlName]="'profumax'">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-1 w-[23%]">
+                                <span class="text-base font-extrabold">Diámetro</span>
+                                <div class="flex gap-2">
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Mínimo</mat-label>
+                                        <input type="number" matInput [formControlName]="'diametromin'">
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="w-1/2">
+                                        <mat-label>Máximo</mat-label>
+                                        <input type="number" matInput [formControlName]="'diametromax'">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+
                         </div>
-                        <div class="row flex justify-end">
-                            <button mat-flat-button="" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" (click)="search()">
+                        <div class="flex shrink-0 justify-end items-center gap-2">
+                            <button mat-stroked-button (click)="limpiarFiltros()"
+                                class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
+                                <span class="mat-button-wrapper"> Limpiar </span>
+                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                            </button>
+
+                            <button mat-flat-button (click)="search()"
+                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
                                 <span class="mat-button-wrapper">
                                     Buscar
                                 </span>
                                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                                
                             </button>
                         </div>
                     </form>
@@ -63,37 +110,66 @@
             </mat-accordion>
             <table mat-table [dataSource]="moldes" class="border-2 rounded-2xl mt-5 w-full">
                 <ng-container matColumnDef="code">
-                    <th mat-header-cell *matHeaderCellDef> Código </th>
-                    <td mat-cell *matCellDef="let element"> {{element.codigo}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"> Código </th>
+                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.codigo}} </td>
                 </ng-container>
                 <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Descripción </th>
+                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
                     <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
                 </ng-container>
                 <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef> Estado </th>
-                    <td mat-cell *matCellDef="let element"> {{element.estado}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="text-center"> Estado </th>
+                    <td mat-cell *matCellDef="let element" class="text-center"> {{element.estado}} </td>
                 </ng-container>
+                <ng-container matColumnDef="ubicacion">
+                    <th mat-header-cell *matHeaderCellDef> Ubicación </th>
+                    <td mat-cell *matCellDef="let element"> {{element.ubicacion}} </td>
+                </ng-container>
+                <ng-container matColumnDef="alto">
+                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center text-center"><mat-icon
+                            svgIcon="height"></mat-icon>
+                    </th>
+                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.alto}} </td>
+                </ng-container>
+                <ng-container matColumnDef="ancho">
+                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon svgIcon="height"
+                            style="transform: rotate(90deg);"></mat-icon></th>
+                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.ancho}} </td>
+                </ng-container>
+                <ng-container matColumnDef="profundidad">
+                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon
+                            svgIcon="open_in_full"></mat-icon></th>
+                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.profundidad}} </td>
+                </ng-container>
+                <ng-container matColumnDef="diametro">
+                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon [svgIcon]="'hide_source'"
+                            style="transform: rotate(90deg);"></mat-icon></th>
+                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.diametro}} </td>
+                </ng-container>
+
                 <ng-container matColumnDef="acciones">
                     <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let row" class="text-right">
                         <button>
                             <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
-                                [routerLink]="['../molde', row.id]" (click)="openProfile(1)"></mat-icon>
+                                (click)="goToEdit(row.id)"></mat-icon>
                         </button>
                         <button>
                             <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"
-                                [routerLink]="['../molde', row.id]" (click)="openProfile(2)"></mat-icon>
+                                (click)="goToView(row.id)"></mat-icon>
                         </button>
                         <button>
                             <mat-icon svgIcon="heroicons_solid:switch-vertical" matTooltip="Ingresos / Egresos"
-                                [routerLink]="['../ingresos-egresos', row.id]" (click)="openProfile(3)"></mat-icon>
+                                (click)="goToIngresosEgresos(row.id)"></mat-icon>
                         </button>
                     </td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
+            <mat-paginator [length]="totalReg" [pageSizeOptions]="[5, 10, 25, 50, 100]" [pageSize]="pageSize"
+                (page)="handlePageEvent($event)" showFirstLastButtons aria-label="Seleccione la página de moldes">
+            </mat-paginator>
         </div>
     </div>
 </div>
