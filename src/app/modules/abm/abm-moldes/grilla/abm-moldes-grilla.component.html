@@ -137,13 +137,13 @@
                     <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.ancho}} </td>
                 </ng-container>
                 <ng-container matColumnDef="profundidad">
-                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon
+                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon style="transform: scale(0.7);"
                             svgIcon="open_in_full"></mat-icon></th>
                     <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.profundidad}} </td>
                 </ng-container>
                 <ng-container matColumnDef="diametro">
                     <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon [svgIcon]="'hide_source'"
-                            style="transform: rotate(90deg);"></mat-icon></th>
+                            style=" transform: scale(0.7)  rotate(90deg);" ></mat-icon></th>
                     <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.diametro}} </td>
                 </ng-container>
 
