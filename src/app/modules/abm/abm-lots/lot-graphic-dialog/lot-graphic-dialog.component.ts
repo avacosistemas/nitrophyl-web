@@ -124,7 +124,6 @@ export class LotGraphicDialogComponent implements OnInit {
           next: (response) => {
             this.openSnackBar(true, 'Gráfico cargado correctamente');
             this.loadFiles();
-            this.dialogRef.close({ action: 'upload' });
           },
           error: (error) => {
             console.error('Error al cargar el gráfico', error);

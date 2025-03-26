@@ -209,7 +209,8 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
               const nombreArchivo = response.data.nombre;
 
               this.dialog.open(PDFModalDialogComponent, {
-                maxWidth: '75%',
+                maxWidth: '90%',
+                width: '860px',
                 data: {
                   src: archivoBase64,
                   title: nombreArchivo,

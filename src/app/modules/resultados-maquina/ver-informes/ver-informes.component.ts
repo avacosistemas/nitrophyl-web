@@ -127,7 +127,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
             this.totalRegistros = 0;
             this.pruebas = [];
             this.machineService.setSubtitle('');
-            this.displayedColumns = ['#', 'Fecha', 'Formula', 'Lote', 'Estado'];
+            this.displayedColumns = ['Fecha', 'Formula', 'Lote', 'Estado'];
             return;
         }
 
@@ -160,18 +160,18 @@ export class VerInformesComponent implements OnInit, OnDestroy {
             .getPruebasPorMaquina(idMaquinaSeleccionada)
             .pipe(
                 tap((pruebasResponse) => {
+                    this.displayedColumns = ['Fecha', 'Formula', 'Lote', 'Estado',];
                     if (pruebasResponse && pruebasResponse.data) {
                         this.pruebas = pruebasResponse.data;
                         this.pruebas.sort((a, b) => a.posicion - b.posicion);
-
-                        this.displayedColumns = ['#', 'Fecha', 'Formula', 'Lote', 'Estado',];
+    
                         this.pruebas.forEach(prueba => {
                             this.displayedColumns.push(prueba.nombre + 'Resultado');
                             this.displayedColumns.push(prueba.nombre + 'Redondeo');
                         });
                     } else {
                         this.pruebas = [];
-                        this.displayedColumns = ['#', 'Fecha', 'Formula', 'Lote', 'Estado'];
+                        this.displayedColumns = ['Fecha', 'Formula', 'Lote', 'Estado'];
                     }
                 }),
                 switchMap(() => this.machinesService.getLotesPorMaquina(params))
@@ -193,7 +193,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
 
                         this.mostrarColumnaObservaciones = this.lotes.some(lote => lote.observaciones);
 
-                        this.displayedColumns = ['#', 'Fecha', 'Formula', 'Lote', 'Estado',];
+                        this.displayedColumns = ['Fecha', 'Formula', 'Lote', 'Estado',]; 
                         if (this.mostrarColumnaObservaciones) {
                             this.displayedColumns.push('Observaciones');
                         }
@@ -212,7 +212,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
                         this.totalRegistros = 0;
                         this.machineService.setSubtitle('');
                         this.mostrarColumnaObservaciones = false;
-                        this.displayedColumns = ['#', 'Fecha', 'Formula', 'Lote', 'Estado'];
+                        this.displayedColumns = ['Fecha', 'Formula', 'Lote', 'Estado'];
                     }
                     this.cargaCompleta = true;
                 },
@@ -230,8 +230,8 @@ export class VerInformesComponent implements OnInit, OnDestroy {
             let redondeo = null;
 
             if (resultadoEnsayo) {
-                resultado = this.formatDecimal(resultadoEnsayo.resultado);
-                redondeo = this.formatDecimal(resultadoEnsayo.redondeo);
+                resultado = resultadoEnsayo.resultado;
+                redondeo = resultadoEnsayo.redondeo;
 
                 if (resultado === redondeo) {
                     redondeo = null;
@@ -344,19 +344,21 @@ export class VerInformesComponent implements OnInit, OnDestroy {
         this.cargarDatos(this.machineService.getSelectedMachine());
     }
 
-    obtenerValorResultado(element: any, columna: string): any {
-        if (columna === 'Resultado') {
-            return element.resultadoGeneral || '';
+    obtenerValorResultado(element: LoteConResultadosCombinadosExtend, columna: string): any {
+        const pruebaNombre = columna.replace('Resultado', '').replace('Redondeo', '');
+        const tipoResultado = columna.endsWith('Resultado') ? 'resultado' : 'redondeo';
+    
+        const prueba = this.pruebas.find(p => p.nombre === pruebaNombre);
+        if (!prueba) {
+            return '';
         }
-        if (columna === 'Redondeo') {
-            return element.redondeoGeneral || '';
+    
+        const resultadoEnsayo = element.resultados.find(r => r.idMaquinaPrueba === prueba.id);
+    
+        if (resultadoEnsayo) {
+            return resultadoEnsayo[tipoResultado] || '';
         }
-
-        for (const resultado of element.resultadosCombinados) {
-            if (resultado.hasOwnProperty(columna)) {
-                return resultado[columna];
-            }
-        }
+    
         return '';
     }
 
@@ -444,7 +446,8 @@ export class VerInformesComponent implements OnInit, OnDestroy {
     }
 
     formatDataForExport(data: any[], tipo: string): any[] {
-        return data.map(item => {
+
+        const formattedExportData = data.map(item => {
             const formattedItem: any = {
                 'Fecha': item.fecha,
                 'Formula': item.nombreFormula,
@@ -455,41 +458,47 @@ export class VerInformesComponent implements OnInit, OnDestroy {
 
             this.pruebas.forEach(prueba => {
                 const resultado = item.resultados.find(r => r.idMaquinaPrueba === prueba.id);
-                let resultadoValue = '';
-                let redondeoValue = '';
+                let resultadoValue: number | string = '';
+                let redondeoValue: number | string = '';
 
                 if (resultado) {
-                    resultadoValue = this.formatDecimalExport(resultado.resultado, tipo);
-                    redondeoValue = this.formatDecimalExport(resultado.redondeo, tipo);
+                    resultadoValue = resultado.resultado;
+                    redondeoValue = resultado.redondeo;
                 }
 
-                formattedItem[`${prueba.nombre} Resultado`] = tipo === 'excel' ? resultadoValue : resultadoValue;
-                formattedItem[`${prueba.nombre} Redondeo`] = tipo === 'excel' && redondeoValue !== '' ? redondeoValue : redondeoValue;
+                const formattedResultado = this.formatDecimalExportValue(resultadoValue, prueba.nombre + ' Resultado');
+                const formattedRedondeo = this.formatDecimalExportValue(redondeoValue, prueba.nombre + ' Redondeo');
+
+
+                formattedItem[`${prueba.nombre} Resultado`] = formattedResultado;
+                formattedItem[`${prueba.nombre} Redondeo`] = formattedRedondeo;
             });
 
             return formattedItem;
         });
+
+        return formattedExportData;
     }
 
+    formatDecimalExportValue(value: string | number | null, fieldName: string): string {
+        if (value === null || value === undefined || value === '') {
+            return '';
+        }
+    
+        let inputValueString: string;
+    
+        if (typeof value === 'number') {
+            inputValueString = value.toString();
+        } else {
+            inputValueString = value;
+        }
+        return inputValueString.toString();
+    }
+
+    
     getValorPrueba(item: any, prueba: MaquinaPrueba, tipo: string): any {
         const resultadoObj = item.resultadosCombinados.find((obj: any) => obj.hasOwnProperty(`${prueba.nombre} ${tipo === 'resultado' ? 'Resultado' : 'Redondeo'}`));
         return resultadoObj ? resultadoObj[`${prueba.nombre} ${tipo === 'resultado' ? 'Resultado' : 'Redondeo'}`] : '';
-    }
-
-    formatDecimalExport(value: string | number | null, tipo: string): string {
-        if (value === null || value === undefined) {
-            return '';
-        }
-
-        const num = typeof value === 'string' ? parseFloat(value) : value;
-
-        if (isNaN(num)) {
-            return '';
-        }
-
-        let formatted = num.toFixed(2).replace('.', ',');
-
-        return formatted;
     }
 
     public displayFormulaFn(formula: IFormula | null): string {

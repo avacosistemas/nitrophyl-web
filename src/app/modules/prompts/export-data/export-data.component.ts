@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter, AfterViewInit, ViewChild } from '@angular/core';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
+import * as FileSaver from 'file-saver';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { MatMenuTrigger } from '@angular/material/menu';
@@ -26,7 +27,6 @@ export class ExportDataComponent implements AfterViewInit {
 
   descargarCsv(data: any[]): void {
     if (!data || data.length === 0) {
-      console.warn('No hay datos para exportar a CSV.');
       return;
     }
     const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
@@ -46,57 +46,44 @@ export class ExportDataComponent implements AfterViewInit {
       return;
     }
 
-    const tableHtml = this.convertJsonToHtmlTable(data);
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
 
-    const htmlContent = `
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-            }
-            table {
-              border-collapse: collapse;
-              width: 100%;
-            }
-            th {
-              background-color:rgb(7, 34, 60) !important; /* Azul Marino Oscuro */
-              color: #ffffff !important;
-              font-weight: bold !important;
-              padding: 10px !important;
-              font-size: 12pt !important;
-            }
-            th, td {
-              border: 1px solid #ddd !important;
-              padding: 8px !important;
-              text-align: left !important;
-              white-space: nowrap !important;
-              font-size: 10pt !important;
-            }
-            td {
-              background-color: #f9f9f9 !important;
-            }
-            tr:nth-child(even) td {
-              background-color: #f2f2f2 !important;
-            }
-          </style>
-        </head>
-        <body>
-          <table>
-            ${tableHtml}
-          </table>
-        </body>
-      </html>
-    `;
+    const headerCellStyle = {
+      font: { bold: true, color: { rgb: 'FFFFFF' } },
+      fill: { fgColor: { rgb: '2C3344' } },
+      alignment: { horizontal: 'center', vertical: 'middle' },
+    };
 
-    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
-    const downloadLink = document.createElement('a');
-    downloadLink.href = URL.createObjectURL(blob);
-    downloadLink.download = this.getFileName('xls');
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
+    const bodyCellStyle = {
+      fill: { fgColor: { rgb: 'F0F0F0' } },
+      alignment: { horizontal: 'center', vertical: 'middle' },
+      border: {
+        bottom: { style: 'thin', color: { rgb: '565656' } },
+      }
+    };
+
+    const headerRange = XLSX.utils.decode_range(`A1:${String.fromCharCode(64 + Object.keys(data[0]).length)}1`);
+    for (let C = headerRange.s.c; C <= headerRange.e.c; ++C) {
+      const headerCellAddress = XLSX.utils.encode_cell({ r: 0, c: C });
+      ws[headerCellAddress].s = headerCellStyle;
+    }
+
+    const dataRange = XLSX.utils.decode_range(`A2:${String.fromCharCode(64 + Object.keys(data[0]).length)}${data.length + 1}`);
+
+    for (let R = dataRange.s.r; R <= dataRange.e.r; ++R) {
+      for (let C = dataRange.s.c; C <= dataRange.e.c; ++C) {
+        const cellAddress = XLSX.utils.encode_cell({ r: R, c: C });
+        if (!ws[cellAddress]) ws[cellAddress] = { t: 's', v: '' };
+        ws[cellAddress].s = bodyCellStyle;
+      }
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Datos');
+
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array', bookSST: true });
+    const blob = new Blob([wbout], { type: 'application/octet-stream' });
+    FileSaver.saveAs(blob, this.getFileName('xlsx'));
   }
 
   descargarPdf(data: any[]): void {
@@ -124,50 +111,14 @@ export class ExportDataComponent implements AfterViewInit {
         cellPadding: 2,
         overflow: 'linebreak',
         tableWidth: 'auto',
+        halign: 'center'
       },
+      headStyles: {
+        halign: 'center'
+      }
     });
 
     doc.save(this.getFileName('PDF'));
-  }
-
-  private convertJsonToHtmlTable(data: any[]): string {
-    if (!data || data.length === 0) {
-      return '';
-    }
-
-    let html = '<table><thead><tr>';
-    const headers = Object.keys(data[0]);
-    headers.forEach((header) => {
-      html += `<th>${this.escapeHtml(header)}</th>`;
-    });
-    html += '</tr></thead><tbody>';
-
-    data.forEach((item) => {
-      html += '<tr>';
-      headers.forEach((header) => {
-        html += `<td>${this.escapeHtml(item[header])}</td>`;
-      });
-      html += '</tr>';
-    });
-
-    html += '</tbody></table>';
-    return html;
-  }
-
-  private escapeHtml(text: any): string {
-    if (text === null || text === undefined) {
-      return '';
-    }
-    const map: any = {
-      '&': '&',
-      '<': '<',
-      '>': '>',
-      '"': '"',
-      '\'': '\'',
-    };
-
-    // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    return String(text).replace(/[&<>"']/g, function (m) { return map[m]; });
   }
 
   private getFileName(fileType: string): string {

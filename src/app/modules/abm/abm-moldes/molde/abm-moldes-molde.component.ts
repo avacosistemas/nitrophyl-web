@@ -119,7 +119,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       codigo: [null, [Validators.required, Validators.maxLength(30)]],
       estado: [null, [Validators.required]],
       nombre: [null, [Validators.required, Validators.maxLength(100)]],
-      observacion: [null],
+      observaciones: [null],
       ubicacion: [null],
       client: [null, [Validators.required]],
     });
@@ -267,50 +267,50 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this.currentTab = newTab;
     let mostrarBoton = false;
 
-    switch (newTab) {
-      case 0:
-        mostrarBoton = true;
-        break;
-      case 1:
-        mostrarBoton = false;
-        break;
-      case 2:
-        mostrarBoton = false;
-        break;
-      case 3:
-        mostrarBoton = true;
-        break;
-      case 4:
-        mostrarBoton = true;
-        break;
-      case 5:
-        mostrarBoton = true;
-        break;
-      case 6:
-        mostrarBoton = false;
-        break;
+    if (this.mode !== 'View') {
+      switch (newTab) {
+        case 0:
+          mostrarBoton = true;
+          break;
+        case 1:
+          mostrarBoton = false;
+          break;
+        case 2:
+          mostrarBoton = false;
+          break;
+        case 3:
+          mostrarBoton = true;
+          break;
+        case 4:
+          mostrarBoton = true;
+          break;
+        case 5:
+          mostrarBoton = false;
+          break;
+        case 6:
+          mostrarBoton = false;
+          break;
+      }
+    } else {
+      mostrarBoton = false;
     }
 
     this.ABMoldesService.events.next({ mostrarBotonEdicion: mostrarBoton });
-    switch (newTab) {
-      case 0:
-        this.ABMoldesService.viewEvents.next('Guardar Molde');
-        break;
-      case 1:
-        break;
-      case 2:
-        break;
-      case 3:
-        this.ABMoldesService.viewEvents.next('Subir Plano');
-        break;
-      case 4:
-        this.ABMoldesService.viewEvents.next('Subir Foto');
-        break;
-      case 5:
-        break;
-      case 6:
-        break;
+    let viewEventText = '';
+    if (this.mode !== 'View') {
+      switch (newTab) {
+        case 0:
+          viewEventText = 'Guardar Molde';
+          break;
+        case 3:
+          viewEventText = 'Subir Plano';
+          break;
+        case 4:
+          viewEventText = 'Subir Foto';
+          break;
+      }
     }
+    this.ABMoldesService.viewEvents.next(viewEventText);
   }
 
   canChangeTab(): boolean {
@@ -371,19 +371,16 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   edit() {
-    switch (this.currentTab) {
-      case 0:
+    if (this.currentTab === 0) {
+      setTimeout(() => {
         this.editMolde();
-        break;
-      case 3:
-        this.uploadPlano();
-        break;
-      case 4:
-        this.uploadFoto();
-        break;
-      case 6:
-        this.addObservacion();
-        break;
+      }, 0);
+    } else if (this.currentTab === 3) {
+      this.uploadPlano();
+    } else if (this.currentTab === 4) {
+      this.uploadFoto();
+    } else if (this.currentTab === 6) {
+      this.addObservacion();
     }
   }
 
@@ -405,6 +402,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       } else {
         this.openSnackBar('Por favor, corrija los errores en el formulario.', 'X', 'red-snackbar');
       }
+      return;
+    }
+
+    if (!this.moldeForm.controls || !this.moldeForm.controls.client) {
+      console.error("Error: moldeForm.controls or moldeForm.controls.client is undefined!");
+      this.openSnackBar('Error al guardar el molde. Recargue la página e intente nuevamente.', 'X', 'red-snackbar');
       return;
     }
 
