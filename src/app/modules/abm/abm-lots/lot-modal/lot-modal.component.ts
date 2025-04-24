@@ -61,16 +61,16 @@ export class LotModalComponent implements OnInit {
                                 : this.formulas.slice();
                         })
                     );
+
+                    if (this.isEditing) {
+                        this.loadLotData();
+                    }
                 },
                 (error) => {
                     console.error('Error fetching formulas:', error);
                     this.formulaFail = true;
                 }
             );
-
-        if (this.isEditing) {
-            this.loadLotData();
-        }
     }
 
     createForm(): void {
@@ -97,7 +97,8 @@ export class LotModalComponent implements OnInit {
     loadLotData(): void {
         this.lotService.read(this.data.lotId).subscribe({
             next: (value: any) => {
-                const lotData = value.data.body.data;
+                const lotData = value.data;
+
                 const dateParts = lotData.fecha.split('/');
                 const dateObject = new Date(
                     +dateParts[2],
