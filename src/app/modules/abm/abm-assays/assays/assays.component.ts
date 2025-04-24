@@ -52,9 +52,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   public component: string = 'all';
   public mode: string; // Mode: 'create' or 'view'.
   public title: string;
-  public drawer: boolean; // Drawer state.
+  public drawer: boolean;
 
-  public assays$: Observable<IAssay[]>; // Assays list.
+  public assays$: Observable<IAssay[]>;
   // * Table assays.
   public displayedColumnsAssays: string[] = [
     'resultados',
@@ -90,7 +90,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   };
   private machine: number;
   private lot: number;
-  private subscription: Subscription; // Drawer subscription.
+  private subscription: Subscription;
+  private selectedAssayId: number;
+  private selectedAssayName: string;
 
   constructor(
     private assayService: AssayService,
@@ -133,6 +135,10 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
                   Array.isArray(res.data) ? res.data : [res.data]
                 )
               );
+          }
+          if (this.mode === 'edit') {
+            this.title = 'Editar ensayo ' + this.selectedAssayName;
+            this._getAssayForEdit(this.selectedAssayId);
           }
         }
         this.drawer = drawer;
@@ -193,6 +199,13 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.assayService.mode = 'view';
     this.assayService.toggleDrawer();
+    this.assay$ = this.assayService
+      .getAssay(this.machine)
+      .pipe(
+        map((res: IAssayDetailResponse | IAssayDetailsResponse) =>
+          Array.isArray(res.data) ? res.data : [res.data]
+        )
+      );
   }
 
   public save(): void {
@@ -275,6 +288,207 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  public edit(assay: IAssay): void {
+    this.selectedAssayId = assay.id;
+    this.machine = assay.id;
+    this.selectedAssayName = assay.maquina;
+    this.title = 'Editar ' + assay?.maquina;
+    this.assayObservations = assay?.observaciones;
+
+    this.assayService.mode = 'edit';
+    this.assayService.toggleDrawer();
+  }
+
+  private _parseDate(dateStr: string): Date {
+    if (!dateStr) return new Date();
+
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      return new Date(+parts[2], +parts[1] - 1, +parts[0]);
+    }
+    return new Date();
+  }
+
+  public update(): void {
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    let failed: boolean = false;
+
+    const date: string = this._dPipe.transform(
+      this.form.controls['fecha'].value,
+      'yyyy-MM-dd'
+    );
+
+    this.assayService.get(this.lot).subscribe({
+      next: (assayRes: IAssaysResponse | IAssayResponse) => {
+        const assayData = Array.isArray(assayRes.data) ? assayRes.data : [assayRes.data];
+
+        const selectedAssay = assayData.find(assay => assay.id === this.selectedAssayId);
+
+        if (!selectedAssay) {
+          console.error('Assay not found for ID:', this.selectedAssayId);
+          this._snackBar(false, 'Ensayo no encontrado');
+          return;
+        }
+        const ensayoDTO: any = { 
+          id: this.selectedAssayId,
+          idLote: Number(this.lot),
+          idConfiguracionPrueba: selectedAssay.idConfiguracionPrueba,
+          fecha: date,
+          observaciones: this.form.get('observaciones')?.value || '',
+          estado: '',
+          maquina: this.selectedAssayName,
+          resultados: this.form
+            .get('params')
+            .value.map((param: any) => {
+              if (
+                (param.minimo === null || param.redondeo < param.minimo) &&
+                (param.maximo === null || param.redondeo > param.maximo) &&
+                param.resultado !== null &&
+                param.redondeo !== param.resultado
+              ) {
+                this._snackBar(false, param.nombre);
+                failed = true;
+                return;
+              }
+
+              return {
+                id: param.id,
+                idEnsayo: param.idEnsayo,
+                idConfiguracionPruebaParametro: param.idConfiguracionPruebaParametro,
+                nombre: param.nombre,
+                minimo: param.minimo,
+                maximo: param.maximo,
+                resultado: Number(param.resultado),
+                redondeo: Number(param.redondeo),
+                norma: param.norma
+              };
+            }).filter(result => result !== undefined),
+        };
+
+        if (!failed) {
+          this._dialogUpdate(ensayoDTO);
+        }
+      },
+      error: (err: any) => {
+        console.error('update() =>', err);
+        this._snackBar(false, 'Error al cargar la información del ensayo');
+      }
+    });
+  }
+
+  private _dialogUpdate(ensayoDTO: any): void { 
+    const dialogRef = this.dialog.open(AssayDialogComponent, {
+      width: 'fit-content',
+      data: { isUpdate: true }
+    });
+
+    dialogRef
+      .afterClosed()
+      .subscribe((result: { status: string; observation: string }) => {
+        if (result) {
+          ensayoDTO.estado = result.status;
+          ensayoDTO.observaciones = result.observation;
+          this._updateAssay(ensayoDTO);
+        }
+      });
+  }
+
+  private _updateAssay(ensayoDTO: any): void {
+    const error: string = 'abm-lots => lots.component.ts => _update() =>';
+
+    this.assayService.update(ensayoDTO).subscribe({
+      next: () => {
+        this._snackBar(true);
+        this._reset();
+
+        this.assayService.fetchAssays(this.assayService.lot.id);
+      },
+      error: (err: any) => {
+        console.log(error, err);
+        this._snackBar(false);
+      },
+    });
+  }
+
+  private _getAssayForEdit(assayId: number): void {
+    const error: string = 'abm-assays => assays.component.ts => _getAssayForEdit() =>';
+
+    this.form = this.formBuilder.group({
+      fecha: [null, Validators.required],
+      params: this.formBuilder.array([]),
+      observaciones: ['']
+    });
+
+    this.assayService.get(this.lot).subscribe({
+        next: (assayRes: IAssaysResponse | IAssayResponse) => {
+          const assayData = Array.isArray(assayRes.data) ? assayRes.data : [assayRes.data];
+
+          const selectedAssay = assayData.find(assay => assay.id === assayId);
+
+          if (!selectedAssay) {
+            console.error('Assay not found for ID:', assayId);
+            this._snackBar(false, 'Ensayo no encontrado');
+            return;
+          }
+
+          this.form.controls['fecha'].setValue(this._parseDate(selectedAssay.fecha));
+          this.form.controls['observaciones'].setValue(selectedAssay.observaciones);
+
+          this.assayService.getAssay(assayId).subscribe({
+            next: (assayDetailsRes: IAssayDetailResponse | IAssayDetailsResponse) => {
+              const assayDetails = Array.isArray(assayDetailsRes.data) ? assayDetailsRes.data : [assayDetailsRes.data];
+
+              const formGroups = assayDetails.map(detail => {
+                const group = this.formBuilder.group({
+                  id: [detail.id],
+                  idEnsayo: [detail.idEnsayo],
+                  idConfiguracionPruebaParametro: [detail.idConfiguracionPruebaParametro],
+                  nombre: [detail.nombre],
+                  minimo: [detail.minimo],
+                  maximo: [detail.maximo],
+                  resultado: [
+                    detail.resultado,
+                    [Validators.required, Validators.pattern(/^\d+(\.\d{1,4})?$/)]
+                  ],
+                  redondeo: [
+                    detail.redondeo,
+                    [Validators.required, Validators.pattern(/^\d+(\.\d{1,4})?$/)]
+                  ],
+                  norma:[detail.norma]
+                });
+
+                group.get('resultado').valueChanges.subscribe((value) => {
+                  group.get('redondeo').setValue(value, { emitEvent: false });
+                });
+
+                return group;
+              });
+
+              (this.form.get('params') as FormArray).clear();
+
+              formGroups.forEach(group => {
+                (this.form.get('params') as FormArray).push(group);
+              });
+
+              this.paramsArray = (this.form.get('params') as FormArray).controls;
+            },
+            error: (err: any) => {
+              console.error(error, err);
+              this._snackBar(false, 'Error al cargar los detalles del ensayo');
+            }
+          });
+        },
+        error: (err: any) => {
+          console.error(error, err);
+          this._snackBar(false, 'Error al cargar la información del ensayo');
+        }
+      });
+  }
+
   private _get(): void {
     const error: string = 'abm-assays => assays.component.ts => _get() =>';
     this.configTestService.getId(this.machine).subscribe({
@@ -346,8 +560,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private _reset(): void {
-    if (this.mode === 'create') {
+    if (this.mode === 'create' || this.mode === 'edit') {
       this.form.reset();
+      (this.form.get('params') as FormArray).clear();
     }
     this.assayService.toggleDrawer();
   }

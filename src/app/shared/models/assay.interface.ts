@@ -11,6 +11,7 @@ export interface IAssay {
   nroLote: string;
   condiciones?: ICondition[] | ICondition[];
   parametros?: IParams[] | IParams;
+  idConfiguracionPrueba?: number;  // Add this line
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -28,6 +29,7 @@ export interface IAssayDetail {
   maximo: number;
   resultado: number;
   redondeo: number;
+  norma?: string;
 }
 
 export interface IAssayCreate {
