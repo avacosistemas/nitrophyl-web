@@ -74,12 +74,20 @@ export class AssayService {
     return this.http.post<IAssayResponse>(`${this._url}ensayo`, assay);
   }
 
+  public update(ensayoDTO: any): Observable<IAssayResponse> {
+    return this.http.put<IAssayResponse>(`${this._url}ensayo`, ensayoDTO);
+  }
+
   public toggleDrawer(): void {
     this._drawer.next(!this._drawer.value);
   }
 
   public updateAssays(assays: IAssay[]): void {
     this.assaysSubject.next(assays);
+  }
+  
+  public getAssayConfig(assayId: number): Observable<any> {
+    return this.http.get<any>(`${this._url}ensayo/config/${assayId}`);
   }
 
   public fetchAssays(id: number): void {
