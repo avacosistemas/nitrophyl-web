@@ -16,12 +16,12 @@ import {
   Fotos,
   Molde,
   Planos,
-  Plano
+  Plano,
 } from 'app/shared/models/molde.model';
 import { MoldesService } from 'app/shared/services/moldes.service';
 import { Subscription, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, take } from 'rxjs/operators';
-import { ABMMoldeService } from '../abm-moldes-service';
+import { ABMMoldeService } from '../abm-moldes.service';
 import * as FileSaver from 'file-saver';
 import { ABMMoldesModalComponent } from '../modal/abm-moldes-modal.component';
 import { ClientesService } from 'app/shared/services/clientes.service';
@@ -150,7 +150,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.mode = this.activatedRoute.snapshot.data['mode'];
     this.inicializar();
-
 
     let mostrarBoton = false;
     if (this.mode !== 'View') {
@@ -452,6 +451,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         ubicacion: d.data.ubicacion,
         client: d.data.idClienteDuenio === null ? -1 : d.data.idClienteDuenio,
       });
+      this.ABMoldesService.events.next({ nombreMolde: d.data.nombre });
     });
     this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
       this.bocas = d.data;
@@ -638,7 +638,13 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   getObservaciones() {
     this._molds.getObservaciones(this.currentId).subscribe({
       next: (response: any) => {
-        this.observaciones = response.data;
+        this.observaciones = response.data.map(observacion => {
+          return {
+            ...observacion,
+            fecha: new Date(observacion.fechaCreacion),
+            usuario: observacion.usuarioCreacion
+          };
+        });
       },
       error: (error) => {
         this.openSnackBar('Error al obtener las observaciones', 'X', 'red-snackbar');
@@ -648,8 +654,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   public openFoto(foto: Fotos): void {
-    console.log('Abriendo foto:', foto);
-
     this._molds.downloadFoto(foto.id).subscribe({
       next: (response: any) => {
         const base64Image = response?.data?.archivo;
@@ -686,7 +690,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   public downloadFoto(foto: Fotos): void {
-    console.log('Descargar foto:', foto);
     this._molds.downloadFoto(foto.id).subscribe((response: any) => {
       const byteCharacters = atob(response.data.archivo);
 

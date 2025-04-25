@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpBackend, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, throwError, map } from 'rxjs';
 
 // * Environment.
@@ -30,8 +30,7 @@ export class LotService {
   private readonly _drawer: BehaviorSubject<boolean>;
   private readonly _drawerEdit: BehaviorSubject<boolean>;
 
-  constructor(private readonly http: HttpClient, handler: HttpBackend) {
-    this.http = new HttpClient(handler);
+  constructor(private readonly http: HttpClient) {
     this._drawer = new BehaviorSubject<boolean>(false);
     this.drawer$ = this._drawer.asObservable();
     this._drawerEdit = new BehaviorSubject<boolean>(false);

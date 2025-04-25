@@ -1,5 +1,6 @@
-import { HttpClient, HttpBackend } from '@angular/common/http';
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { EventEmitter,  } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 // * Environment.
@@ -18,7 +19,6 @@ import {
   providedIn: 'root',
 })
 export class FormulasService {
-  // public actions$ = this.action.asObservable();
   public actions$: Observable<boolean>;
 
   public events = new EventEmitter<any>();
@@ -31,8 +31,7 @@ export class FormulasService {
   private testTitle: ITestTitle | undefined;
   private action = new Subject<boolean>();
 
-  constructor(private http: HttpClient, private handler: HttpBackend) {
-    this.http = new HttpClient(handler);
+  constructor(private http: HttpClient) {
     this.actions$ = new Subject<boolean>();
   }
 

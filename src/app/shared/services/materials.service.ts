@@ -1,5 +1,5 @@
-import { HttpClient, HttpBackend } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 // * Environment.
@@ -14,8 +14,7 @@ import { IMaterialsResponse } from '../models/material.interface';
 export class MaterialsService {
   private url: string = `${environment.server}material?idx=nombre&asc=true`;
 
-  constructor(private http: HttpClient, private handler: HttpBackend) {
-    this.http = new HttpClient(handler);
+  constructor(private http: HttpClient) {
   }
 
   public get(): Observable<IMaterialsResponse> {

@@ -89,7 +89,6 @@ export class ABMClientesCrearContactoComponent implements OnInit, OnDestroy {
         };
         model.id = 0;
         model.idCliente = this.clienteId;
-        console.log(model)
         this.clientesService.createContacto(this.clienteId, model).subscribe(d => {
             if(d.status == "OK") {
                 this.openSnackBar("Cambios realizados", "X", "green-snackbar");

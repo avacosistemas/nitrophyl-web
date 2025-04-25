@@ -1,5 +1,5 @@
-import { HttpClient, HttpBackend } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 import { environment } from "environments/environment";
 import { Observable } from "rxjs";
 import { Perfil } from "../models/perfil.model";
@@ -14,9 +14,7 @@ export class PerfilesService {
     private mode: string;
 
     constructor(
-        private http: HttpClient,
-        private handler: HttpBackend) {
-            this.http = new HttpClient(handler)
+        private http: HttpClient) {
     }
 
     public getPerfiles(): Observable<any> {

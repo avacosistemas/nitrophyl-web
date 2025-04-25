@@ -7,12 +7,8 @@ import {
 } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { map, Observable, Subscription, switchMap, of } from 'rxjs';
-import { ActivatedRoute } from '@angular/router';
-
+import { map, Observable, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog } from '@angular/material/dialog';
-import { ConfirmDialogComponent } from './assay-dialog-confirm/assay-dialog-confirm.component';
 
 // * Services.
 import { AssayService } from 'app/shared/services/assay.service';
@@ -32,29 +28,27 @@ import { IFormula } from 'app/shared/models/formula.interface';
   templateUrl: './abm-assays.component.html',
 })
 export class ABMAssaysComponent
-  implements OnInit, AfterContentChecked, OnDestroy
-{
+  implements OnInit, AfterContentChecked, OnDestroy {
   public title: string = 'Ensayos';
   public lot: string = '';
-  public drawer: boolean; // Drawer state.
   public machine: FormControl = new FormControl();
-  public machines$: Observable<IConfigTest[]>; // Machines list.
+  public machines$: Observable<IConfigTest[]>;
 
   public subtitle: string;
   public formula: IFormula | undefined;
 
-  private subscription: Subscription; // Drawer subscription.
+  private subscription: Subscription;
+  public isModalOpen: boolean = false;
+  public selectedMachineName: string = '';
 
   constructor(
     private configTestService: ConfigTestService,
     private assayService: AssayService,
     private router: Router,
     private _cdr: ChangeDetectorRef,
-    private route: ActivatedRoute,
     private formulasService: FormulasService,
-    private dialog: MatDialog,
     private snackBar: MatSnackBar,
-  ) {}
+  ) { }
 
   handleAction(action: string): void {
     switch (action) {
@@ -96,19 +90,29 @@ export class ABMAssaysComponent
         )
       );
 
-    this.subscription = this.assayService.drawer$.subscribe(
-      (drawer: boolean) => {
-        this.drawer = drawer;
-        if (drawer) {
-          this.machine.disable();
-        } else {
-          this.machine.enable();
-          this.machine.reset();
-        }
-      }
-    );
-  }
+    this.subscription = this.machine.valueChanges.subscribe(selectedMachineId => {
+      if (selectedMachineId) {
+        this.machines$.subscribe(machines => {
+          const selectedMachine = machines.find(machine => machine.id === selectedMachineId);
+          if (selectedMachine) {
+            this.selectedMachineName = selectedMachine.maquina;
+          } else {
+            this.selectedMachineName = '';
+          }
+        });
 
+        this.assayService.machine = selectedMachineId;
+      }
+    });
+
+    this.assayService.isModalOpen$.subscribe(isOpen => {
+      this.isModalOpen = isOpen;
+    });
+
+    this.assayService.resetSelect.subscribe(() => {
+      this.machine.setValue(null);
+    })
+  }
 
   public ngAfterContentChecked(): void {
     this._cdr.detectChanges();
@@ -125,45 +129,12 @@ export class ABMAssaysComponent
   }
 
   public add(): void {
-    if (this.drawer) {
-      return;
-    }
-    this.assayService.machine = this.machine.value;
     this.assayService.mode = 'create';
-    this.assayService.toggleDrawer();
-    // const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-    //   data: {
-    //     dismissible: true,
-    //   },
-    // });
 
-    // dialogRef.afterClosed().subscribe((result) => {
-    //   if (result === 'conResultados') {
-    //     this.assayService.machine = this.machine.value;
-    //     this.assayService.mode = 'create';
-    //     this.assayService.toggleDrawer();
-    //   } else if (result === 'sinResultados') {
-    //     this.assayService.machine = this.machine.value;
-    //     this.assayService.mode = 'create';
-    //     this.addAssayWithoutResults();
-    //   }
-    // });
-  }
-
-  private addAssayWithoutResults(): void {
-    const assayData = {
-      idConfiguracionPrueba: this.machine.value,
-      idLote: this.assayService.lot.id,
-    };
-
-    this.assayService.postAssayWithoutResults(assayData).subscribe({
-      next: () => {
-        this.openSnackBar(true, 'Ensayo agregado sin resultados.');
-        this.assayService.fetchAssays(this.assayService.lot.id);
-      },
-      error: (err: any) => {
-        this.openSnackBar(false, 'Error al cargar el ensayo.');
-      },
+    this.assayService.openModal.next({
+      mode: 'create',
+      machineId: this.assayService.machine,
+      machineName: this.selectedMachineName
     });
   }
 
@@ -176,7 +147,7 @@ export class ABMAssaysComponent
 
     this.snackBar.open(snackBarMessage, 'X', {
       duration: snackBarDuration,
-      panelClass: `${snackBarCss}-snackbar`,
+      panelClass: `${css}-snackbar`,
     });
   }
 }

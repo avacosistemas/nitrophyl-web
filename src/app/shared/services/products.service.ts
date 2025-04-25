@@ -1,5 +1,5 @@
-import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { environment } from 'environments/environment';
 import { Observable } from 'rxjs';
 import { Product } from '../models/product.model';
@@ -10,9 +10,7 @@ import { Product } from '../models/product.model';
 export class ProductsService {
 
   constructor(
-    private http: HttpClient,
-    private handler: HttpBackend) {
-        this.http = new HttpClient(handler)
+    private http: HttpClient) {
   }
 
   public getProducts(): Observable<any> {
@@ -52,5 +50,4 @@ export class ProductsService {
     return this.http.post<any>(`${environment.server}productos/compuesto/${id}/quitar/${idPieza}`, null);
     //Buscar la pieza por idPieza y quitarla del listado de productos de la pieza obtenida por id
   }
-
 }

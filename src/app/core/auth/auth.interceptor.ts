@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { catchError, Observable, throwError } from 'rxjs';
 import { AuthService } from 'app/core/auth/auth.service';
@@ -7,24 +7,21 @@ import { Router } from '@angular/router';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
+    private authService: AuthService;
+
     /**
      * Constructor
      */
     constructor(
-        private _authService: AuthService,
+        private injector: Injector,
         private router: Router
     ) {}
 
-    /**
-     * Intercept
-     *
-     * @param req
-     * @param next
-     */
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        this.authService = this.injector.get(AuthService);
         let newReq = req.clone();
 
-        const accessToken = this._authService.accessToken;
+        const accessToken = this.authService.accessToken;
 
         if (accessToken && !AuthUtils.isTokenExpired(accessToken)) {
             newReq = req.clone({
@@ -37,7 +34,7 @@ export class AuthInterceptor implements HttpInterceptor {
                 if (error instanceof HttpErrorResponse && error.status === 401) {
                     const currentUrl = this.router.url;
                     if (currentUrl !== '/sign-in') {
-                        this._authService.signOut();
+                        this.authService.signOut();
                         // location.reload();
                     }
                 }

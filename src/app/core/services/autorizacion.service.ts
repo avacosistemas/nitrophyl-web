@@ -1,5 +1,5 @@
-import { HttpBackend, HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 import { environment } from "environments/environment";
 import { Observable } from "rxjs";
 import { UserLogin } from "../models/user-login.model";
@@ -16,9 +16,7 @@ export class AutorizacionService {
     }
 
     constructor(
-        private http: HttpClient,
-        private handler: HttpBackend) {
-            this.http = new HttpClient(handler)
+        private http: HttpClient) {
     }
 
     public login(userLogin: UserLogin): Observable<any> {

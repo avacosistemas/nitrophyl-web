@@ -1,5 +1,6 @@
-import { HttpClient, HttpBackend } from '@angular/common/http';
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { EventEmitter,  } from '@angular/core';
 import { Observable } from 'rxjs';
 
 // * Environment.
@@ -18,8 +19,7 @@ export class ConfigTestService {
 
   private _url: string = `${environment.server}configuracionPrueba`;
 
-  constructor(private http: HttpClient, private handler: HttpBackend) {
-    this.http = new HttpClient(handler);
+  constructor(private http: HttpClient) {
   }
 
   public getMachines(

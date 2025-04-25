@@ -1,240 +1,66 @@
+<div class="bg-gray-100 w-full">
+  <div class="p-6 sm:p-10">
+    <table mat-table [dataSource]="assays$ | async" class="border-2 rounded-2xl w-full">
+      <ng-container matColumnDef="maquina">
+        <th mat-header-cell *matHeaderCellDef>Maquina</th>
+        <td mat-cell *matCellDef="let element">{{ element.maquina }}</td>
+      </ng-container>
+      
+      <ng-container matColumnDef="fecha">
+        <th mat-header-cell *matHeaderCellDef>Fecha</th>
+        <td mat-cell *matCellDef="let element">{{ element.fecha }}</td>
+      </ng-container>
 
-<mat-drawer-container hasBackdrop="true" class="w-full">
-  <mat-drawer mode="over" position="end" [opened]="drawer" [autoFocus]="false" disableClose="true" class="w-fit">
-    <div class="w-full">
-      <div class="p-4 w-full">
-        <div class="flex w-full py-4 row gap-3 justify-between items-center">
-          <!-- Title -->
-          <h1 class="text-2xl font-semibold pl-2">{{ title }}</h1>
-          <div>
-            <!-- Create or Edit lot -->
-            <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mr-4"
-              (click)="mode === 'create' ? save() : update()" *ngIf="mode === 'create' || mode === 'edit'">
-              <span class="mat-button-wrapper"> {{ mode === 'create' ? 'Guardar' : 'Actualizar' }} </span>
-              <span matripple="" class="mat-ripple mat-button-ripple"></span>
-            </button>
-            <!-- Close -->
-            <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="close()">
-              <span class="mat-button-wrapper"> Cerrar </span>
-              <span matripple="" class="mat-ripple mat-button-ripple"></span>
+      <ng-container matColumnDef="resultados">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let element">
+          <mat-icon [style.color]="
+              element.estado === 'PENDIENTE_APROBACION'
+                ? '#50c5e9'
+                : element.estado === 'APROBADO'
+                ? 'green'
+                : element.estado === 'APROBADO_OBSERVADO'
+                ? 'yellow'
+                : element.estado === 'RECHAZADO'
+                ? 'red'
+                : ''
+            ">
+            {{
+            element.estado === "PENDIENTE_APROBACION"
+            ? "schedule"
+            : element.estado === "APROBADO"
+            ? "check_circle"
+            : element.estado === "APROBADO_OBSERVADO"
+            ? "warning"
+            : element.estado === "RECHAZADO"
+            ? "error"
+            : ""
+            }}
+          </mat-icon>
+        </td>
+      </ng-container>
 
-            </button>
-          </div>
-        </div>
+      <ng-container matColumnDef="observaciones">
+        <th mat-header-cell *matHeaderCellDef>Observaciones</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.observaciones }}
+        </td>
+      </ng-container>
 
-        <form [formGroup]="form" class="" *ngIf="(mode === 'create' || mode === 'edit') && form">
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef class="text-right"></th>
+        <td mat-cell *matCellDef="let row" class="text-right">
+          <button (click)="edit(row)" matTooltip="Editar" class="mr-4">
+            <mat-icon matTooltip="Editar">edit</mat-icon>
+          </button>
+          <button (click)="view(row)" matTooltip="Ver" class="mr-4">
+            <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
+          </button>
+        </td>
+      </ng-container>
 
-          <mat-form-field appearance="outline" class="w-full ">
-            <mat-label>Fecha</mat-label>
-            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha" required readonly />
-            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-            <mat-error>Fecha requerida</mat-error>
-          </mat-form-field>
-
-
-          <table mat-table [dataSource]="paramsArray" formArrayName="params" class="border-2 rounded-2xl w-full">
-            <ng-container matColumnDef="nombre">
-              <th mat-header-cell *matHeaderCellDef class="min-w-30 w-full">
-                Nombre
-              </th>
-              <td mat-cell *matCellDef="let element" class="pr-6">
-                {{ element.get("nombre").value }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="minimo">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full text-right">
-                Mínimo
-              </th>
-              <td mat-cell *matCellDef="let element" class="text-right">
-                {{ element.get("minimo").value }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="maximo">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full text-right">
-                Máximo
-              </th>
-              <td mat-cell *matCellDef="let element" class="text-right">
-                {{ element.get("maximo").value }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="resultado">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full px-2 text-right">
-                Resultado
-              </th>
-              <td mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
-                <mat-form-field class="w-full p-2 flex ml-4" style="margin-bottom: -16px">
-                  <input #result matInput formControlName="resultado" placeholder="resultado" required
-                    class="text-right" />
-                  <mat-error>
-                    {{
-                    !result?.value
-                    ? "Resultado requerido."
-                    : "Fórmato no valido."
-                    }}
-                  </mat-error>
-                </mat-form-field>
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="redondeo">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full px-2 text-right">
-                Redondeo
-              </th>
-              <td mat-cell *matCellDef="let element; let i = index" [formGroupName]="i">
-                <mat-form-field class="w-full p-2 flex ml-4" style="margin-bottom: -16px">
-                  <input #round matInput formControlName="redondeo" placeholder="redondeo" required
-                    class="text-right" />
-                  <mat-error>
-                    {{
-                    !round?.value
-                    ? "Resultado requerido."
-                    : "Fórmato no valido."
-                    }}
-                  </mat-error>
-                </mat-form-field>
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="estado">
-              <th mat-header-cell *matHeaderCellDef class="min-w-24 w-full text-center">Estado</th>
-              <td mat-cell *matCellDef="let element; let i = index" [formGroupName]="i" class="text-center">
-                <mat-icon *ngIf="
-                    element.get('resultado')?.value &&
-                    element.get('redondeo')?.value
-                  " [style.color]="icon(element).color" [matTooltip]="icon(element)?.tooltip">
-                  {{ icon(element).icon }}
-                </mat-icon>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumnsAssay"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumnsAssay"></tr>
-          </table>
-        </form>
-
-        <ng-container *ngIf="mode === 'view'">
-          <table mat-table [dataSource]="assay$ | async" class="border-2 rounded-2xl w-full">
-            <ng-container matColumnDef="nombre">
-              <th mat-header-cell *matHeaderCellDef class="min-w-30 w-full">
-                Nombre
-              </th>
-              <td mat-cell *matCellDef="let element" class="pr-6">
-                {{ element.nombre }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="minimo">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full text-right">
-                Mínimo
-              </th>
-              <td mat-cell *matCellDef="let element" class="text-right">
-                {{ element.minimo | number: '1.2-2' }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="maximo">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full text-right">
-                Máximo
-              </th>
-              <td mat-cell *matCellDef="let element" class="text-right">
-                {{ element.maximo | number: '1.2-2' }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="resultado">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full px-2 text-right">
-                Resultado
-              </th>
-              <td mat-cell *matCellDef="let element" class="text-right">
-                {{ element.resultado | number: '1.2-2' }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="redondeo">
-              <th mat-header-cell *matHeaderCellDef class="min-w-26 w-full px-2 text-right">
-                Redondeo
-              </th>
-              <td mat-cell *matCellDef="let element" class="text-right">
-                {{ element.redondeo | number: '1.2-2' }}
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="estado">
-              <th mat-header-cell *matHeaderCellDef class="min-w-24 text-center">Estado</th>
-              <td mat-cell *matCellDef="let element" class="text-center">
-                <mat-icon [style.color]="icon(element).color" [matTooltip]="icon(element)?.tooltip">
-                  {{ icon(element).icon }}
-                </mat-icon>
-              </td>
-            </ng-container>
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumnsAssay"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumnsAssay"></tr>
-          </table>
-
-          <mat-form-field class="w-full pt-4" appearance="outline">
-            <mat-label> Observaciones </mat-label>
-            <textarea disabled matInput [value]="this.assayObservations"></textarea>
-          </mat-form-field>
-        </ng-container>
-      </div>
-    </div>
-  </mat-drawer>
-
-  <mat-drawer-content>
-    <div class="bg-gray-100">
-      <div class="p-6 sm:p-10">
-        <table mat-table [dataSource]="assays$ | async" class="border-2 rounded-2xl w-full">
-          <ng-container matColumnDef="maquina">
-            <th mat-header-cell *matHeaderCellDef>Maquina</th>
-            <td mat-cell *matCellDef="let element">{{ element.maquina }}</td>
-          </ng-container>
-          <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef>Fecha</th>
-            <td mat-cell *matCellDef="let element">{{ element.fecha }}</td>
-          </ng-container>
-          <ng-container matColumnDef="resultados">
-            <th mat-header-cell *matHeaderCellDef></th>
-            <td mat-cell *matCellDef="let element">
-              <mat-icon [style.color]="
-                  element.estado === 'PENDIENTE_APROBACION'
-                    ? '#50c5e9'
-                    : element.estado === 'APROBADO'
-                    ? 'green'
-                    : element.estado === 'APROBADO_OBSERVADO'
-                    ? 'yellow'
-                    : element.estado === 'RECHAZADO'
-                    ? 'red'
-                    : ''
-                ">
-                {{
-                element.estado === "PENDIENTE_APROBACION"
-                ? "schedule"
-                : element.estado === "APROBADO"
-                ? "check_circle"
-                : element.estado === "APROBADO_OBSERVADO"
-                ? "warning"
-                : element.estado === "RECHAZADO"
-                ? "error"
-                : ""
-                }}
-              </mat-icon>
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="observaciones">
-            <th mat-header-cell *matHeaderCellDef>Observaciones</th>
-            <td mat-cell *matCellDef="let element">
-              {{ element.observaciones }}
-            </td>
-          </ng-container>
-          <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef class="text-right"></th>
-            <td mat-cell *matCellDef="let row" class="text-right">
-              <button (click)="edit(row)" matTooltip="Editar" class="mr-4">
-                <mat-icon matTooltip="Editar">edit</mat-icon>
-              </button>
-              <button (click)="view(row)" matTooltip="Ver" class="mr-4">
-                <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
-              </button>
-            </td>
-          </ng-container>
-          <tr mat-header-row *matHeaderRowDef="displayedColumnsAssays"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumnsAssays"></tr>
-        </table>
-      </div>
-    </div>
-  </mat-drawer-content>
-</mat-drawer-container>
+      <tr mat-header-row *matHeaderRowDef="displayedColumnsAssays"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumnsAssays"></tr>
+    </table>
+  </div>
+</div>

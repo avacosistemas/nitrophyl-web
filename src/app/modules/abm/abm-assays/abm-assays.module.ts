@@ -7,9 +7,11 @@ import { ABMSharedModule } from '../abm-shared.module';
 // * Components.
 import { ABMAssaysComponent } from './abm-assays.component';
 import { AssaysComponent } from './assays/assays.component';
+import { AssayModalComponent } from './assay-modal/assay-modal.component';
 
 // * Dialogs.
 import { AssayDialogComponent } from './assay-dialog/assay-dialog.component';
+import { AssayDialogAlertComponent } from './assay-dialog-alert/assay-dialog-alert.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from './assay-dialog-confirm/assay-dialog-confirm.component';
 
@@ -41,6 +43,8 @@ const routes: Route[] = [
     AssaysComponent,
     AssayDialogComponent,
     ConfirmDialogComponent,
+    AssayModalComponent,
+    AssayDialogAlertComponent
   ],
   imports: [
     RouterModule.forChild(routes),
