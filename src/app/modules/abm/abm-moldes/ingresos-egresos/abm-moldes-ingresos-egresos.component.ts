@@ -6,7 +6,7 @@ import { IngresoEgresoDialogComponent } from "app/modules/prompts/ingreso-egreso
 import { MoldeRegistro } from "app/shared/models/molde.model";
 import { MoldesService } from "app/shared/services/moldes.service";
 import { Subscription } from "rxjs";
-import { ABMMoldeService } from "../abm-moldes-service";
+import { ABMMoldeService } from "../abm-moldes.service";
 
 
 

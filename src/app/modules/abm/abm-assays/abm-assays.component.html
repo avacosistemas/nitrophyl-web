@@ -1,25 +1,25 @@
 <div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
 
   <app-header 
-      [title]="title"
-      [subtitle]="subtitle"
-      [breadcrumbs]="[
-          { title: 'ABM', route: ['/lotes/grid'], condition: true },
-          { title: 'Ensayos', route: ['/lotes/grid'], condition: true },
-          { title: lot, route: [], condition: true }
-        ]" 
-      [buttons]="[
-        {
-          type: 'stroked',
-          label: 'Cerrar',
-          condition: true,
-          isDisabled: drawer,
-          action: 'close'
-        }
-      ]" 
-      [extraContent]="extraContent"
-      (buttonAction)="handleAction($event)">
-  </app-header>
+  [title]="title"
+  [subtitle]="subtitle"
+  [breadcrumbs]="[
+      { title: 'ABM', route: ['/lotes/grid'], condition: true },
+      { title: 'Ensayos', route: ['/lotes/grid'], condition: true },
+      { title: lot, route: [], condition: true }
+    ]" 
+  [buttons]="[
+    {
+      type: 'stroked',
+      label: 'Cerrar',
+      condition: true,
+      isDisabled: isModalOpen,
+      action: 'close'
+    }
+  ]" 
+  [extraContent]="extraContent"
+  (buttonAction)="handleAction($event)">
+</app-header>
 
   <div style="display: flex; flex-direction: column; flex-wrap: wrap; overflow-y: scroll; height: 100%;">
     <router-outlet></router-outlet>
@@ -38,9 +38,8 @@
 
   <button mat-flat-button
     class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30" (click)="add()"
-    [disabled]="!machine.value || drawer">
+    [disabled]="!machine.value">
     <span class="mat-button-wrapper"> Agregar </span>
     <span matripple="" class="mat-ripple mat-button-ripple"></span>
-    
   </button>
 </ng-template>

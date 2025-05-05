@@ -8,7 +8,7 @@ import { Molde } from 'app/shared/models/molde.model';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { MoldesService } from 'app/shared/services/moldes.service';
 import { Subscription } from 'rxjs';
-import { ABMMoldeService } from '../abm-moldes-service';
+import { ABMMoldeService } from '../abm-moldes.service';
 
 @Component({
   selector: 'abm-moldes-crear',

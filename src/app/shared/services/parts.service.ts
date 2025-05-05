@@ -1,5 +1,5 @@
-import { HttpBackend, HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { environment } from 'environments/environment';
 import { Observable } from 'rxjs';
 import { Part, PartResponse } from '../models/part.model';
@@ -10,9 +10,7 @@ import { Part, PartResponse } from '../models/part.model';
 export class PartsService {
 
   constructor(
-    private http: HttpClient,
-    private handler: HttpBackend) {
-        this.http = new HttpClient(handler)
+    private http: HttpClient) {
   }
 
   public getParts(): Observable<any> {

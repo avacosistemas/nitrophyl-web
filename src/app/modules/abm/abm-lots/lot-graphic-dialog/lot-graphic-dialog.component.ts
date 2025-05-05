@@ -100,7 +100,6 @@ export class LotGraphicDialogComponent implements OnInit {
   uploadFile(): void {
     this.formSubmitted = true;
 
-    console.log('Valor de selectedFile:', this.selectedFile);
     if (!this.selectedFile) {
       this.openSnackBar(false, 'Por favor, seleccione un archivo PDF.');
       return;

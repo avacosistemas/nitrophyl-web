@@ -1,4 +1,11 @@
 export interface Observacion {
+    usuarioCreacion?: string;
+    fechaCreacion?: number;
+    usuarioActualizacion?: null;
+    fechaActualizacion?: null;
+    id?: number;
+    idMolde: number;
     observacion: string;
-    idMolde?: number;
+    fecha?: Date;
+    usuario?: string;
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpBackend } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 // * Environment.
 import { environment } from 'environments/environment';
 // * Interfaces.
@@ -28,12 +28,19 @@ export class AssayService {
   private _machine: number;
   private _mode: string;
   private readonly _url: string = `${environment.server}`;
-  private readonly _drawer: BehaviorSubject<boolean>;
 
-  constructor(private readonly http: HttpClient, handler: HttpBackend) {
-    this.http = new HttpClient(handler);
-    this._drawer = new BehaviorSubject<boolean>(false);
-    this.drawer$ = this._drawer.asObservable();
+  private isModalOpenSubject = new BehaviorSubject<boolean>(false);
+  public isModalOpen$ = this.isModalOpenSubject.asObservable();
+
+  public openModal = new Subject<{
+    mode: string;
+    machineId: any;
+    machineName: string;
+  }>();
+
+  public resetSelect = new Subject<void>();
+
+  constructor(private readonly http: HttpClient) {
   }
 
   public get machine(): number {
@@ -78,14 +85,10 @@ export class AssayService {
     return this.http.put<IAssayResponse>(`${this._url}ensayo`, ensayoDTO);
   }
 
-  public toggleDrawer(): void {
-    this._drawer.next(!this._drawer.value);
-  }
-
   public updateAssays(assays: IAssay[]): void {
     this.assaysSubject.next(assays);
   }
-  
+
   public getAssayConfig(assayId: number): Observable<any> {
     return this.http.get<any>(`${this._url}ensayo/config/${assayId}`);
   }
@@ -99,5 +102,9 @@ export class AssayService {
 
   postAssayWithoutResults(assayData: IAssayCreateWithoutResults): Observable<any> {
     return this.http.post(`${this._url}ensayo/sinresultados`, assayData);
+  }
+
+  setModalOpen(isOpen: boolean): void {
+    this.isModalOpenSubject.next(isOpen);
   }
 }

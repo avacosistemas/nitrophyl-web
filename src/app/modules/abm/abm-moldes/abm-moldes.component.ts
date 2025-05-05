@@ -2,7 +2,7 @@ import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } 
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { MoldesService } from 'app/shared/services/moldes.service';
 import { Subscription } from 'rxjs';
-import { ABMMoldeService } from './abm-moldes-service';
+import { ABMMoldeService } from './abm-moldes.service';
 import { filter } from 'rxjs/operators';
 
 @Component({
@@ -17,6 +17,7 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
     botonEdicion: string = '';
     moldeTitulo: string = null;
     mostrarBotonEdicion: boolean = false;
+    moldeNombre: string = null;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -25,21 +26,29 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
         private router: Router,
         private cdref: ChangeDetectorRef
     ) {
-        this.suscripcion = this._abmMoldesService.viewEvents.subscribe(
-            (data: string) => {
-                this.botonEdicion = data;
-            }
-        );
+
         this.suscripcion = this._abmMoldesService.events.subscribe(
             (data: any) => {
-                if (typeof data === 'object' && data !== null && data.hasOwnProperty('mostrarBotonEdicion')) {
-                    this.mostrarBotonEdicion = data.mostrarBotonEdicion;
+                if (typeof data === 'object' && data !== null) {
+                    if (data.hasOwnProperty('mostrarBotonEdicion')) {
+                        this.mostrarBotonEdicion = data.mostrarBotonEdicion;
+                    }
+                    if (data.hasOwnProperty('nombreMolde')) {
+                        this.moldeNombre = data.nombreMolde;
+                    }
                 } else if (typeof data === 'string') {
                     this.botonEdicion = data;
                 }
 
             }
         );
+
+        this.suscripcion = this._abmMoldesService.viewEvents.subscribe(
+            (data: string) => {
+                this.botonEdicion = data;
+            }
+        );
+
         this.router.events.pipe(
             filter(event => event instanceof NavigationEnd)
         ).subscribe(() => {
@@ -87,6 +96,7 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
         if (url.includes('/grid')) {
             this.titulo = 'Consulta Moldes';
             this.moldeTitulo = null;
+            this.moldeNombre = null;
         } else if (url.includes('/molde/ver/')) {
             this.moldeTitulo = null;
             this.titulo = 'Vista Molde';
@@ -96,6 +106,7 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
         } else if (url.includes('/create')) {
             this.moldeTitulo = null;
             this.titulo = 'Nuevo Molde';
+            this.moldeNombre = null;
         } else if (url.includes('/ingresos-egresos/')) {
             this.moldesService.getMoldeById(this.activatedRoute.snapshot.children[0].params['id']).subscribe((d) => {
                 this.moldeTitulo = 'Ingresos / Egresos';
@@ -103,6 +114,7 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
             });
         } else {
             this.titulo = 'Moldes';
+            this.moldeNombre = null;
         }
     }
 

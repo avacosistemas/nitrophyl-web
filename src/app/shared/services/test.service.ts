@@ -1,6 +1,6 @@
-import { HttpClient, HttpBackend } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { forkJoin, Observable, of } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { forkJoin, Observable, of,  } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from 'environments/environment';
 import { ITest } from '../models/test.model';
@@ -11,20 +11,18 @@ import { ITest } from '../models/test.model';
 export class TestService {
   private url: string = `${environment.server}maquina/prueba`;
 
-  constructor(private http: HttpClient, private handler: HttpBackend) {
-    this.http = new HttpClient(handler);
+  constructor(private http: HttpClient) {
   }
 
   public updateTestPositions(tests: ITest[]): Observable<any> {
-    const requests = tests.map((test) => {
-      const url = `${this.url}/${test.id}`;
-      return this.http.put<any>(url, test).pipe(
+    const requests = tests.map(test =>
+      this.http.put<any>(`${this.url}/${test.id}`, test).pipe(
         catchError((error) => {
           console.error(`Error al actualizar prueba ${test.id}:`, error);
           return of(null);
         })
-      );
-    });
+      )
+    );
     return forkJoin(requests).pipe(
       map((responses) => {
         const updatedData = responses.filter(res => res !== null);

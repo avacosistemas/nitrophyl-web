@@ -1,5 +1,6 @@
-import { HttpClient, HttpBackend, HttpParams } from '@angular/common/http';
-import { EventEmitter, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { EventEmitter,  } from '@angular/core';
 import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 // * Environment.
@@ -24,8 +25,7 @@ export class MachinesService {
 
   private mode: string = '';
 
-  constructor(private http: HttpClient, private handler: HttpBackend) {
-    this.http = new HttpClient(handler);
+  constructor(private http: HttpClient) {
   }
 
   // ! Para obtener la grilla invocar /maquina?nombre=xxx&estado=xxxx por GET

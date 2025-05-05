@@ -130,6 +130,31 @@ export class AuthService {
         );
     }
 
+    // signInUsingToken(): Observable<any> {
+    //     const apiURL = this.getApiUrl('refresh');
+
+    //     return this._httpClient.post(apiURL, null).pipe(
+    //         catchError(() => of(false)),
+    //         switchMap((response: any) => {
+    //             if (response && response.token) {
+    //                 this.accessToken = response.token;
+    //                 this._authenticated = true;
+
+    //                 const user = {
+    //                     name: response.name,
+    //                     lastname: response.lastname,
+    //                     email: response.email,
+    //                 };
+    //                 localStorage.setItem('userData', JSON.stringify(user)); 
+    //                 localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
+    //                 this._userService.user = user;
+    //                 return of(true);
+    //             } else {
+    //                 return of(false);
+    //             }
+    //         })
+    //     );
+    // }
     /**
      * Sign out
      */

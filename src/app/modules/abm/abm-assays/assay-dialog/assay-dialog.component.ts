@@ -33,7 +33,7 @@ export class AssayDialogComponent {
     private _formBuilder: FormBuilder,
     public _dialogRef: MatDialogRef<AssaysComponent>,
     @Inject(MAT_DIALOG_DATA) public data?: any
-  ) {}
+  ) { }
 
   public confirm(): void {
     this.submitted = true;

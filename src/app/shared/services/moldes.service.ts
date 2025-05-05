@@ -1,4 +1,4 @@
-import { HttpClient, HttpBackend, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
 import { Observable } from 'rxjs';
@@ -21,8 +21,7 @@ export class MoldesService {
   private url: string = `${environment.server}`;
   private mode: string;
 
-  constructor(private http: HttpClient, private handler: HttpBackend) {
-    this.http = new HttpClient(handler);
+  constructor(private http: HttpClient) {
   }
 
   public getMoldes(params?: any): Observable<any> {

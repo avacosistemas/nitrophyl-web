@@ -1,8 +1,8 @@
-import { HttpBackend, HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { HttpClient } from "@angular/common/http";
 import { Observable } from "rxjs";
 import { Respuesta } from "../../shared/models/respuesta.model";
 import { environment } from "environments/environment";
-import { Injectable } from "@angular/core";
 import { Rol, Roles, RolRespuesta } from "../models/rol.model";
 
 @Injectable({
@@ -14,9 +14,7 @@ export class RolesService {
     private mode: string;
     
     constructor(
-        private http: HttpClient,
-        private handler: HttpBackend) {
-            this.http = new HttpClient(handler)
+        private http: HttpClient) {
     }
 
     public getRoles(): Observable<Roles> {

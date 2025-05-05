@@ -85,3 +85,15 @@ export interface CargaArchivo {
   descripcion?: string;
   clasificacion?: string;
 }
+
+export interface ObservacionInterface{
+  usuarioCreacion: string;
+  fechaCreacion: number;
+  usuarioActualizacion: null;
+  fechaActualizacion: null;
+  id: number;
+  idMolde: number;
+  observacion: string;
+  fecha: Date;
+  usuario: string;
+}
