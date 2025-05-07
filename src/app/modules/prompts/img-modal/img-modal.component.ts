@@ -7,7 +7,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
     styleUrls: ['./img-modal.component.scss']
 })
 
-export class ImgModalDialogComponent implements OnInit{
+export class ImgModalDialogComponent implements OnInit {
     comments: string;
     imgAlt: string;
     imgSrc;
@@ -15,7 +15,7 @@ export class ImgModalDialogComponent implements OnInit{
     constructor(
         public dialogRef: MatDialogRef<ImgModalDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data,
-    ){}
+    ) { }
 
     ngOnInit(): void {
         this.imgAlt = this.data.imgAlt;
@@ -26,8 +26,10 @@ export class ImgModalDialogComponent implements OnInit{
                 let url = reader.result;
                 this.imgSrc = url;
             };
-        } else if(this.data.imgType == "array") {
+        } else if (this.data.imgType == "array") {
             this.imgSrc = 'data:image/' + this.data.imgExtension + ';base64,' + this.data.src
+        } else if (this.data.imgType == "url") {
+            this.imgSrc = this.data.imgSrc;
         } else {
             return;
         }

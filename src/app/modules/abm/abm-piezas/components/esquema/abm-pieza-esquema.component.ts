@@ -10,6 +10,7 @@ import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dial
 import { ABMPiezaEsquemaModalComponent } from './modal-form/abm-pieza-esquema-modal.component';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
 
 interface DialogData {
   imageUrl: SafeUrl;
@@ -122,15 +123,18 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
     });
   }
 
-  openImageModal(imageUrl: SafeUrl): void {
-    this.selectedImage = imageUrl;
-    this.dialog.open(ImageModalComponent, {
-      data: { imageUrl: this.selectedImage },
+  openImageModal(esquema: Esquema): void {
+    this.dialog.open(ImgModalDialogComponent, {
+      data: {
+        imgAlt: esquema.titulo,
+        imgSrc: esquema.safeImagenUrl,
+        imgType: 'url',
+        title: esquema.titulo
+      },
       width: '80%',
       maxWidth: '800px'
     });
   }
-
 
   private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
     const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
@@ -145,36 +149,5 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
-  }
-}
-
-
-@Component({
-  selector: 'app-image-modal',
-  template: `
-    <div mat-dialog-content class="px-0">
-      <div style="height: 70vh;" class="flex justify-center">
-        <img [src]="data.imageUrl" style="height: 500px; width: auto !important;" alt="Imagen ampliada">
-      </div>
-      <div class="justify-end">
-        <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
-          <button mat-stroked-button mat-button mat-dialog-close (click)="onNoClick()"
-            class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
-            <span class="mat-button-wrapper"> Cerrar </span>
-            <span matripple="" class="mat-ripple mat-button-ripple"></span>
-          </button>
-        </div>
-      </div>
-    </div>
-  `
-})
-export class ImageModalComponent {
-  constructor(
-    public dialogRef: MatDialogRef<ImageModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
-  ) { }
-
-  onNoClick(): void {
-    this.dialogRef.close();
   }
 }

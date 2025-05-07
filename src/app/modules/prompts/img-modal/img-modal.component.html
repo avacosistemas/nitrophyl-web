@@ -1,2 +1,20 @@
-<h1>{{data.title}}</h1>
-<img [src]="imgSrc" [alt]="imgAlt">
+<div mat-dialog-title class="relative flex w-full mb-0">
+    <div class="absolute top-0 right-0">
+        <button mat-icon-button (click)="close()">
+            <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x'"></mat-icon>
+        </button>
+    </div>
+    <h1 class="text-lg font-semibold mb-4">{{data.title}}</h1>
+</div>
+
+<div class="flex w-full justify-center py-4">
+    <img [src]="imgSrc" [alt]="imgAlt" style="width: auto;height: 60vh;" />
+</div>
+
+<div mat-dialog-actions class="justify-end">
+    <button mat-stroked-button (click)="close()"
+        class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
+        <span class="mat-button-wrapper"> Cancelar </span>
+        <span matripple="" class="mat-ripple mat-button-ripple"></span>
+    </button>
+</div>

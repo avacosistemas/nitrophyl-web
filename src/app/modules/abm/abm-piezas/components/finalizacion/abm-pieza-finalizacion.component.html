@@ -18,25 +18,30 @@
     </div>
 
     <div
-      class="flex flex-col items-center justify-center relative p-4 py-8 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
-      <div class="flex flex-col items-center justify-center">
-        <img *ngIf="safeImageUrl" [src]="safeImageUrl" style="max-width: 100px; max-height: 100px;">
-
-        <ng-container *ngIf="mode !== 'view'">
-          <mat-icon class="text-gray-500" svgIcon="heroicons_outline:upload" *ngIf="!selectedFile"
-            style="font-size: 2rem;"></mat-icon>
-          <span class="text-sm text-gray-600" *ngIf="!selectedFile">Seleccionar Archivo</span>
-          <span class="text-sm text-green-500" *ngIf="selectedFile">{{ selectedFile?.name }}</span>
-
-          <label for="file-upload" class="cursor-pointer">
+      class="flex flex-col items-center justify-center relative border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
+      <div class="flex flex-col items-center justify-center w-full">
+        <div *ngIf="safeImageUrl"
+          class="flex flex-col gap-1 items-center justify-center ng-star-inserted px-4 py-8 w-full">
+          <img [src]="safeImageUrl" style="max-width: 100px; max-height: 100px; cursor: pointer;"
+            (click)="openImageModal()">
+          <span class="text-sm text-gray-500 mt-3" *ngIf="selectedFile">{{ selectedFile?.name }}</span>
+        </div>
+        <ng-container *ngIf="mode !== 'view' && !safeImageUrl">
+          <label for="file-upload"
+            class="cursor-pointer flex flex-col gap-1 items-center justify-center ng-star-inserted px-4 py-8 w-full">
+            <mat-icon class="text-gray-500" svgIcon="heroicons_outline:upload" *ngIf="!selectedFile && !safeImageUrl"
+              style="font-size: 2rem;"></mat-icon>
+            <span class="cursor-pointer text-sm text-gray-600" *ngIf="!selectedFile && !safeImageUrl">
+              Seleccionar Archivo
+            </span>
             <input id="file-upload" type="file" class="sr-only" accept="image/*" (change)="onFileSelected($event)">
           </label>
-          <button *ngIf="selectedFile" type="button" mat-icon-button class="absolute top-1 right-2"
-            (click)="removeSelectedFile()">
-            <mat-icon>cancel</mat-icon>
-          </button>
         </ng-container>
       </div>
+      <button *ngIf="selectedFile || safeImageUrl" type="button" mat-icon-button class="absolute top-1 right-2"
+        (click)="removeSelectedFile()">
+        <mat-icon>cancel</mat-icon>
+      </button>
     </div>
   </form>
 </div>

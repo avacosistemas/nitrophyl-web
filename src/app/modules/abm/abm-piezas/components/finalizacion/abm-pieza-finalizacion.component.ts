@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
 
 @Component({
   selector: 'app-abm-pieza-finalizacion',
@@ -20,11 +21,11 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
   finalizacion$: Observable<Finalizacion>;
   selectedFile: File | null = null;
   safeImageUrl: SafeUrl | null = null;
+  initialImageBase64: string | null = null;
 
   refiladoControl = new FormControl('');
   identificacionControl = new FormControl('');
   embalajeControl = new FormControl('');
-  imagenEmbalajeControl = new FormControl('');
 
   constructor(
     protected fb: FormBuilder,
@@ -41,7 +42,6 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
       refilado: this.refiladoControl,
       identificacion: this.identificacionControl,
       embalaje: this.embalajeControl,
-      imagenEmbalaje: this.imagenEmbalajeControl
     });
   }
 
@@ -51,19 +51,13 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
       this.form.patchValue({
         refilado: data.refilado,
         identificacion: data.identificacion,
-        embalaje: data.embalaje,
-        imagenEmbalaje: data.imagenEmbalaje
+        embalaje: data.embalaje
       });
 
       if (data.imagenEmbalaje) {
-        const base64Image = 'data:image/png;base64,' + data.imagenEmbalaje;
+        this.initialImageBase64 = data.imagenEmbalaje;
+        const base64Image = data.imagenEmbalaje.startsWith('data:image') ? data.imagenEmbalaje : 'data:image/png;base64,' + data.imagenEmbalaje;
         this.safeImageUrl = this.sanitizer.bypassSecurityTrustUrl(base64Image);
-        if (data.imagenEmbalaje.startsWith('data:image')) {
-          this.base64ToFile(data.imagenEmbalaje, 'imagenEmbalaje')
-            .then(file => {
-              this.selectedFile = file;
-            });
-        }
       }
     });
   }
@@ -84,23 +78,10 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
     }
   }
 
-  async base64ToFile(base64String: string, filename: string): Promise<File> {
-    const arr = base64String.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-
-    return new File([u8arr], filename, { type: mime });
-  }
-
   guardarFinalizacion(): void {
     if (this.form.valid) {
-      let imagenBase64 = null;
+      let imagenBase64 = this.initialImageBase64;
+
       if (this.selectedFile) {
         const reader = new FileReader();
         reader.onload = (e: any) => {
@@ -123,7 +104,7 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
           refilado: this.form.get('refilado').value,
           identificacion: this.form.get('identificacion').value,
           embalaje: this.form.get('embalaje').value,
-          imagenEmbalaje: this.form.get('imagenEmbalaje').value
+          imagenEmbalaje: imagenBase64
         };
 
         this.abmPiezaService.updateFinalizacion(this.piezaId, data).subscribe(() => {
@@ -138,10 +119,6 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
 
     if (file) {
       this.selectedFile = file;
-      this.form.patchValue({
-        imagenEmbalaje: file.name
-      });
-      this.form.updateValueAndValidity();
       this.safeImageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
       this.cdRef.detectChanges();
     }
@@ -149,16 +126,13 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
 
   removeSelectedFile(): void {
     this.selectedFile = null;
-    this.form.patchValue({
-      imagenEmbalaje: ''
-    });
     this.safeImageUrl = null;
+    this.initialImageBase64 = null;
 
     const input = document.getElementById('file-upload') as HTMLInputElement;
     if (input) {
       input.value = '';
     }
-    this.form.updateValueAndValidity();
     this.cdRef.detectChanges();
   }
 
@@ -174,6 +148,23 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
       panelClass: `${snackBarCss}-snackbar`,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
+    });
+  }
+
+  openImageModal(): void {
+    if (!this.safeImageUrl) {
+      return;
+    }
+
+    this.dialog.open(ImgModalDialogComponent, {
+      data: {
+        imgSrc: this.safeImageUrl,
+        imgType: 'url',
+        title: 'Imagen de Embalaje',
+        imgAlt: 'Imagen de embalaje'
+      },
+      width: '80%',
+      maxWidth: '800px'
     });
   }
 }
