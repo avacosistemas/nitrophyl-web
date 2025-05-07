@@ -162,6 +162,13 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'procesos-piezas',
+        loadChildren: () =>
+          import('app/modules/abm/abm-piezas/abm-piezas.module').then(
+            (m: any) => m.ABMPiezasModule
+          ),
+      },
+      {
         path: 'piezas',
         loadChildren: () =>
           import('app/modules/parts/parts.module').then(

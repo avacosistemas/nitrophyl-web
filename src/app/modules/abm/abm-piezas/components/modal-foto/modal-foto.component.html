@@ -1,0 +1,12 @@
+<div>
+    <div mat-dialog-content>
+        <img [src]="base64ImageSrc" [alt]="imgAlt"
+            style="width: auto; max-height: 80vh; display: block; margin: 0 auto;">
+    </div>
+    <div class="mt-2 w-full flex justify-end">
+        <button mat-stroked-button class="mat-focus-indicator mat-stroked-button mat-button-base" (click)="onNoClick()">
+            <span class="mat-button-wrapper"> Cerrar </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+    </div>
+</div>

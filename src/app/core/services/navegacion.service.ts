@@ -120,6 +120,14 @@ export class NavegacionService {
           type: 'basic',
         },
         {
+          icon: 'heroicons_outline:cube-transparent',
+          id: 'procesos-piezas',
+          link: '/procesos-piezas/grid',
+          title: 'Procesos y Piezas',
+          permissionCode: 'MENU_PRODUCCION_PIEZAS',
+          type: 'basic',
+        },
+        {
           icon: 'heroicons_outline:cube',
           id: 'productos',
           link: '/productos/grid',

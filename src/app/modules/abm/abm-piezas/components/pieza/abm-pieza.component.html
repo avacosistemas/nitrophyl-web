@@ -1,0 +1,58 @@
+<div class="flex flex-col w-full" id="top">
+  <mat-tab-group class="mt-2 col-span-12 grid-rows-1" (selectedTabChange)="tabChange($event)"
+    [selectedIndex]="currentTab">
+    <mat-tab label="Datos Generales">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-crear-editar [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-crear-editar>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Insumos" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-insumos [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-insumos>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Moldeo" *ngIf="piezaId">
+      <div>
+        <app-abm-pieza-moldeo [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-moldeo>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Desmoldante/PostCura" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-desmoldante-postcura [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-desmoldante-postcura>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Esquema" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-esquema [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-esquema>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Finalización" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-finalizacion [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-finalizacion>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Dimensiones" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-dimensiones [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-dimensiones>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Clientes" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-clientes [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-clientes>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Planos" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-planos [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-planos>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

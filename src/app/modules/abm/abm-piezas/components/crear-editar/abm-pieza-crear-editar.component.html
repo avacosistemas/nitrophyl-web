@@ -1,0 +1,53 @@
+<div>
+    <form [formGroup]="piezaForm" (ngSubmit)="guardarPieza()"
+        class="mat-form-without-wrapper grid grid-cols-1 md:grid-cols-2 gap-0 gap-x-4">
+        <mat-form-field appearance="outline" class="form-field w-full">
+            <mat-label>Nombre de la Pieza</mat-label>
+            <input type="text" matInput formControlName="nombre" required [matAutocomplete]="auto"
+                [disabled]="mode === 'view'">
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayPieceName.bind(this)">
+                <mat-option *ngFor="let pieceName of filteredPieceNames$ | async" [value]="pieceName">
+                    {{ pieceName.nombre }}
+                </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="piezaForm.get('nombre').hasError('required')">El nombre es requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field w-full">
+            <mat-label>Molde</mat-label>
+            <mat-select formControlName="moldeId" required [disabled]="mode === 'view'">
+                <mat-option *ngFor="let molde of moldes$ | async" [value]="molde.id">{{ molde.nombre }}</mat-option>
+            </mat-select>
+            <mat-error *ngIf="piezaForm.get('moldeId').hasError('required')">El molde es requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field w-full">
+            <mat-label>Fórmula (Código)</mat-label>
+            <input matInput formControlName="formulaCodigo" required [disabled]="mode === 'view'">
+            <mat-error *ngIf="piezaForm.get('formulaCodigo').hasError('required')">La fórmula es requerida</mat-error>
+        </mat-form-field>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field appearance="outline" class="form-field w-full">
+                <mat-label>Espesor Plancha Mínimo (mm)</mat-label>
+                <input matInput type="number" formControlName="espesorPlanchaMin" [disabled]="mode === 'view'">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="form-field w-full">
+                <mat-label>Espesor Plancha Máximo (mm)</mat-label>
+                <input matInput type="number" formControlName="espesorPlanchaMax" [disabled]="mode === 'view'">
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="form-field w-full">
+            <mat-label>Peso Crudo (gramos)</mat-label>
+            <input matInput type="number" formControlName="pesoCrudo" [disabled]="mode === 'view'">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field w-full">
+            <mat-label>Observaciones Peso Crudo</mat-label>
+            <input matInput formControlName="observacionesPesoCrudo" [disabled]="mode === 'view'">
+        </mat-form-field>
+
+    </form>
+</div>

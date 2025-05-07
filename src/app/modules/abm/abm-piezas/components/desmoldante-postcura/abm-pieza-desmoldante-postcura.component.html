@@ -1,0 +1,21 @@
+<div>
+  <form [formGroup]="form" (ngSubmit)="guardarDesmoldantePostCura()" class="mat-form-without-wrapper">
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>Desmoldante</mat-label>
+      <mat-select formControlName="desmoldante">
+        <mat-option *ngFor="let desmoldante of desmoldantes$ | async" [value]="desmoldante">{{ desmoldante
+          }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field" *ngIf="mostrarObservacionesDesmoldante">
+      <mat-label>Observaciones Desmoldante</mat-label>
+      <textarea matInput formControlName="observacionesDesmoldante"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="form-field">
+      <mat-label>PostCura</mat-label>
+      <textarea matInput formControlName="postcura"></textarea>
+    </mat-form-field>
+  </form>
+</div>

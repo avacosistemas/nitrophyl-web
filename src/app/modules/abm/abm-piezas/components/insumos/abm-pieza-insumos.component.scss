@@ -1,0 +1,7 @@
+@import '../../styles/_classes.scss';
+
+.without-wrapper {
+    .mat-form-field-wrapper {
+        padding-bottom: 0px !important
+    }
+}

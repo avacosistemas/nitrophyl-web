@@ -1,0 +1,42 @@
+<div>
+  <form [formGroup]="form" (ngSubmit)="guardarFinalizacion()" class="mat-form-without-wrapper">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Refilado</mat-label>
+        <textarea matInput formControlName="refilado" rows="3" [disabled]="mode === 'view'"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Identificación</mat-label>
+        <textarea matInput formControlName="identificacion" rows="3" [disabled]="mode === 'view'"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Embalaje</mat-label>
+        <textarea matInput formControlName="embalaje" rows="3" [disabled]="mode === 'view'"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div
+      class="flex flex-col items-center justify-center relative p-4 py-8 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
+      <div class="flex flex-col items-center justify-center">
+        <img *ngIf="safeImageUrl" [src]="safeImageUrl" style="max-width: 100px; max-height: 100px;">
+
+        <ng-container *ngIf="mode !== 'view'">
+          <mat-icon class="text-gray-500" svgIcon="heroicons_outline:upload" *ngIf="!selectedFile"
+            style="font-size: 2rem;"></mat-icon>
+          <span class="text-sm text-gray-600" *ngIf="!selectedFile">Seleccionar Archivo</span>
+          <span class="text-sm text-green-500" *ngIf="selectedFile">{{ selectedFile?.name }}</span>
+
+          <label for="file-upload" class="cursor-pointer">
+            <input id="file-upload" type="file" class="sr-only" accept="image/*" (change)="onFileSelected($event)">
+          </label>
+          <button *ngIf="selectedFile" type="button" mat-icon-button class="absolute top-1 right-2"
+            (click)="removeSelectedFile()">
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </form>
+</div>

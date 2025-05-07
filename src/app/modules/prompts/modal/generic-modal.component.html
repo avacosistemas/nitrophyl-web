@@ -1,0 +1,66 @@
+<div class="generic-modal">
+    <div class="modal-title" mat-dialog-title>
+        <div class="px-1.5 py-1 title-bar">
+            <div class="title-content">
+
+                <mat-icon *ngIf="data.icon" [ngClass]="{
+                            'modal-icon-default': data.type === 'default' || !data.type,
+                            'modal-icon-success': data.type === 'success',
+                            'modal-icon-warning': data.type === 'warning',
+                            'modal-icon-info': data.type === 'info'
+                         }" svgIcon="heroicons_outline:{{data.icon}}"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'primary'" class="modal-icon-default"
+                    svgIcon="heroicons_outline:check-circle"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'accent'" class="modal-icon-default"
+                    svgIcon="heroicons_outline:check-circle"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'warn'" class="modal-icon-warning"
+                    svgIcon="heroicons_outline:x-circle"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'basic'" class="modal-icon-default"
+                    svgIcon="heroicons_outline:check-circle"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'info'" class="modal-icon-info"
+                    svgIcon="heroicons_outline:information-circle"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'success'" class="modal-icon-success"
+                    svgIcon="heroicons_outline:check-circle"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'warning'" class="modal-icon-warning"
+                    svgIcon="heroicons_outline:exclamation"></mat-icon>
+
+                <mat-icon *ngIf="!data.icon && data.type === 'error'" class="modal-icon-warning"
+                    svgIcon="heroicons_outline:x-circle"></mat-icon>
+
+                <span class="font-bold text-gray-700 ml-1">{{ data.title }}</span>
+            </div>
+            <button mat-icon-button *ngIf="data.showCloseButton" (click)="onClose()">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-content pt-0 pb-2">
+        <div *ngIf="data.message" class="message" [innerHTML]="data.message"></div>
+        <div *ngIf="sanitizedContent" [innerHTML]="sanitizedContent"></div>
+    </div>
+
+    <div mat-dialog-actions class="flex shrink-0 items-center gap-2 flex-row-reverse">
+        <button mat-flat-button (click)="onConfirm()" *ngIf="data.showConfirmButton" [color]="data.type === 'success' ? 'primary' :
+                       data.type === 'warning' ? 'warn' : null"
+            class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
+            <span class="mat-button-wrapper">
+                {{ data.confirmButtonText || 'Confirmar' }}
+            </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+
+        <button mat-stroked-button (click)="onCancel()" *ngIf="data.cancelButtonText"
+            class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
+            <span class="mat-button-wrapper"> {{ data.cancelButtonText || 'Cerrar' }} </span>
+            <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+    </div>
+</div>

@@ -1472,3 +1472,10 @@ textarea.mat-input-element {
         }
     }
 }
+
+.mat-form-without-wrapper {
+    .mat-form-field-wrapper {
+        padding-bottom: 16px !important;
+        margin-bottom: 0px !important;
+    }
+}

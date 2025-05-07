@@ -1,0 +1,36 @@
+.container {
+    padding: 20px;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-field {
+    width: 100%;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.mat-mdc-table {
+    width: 100%;
+}
+
+.w-22 {
+    width: 88px;
+}
+
+.text-center {
+    text-align: center;
+}

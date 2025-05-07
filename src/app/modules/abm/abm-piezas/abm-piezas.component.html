@@ -1,0 +1,37 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <app-header [title]="titulo" [subtitle]="piezaNombre" [breadcrumbs]="[
+    { title: 'ABM', route: ['/procesos-piezas/grid'], condition: true },
+    { title: 'Piezas', route: ['/procesos-piezas/grid'], condition: true },
+    { title: 'Consultar', route: [], condition: titulo === 'Consulta Piezas' },
+    { title: 'Editar', route: ['/procesos-piezas', piezaId?.toString() || '', 'edit'], condition: titulo === 'Edición Pieza' && piezaId != null },
+    { title: 'Crear', route: [], condition: titulo === 'Nueva Pieza' },
+    { title: 'Ver', route: ['/procesos-piezas', piezaId?.toString() || '', 'view'], condition: titulo === 'Vista Pieza' && piezaId != null}
+    ]" [buttons]="[
+    {
+        type: 'flat',
+        label: botonEdicion,
+        condition: mostrarBotonEdicion,
+        isDisabled: false,
+        action: 'edit'
+    },
+    {
+        type: 'stroked',
+        label: 'Cerrar',
+        condition: titulo !== 'Consulta Piezas',
+        isDisabled: false,
+        action: 'close'
+    },
+    {
+        type: 'flat',
+        label: 'Crear nueva pieza',
+        condition: titulo === 'Consulta Piezas',
+        isDisabled: false,
+        action: 'create'
+    }
+    ]" (buttonAction)="handleAction($event)">
+    </app-header>
+
+    <div class="content-scroll">
+        <router-outlet></router-outlet>
+    </div>
+</div>
