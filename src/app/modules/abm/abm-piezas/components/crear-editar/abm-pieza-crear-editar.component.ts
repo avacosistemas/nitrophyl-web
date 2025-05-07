@@ -126,16 +126,21 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     guardarPieza(): void {
         if (this.piezaForm.valid) {
             const piezaData = this.piezaForm.getRawValue();
+            const nombreControl = this.piezaForm.get('nombre');
+            const nombreValue = nombreControl.value;
+            const nombre = typeof nombreValue === 'object' && nombreValue !== null ? nombreValue.nombre : nombreValue;
             const pieza: Pieza = {
                 ...piezaData,
-                id: this.piezaId, 
+                nombre: nombre,
+                id: this.piezaId
             };
+    
             if (this.mode === 'create') {
                 this.abmPiezaService.agregarPieza(pieza).subscribe({
                     next: (savedPieza) => {
                         this.openSnackBar(true, 'Pieza creada correctamente.', 'green');
                         this.abmPiezaService.events.next('piezaGuardada');
-                        this.router.navigate(['/procesos-piezas/edit', savedPieza.id]); 
+                        this.router.navigate(['/procesos-piezas', savedPieza.id, 'edit']);
                     },
                     error: (error) => {
                         this.openSnackBar(false, 'Error al crear la pieza.');
@@ -153,8 +158,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                     }
                 });
             }
-        }
-        else {
+        } else {
             this.openSnackBar(false, 'Por favor, complete todos los campos.');
         }
     }
