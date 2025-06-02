@@ -350,6 +350,10 @@ export class ABMPiezaService {
         return this.simulateApiCall({ status: 'OK' });
     }
 
+    getTipoPieza(): Observable<string[]> {
+        return this.simulateApiCall(['Diafragma', 'Otro Tipo', 'Baldoza' ]);
+    }
+
     getTiposDimension(): Observable<string[]> {
         return this.simulateApiCall(['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO']);
     }

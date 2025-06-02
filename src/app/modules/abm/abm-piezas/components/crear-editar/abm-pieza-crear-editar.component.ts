@@ -45,6 +45,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     filteredPieceNames$: Observable<Pieza[]>;
     formulas$: Observable<{ id: number; nombre: string }[]>;
     tiposDimension$: Observable<string[]>;
+    tiposPieza$: Observable<string[]>;
     moldes$: Observable<{ id: number; nombre: string }[]>;
     clientes$: Observable<{ id: number; nombre: string }[]>;
 
@@ -143,6 +144,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         );
 
         this.tiposDimension$ = this.abmPiezaService.getTiposDimension();
+        this.tiposPieza$ = this.abmPiezaService.getTipoPieza();
         this.moldes$ = this.abmPiezaService.getMoldes();
 
         this.formulas$ = this.formulasService.get().pipe(
@@ -324,11 +326,13 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         combineLatest([
             this.getTiposDimensiones(),
             this.clientes$,
-            this.abmPiezaService.getMoldes()
+            this.abmPiezaService.getMoldes(),
+            this.getTiposPieza()
         ]).subscribe({
-            next: ([tiposDimension, clientes, moldes]: [any, any, any]) => {
+            next: ([tiposDimension, clientes, moldes, tipospieza]: [any, any, any, any]) => {
                 this.tiposDimension$ = of(tiposDimension);
-                this.moldes$ = of(moldes)
+                this.moldes$ = of(moldes);
+                this.tiposPieza$ = of(tipospieza)
             },
             error: (err: any) => console.error(error, err),
             complete: () => { },
@@ -338,6 +342,23 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     getTiposDimensiones(): Observable<any> {
         const error: string = 'ABMPiezaCrearEditarComponent => getTiposDimensiones: ';
         return this.abmPiezaService.getTiposDimension().pipe(
+            catchError((err: any) => {
+                console.error(error, 'this.tipoService.get() ', err);
+                this.typesFail = true;
+                return of([]);
+            }),
+            map((response: any) => {
+                if (response) {
+                    this._types.next(response);
+                    return response;
+                }
+            })
+        );
+    }
+
+     getTiposPieza(): Observable<any> {
+        const error: string = 'ABMPiezaCrearEditarComponent => getTiposPieza: ';
+        return this.abmPiezaService.getTipoPieza().pipe(
             catchError((err: any) => {
                 console.error(error, 'this.tipoService.get() ', err);
                 this.typesFail = true;

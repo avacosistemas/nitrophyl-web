@@ -34,7 +34,7 @@
                             <mat-icon>close</mat-icon>
                         </button>
                         <mat-autocomplete #autoTipo="matAutocomplete" [displayWith]="displayFn">
-                            <mat-option *ngFor="let tipo of tiposDimension$ | async" [value]="tipo">
+                            <mat-option *ngFor="let tipo of tiposPieza$ | async" [value]="tipo">
                                 {{ tipo }}
                             </mat-option>
                         </mat-autocomplete>
