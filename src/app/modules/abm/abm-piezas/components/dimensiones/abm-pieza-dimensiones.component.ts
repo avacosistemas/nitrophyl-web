@@ -26,8 +26,10 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     dimensiones = new MatTableDataSource<Dimension>([]);
     tiposDimension$: Observable<string[]>;
     sinDatos: boolean = false;
+    editMode: boolean = false;
+    dimensionToEdit: Dimension | null = null;
 
-    baseDisplayedColumns: string[] = ['dimension', 'valor'];
+    baseDisplayedColumns: string[] = ['dimension', 'valor', 'observaciones'];
     displayedColumnsDimensiones: string[];
 
     private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
@@ -47,7 +49,8 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
 
         this.dimensionForm = this.fb.group({
             tipoDimension: [null, Validators.required],
-            valor: [null, Validators.required]
+            valor: [null, Validators.required],
+            observaciones: [null]
         });
     }
 
@@ -105,7 +108,8 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         if (this.dimensionForm.valid) {
             const newDimension: Dimension = {
                 tipoDimension: this.dimensionForm.get('tipoDimension').value,
-                valor: this.dimensionForm.get('valor').value
+                valor: this.dimensionForm.get('valor').value,
+                observaciones: this.dimensionForm.get('observaciones').value
             };
 
             const data = this.dimensiones.data;
@@ -117,6 +121,39 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
             this.openSnackBar('Dimensión agregada (mock).', 'X', 'green-snackbar');
             this.loadDimensiones();
 
+        } else {
+            this.openSnackBar('Por favor, complete todos los campos.', 'X', 'red-snackbar');
+        }
+    }
+
+    updateDimension(): void {
+        if (this.dimensionForm.valid && this.dimensionToEdit) {
+            const index = this.dimensiones.data.findIndex(d =>
+                d.tipoDimension === this.dimensionToEdit.tipoDimension && d.valor === this.dimensionToEdit.valor && d.observaciones === this.dimensionToEdit.observaciones
+            );
+
+            if (index > -1) {
+                const updatedDimension: Dimension = {
+                    tipoDimension: this.dimensionForm.get('tipoDimension').value,
+                    valor: this.dimensionForm.get('valor').value,
+                    observaciones: this.dimensionForm.get('observaciones').value
+                };
+
+                const data = [...this.dimensiones.data];
+                data[index] = updatedDimension;
+                this.dimensiones.data = data;
+
+                this.abmPiezaService.updatePiezaDimensiones(this.piezaId, this.dimensiones.data).subscribe(() => {
+                    this.openSnackBar(`Dimensión ${this.dimensionToEdit.tipoDimension} actualizada.`, 'X', 'green-snackbar');
+                }, error => {
+                    this.openSnackBar(`Error al actualizar la dimensión ${this.dimensionToEdit.tipoDimension}.`, 'X', 'red-snackbar');
+                });
+
+                this.cancelEdit();
+                this.loadDimensiones();
+            } else {
+                this.openSnackBar('No se encontró la dimensión a editar.', 'X', 'red-snackbar');
+            }
         } else {
             this.openSnackBar('Por favor, complete todos los campos.', 'X', 'red-snackbar');
         }
@@ -156,14 +193,14 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
 
     updateDimensionValue(dimension: Dimension, newValue: any) {
         const data = this.dimensiones.data;
-        const index = data.findIndex(d => d.tipoDimension === dimension.tipoDimension);
+        const index = data.findIndex(d => d.tipoDimension === dimension.tipoDimension && d.observaciones === dimension.observaciones);
 
         if (index > -1) {
             data[index] = { ...dimension, valor: newValue };
             this.dimensiones.data = data;
 
             this.openSnackBar(`Dimensión ${dimension.tipoDimension} actualizada (mock).`, 'X', 'green-snackbar');
-            this.loadDimensiones();
+
         }
     }
 
@@ -172,5 +209,25 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
             duration: 5000,
             panelClass: className
         });
+    }
+
+    startEdit(dimension: Dimension): void {
+        this.editMode = true;
+        this.dimensionToEdit = { ...dimension };
+        this.dimensionForm.setValue({
+            tipoDimension: dimension.tipoDimension,
+            valor: dimension.valor,
+            observaciones: dimension.observaciones
+        });
+    }
+
+    cancelEdit(): void {
+        this.editMode = false;
+        this.dimensionToEdit = null;
+        this.dimensionForm.reset();
+    }
+
+    get buttonText(): string {
+        return this.editMode ? 'Actualizar' : 'Agregar';
     }
 }

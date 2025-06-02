@@ -2,8 +2,14 @@
   <mat-tab-group class="mt-2 col-span-12 grid-rows-1" (selectedTabChange)="tabChange($event)"
     [selectedIndex]="currentTab">
     <mat-tab label="Datos Generales">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+      <div>
         <app-abm-pieza-crear-editar [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-crear-editar>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Moldes" *ngIf="piezaId">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <app-abm-pieza-moldes [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-moldes>
       </div>
     </mat-tab>
 
@@ -31,7 +37,7 @@
       </div>
     </mat-tab>
 
-    <mat-tab label="Finalización" *ngIf="piezaId">
+    <mat-tab label="Pieza Terminada" *ngIf="piezaId">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
         <app-abm-pieza-finalizacion [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-finalizacion>
       </div>

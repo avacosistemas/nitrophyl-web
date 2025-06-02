@@ -22,6 +22,7 @@ import { ABMPiezaCrearEditarComponent } from '../crear-editar/abm-pieza-crear-ed
 import { ABMPiezaMoldeoComponent } from '../moldeo/abm-pieza-moldeo.component';
 import { ABMPiezaInsumosComponent } from '../insumos/abm-pieza-insumos.component';
 import { ABMPiezaEsquemaComponent } from '../esquema/abm-pieza-esquema.component';
+import { ABMPiezaMoldesComponent } from '../moldes/abm-pieza-moldes.component';
 
 @Component({
     selector: 'app-abm-pieza',
@@ -35,6 +36,7 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
     @ViewChild(ABMPiezaMoldeoComponent) abmPiezaMoldeoComponent: ABMPiezaMoldeoComponent;
     @ViewChild(ABMPiezaInsumosComponent) abmPiezaInsumos: ABMPiezaInsumosComponent;
     @ViewChild(ABMPiezaEsquemaComponent) abmPiezaEsquemaComponent: ABMPiezaEsquemaComponent;
+    @ViewChild(ABMPiezaMoldesComponent) abmPiezaMoldesComponent: ABMPiezaMoldesComponent;
 
     piezaId: number | null = null;
     mode: 'create' | 'view' | 'edit' = 'create';
@@ -122,27 +124,27 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Pieza';
                     break;
-                case 1:
+                case 2:
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Añadir Insumo';
                     break;
-                case 2:
+                case 3:
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Moldeo';
                     break;
-                case 3:
+                case 4:
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Desmoldante/Postcura';
                     break;
-                case 4:
+                case 5:
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Añadir Esquema';
                     break;
-                case 5:
+                case 6:
                     this.mostrarBotonEdicion = true;
-                    this.botonEdicionTexto = 'Guardar Finalización';
+                    this.botonEdicionTexto = 'Guardar Pieza Terminada';
                     break;
-                case 8:
+                case 9:
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Subir Plano';
                     break;
@@ -197,15 +199,23 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                     { value: 'NITROPHYL', label: 'Nitrophyl' },
                     { value: 'CLIENTE', label: 'Cliente' }
                 ],
-                serviceUpload: (archivo: string, nombreArchivo: string, descripcion: string, clasificacion: string) => {
-                    const file = {
-                        idPieza: this.piezaId,
-                        nombreArchivo: nombreArchivo,
-                        archivo: archivo,
-                        descripcion: descripcion,
-                        clasificacion: clasificacion
-                    };
-                    return this.abmPiezaService.uploadPlano(this.piezaId, file);
+                serviceUpload: (
+                    archivo: string,
+                    nombreArchivo: string,
+                    descripcion: string,
+                    clasificacion: string,
+                    codigo: string,
+                    revision: number
+                ) => {
+                    return this.abmPiezaService.uploadPlano(
+                        this.piezaId,
+                        archivo,
+                        nombreArchivo,
+                        descripcion,
+                        clasificacion,
+                        codigo,
+                        revision
+                    );
                 }
             }
         });
@@ -266,6 +276,10 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
 
     private findEsquemaComponent(): ABMPiezaEsquemaComponent | undefined {
         return this.abmPiezaEsquemaComponent;
+    }
+
+    private findMoldesComponent(): ABMPiezaMoldesComponent | undefined {
+        return this.abmPiezaMoldesComponent;
     }
 
     private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {

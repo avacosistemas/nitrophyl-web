@@ -24,7 +24,7 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
     planos = new MatTableDataSource<Plano>([]);
-    baseDisplayedColumnsPlanos: string[] = ['nombre', 'clasificacion', 'descripcion', 'version', 'fecha'];
+    baseDisplayedColumnsPlanos: string[] = ['codigo', 'revision', 'clasificacion', 'descripcion', 'fecha'];
     displayedColumnsPlanos: string[];
     private planoSubscription: Subscription;
     sinDatos: boolean = false;
@@ -51,8 +51,8 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
             this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/heroicons_solid/download.svg")
         );
         this.matIconRegistry.addSvgIcon(
-            "heroicons_outline:trash",
-            this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/heroicons_outline/trash.svg")
+            "heroicons_solid:trash",
+            this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/heroicons_solid/trash.svg")
         );
     }
 
@@ -181,6 +181,20 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
                 cancelButtonText: 'Cancelar',
                 type: 'warning',
                 onConfirm: onConfirm
+            }
+        });
+    }
+
+    openObservacionModal(observacion: string, nombreArchivo: string): void {
+        const dialogRef = this.dialog.open(GenericModalComponent, {
+            width: '500px',
+            data: {
+                title: `Observaciones: ${nombreArchivo}`,
+                message: observacion,
+                icon: 'chat',
+                showCloseButton: true,
+                showConfirmButton: false,
+                type: 'info',
             }
         });
     }

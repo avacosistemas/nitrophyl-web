@@ -29,7 +29,7 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   sinDatos: boolean = false;
 
   searchForm: FormGroup;
-  displayedColumns: string[] = ['nombreInsumo', 'tipo', 'medida', 'tratamiento', 'adhesivos', 'observaciones']; // Elimina 'acciones' por defecto
+  displayedColumns: string[] = ['nombreInsumo', 'tipo', 'medida', 'tratamiento', 'adhesivos', 'observaciones'];
 
 
   constructor(

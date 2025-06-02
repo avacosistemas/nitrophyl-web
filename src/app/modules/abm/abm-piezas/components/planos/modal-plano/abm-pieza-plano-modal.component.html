@@ -1,7 +1,7 @@
 <div class="relative flex flex-col w-full h-full">
     <div class="absolute top-0 right-0">
         <button mat-icon-button (click)="onNoClick()">
-            <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x'"></mat-icon>
+            <mat-icon class="text-secondary" [svgIcon]="'heroicons_solid:x'"></mat-icon>
         </button>
     </div>
     <h1 mat-dialog-title class="text-lg font-semibold mb-4">{{title}}</h1>
@@ -11,7 +11,7 @@
             <div
                 class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
                 <div class="flex flex-col items-center justify-center">
-                    <mat-icon class="text-gray-500" svgIcon="heroicons_outline:upload" *ngIf="!selectedFile"
+                    <mat-icon class="text-gray-500" svgIcon="heroicons_solid:upload" *ngIf="!selectedFile"
                         style="font-size: 2rem;"></mat-icon>
                     <span class="text-sm text-gray-600" *ngIf="!selectedFile">Seleccionar
                         {{ fileTypeDescription }}</span>
@@ -27,19 +27,29 @@
             </button>
         </label>
 
-        <mat-form-field appearance="outline" *ngIf="selectedFile">
-            <mat-label>Nombre del Archivo</mat-label>
-            <input matInput formControlName="nombreArchivo">
-        </mat-form-field>
+        <div class="flex gap-4">
+            <mat-form-field appearance="outline" class="w-1/4">
+                <mat-label>Código</mat-label>
+                <input matInput formControlName="codigo" required>
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" *ngIf="showClassification">
-            <mat-label>Clasificación</mat-label>
-            <mat-select formControlName="clasificacion">
-                <mat-option *ngFor="let option of clasificacionOptions" [value]="option.value">
-                    {{ option.label }}
-                </mat-option>
-            </mat-select>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="w-1/4">
+                <mat-label>Revisión</mat-label>
+                <input matInput type="number" formControlName="revision" required>
+                <mat-error *ngIf="uploadForm.get('revision')?.hasError('pattern')">
+                    Debe ser un número entero.
+                </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-2/4" *ngIf="showClassification">
+                <mat-label>Clasificación</mat-label>
+                <mat-select formControlName="clasificacion" required>
+                    <mat-option *ngFor="let option of clasificacionOptions" [value]="option.value">
+                        {{ option.label }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+        </div>
 
         <mat-form-field appearance="outline">
             <mat-label>Observaciones</mat-label>

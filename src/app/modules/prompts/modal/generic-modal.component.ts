@@ -1,6 +1,7 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ViewChild, ViewContainerRef, ComponentFactoryResolver } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Type } from '@angular/core';
 
 interface DialogData {
     title?: string;
@@ -12,8 +13,9 @@ interface DialogData {
     cancelButtonText?: string;
     onConfirm?: () => void;
     onCancel?: () => void;
-    customContent?: string;
+    customComponent?: Type<any>;
     type?: 'primary' | 'accent' | 'warn' | 'basic' | 'info' | 'success' | 'warning' | 'error' | 'default';
+    componentData?: any;
 }
 
 @Component({
@@ -22,15 +24,25 @@ interface DialogData {
     styleUrls: ['./generic-modal.component.scss']
 })
 export class GenericModalComponent {
-    public sanitizedContent: SafeHtml;
+    @ViewChild('customComponentContainer', { read: ViewContainerRef }) customComponentContainer: ViewContainerRef;
 
     constructor(
         public dialogRef: MatDialogRef<GenericModalComponent>,
         @Inject(MAT_DIALOG_DATA) public data: DialogData,
-        private sanitizer: DomSanitizer
-    ) {
-        if (data.customContent) {
-            this.sanitizedContent = this.sanitizer.bypassSecurityTrustHtml(data.customContent);
+        private sanitizer: DomSanitizer,
+        private componentFactoryResolver: ComponentFactoryResolver
+    ) { }
+
+    ngAfterViewInit() {
+        if (this.data.customComponent) {
+            const factory = this.componentFactoryResolver.resolveComponentFactory(this.data.customComponent);
+            const componentRef = this.customComponentContainer.createComponent(factory);
+
+            if (this.data.componentData) {
+                Object.assign(componentRef.instance, this.data.componentData);
+            }
+
+            componentRef.changeDetectorRef.detectChanges();
         }
     }
 

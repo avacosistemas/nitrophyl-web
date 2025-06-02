@@ -4,179 +4,171 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
-  selector: 'app-abm-pieza-plano-modal',
-  templateUrl: './abm-pieza-plano-modal.component.html',
-  styleUrls: ['./abm-pieza-plano-modal.component.scss']
+    selector: 'app-abm-pieza-plano-modal',
+    templateUrl: './abm-pieza-plano-modal.component.html',
+    styleUrls: ['./abm-pieza-plano-modal.component.scss']
 })
 export class ABMPiezaPlanoModalComponent implements OnInit {
-  uploadForm: FormGroup;
-  selectedFile: File | null = null;
-  formSubmitted: boolean = false;
-  uploading: boolean = false;
-  fileExtension: string = '';
-  title: string = '';
-  fileTypeDescription: string = '';
-  acceptFileTypes: string = '';
-  showClassification: boolean = false;
-  clasificacionOptions: { value: string; label: string }[] = [];
-  serviceUpload: any;
+    uploadForm: FormGroup;
+    selectedFile: File | null = null;
+    formSubmitted: boolean = false;
+    uploading: boolean = false;
+    fileExtension: string = '';
+    title: string = '';
+    fileTypeDescription: string = '';
+    acceptFileTypes: string = '';
+    showClassification: boolean = false;
+    clasificacionOptions: { value: string; label: string }[] = [];
+    serviceUpload: any;
 
-  buttonText: string = 'Subir';
+    buttonText: string = 'Subir';
 
-  constructor(
-    private snackBar: MatSnackBar,
-    public dialogRef: MatDialogRef<ABMPiezaPlanoModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any,
-    private formBuilder: FormBuilder,
-    private cdRef: ChangeDetectorRef,
-  ) { }
+    constructor(
+        private snackBar: MatSnackBar,
+        public dialogRef: MatDialogRef<ABMPiezaPlanoModalComponent>,
+        @Inject(MAT_DIALOG_DATA) public data: any,
+        private formBuilder: FormBuilder,
+        private cdRef: ChangeDetectorRef,
+    ) { }
 
-  ngOnInit(): void {
-    this.title = this.data.title;
-    this.fileTypeDescription = this.data.fileTypeDescription;
-    this.acceptFileTypes = this.data.acceptFileTypes;
-    this.showClassification = this.data.showClassification || false;
-    this.clasificacionOptions = this.data.clasificacionOptions || [];
-    this.serviceUpload = this.data.serviceUpload;
+    ngOnInit(): void {
+        this.title = this.data.title;
+        this.fileTypeDescription = this.data.fileTypeDescription;
+        this.acceptFileTypes = this.data.acceptFileTypes;
+        this.showClassification = this.data.showClassification || false;
+        this.clasificacionOptions = this.data.clasificacionOptions || [];
+        this.serviceUpload = this.data.serviceUpload;
 
-    this.buildForm();
-  }
-
-  private buildForm(): void {
-    this.uploadForm = this.formBuilder.group({
-      archivo: [null],
-      nombreArchivo: [''],
-      descripcion: [''],
-      clasificacion: ['', this.showClassification ? Validators.required : []],
-    });
-  }
-
-  onFileSelected(event: any): void {
-    const file: File = event.target.files[0];
-
-    if (file) {
-      this.selectedFile = file;
-
-      const fileName = file.name;
-      const lastDotIndex = fileName.lastIndexOf('.');
-      this.fileExtension = lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex);
-      const baseName = lastDotIndex === -1 ? fileName : fileName.substring(0, lastDotIndex);
-
-      this.uploadForm.patchValue({
-        nombreArchivo: baseName
-      });
-
-
-      this.uploadForm.updateValueAndValidity();
-      this.cdRef.detectChanges();
-    } else {
-      this.selectedFile = null;
-      this.openSnackBar("No se ha seleccionado ningún archivo.", "X", "red-snackbar");
-
-      const input = event.target as HTMLInputElement;
-      input.value = '';
-      this.uploadForm.patchValue({
-        nombreArchivo: ''
-      });
-      this.uploadForm.updateValueAndValidity();
-      this.cdRef.detectChanges();
-    }
-  }
-
-  removeSelectedFile(): void {
-    this.selectedFile = null;
-    this.uploadForm.patchValue({
-      archivo: null,
-      nombreArchivo: ''
-    });
-
-    const input = document.getElementById('file-upload') as HTMLInputElement;
-    if (input) {
-      input.value = '';
-    }
-    this.uploadForm.updateValueAndValidity();
-    this.cdRef.detectChanges();
-  }
-
-  onNoClick(): void {
-    this.dialogRef.close(false);
-  }
-
-  subir(): void {
-    if (!this.selectedFile) {
-      this.openSnackBar("Por favor, seleccione un archivo.", "X", "red-snackbar");
-      return;
+        this.buildForm();
     }
 
-    if (this.showClassification && !this.uploadForm.get('clasificacion').value) {
-      this.openSnackBar("Por favor, seleccione una clasificación.", "X", "red-snackbar");
-      return;
+    private buildForm(): void {
+        this.uploadForm = this.formBuilder.group({
+            archivo: [null],
+            codigo: ['', Validators.required],
+            revision: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
+            clasificacion: ['', this.showClassification ? Validators.required : []],
+            descripcion: [''],
+        });
     }
 
-    this.uploading = true;
-    this.buttonText = 'Procesando...';
-    this.cdRef.detectChanges();
+    onFileSelected(event: any): void {
+        const file: File = event.target.files[0];
 
-    const nombreArchivo = this.uploadForm.get('nombreArchivo').value + this.fileExtension;
-    const descripcion = this.uploadForm.get('descripcion').value;
-    const clasificacion = this.uploadForm.get('clasificacion').value;
+        if (file) {
+            this.selectedFile = file;
 
-    let base64Content: string | null = null;
+            const fileName = file.name;
+            const lastDotIndex = fileName.lastIndexOf('.');
+            this.fileExtension = lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      base64Content = (reader.result as string).split(',')[1];
+            this.uploadForm.updateValueAndValidity();
+            this.cdRef.detectChanges();
+        } else {
+            this.selectedFile = null;
+            this.openSnackBar("No se ha seleccionado ningún archivo.", "X", "red-snackbar");
 
-      this.uploadFile(base64Content, nombreArchivo, descripcion, clasificacion);
-    };
-    reader.readAsDataURL(this.selectedFile);
-  }
+            const input = event.target as HTMLInputElement;
+            input.value = '';
+            this.uploadForm.updateValueAndValidity();
+            this.cdRef.detectChanges();
+        }
+    }
 
-  uploadFile(archivo: string, nombreArchivo: string, descripcion: string, clasificacion: string): void {
-    const file = {
-      archivo: archivo,
-      nombreArchivo: nombreArchivo,
-      descripcion: descripcion,
-      clasificacion: clasificacion
-    };
+    removeSelectedFile(): void {
+        this.selectedFile = null;
+        this.uploadForm.patchValue({
+            archivo: null,
+        });
 
-    this.serviceUpload(archivo, nombreArchivo, descripcion, clasificacion).subscribe({
-      next: (response: any) => {
-        this.openSnackBar("Archivo subido", "X", "green-snackbar");
-        this.dialogRef.close(true);
-      },
-      error: (error) => {
-        console.error('Error al subir el archivo', error);
-        this.openSnackBar("Error al subir el archivo", "X", "red-snackbar");
-        this.resetForm();
-      },
-      complete: () => {
+        const input = document.getElementById('file-upload') as HTMLInputElement;
+        if (input) {
+            input.value = '';
+        }
+        this.uploadForm.updateValueAndValidity();
+        this.cdRef.detectChanges();
+    }
+
+    onNoClick(): void {
+        this.dialogRef.close(false);
+    }
+
+    subir(): void {
+        if (!this.selectedFile) {
+            this.openSnackBar("Por favor, seleccione un archivo.", "X", "red-snackbar");
+            return;
+        }
+
+        if (this.showClassification && !this.uploadForm.get('clasificacion').value) {
+            this.openSnackBar("Por favor, seleccione una clasificación.", "X", "red-snackbar");
+            return;
+        }
+
+        if (this.uploadForm.invalid) {
+            this.openSnackBar("Por favor, complete todos los campos obligatorios.", "X", "red-snackbar");
+            return;
+        }
+
+        this.uploading = true;
+        this.buttonText = 'Procesando...';
+        this.cdRef.detectChanges();
+
+        const nombreArchivo = this.selectedFile.name;
+        const descripcion = this.uploadForm.get('descripcion').value;
+        const clasificacion = this.uploadForm.get('clasificacion').value;
+        const codigo = this.uploadForm.get('codigo').value;
+        const revision = this.uploadForm.get('revision').value;
+
+        let base64Content: string | null = null;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            base64Content = (reader.result as string).split(',')[1];
+
+            this.uploadFile(base64Content, nombreArchivo, descripcion, clasificacion, codigo, revision);
+        };
+        reader.readAsDataURL(this.selectedFile);
+    }
+
+    uploadFile(archivo: string, nombreArchivo: string, descripcion: string, clasificacion: string, codigo: string, revision: number): void {
+
+        this.serviceUpload(archivo, nombreArchivo, descripcion, clasificacion, codigo, revision).subscribe({
+            next: (response: any) => {
+                this.openSnackBar("Archivo subido", "X", "green-snackbar");
+                this.dialogRef.close(true);
+            },
+            error: (error) => {
+                console.error('Error al subir el archivo', error);
+                this.openSnackBar("Error al subir el archivo", "X", "red-snackbar");
+                this.resetForm();
+            },
+            complete: () => {
+                this.uploading = false;
+                this.buttonText = 'Subir';
+                this.cdRef.detectChanges();
+            }
+        });
+    }
+
+    private resetForm(): void {
         this.uploading = false;
         this.buttonText = 'Subir';
+        this.selectedFile = null;
+        this.uploadForm.reset();
+
+        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
+        }
+
+        this.uploadForm.patchValue({ archivo: null });
         this.cdRef.detectChanges();
-      }
-    });
-  }
-
-  private resetForm(): void {
-    this.uploading = false;
-    this.buttonText = 'Subir';
-    this.selectedFile = null;
-    this.uploadForm.reset();
-
-    const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
     }
 
-    this.uploadForm.patchValue({ archivo: null, nombreArchivo: '' });
-    this.cdRef.detectChanges();
-  }
-
-  openSnackBar(message: string, action: string, className: string) {
-    this.snackBar.open(message, action, {
-      duration: 5000,
-      panelClass: className
-    });
-  };
+    openSnackBar(message: string, action: string, className: string) {
+        this.snackBar.open(message, action, {
+            duration: 5000,
+            panelClass: className
+        });
+    };
 }

@@ -37,8 +37,8 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
     filteredPrensas$: Observable<Prensa[]>;
 
 
-    cantidadCtrl = new FormControl({ value: '', disabled: this.mode === 'view' });
-    tipoCtrl = new FormControl({ value: '', disabled: this.mode === 'view' });
+    cantidadCtrl = new FormControl({ value: '', disabled: this.mode === 'view' }, Validators.required);
+    tipoCtrl = new FormControl({ value: '', disabled: this.mode === 'view' }, Validators.required);
     presionCtrl = new FormControl({ value: '', disabled: this.mode === 'view' });
     bombeosAgregados: Bombeo[] = [];
 
@@ -174,7 +174,7 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
     }
 
     agregarBombeo(): void {
-        if (this.cantidadCtrl.value && this.tipoCtrl.value && this.presionCtrl.value) {
+        if (this.cantidadCtrl.valid && this.tipoCtrl.valid) {
             const bombeo: Bombeo = {
                 cantidad: this.cantidadCtrl.value,
                 tipo: this.tipoCtrl.value,
@@ -186,8 +186,11 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
             this.tipoCtrl.setValue(null);
             this.presionCtrl.setValue(null);
             this.actualizarFormularioBombeos();
+        } else {
+            this.openSnackBar(false, 'Por favor, complete la cantidad y el tipo de bombeo.');
         }
     }
+
 
     quitarBombeo(index: number): void {
         this.bombeosAgregados.splice(index, 1);
@@ -251,6 +254,6 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
     }
 
     get bombeoFormCompleto(): boolean {
-        return !!(this.cantidadCtrl.value && this.tipoCtrl.value && this.presionCtrl.value);
+        return !!(this.cantidadCtrl.value && this.tipoCtrl.value);
     }
 }

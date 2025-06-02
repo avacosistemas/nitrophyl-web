@@ -1,8 +1,8 @@
 <div>
-  <form [formGroup]="dimensionForm" (ngSubmit)="addDimension()" class="w-full mat-form-without-wrapper"
-    *ngIf="mode !== 'view'">
+  <form [formGroup]="dimensionForm" (ngSubmit)="editMode ? updateDimension() : addDimension()"
+    class="w-full mat-form-without-wrapper" *ngIf="mode !== 'view'">
     <div class="flex justify-center gap-3">
-      <mat-form-field class="min-w-[25%]" appearance="outline">
+      <mat-form-field class="w-1/5" appearance="outline">
         <mat-label>Dimensión </mat-label>
         <mat-select id="dimension" placeholder="Dimensión" formControlName="tipoDimension">
           <mat-option *ngFor="let dimension of tiposDimension$ | async" [value]="dimension">
@@ -10,38 +10,52 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <mat-form-field class="min-w-[25%]" appearance="outline">
+      <mat-form-field class="w-1/5" appearance="outline">
         <mat-label>Valor en MM </mat-label>
         <input id="valor" matInput placeholder="Valor en mm" formControlName="valor">
       </mat-form-field>
-      <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
-        mat-flat-button type="submit"
-        [disabled]="!dimensionForm.get('valor').value || !dimensionForm.get('tipoDimension').value">
-        <span class="mat-button-wrapper"> Agregar </span>
-        <span matripple="" class="mat-ripple mat-button-ripple"></span>
-      </button>
+      <mat-form-field class="w-1/5" appearance="outline">
+        <mat-label>Observaciones</mat-label>
+        <input matInput placeholder="Observaciones" formControlName="observaciones">
+      </mat-form-field>
+
+      <div class="w-1/5 flex gap-2">
+        <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
+          mat-flat-button type="submit"
+          [disabled]="!dimensionForm.get('valor').value || !dimensionForm.get('tipoDimension').value">
+          <span class="mat-button-wrapper"> {{buttonText}} </span>
+          <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+        <button class="mat-focus-indicator mat-stroked-button mat-button-base form-client__btn mt-3" *ngIf="editMode"
+          mat-stroked-button type="button" (click)="cancelEdit()">
+          <span class="mat-button-wrapper"> Cancelar </span>
+          <span matripple="" class="mat-ripple mat-button-ripple"></span>
+        </button>
+      </div>
     </div>
   </form>
 
   <table mat-table [dataSource]="dimensiones" class="border-2 rounded-2xl w-full">
     <ng-container matColumnDef="dimension">
-      <th mat-header-cell *matHeaderCellDef> Dimension </th>
+      <th mat-header-cell *matHeaderCellDef> Dimensión </th>
       <td mat-cell *matCellDef="let element"> {{element.tipoDimension}} </td>
     </ng-container>
     <ng-container matColumnDef="valor">
       <th mat-header-cell *matHeaderCellDef> Valor en mm </th>
-      <td mat-cell *matCellDef="let element">
-        <mat-form-field class="h-1 my-1 w-full">
-          <input type="number" matInput [value]="element.valor" disabled>
-        </mat-form-field>
-      </td>
+      <td mat-cell *matCellDef="let element"> {{element.valor}} </td>
+    </ng-container>
+    <ng-container matColumnDef="observaciones">
+      <th mat-header-cell *matHeaderCellDef> Observaciones </th>
+      <td mat-cell *matCellDef="let element"> {{element.observaciones}} </td>
     </ng-container>
     <ng-container matColumnDef="acciones">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row">
         <ng-container *ngIf="mode !== 'view'">
-          <div class="cursor-pointer text-right">
-            <mat-icon (click)="eliminarDimension(row)" svgIcon="heroicons_outline:trash"
+          <div class="flex gap-1 justify-end">
+            <mat-icon (click)="startEdit(row)" svgIcon="heroicons_solid:pencil-alt" class="cursor-pointer"
+              matTooltip="Editar"></mat-icon>
+            <mat-icon (click)="eliminarDimension(row)" svgIcon="heroicons_solid:trash" class="cursor-pointer"
               matTooltip="Eliminar"></mat-icon>
           </div>
         </ng-container>
@@ -51,7 +65,7 @@
     <tr mat-row *matRowDef="let row; columns: displayedColumnsDimensiones;"></tr>
 
     <tr *matNoDataRow>
-      <td class="text-center py-4" colspan="3" *ngIf="sinDatos">No hay dimensiones asociadas a esta pieza.</td>
+      <td class="text-center py-4" colspan="4" *ngIf="sinDatos">No hay dimensiones asociadas a esta pieza.</td>
     </tr>
   </table>
 </div>

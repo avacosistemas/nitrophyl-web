@@ -1,9 +1,7 @@
 <div>
     <form [formGroup]="moldeoForm" class="mat-form-without-wrapper space-y-4">
-
         <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-4">
             <h2 class="text-xl font-semibold mb-2">Prensa</h2>
-
             <mat-form-field appearance="outline" class="w-full md:w-1/3">
                 <mat-label>Prensa</mat-label>
                 <input type="text" matInput [formControl]="prensaCtrl" [matAutocomplete]="autoPrensa"
@@ -22,7 +20,7 @@
                 <mat-chip-list aria-label="Prensas">
                     <mat-chip *ngFor="let prensa of prensasAgregadas" class="bg-gray-200">
                         {{ prensa.nombre }}
-                        <button matChipRemove [disabled]="mode === 'view'">
+                        <button matChipRemove [disabled]="mode === 'view'" class="w-auto h-auto leading-none">
                             <mat-icon>cancel</mat-icon>
                         </button>
                     </mat-chip>
@@ -125,8 +123,11 @@
             <div class="flex flex-wrap gap-2">
                 <mat-chip-list aria-label="Bombeos">
                     <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" class="bg-gray-200">
-                        {{ bombeo.cantidad }} {{ bombeo.tipo }} a {{ bombeo.presion }} kg/cm2
-                        <button matChipRemove [disabled]="mode === 'view'">
+                        {{ bombeo.cantidad }} {{ bombeo.tipo }}
+                        <ng-container *ngIf="bombeo.presion">
+                            a {{ bombeo.presion }} kg/cm2
+                        </ng-container>
+                        <button matChipRemove [disabled]="mode === 'view'" class="w-auto h-auto leading-none">
                             <mat-icon>cancel</mat-icon>
                         </button>
                     </mat-chip>

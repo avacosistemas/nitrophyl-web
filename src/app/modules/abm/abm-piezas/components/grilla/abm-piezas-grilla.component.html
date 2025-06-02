@@ -19,16 +19,39 @@
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="w-1/3">
-                <mat-label> Fórmula (Código) </mat-label>
-                <input matInput [formControlName]="'formulaCodigo'" placeholder="Fórmula (Código)">
+                <mat-label>Fórmula</mat-label>
+                <input type="text" matInput formControlName="formula" [matAutocomplete]="autoFormula"
+                  placeholder="Fórmula" #formulaInput>
+                <button mat-icon-button matSuffix *ngIf="searchForm.get('formula')?.value"
+                  (click)="clearFormulaInput(); $event.stopPropagation()">
+                  <mat-icon>close</mat-icon>
+                </button>
+                <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFn">
+                  <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
+                    {{formula.nombre}}
+                  </mat-option>
+                </mat-autocomplete>
               </mat-form-field>
 
               <mat-form-field appearance="outline" class="w-1/3">
-                <mat-label> Fórmula (Material) </mat-label>
-                <input matInput [formControlName]="'formulaMaterial'" placeholder="Fórmula (Material)">
+                <mat-label>Material</mat-label>
+                <input type="text" matInput formControlName="material" [matAutocomplete]="autoMaterial"
+                  placeholder="Material" #materialInput>
+                <button mat-icon-button matSuffix *ngIf="searchForm.get('material')?.value"
+                  (click)="clearMaterialInput(); $event.stopPropagation()">
+                  <mat-icon>close</mat-icon>
+                </button>
+                <mat-autocomplete #autoMaterial="matAutocomplete" [displayWith]="displayFn">
+                  <mat-option *ngFor="let material of materials$ | async" [value]="material">
+                    {{material.nombre}} ({{material.codigo}})
+                  </mat-option>
+                </mat-autocomplete>
               </mat-form-field>
 
+
             </div>
+
+            <mat-checkbox [formControl]="soloVigentes">Solo Vigentes</mat-checkbox>
 
             <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
               <button mat-flat-button (click)="search()"
@@ -50,19 +73,28 @@
         </mat-expansion-panel>
       </mat-accordion>
       <table mat-table [dataSource]="dataSource" class="border-2 rounded-2xl mt-5 w-full">
+        <ng-container matColumnDef="vigente">
+          <th mat-header-cell *matHeaderCellDef class="w-16"> </th>
+          <td mat-cell *matCellDef="let element" class="w-16">
+            <mat-icon [style.color]="element.vigente ? 'green' : 'red'">
+              {{ element.vigente ? 'check_circle' : 'cancel' }}
+            </mat-icon>
+          </td>
+        </ng-container>
+
         <ng-container matColumnDef="nombre">
           <th mat-header-cell *matHeaderCellDef> Nombre </th>
           <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
         </ng-container>
 
-        <ng-container matColumnDef="formulaCodigo">
-          <th mat-header-cell *matHeaderCellDef> Fórmula (Código) </th>
-          <td mat-cell *matCellDef="let element"> {{element.formulaCodigo}} </td>
+        <ng-container matColumnDef="formula">
+          <th mat-header-cell *matHeaderCellDef> Fórmula </th>
+          <td mat-cell *matCellDef="let element"> {{element.formula}} </td>
         </ng-container>
 
-        <ng-container matColumnDef="formulaMaterial">
-          <th mat-header-cell *matHeaderCellDef> Fórmula (Material) </th>
-          <td mat-cell *matCellDef="let element"> {{element.formulaMaterial}} </td>
+        <ng-container matColumnDef="material">
+          <th mat-header-cell *matHeaderCellDef> Material </th>
+          <td mat-cell *matCellDef="let element"> {{element.material}} </td>
         </ng-container>
 
         <ng-container matColumnDef="revision">
@@ -75,16 +107,32 @@
           <td mat-cell *matCellDef="let element"> {{element.fechaRevision | date}} </td>
         </ng-container>
 
+        <ng-container matColumnDef="tipo">
+          <th mat-header-cell *matHeaderCellDef> Tipo </th>
+          <td mat-cell *matCellDef="let element"> {{element.tipo}} </td>
+        </ng-container>
+
         <ng-container matColumnDef="acciones">
           <th mat-header-cell *matHeaderCellDef></th>
-          <td mat-cell *matCellDef="let row" class="text-right w-32">
-            <button>
-              <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar" class="mr-1"
+          <td mat-cell *matCellDef="let row" class="w-32">
+            <div class="flex gap-1 justify-end">
+            <button *ngIf="row.permiteEditar">
+              <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
                 (click)="goToEdit(row.id)"></mat-icon>
             </button>
-            <button>
-              <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver" (click)="goToView(row.id)"></mat-icon>
+            <button *ngIf="row.permiteGenerarRevision">
+              <mat-icon svgIcon="heroicons_solid:plus-circle" matTooltip="Generar nueva revisión"
+                (click)="generarNuevaRevision(row.id)"></mat-icon>
             </button>
+            <button *ngIf="row.permiteMarcarRevision">
+              <mat-icon svgIcon="heroicons_solid:check-circle" matTooltip="Marcar como vigente"
+                (click)="marcarVigente(row)"></mat-icon>
+            </button>
+            <button>
+              <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver" (click)="goToView(row.id)">
+              </mat-icon>
+            </button>
+            </div>
           </td>
         </ng-container>
 
