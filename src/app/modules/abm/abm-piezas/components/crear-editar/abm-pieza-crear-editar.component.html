@@ -1,7 +1,5 @@
 <div>
     <form [formGroup]="piezaForm" (ngSubmit)="guardarPieza()" class="mat-form-without-wrapper flex flex-col gap-4">
-
-        <!-- Sección Pieza -->
         <div class="flex gap-4 grid grid-cols-2">
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
@@ -9,14 +7,25 @@
                     Pieza
                 </span>
                 <div class="flex flex-col gap-1">
+                    <mat-form-field appearance="outline" class="form-field w-full" *ngIf="mode === 'create'">
+                        <mat-label>Código</mat-label>
+                        <input type="text" matInput formControlName="codigo" required>
+                        <mat-error *ngIf="piezaForm.get('codigo').hasError('required')">El código es
+                            requerido</mat-error>
+                    </mat-form-field>
+
                     <mat-form-field appearance="outline" class="form-field w-full">
                         <mat-label>Nombre de la Pieza</mat-label>
                         <input type="text" matInput formControlName="nombre" required [matAutocomplete]="autoNombre"
-                            [readonly]="mode !== 'edit' && mode !== 'create'"
-                            [value]="piezaForm.get('nombre').value?.nombre || piezaForm.get('nombre').value">
-                        <mat-autocomplete #autoNombre="matAutocomplete" [displayWith]="displayPieceName.bind(this)">
+                            [readonly]="mode === 'view' || (mode === 'edit' && piezaForm.get('nombre').disabled)">
+                        <button mat-icon-button matSuffix
+                            *ngIf="piezaForm.get('nombre')?.value && mode !== 'view' && !piezaForm.get('nombre').disabled"
+                            (click)="piezaForm.get('nombre').setValue(null); $event.stopPropagation()">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                        <mat-autocomplete #autoNombre="matAutocomplete">
                             <mat-option *ngFor="let pieceName of filteredPieceNames$ | async" [value]="pieceName">
-                                {{ pieceName.nombre }}
+                                {{ pieceName }}
                             </mat-option>
                         </mat-autocomplete>
                         <mat-error *ngIf="piezaForm.get('nombre').hasError('required')">El nombre es
@@ -25,29 +34,31 @@
 
                     <mat-form-field appearance="outline" class="form-field w-full ">
                         <mat-label>Tipo</mat-label>
-                        <input type="text" matInput placeholder="Tipo" #tipoInput formControlName="tipo"
-                            [matAutocomplete]="autoTipo" [readonly]="mode !== 'edit' && mode !== 'create'"
-                            [value]="piezaForm.get('tipo').value">
+                        <input type="text" matInput placeholder="Tipo" #tipoInput formControlName="idTipoPieza"
+                            [matAutocomplete]="autoTipo"
+                            [readonly]="mode === 'view' || (mode === 'edit' && piezaForm.get('idTipoPieza').disabled)">
                         <button mat-icon-button matSuffix
-                            *ngIf="(piezaForm.get('tipo')?.value && mode !== 'edit') && mode !== 'view'"
-                            (click)="clearTipoInput(); $event.stopPropagation()">
+                            *ngIf="piezaForm.get('idTipoPieza')?.value && mode !== 'view' && !piezaForm.get('idTipoPieza').disabled"
+                            (click)="piezaForm.get('idTipoPieza').setValue(null); $event.stopPropagation()">
                             <mat-icon>close</mat-icon>
                         </button>
                         <mat-autocomplete #autoTipo="matAutocomplete" [displayWith]="displayFn">
-                            <mat-option *ngFor="let tipo of tiposPieza$ | async" [value]="tipo">
-                                {{ tipo }}
+                            <mat-option *ngFor="let tipo of filteredTiposPieza$ | async" [value]="tipo">
+                                {{ tipo.nombre }}
                             </mat-option>
                         </mat-autocomplete>
+                        <mat-error *ngIf="piezaForm.get('idTipoPieza').hasError('required')">El tipo es
+                            requerido</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field w-full ">
                         <mat-label>Molde</mat-label>
-                        <input type="text" matInput formControlName="moldeId" required #moldeInput
-                            [matAutocomplete]="autoMolde" [readonly]="mode !== 'edit' && mode !== 'create'"
-                            [value]="piezaForm.get('moldeId').value?.nombre || piezaForm.get('moldeId').value">
+                        <input type="text" matInput formControlName="idMolde" required #moldeInput
+                            [matAutocomplete]="autoMolde"
+                            [readonly]="mode === 'view' || (mode === 'edit' && piezaForm.get('idMolde').disabled)">
                         <button mat-icon-button matSuffix
-                            *ngIf="(piezaForm.get('moldeId')?.value && mode !== 'edit') && mode !== 'view'"
-                            (click)="clearMoldeInput(); $event.stopPropagation()">
+                            *ngIf="piezaForm.get('idMolde')?.value && mode !== 'view' && !piezaForm.get('idMolde').disabled"
+                            (click)="piezaForm.get('idMolde').setValue(null); $event.stopPropagation()">
                             <mat-icon>close</mat-icon>
                         </button>
                         <mat-autocomplete #autoMolde="matAutocomplete" [displayWith]="displayMolde">
@@ -55,27 +66,28 @@
                                 {{ molde.nombre }}
                             </mat-option>
                         </mat-autocomplete>
-                        <mat-error *ngIf="piezaForm.get('moldeId').hasError('required')">El molde es
+                        <mat-error *ngIf="piezaForm.get('idMolde').hasError('required')">El molde es
                             requerido</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="form-field w-full ">
+                        <mat-label>Observaciones Molde</mat-label>
+                        <input matInput formControlName="observacionesMolde" [readonly]="mode === 'view'">
                     </mat-form-field>
                 </div>
             </div>
-
-            <!-- Sección Cliente (Creación) -->
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
-                *ngIf="mode === 'create'">
+                *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Cliente
                 </span>
                 <div class="flex flex-col gap-1">
                     <mat-form-field appearance="outline" class="form-field w-full ">
                         <mat-label>Cliente</mat-label>
-                        <input type="text" matInput formControlName="clienteId" required #clienteInput
-                            [matAutocomplete]="autoCliente" [readonly]="mode !== 'edit' && mode !== 'create'"
-                            [value]="piezaForm.get('clienteId').value?.nombre || piezaForm.get('clienteId').value">
-                        <button mat-icon-button matSuffix
-                            *ngIf="(piezaForm.get('clienteId')?.value && mode !== 'edit') && mode !== 'view'"
-                            (click)="clearClienteInput(); $event.stopPropagation()">
+                        <input type="text" matInput formControlName="idCliente" required #clienteInput
+                            [matAutocomplete]="autoCliente" [readonly]="mode === 'view'">
+                        <button mat-icon-button matSuffix *ngIf="piezaForm.get('idCliente')?.value && mode !== 'view'"
+                            (click)="piezaForm.get('idCliente').setValue(null); $event.stopPropagation()">
                             <mat-icon>close</mat-icon>
                         </button>
                         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayCliente">
@@ -83,19 +95,15 @@
                                 {{ cliente.nombre }}
                             </mat-option>
                         </mat-autocomplete>
-                        <mat-error *ngIf="piezaForm.get('clienteId').hasError('required')">El cliente es
+                        <mat-error *ngIf="piezaForm.get('idCliente').hasError('required')">El cliente es
                             requerido</mat-error>
                     </mat-form-field>
-
                     <mat-form-field appearance="outline" class="form-field w-full ">
                         <mat-label>Nombre Pieza Personalizado</mat-label>
-                        <input matInput formControlName="nombrePiezaPersonalizado"
-                            [readonly]="mode !== 'edit' && mode !== 'create'">
+                        <input matInput formControlName="nombrePiezaCliente" [readonly]="mode === 'view'">
                     </mat-form-field>
                 </div>
             </div>
-
-            <!-- Sección Fórmula -->
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
@@ -105,12 +113,12 @@
                     <div class="flex gap-4">
                         <mat-form-field appearance="outline" class="form-field w-full ">
                             <mat-label>Fórmula</mat-label>
-                            <input type="text" matInput formControlName="formula" required
-                                [readonly]="mode !== 'edit' && mode !== 'create'" #formulaInput
-                                [matAutocomplete]="autoFormula" [displayWith]="displayFormula">
+                            <input type="text" matInput formControlName="idFormula" required
+                                [readonly]="mode === 'view' || (mode === 'edit' && piezaForm.get('idFormula').disabled)"
+                                #formulaInput [matAutocomplete]="autoFormula" [displayWith]="displayFormula">
                             <button mat-icon-button matSuffix
-                                *ngIf="(piezaForm.get('formula')?.value && mode !== 'edit') && mode !== 'view'"
-                                (click)="clearFormulaInput(); $event.stopPropagation()">
+                                *ngIf="piezaForm.get('idFormula')?.value && mode !== 'view' && !piezaForm.get('idFormula').disabled"
+                                (click)="piezaForm.get('idFormula').setValue(null); $event.stopPropagation()">
                                 <mat-icon>close</mat-icon>
                             </button>
                             <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFormula">
@@ -118,59 +126,82 @@
                                     {{ formula.nombre }}
                                 </mat-option>
                             </mat-autocomplete>
-                            <mat-error *ngIf="piezaForm.get('formula').hasError('required')">La fórmula es
+                            <mat-error *ngIf="piezaForm.get('idFormula').hasError('required')">La fórmula es
                                 requerida</mat-error>
                         </mat-form-field>
-
-                        <mat-form-field appearance="outline" class="form-field w-full ">
-                            <mat-label>Dureza</mat-label>
-                            <input matInput type="number" formControlName="dureza" required
-                                [readonly]="mode !== 'edit' && mode !== 'create'">
-                            <mat-error *ngIf="piezaForm.get('dureza').hasError('required')">La dureza es
-                                requerida</mat-error>
-                            <mat-error *ngIf="piezaForm.get('dureza')?.hasError('pattern')">
+                        <ng-container *ngIf="mode === 'edit' || mode === 'view'">
+                            <mat-form-field appearance="outline" class="form-field w-full ">
+                                <mat-label>Dureza</mat-label>
+                                <input matInput type="number" formControlName="dureza" required
+                                    [readonly]="mode === 'view'">
+                                <mat-error *ngIf="piezaForm.get('dureza').hasError('required')">La dureza es
+                                    requerida</mat-error>
+                                <mat-error *ngIf="piezaForm.get('dureza')?.hasError('pattern')">
+                                    Debe ser un número entero.
+                                </mat-error>
+                            </mat-form-field>
+                        </ng-container>
+                        <ng-container *ngIf="mode === 'create'">
+                            <mat-form-field appearance="outline" class="form-field w-full">
+                                <mat-label>Tipo de Dureza</mat-label>
+                                <mat-select formControlName="tipoDureza" required>
+                                    <mat-option *ngFor="let option of tiposDurezaOptions" [value]="option.value">
+                                        {{ option.label }}
+                                    </mat-option>
+                                </mat-select>
+                                <mat-error *ngIf="piezaForm.get('tipoDureza').hasError('required')">El tipo es
+                                    requerido</mat-error>
+                            </mat-form-field>
+                        </ng-container>
+                    </div>
+                    <div class="flex gap-4" *ngIf="mode === 'create'">
+                        <mat-form-field appearance="outline" class="form-field w-full">
+                            <mat-label>Dureza Mínima (Shore)</mat-label>
+                            <input matInput type="number" formControlName="durezaMinima" required>
+                            <mat-error *ngIf="piezaForm.get('durezaMinima').hasError('required')">Valor
+                                requerido</mat-error>
+                            <mat-error *ngIf="piezaForm.get('durezaMinima')?.hasError('pattern')">
+                                Debe ser un número entero.
+                            </mat-error>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="form-field w-full">
+                            <mat-label>Dureza Máxima (Shore)</mat-label>
+                            <input matInput type="number" formControlName="durezaMaxima" required>
+                            <mat-error *ngIf="piezaForm.get('durezaMaxima').hasError('required')">Valor
+                                requerido</mat-error>
+                            <mat-error *ngIf="piezaForm.get('durezaMaxima')?.hasError('pattern')">
                                 Debe ser un número entero.
                             </mat-error>
                         </mat-form-field>
                     </div>
-
                     <div class="flex gap-4">
                         <mat-form-field appearance="outline" class="form-field w-full">
                             <mat-label>Espesor Plancha Mínimo (mm)</mat-label>
-                            <input matInput type="number" formControlName="espesorPlanchaMin"
-                                [readonly]="mode !== 'edit' && mode !== 'create'">
+                            <input matInput type="number" formControlName="espesorMinimo" [readonly]="mode === 'view'">
                         </mat-form-field>
-
                         <mat-form-field appearance="outline" class="form-field w-full">
                             <mat-label>Espesor Plancha Máximo (mm)</mat-label>
-                            <input matInput type="number" formControlName="espesorPlanchaMax"
-                                [readonly]="mode !== 'edit' && mode !== 'create'">
+                            <input matInput type="number" formControlName="espesorMaximo" [readonly]="mode === 'view'">
                         </mat-form-field>
                     </div>
-
                     <div class="flex gap-4">
                         <mat-form-field appearance="outline" class="form-field w-full ">
                             <mat-label>Peso Crudo (gramos)</mat-label>
-                            <input matInput type="number" formControlName="pesoCrudo"
-                                [readonly]="mode !== 'edit' && mode !== 'create'">
+                            <input matInput type="number" formControlName="pesoCrudo" [readonly]="mode === 'view'">
                         </mat-form-field>
-
                         <mat-form-field appearance="outline" class="form-field w-full ">
                             <mat-label>Observaciones Peso Crudo</mat-label>
-                            <input matInput formControlName="observacionesPesoCrudo"
-                                [readonly]="mode !== 'edit' && mode !== 'create'">
+                            <input matInput formControlName="observacionesPesoCrudo" [readonly]="mode === 'view'">
                         </mat-form-field>
                     </div>
                 </div>
             </div>
-
-            <!-- Sección Plano (Creación) - Incluyendo el formulario de subida -->
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
                 *ngIf="mode === 'create'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Plano
                 </span>
-                <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1" [formGroup]="planoForm">
                     <label for="file-upload" class="cursor-pointer mb-4 relative" *ngIf="mode === 'create'">
                         <div
                             class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
@@ -182,35 +213,30 @@
                                     }}</span>
                             </div>
                             <input id="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)"
-                                accept="pdf">
+                                accept="application/pdf">
                         </div>
-
                         <button *ngIf="selectedFile" type="button" mat-icon-button class="absolute top-2 right-2"
                             (click)="removeSelectedFile()">
                             <mat-icon>cancel</mat-icon>
                         </button>
                     </label>
-
                     <div class="flex gap-4">
                         <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Código</mat-label>
-                            <input matInput formControlName="codigo" required
-                                [readonly]="mode !== 'edit' && mode !== 'create'">
+                            <input matInput formControlName="planoCodigo" required [readonly]="mode === 'view'">
                         </mat-form-field>
-
                         <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Revisión</mat-label>
-                            <input matInput type="number" formControlName="revisionPlano" required
-                                [readonly]="mode !== 'edit' && mode !== 'create'">
-                            <mat-error *ngIf="planoForm.get('revisionPlano')?.hasError('pattern')">
+                            <input matInput type="number" formControlName="planoRevision" required
+                                [readonly]="mode === 'view'">
+                            <mat-error *ngIf="planoForm.get('planoRevision')?.hasError('pattern')">
                                 Debe ser un número entero.
                             </mat-error>
                         </mat-form-field>
                     </div>
                     <mat-form-field appearance="outline">
                         <mat-label>Clasificación</mat-label>
-                        <mat-select formControlName="clasificacion" required
-                            [disabled]="mode !== 'edit' && mode !== 'create'">
+                        <mat-select formControlName="planoClasificacion" required [disabled]="mode === 'view'">
                             <mat-option *ngFor="let option of clasificacionOptions" [value]="option.value">
                                 {{ option.label }}
                             </mat-option>
@@ -218,14 +244,12 @@
                     </mat-form-field>
                     <mat-form-field appearance="outline">
                         <mat-label>Observaciones</mat-label>
-                        <textarea matInput formControlName="descripcion" rows="4"
-                            [readonly]="mode !== 'edit' && mode !== 'create'"></textarea>
+                        <textarea matInput formControlName="planoObservaciones" rows="4"
+                            [readonly]="mode === 'view'"></textarea>
                     </mat-form-field>
                 </div>
             </div>
         </div>
-
-        <!-- Sección Revision (Edición) -->
         <div class="flex gap-4 w-full">
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4 w-1/3"
                 *ngIf="mode === 'edit' || mode === 'view'">
@@ -234,9 +258,8 @@
                 </span>
                 <fuse-card class="flex flex-col px-8 pb-4" #fuseCard>
                     <div class="justify-between h-full items-center"
-                        [ngClass]="(pieza?.revision !== null && pieza?.revision >= '0') ? 'flex_col' : 'flex'">
-                        <div *ngIf="pieza?.revision !== null && pieza?.revision >= '0'"
-                            class="mt-2 flex flex-col items-center">
+                        [ngClass]="(pieza?.revision !== null && pieza?.revision >= 0) ? 'flex_col' : 'flex'">
+                        <div *ngIf="pieza?.revision !== null" class="mt-2 flex flex-col items-center">
                             <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
                                 {{ pieza?.revision }}
                             </div>
@@ -253,14 +276,11 @@
                                 (click)="generarNuevaRevision()">
                                 <span class="mat-button-wrapper">Generar Nueva Revisión</span>
                                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
-
                             </button>
                         </div>
                     </div>
                 </fuse-card>
             </div>
-
-            <!-- Sección Observaciones de la Revisión (Edición) -->
             <div class="flex flex-col gap-4  border-2 bg-white border-gray-200 rounded-2xl p-4 w-2/3"
                 *ngIf="mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
@@ -269,7 +289,7 @@
                 <mat-form-field appearance="outline" class="form-field w-full">
                     <mat-label>Observaciones</mat-label>
                     <textarea matInput formControlName="observacionesRevision" rows="4"
-                        [readonly]="mode !== 'edit'"></textarea>
+                        [readonly]="mode === 'view'"></textarea>
                 </mat-form-field>
             </div>
         </div>

@@ -13,21 +13,26 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { Pieza } from '../../models/pieza.model';
-import { Observable, of, combineLatest, BehaviorSubject } from 'rxjs';
-import { map, startWith, debounceTime, catchError } from 'rxjs/operators';
+import { Observable, of, combineLatest, forkJoin, throwError } from 'rxjs';
+import { map, startWith, debounceTime, catchError, take } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { DomSanitizer } from '@angular/platform-browser';
-import { take } from 'rxjs/operators';
-
 import { FormulasService } from 'app/shared/services/formulas.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { IFormula } from 'app/shared/models/formula.interface';
 import { Cliente } from 'app/shared/models/cliente.model';
-
 import { RevisionInicialInputComponent } from './revision-inicial-input.component';
+
+interface ForkJoinResults {
+    tiposPieza: { id: number; nombre: string; }[];
+    moldes: { id: number; nombre: string; }[];
+    formulasResponse: { data: { id: number; nombre: string; }[] };
+    clientesResponse: { data: { id: number; nombre: string; }[] };
+    pieza: Pieza | null;
+}
 
 @Component({
     selector: 'app-abm-pieza-crear-editar',
@@ -41,16 +46,17 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     piezaForm: FormGroup;
     planoForm: FormGroup;
 
-    pieceNames$: Observable<Pieza[]>;
-    filteredPieceNames$: Observable<Pieza[]>;
-    formulas$: Observable<{ id: number; nombre: string }[]>;
-    tiposDimension$: Observable<string[]>;
-    tiposPieza$: Observable<string[]>;
+    pieceNames$: Observable<string[]>;
+    tiposPieza$: Observable<{ id: number; nombre: string }[]>;
     moldes$: Observable<{ id: number; nombre: string }[]>;
-    clientes$: Observable<{ id: number; nombre: string }[]>;
+    formulas$: Observable<{ id: number; nombre: string; }[]>;
+    clientes$: Observable<{ id: number; nombre: string; }[]>;
 
-    filteredFormulas$: Observable<{ id: number; nombre: string }[]>;
-    filteredClientes$: Observable<{ id: number; nombre: string }[]>;
+    filteredPieceNames$: Observable<string[]>;
+    filteredTiposPieza$: Observable<{ id: number; nombre: string; }[]>;
+    filteredFormulas$: Observable<{ id: number; nombre: string; }[]>;
+    filteredClientes$: Observable<{ id: number; nombre: string; }[]>;
+    filteredMoldes$: Observable<{ id: number; nombre: string; }[]>;
 
     @ViewChild(MatAutocompleteTrigger) autocompleteTrigger: MatAutocompleteTrigger;
     @Output() guardarPiezaEvent = new EventEmitter<void>();
@@ -60,27 +66,22 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     @ViewChild('clienteInput') clienteInput: ElementRef;
 
     typesFail: boolean = false;
-    types$: Observable<any>;
-    private _types = new BehaviorSubject<any>(null);
-    public $types: Observable<any> = this._types.asObservable();
 
     clasificacionOptions: { value: string; label: string }[] = [
         { value: 'NITROPHYL', label: 'NITROPHYL' },
         { value: 'CLIENTE', label: 'CLIENTE' }
     ];
 
+    tiposDurezaOptions: { value: string; label: string }[] = [
+        { value: 'SHORE_A', label: 'Shore A' },
+        { value: 'SHORE_D', label: 'Shore D' },
+    ];
+
     selectedFile: File | null = null;
     uploading: boolean = false;
-    buttonText: string = 'Subir Plano';
     fileExtension: string = '';
-
-    revision: string;
-    fechaRevision: Date;
-    observacionesRevision: string;
     pieza: Pieza;
     private initialRevision: number = 0;
-
-    filteredMoldes$: Observable<{ id: number; nombre: string }[]>;
 
     constructor(
         protected fb: FormBuilder,
@@ -96,460 +97,405 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         super(fb, router, route, abmPiezaService, dialog);
 
         this.piezaForm = this.fb.group({
-            nombre: [null, Validators.required],
-            tipo: [null, Validators.required],
-            moldeId: [null, Validators.required],
-            formula: ['', Validators.required],
-            dureza: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
-            espesorPlanchaMin: [null],
-            espesorPlanchaMax: [null],
-            pesoCrudo: [null],
-            observacionesPesoCrudo: [''],
-            clienteId: [null],
-            nombrePiezaPersonalizado: [null],
+            nombre: [{ value: null, disabled: false }, Validators.required],
+            codigo: [{ value: null, disabled: false }],
+            idTipoPieza: [{ value: null, disabled: false }, Validators.required],
+            idMolde: [{ value: null, disabled: false }, Validators.required],
+            idFormula: [{ value: null, disabled: false }, Validators.required],
+            dureza: [{ value: null, disabled: false }, [Validators.pattern("^[0-9]*$")]],
+            tipoDureza: [{ value: null, disabled: false }],
+            durezaMinima: [{ value: null, disabled: false }, [Validators.pattern("^[0-9]*$")]],
+            durezaMaxima: [{ value: null, disabled: false }, [Validators.pattern("^[0-9]*$")]],
+            espesorMinimo: [{ value: null, disabled: false }],
+            espesorMaximo: [{ value: null, disabled: false }],
+            pesoCrudo: [{ value: null, disabled: false }],
+            observacionesPesoCrudo: [{ value: null, disabled: false }],
+            idCliente: [{ value: null, disabled: false }],
+            nombrePiezaCliente: [{ value: null, disabled: false }],
+            observacionesMolde: [{ value: null, disabled: false }],
             revision: [{ value: null, disabled: true }],
             fechaRevision: [{ value: null, disabled: true }],
-            observacionesRevision: [''],
-            codigo: [''],
-            clasificacion: [''],
-            descripcion: [''],
+            observacionesRevision: [{ value: null, disabled: false }],
         });
 
         this.planoForm = this.fb.group({
-            archivo: [null],
-            codigo: ['', Validators.required],
-            revisionPlano: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
-            clasificacion: ['', Validators.required],
-            descripcion: [''],
+            archivo: [{ value: null, disabled: false }],
+            planoCodigo: [{ value: null, disabled: false }, Validators.required],
+            planoRevision: [{ value: null, disabled: false }, [Validators.required, Validators.pattern("^[0-9]*$")]],
+            planoClasificacion: [{ value: null, disabled: false }, Validators.required],
+            planoObservaciones: [{ value: null, disabled: false }],
         });
-
-        this.pieceNames$ = this.abmPiezaService.getPiezaNombre();
-
-        this.filteredPieceNames$ = combineLatest([this.piezaForm.get('nombre').valueChanges, this.pieceNames$]).pipe(
-            startWith([null, []]),
-            debounceTime(200),
-            map(([value, pieceNames]) => {
-                let filterValue = '';
-
-                if (typeof value === 'string') {
-                    filterValue = value.toLowerCase();
-                } else if (value && typeof value === 'object' && value.nombre) {
-                    filterValue = value.nombre.toLowerCase();
-                }
-
-                const validPieceNames = Array.isArray(pieceNames) ? pieceNames : [];
-
-                return validPieceNames.filter(pieceName => pieceName.nombre.toLowerCase().includes(filterValue));
-            })
-        );
-
-        this.tiposDimension$ = this.abmPiezaService.getTiposDimension();
-        this.tiposPieza$ = this.abmPiezaService.getTipoPieza();
-        this.moldes$ = this.abmPiezaService.getMoldes();
-
-        this.formulas$ = this.formulasService.get().pipe(
-            map(response => {
-                const data = response?.data;
-                if (Array.isArray(data)) {
-                    return data.map(item => ({
-                        id: item.id,
-                        nombre: item.nombre
-                    }));
-                } else if (data) {
-                    const formula = data as IFormula;
-                    return [{
-                        id: formula.id,
-                        nombre: formula.nombre
-                    }];
-                } else {
-                    return [];
-                }
-            })
-        );
-
-        this.clientes$ = this.clientesService.getClientes().pipe(
-            map(response => {
-                const data = response?.data;
-                if (Array.isArray(data)) {
-                    return data.map(item => ({
-                        id: item.id,
-                        nombre: item.nombre
-                    }));
-                } else if (data) {
-                    const cliente = data as Cliente;
-                    return [{
-                        id: cliente.id,
-                        nombre: cliente.nombre
-                    }];
-                } else {
-                    return [];
-                }
-            })
-        );
-
-        this.filteredFormulas$ = this.setupAutocomplete('formula', this.formulas$);
-        this.filteredClientes$ = this.setupAutocomplete('clienteId', this.clientes$);
-        this.filteredMoldes$ = this.setupAutocomplete('moldeId', this.moldes$);
     }
 
     ngOnInit(): void {
-        this.loadAllData();
-        if (this.mode === 'edit' && this.piezaId) {
-            this.cargarPieza(this.piezaId);
-        } else if (this.mode === 'view' && this.piezaId) {
-            this.cargarPieza(this.piezaId);
+        if (this.mode === 'view') {
             this.piezaForm.disable();
+            this.planoForm.disable();
+        } else if (this.mode === 'edit') {
+            this.piezaForm.get('nombre').disable();
+            this.piezaForm.get('idTipoPieza').disable();
+            this.piezaForm.get('idFormula').disable();
+            this.piezaForm.get('idMolde').disable();
         }
+
+        this.loadAllData();
+        this.setupConditionalValidators();
     }
 
     ngAfterViewInit(): void {
-        if (this.mode === 'edit' && this.piezaForm.get('nombre').value) {
-            Promise.resolve(null).then(() => {
-                this.autocompleteTrigger.openPanel();
-            });
-        }
     }
 
-    cargarPieza(id: number): void {
-        combineLatest([
-            this.abmPiezaService.getPieza(id),
-            this.pieceNames$,
-            this.formulas$
-        ]).pipe(take(1)).subscribe(([pieza, pieceNames, formulas]) => {
-            if (pieza) {
-                this.pieza = pieza;
-
-                const pieceName = pieceNames.find(pn => pn.nombre === pieza.nombre);
-                const initialPieceName = pieceName || { id: null, nombre: pieza.nombre };
-
-                const formulaEncontrada = formulas.find(f => f.nombre === pieza.formula);
-
-                this.piezaForm.patchValue({
-                    nombre: initialPieceName,
-                    tipo: pieza.tipo,
-                    formula: formulaEncontrada ? formulaEncontrada : pieza.formula,
-                    dureza: pieza.dureza,
-                    moldeId: pieza.moldeId,
-                    espesorPlanchaMax: pieza.espesorPlanchaMax,
-                    espesorPlanchaMin: pieza.espesorPlanchaMin,
-                    pesoCrudo: pieza.pesoCrudo,
-                    observacionesPesoCrudo: pieza.observacionesPesoCrudo,
-                    clienteId: pieza.clienteId,
-                    nombrePiezaPersonalizado: pieza.nombrePiezaPersonalizado,
-                    revision: pieza.revision,
-                    fechaRevision: pieza.fechaRevision,
-                    observacionesRevision: this.observacionesRevision
-                });
-
-                this.piezaForm.get('nombre').updateValueAndValidity();
-
-                if (this.mode === 'edit') {
-                    this.piezaForm.get('nombre').disable();
-                    this.piezaForm.get('tipo').disable();
-                    this.piezaForm.get('formula').disable();
-                }
-            } else {
-                this.openSnackBar(false, 'Pieza no encontrada.');
-                this.router.navigate(['/procesos-piezas/grid']);
-            }
-        });
-    }
-
-    guardarPieza(): void {
-        if (this.piezaForm.valid) {
-            const piezaData = this.piezaForm.getRawValue();
-            const nombreControl = this.piezaForm.get('nombre');
-            const nombreValue = nombreControl.value;
-            const nombre = typeof nombreValue === 'object' && nombreValue !== null ? nombreValue.nombre : nombreValue;
-
-            const pieza: Pieza = {
-                ...piezaData,
-                nombre: nombre,
-                id: this.piezaId
-            };
-
-            if (this.mode === 'create') {
-                this.openInitialRevisionModal()
-            } else if (this.mode === 'edit' && this.piezaId !== null) {
-                pieza.id = this.piezaId;
-                pieza.observacionesPesoCrudo = this.piezaForm.get('observacionesPesoCrudo').value;
-                pieza.revision = this.piezaForm.get('revision').value;
-                pieza.fechaRevision = this.piezaForm.get('fechaRevision').value;
-                pieza.observacionesPesoCrudo = this.piezaForm.get('observacionesPesoCrudo').value;
-
-                this.abmPiezaService.editarPieza(pieza).subscribe({
-                    next: () => {
-                        this.openSnackBar(true, 'Pieza editada correctamente.', 'green');
-                        this.abmPiezaService.events.next('piezaGuardada');
-                    },
-                    error: (error) => {
-                        this.openSnackBar(false, 'Error al editar la pieza.');
-                    }
-                });
-            }
+    setupConditionalValidators(): void {
+        if (this.mode === 'create') {
+            this.piezaForm.get('codigo').setValidators([Validators.required]);
+            this.piezaForm.get('tipoDureza').setValidators([Validators.required]);
+            this.piezaForm.get('durezaMinima').setValidators([Validators.required, Validators.pattern("^[0-9]*$")]);
+            this.piezaForm.get('durezaMaxima').setValidators([Validators.required, Validators.pattern("^[0-9]*$")]);
+            this.piezaForm.get('dureza').clearValidators();
         } else {
-            this.openSnackBar(false, 'Por favor, complete todos los campos.');
+            this.piezaForm.get('codigo').clearValidators();
+            this.piezaForm.get('dureza').setValidators([Validators.required, Validators.pattern("^[0-9]*$")]);
+            this.piezaForm.get('tipoDureza').clearValidators();
+            this.piezaForm.get('durezaMinima').clearValidators();
+            this.piezaForm.get('durezaMaxima').clearValidators();
         }
-    }
-
-    marcarVigente(pieza: Pieza): void {
-        this.abmPiezaService.marcarVigente(pieza.id).subscribe({
-            next: () => {
-                this.openSnackBar(true, 'Pieza marcada como vigente.', 'green');
-                this.pieza.vigente = true;
-            },
-            error: (error) => {
-                this.openSnackBar(false, 'Error al marcar la pieza como vigente.');
-            }
-        });
-    }
-
-    displayPieceName(piece?: Pieza): string | undefined {
-        return piece ? piece.nombre : undefined;
-    }
-
-    displayFn(item: any): string {
-        return item && item.nombre ? item.nombre : '';
-    }
-
-    displayMolde(molde?: { id: number; nombre: string }): string | undefined {
-        return molde ? molde.nombre : undefined;
-    }
-
-    displayCliente(cliente?: { id: number; nombre: string }): string | undefined {
-        return cliente ? cliente.nombre : undefined;
+        this.piezaForm.get('codigo').updateValueAndValidity();
+        this.piezaForm.get('dureza').updateValueAndValidity();
+        this.piezaForm.get('tipoDureza').updateValueAndValidity();
+        this.piezaForm.get('durezaMinima').updateValueAndValidity();
+        this.piezaForm.get('durezaMaxima').updateValueAndValidity();
     }
 
     loadAllData(): void {
-        const error: string = 'ABMPiezaCrearEditarComponent => loadData: ';
+        const dataRequests: { [key: string]: Observable<any> } = {
+            pieceNames: this.abmPiezaService.getPiezaNombre().pipe(catchError(err => { console.error("Error cargando nombres de pieza:", err); return of([]); })),
+            tiposPieza: this.abmPiezaService.getPiezaTipo().pipe(catchError(err => { console.error("Error cargando tipos de pieza:", err); return of([]); })),
+            moldes: this.abmPiezaService.getMoldes().pipe(catchError(err => { console.error("Error cargando moldes:", err); return of([]); })),
+            formulasResponse: this.formulasService.get().pipe(catchError(err => { console.error("Error cargando fórmulas:", err); return of({ data: [] }); })),
+            clientesResponse: this.clientesService.getClientes().pipe(catchError(err => { console.error("Error cargando clientes:", err); return of({ data: [] }); })),
+        };
 
-        combineLatest([
-            this.getTiposDimensiones(),
-            this.clientes$,
-            this.abmPiezaService.getMoldes(),
-            this.getTiposPieza()
-        ]).subscribe({
-            next: ([tiposDimension, clientes, moldes, tipospieza]: [any, any, any, any]) => {
-                this.tiposDimension$ = of(tiposDimension);
-                this.moldes$ = of(moldes);
-                this.tiposPieza$ = of(tipospieza)
-            },
-            error: (err: any) => console.error(error, err),
-            complete: () => { },
+        if (this.piezaId) {
+            dataRequests['pieza'] = this.abmPiezaService.getPieza(this.piezaId).pipe(catchError(err => { console.error("Error cargando pieza:", err); return of(null); }));
+        } else {
+            dataRequests['pieza'] = of(null);
+        }
+
+        forkJoin(dataRequests).pipe(
+            map((results: any) => {
+                const typedResults = results as ForkJoinResults;
+                const formulasData = Array.isArray(typedResults.formulasResponse.data) ? typedResults.formulasResponse.data.map(f => ({ id: f.id, nombre: f.nombre })) : [];
+                const clientesData = Array.isArray(typedResults.clientesResponse.data) ? typedResults.clientesResponse.data.map(c => ({ id: c.id, nombre: c.nombre })) : [];
+                const tiposPiezaData = Array.isArray(typedResults.tiposPieza) ? typedResults.tiposPieza.map(t => ({ id: t.id, nombre: t.nombre })) : [];
+                const moldesData = Array.isArray(typedResults.moldes) ? typedResults.moldes.map(m => ({ id: m.id, nombre: m.nombre })) : [];
+                const pieceNamesData = Array.isArray(results.pieceNames) ? results.pieceNames : [];
+
+                this.pieceNames$ = of(pieceNamesData);
+                this.tiposPieza$ = of(tiposPiezaData);
+                this.moldes$ = of(moldesData);
+                this.formulas$ = of(formulasData);
+                this.clientes$ = of(clientesData);
+
+                this.setupFilteredPieceNames();
+                this.filteredTiposPieza$ = this.setupAutocomplete('idTipoPieza', this.tiposPieza$);
+                this.filteredFormulas$ = this.setupAutocomplete('idFormula', this.formulas$);
+                this.filteredClientes$ = this.setupAutocomplete('idCliente', this.clientes$);
+                this.filteredMoldes$ = this.setupAutocomplete('idMolde', this.moldes$);
+
+                return typedResults;
+            }),
+            catchError(error => {
+                console.error('Error al cargar datos iniciales:', error);
+                this.openSnackBar(false, 'Error al cargar datos iniciales.', 'red');
+                return throwError(error);
+            })
+        ).subscribe((results: ForkJoinResults) => {
+            if (results.pieza) {
+                this.pieza = results.pieza;
+                this.patchPiezaForm(this.pieza, results);
+            }
         });
     }
 
-    getTiposDimensiones(): Observable<any> {
-        const error: string = 'ABMPiezaCrearEditarComponent => getTiposDimensiones: ';
-        return this.abmPiezaService.getTiposDimension().pipe(
-            catchError((err: any) => {
-                console.error(error, 'this.tipoService.get() ', err);
-                this.typesFail = true;
-                return of([]);
-            }),
-            map((response: any) => {
-                if (response) {
-                    this._types.next(response);
-                    return response;
+    private patchPiezaForm(pieza: Pieza, allLoadedData: ForkJoinResults): void {
+        const patchValues: any = {};
+
+        if (pieza.denominacion) {
+            patchValues.nombre = pieza.denominacion;
+        }
+
+        if (pieza.tipo && allLoadedData.tiposPieza) {
+            patchValues.idTipoPieza = allLoadedData.tiposPieza.find(t => t.nombre === pieza.tipo);
+        }
+
+        if (pieza.idMolde && allLoadedData.moldes) {
+            patchValues.idMolde = allLoadedData.moldes.find(m => m.id === pieza.idMolde);
+        } else if (pieza.molde && allLoadedData.moldes) {
+            patchValues.idMolde = allLoadedData.moldes.find(m => m.nombre === pieza.molde);
+        }
+        patchValues.observacionesMolde = pieza.observacionesMolde;
+
+        if (pieza.formula && allLoadedData.formulasResponse && allLoadedData.formulasResponse.data) {
+            patchValues.idFormula = allLoadedData.formulasResponse.data.find(f => f.nombre === pieza.formula);
+        }
+
+        if (typeof pieza.clienteId === 'number' && allLoadedData.clientesResponse && allLoadedData.clientesResponse.data) {
+            patchValues.idCliente = allLoadedData.clientesResponse.data.find(c => c.id === pieza.clienteId);
+        } else if (pieza.nombreCliente && allLoadedData.clientesResponse && allLoadedData.clientesResponse.data) {
+            patchValues.idCliente = allLoadedData.clientesResponse.data.find(c => c.nombre === pieza.nombreCliente);
+        }
+
+        patchValues.codigo = pieza.codigo;
+        patchValues.dureza = pieza.dureza;
+        patchValues.tipoDureza = pieza.unidadDureza;
+        patchValues.durezaMinima = pieza.durezaMinima;
+        patchValues.durezaMaxima = pieza.durezaMaxima;
+        patchValues.espesorMinimo = pieza.espesorPlanchaMin;
+        patchValues.espesorMaximo = pieza.espesorPlanchaMax;
+        patchValues.pesoCrudo = pieza.pesoCrudo;
+        patchValues.observacionesPesoCrudo = pieza.observacionesPesoCrudo;
+        patchValues.nombrePiezaCliente = pieza.nombrePiezaPersonalizado;
+        patchValues.revision = pieza.revision;
+        patchValues.fechaRevision = pieza.fechaRevision;
+        patchValues.observacionesRevision = pieza.observacionesRevision;
+
+        this.piezaForm.patchValue(patchValues);
+    }
+
+    setupFilteredPieceNames(): void {
+        this.filteredPieceNames$ = combineLatest([
+            this.piezaForm.get('nombre').valueChanges.pipe(startWith('')),
+            this.pieceNames$
+        ]).pipe(
+            map(([value, pieceNames]) => {
+                const filterValue = (value || '').toLowerCase();
+                if (!filterValue) {
+                    return pieceNames;
                 }
-            })
+                return pieceNames.filter(name => name.toLowerCase().includes(filterValue));
+            }),
+            catchError(error => { console.error("Error filtrando nombres de pieza:", error); return of([]); })
         );
     }
 
-     getTiposPieza(): Observable<any> {
-        const error: string = 'ABMPiezaCrearEditarComponent => getTiposPieza: ';
-        return this.abmPiezaService.getTipoPieza().pipe(
-            catchError((err: any) => {
-                console.error(error, 'this.tipoService.get() ', err);
-                this.typesFail = true;
-                return of([]);
-            }),
-            map((response: any) => {
-                if (response) {
-                    this._types.next(response);
-                    return response;
+    guardarPieza(): void {
+        if (this.mode === 'create') {
+            if (this.piezaForm.invalid || this.planoForm.invalid) {
+                this.openSnackBar(false, 'Por favor, complete todos los campos requeridos y revise el plano.', 'red');
+                this.piezaForm.markAllAsTouched();
+                this.planoForm.markAllAsTouched();
+                return;
+            }
+            this.openInitialRevisionModal();
+        } else if (this.mode === 'edit') {
+            this.enviarDatosEdicion();
+        }
+    }
+
+    public crearPieza(revisionInicial: number): void {
+        if (this.selectedFile) {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64Plano = (reader.result as string).split(',')[1];
+                this.enviarDatosCreacion(revisionInicial, base64Plano);
+            };
+            reader.readAsDataURL(this.selectedFile);
+        } else {
+            this.enviarDatosCreacion(revisionInicial, null);
+        }
+    }
+
+    private enviarDatosCreacion(revisionInicial: number, planoArchivo: string | null): void {
+        const piezaValues = this.piezaForm.getRawValue();
+        const planoValues = this.planoForm.getRawValue();
+
+        const dto = {
+            codigo: piezaValues.codigo,
+            denominacion: piezaValues.nombre?.nombre || piezaValues.nombre,
+            durezaMaxima: piezaValues.durezaMaxima,
+            durezaMinima: piezaValues.durezaMinima,
+            espesorMaximo: piezaValues.espesorMaximo,
+            espesorMinimo: piezaValues.espesorMinimo,
+            idCliente: piezaValues.idCliente?.id,
+            idFormula: piezaValues.idFormula?.id,
+            idMolde: piezaValues.idMolde?.id,
+            idTipoPieza: piezaValues.idTipoPieza?.id,
+            nombrePiezaCliente: piezaValues.nombrePiezaCliente,
+            observacionesMolde: piezaValues.observacionesMolde,
+            observacionesPesoCrudo: piezaValues.observacionesPesoCrudo,
+            pesoCrudo: piezaValues.pesoCrudo,
+            planoArchivo: planoArchivo,
+            planoClasificacion: planoValues.planoClasificacion,
+            planoCodigo: planoValues.planoCodigo,
+            planoObservaciones: planoValues.planoObservaciones,
+            planoRevision: planoValues.planoRevision,
+            revisionIncial: revisionInicial,
+            unidadDureza: piezaValues.tipoDureza,
+        };
+
+        this.abmPiezaService.agregarPieza(dto).subscribe({
+            next: (response) => {
+                this.openSnackBar(true, 'Pieza creada correctamente.', 'green');
+                const newPiezaId = response?.id;
+                if (newPiezaId) {
+                    this.router.navigate([`/procesos-piezas/${newPiezaId}/edit`]);
+                } else {
+                    this.router.navigate(['/procesos-piezas/grid']);
                 }
-            })
-        );
+            },
+            error: (error) => {
+                this.openSnackBar(false, 'Error al crear la pieza.', 'red');
+                console.error(error);
+                this.restoreSaveButtonState();
+            }
+        });
+    }
+
+    private enviarDatosEdicion(): void {
+        if (this.piezaForm.invalid) {
+            this.openSnackBar(false, 'Por favor, complete todos los campos requeridos para la edición.', 'red');
+            this.piezaForm.markAllAsTouched();
+            return;
+        }
+
+        const piezaValues = this.piezaForm.getRawValue();
+
+        const dto: Pieza = {
+            id: this.piezaId,
+            vigente: this.pieza.vigente,
+            codigo: piezaValues.codigo,
+            denominacion: piezaValues.nombre?.nombre || piezaValues.nombre,
+            tipo: this.pieza.tipo,
+            material: this.pieza.material,
+            formula: this.pieza.formula,
+            molde: this.pieza.molde,
+            idMolde: this.pieza.idMolde,
+            revision: piezaValues.revision,
+            fechaRevision: piezaValues.fechaRevision,
+            puedeMarcarVigente: this.pieza.puedeMarcarVigente,
+            puedeGenerarRevision: this.pieza.puedeGenerarRevision,
+            espesorPlanchaMin: piezaValues.espesorMinimo,
+            espesorPlanchaMax: piezaValues.espesorMaximo,
+            pesoCrudo: piezaValues.pesoCrudo,
+            observacionesPesoCrudo: piezaValues.observacionesPesoCrudo,
+            dureza: piezaValues.dureza,
+            clienteId: piezaValues.idCliente?.id || this.pieza.clienteId,
+            nombreCliente: piezaValues.idCliente?.nombre || this.pieza.nombreCliente,
+            nombrePiezaPersonalizado: piezaValues.nombrePiezaCliente,
+            unidadDureza: piezaValues.tipoDureza,
+            observacionesMolde: piezaValues.observacionesMolde,
+            durezaMinima: piezaValues.durezaMinima,
+            durezaMaxima: piezaValues.durezaMaxima,
+            observacionesRevision: piezaValues.observacionesRevision
+        };
+
+        this.abmPiezaService.editarPieza(dto).subscribe({
+            next: () => {
+                this.openSnackBar(true, 'Pieza actualizada correctamente.', 'green');
+                this.abmPiezaService.events.next({
+                    type: 'piezaGuardada',
+                    nombrePieza: dto.denominacion,
+                    mostrarBotonEdicion: true,
+                    botonEdicionTexto: 'Guardar Pieza'
+                });
+            },
+            error: (error) => {
+                this.openSnackBar(false, 'Error al actualizar la pieza.', 'red');
+                console.error(error);
+                this.abmPiezaService.events.next({
+                    mostrarBotonEdicion: true,
+                    botonEdicionTexto: 'Guardar Pieza',
+                    nombrePieza: this.piezaForm.get('nombre')?.value?.nombre || this.piezaForm.get('nombre')?.value
+                });
+            }
+        });
+    }
+
+    openInitialRevisionModal(): void {
+        const dialogRef = this.dialog.open(GenericModalComponent, {
+            width: '400px',
+            data: {
+                title: 'Revisión inicial',
+                message: 'Introduzca un número de revisión inicial.',
+                showCloseButton: true,
+                showConfirmButton: true,
+                confirmButtonText: 'Confirmar',
+                cancelButtonText: 'Cancelar',
+                type: 'info',
+                customComponent: RevisionInicialInputComponent,
+                componentData: { initialRevision: this.initialRevision }
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result === false) {
+                this.restoreSaveButtonState();
+                return;
+            }
+
+            let finalRevision: number | null = null;
+            if (result && typeof result === 'object' && 'initialRevision' in result) {
+                const parsedRevision = Number(result.initialRevision);
+                if (!isNaN(parsedRevision)) {
+                    finalRevision = parsedRevision;
+                }
+            }
+
+            if (finalRevision !== null) {
+                this.crearPieza(finalRevision);
+            }
+            else {
+                this.openSnackBar(false, 'Revisión inicial no proporcionada o inválida. Intente de nuevo.', 'red');
+                this.restoreSaveButtonState();
+            }
+        });
     }
 
     onFileSelected(event: any): void {
         const file: File = event.target.files[0];
-
         if (file) {
+            if (file.type !== 'application/pdf') {
+                this.openSnackBar(false, 'Solo se permiten archivos PDF.', 'red');
+                this.removeSelectedFile();
+                return;
+            }
             this.selectedFile = file;
-            const fileName = file.name;
-            const lastDotIndex = fileName.lastIndexOf('.');
-            this.fileExtension = lastDotIndex === -1 ? '' : fileName.substring(lastDotIndex);
+            this.fileExtension = file.name.split('.').pop() || '';
+            this.planoForm.get('archivo').setValue(file);
         } else {
             this.selectedFile = null;
-            this.openSnackBar(false, "No se ha seleccionado ningún archivo.");
-            this.fileExtension = '';
+            this.openSnackBar(false, "No se ha seleccionado ningún archivo.", 'red');
         }
     }
 
     removeSelectedFile(): void {
         this.selectedFile = null;
-        this.planoForm.patchValue({
-            archivo: null,
-        });
-
+        this.planoForm.get('archivo').setValue(null);
         const input = document.getElementById('file-upload') as HTMLInputElement;
-        if (input) {
-            input.value = '';
-        }
-        this.planoForm.updateValueAndValidity();
+        if (input) input.value = '';
+        this.fileExtension = '';
     }
 
-    clearFormulaInput(): void {
-        this.piezaForm.get('formula')?.setValue(null);
-        this.formulaInput.nativeElement.value = '';
+    displayFn(item: any): string {
+        return item?.nombre ?? '';
     }
 
-    clearTipoInput(): void {
-        this.piezaForm.get('tipo')?.setValue(null);
-        this.tipoInput.nativeElement.value = '';
+    displayFormula(formula?: { id: number, nombre: string }): string {
+        return formula?.nombre ?? '';
     }
 
-    clearMoldeInput(): void {
-        this.piezaForm.get('moldeId')?.setValue(null);
-        this.moldeInput.nativeElement.value = '';
+    displayMolde(molde?: { id: number, nombre: string }): string {
+        return molde?.nombre ?? '';
     }
 
-    clearClienteInput(): void {
-        this.piezaForm.get('clienteId')?.setValue(null);
-        this.clienteInput.nativeElement.value = '';
+    displayCliente(cliente?: { id: number, nombre: string }): string {
+        return cliente?.nombre ?? '';
     }
 
-    subirPlano(): void {
-        if (!this.selectedFile) {
-            this.openSnackBar(false, "Por favor, seleccione un archivo.");
-            return;
-        }
-
-        if (this.planoForm.invalid) {
-            this.openSnackBar(false, "Por favor, complete todos los campos del formulario de plano.");
-            return;
-        }
-
-        const fileName = this.selectedFile.name;
-        const codigo = this.planoForm.get('codigo').value;
-        const revision = this.planoForm.get('revisionPlano').value;
-        const clasificacion = this.planoForm.get('clasificacion').value;
-        const descripcion = this.planoForm.get('descripcion').value;
-
-        const fileReader = new FileReader();
-        fileReader.onload = () => {
-            const fileData = fileReader.result as string;
-            const base64Data = fileData.split(',')[1];
-
-            this.abmPiezaService.uploadPlano(
-                this.piezaId,
-                base64Data,
-                fileName,
-                descripcion,
-                clasificacion,
-                codigo,
-                revision,
-            ).subscribe({
-                next: (response) => {
-                    this.openSnackBar(true, 'Archivo subido exitosamente.', 'green-snackbar');
-                },
-                error: (error) => {
-                    this.openSnackBar(false, 'Error al subir el archivo.', 'red-snackbar');
-                }
-            });
-        };
-        fileReader.readAsDataURL(this.selectedFile);
-    }
-
-    resetForm(): void {
-        this.uploading = false;
-        this.buttonText = 'Subir';
-        this.selectedFile = null;
-        this.planoForm.reset();
-
-        const fileInput = document.getElementById('file-upload') as HTMLInputElement;
-        if (fileInput) {
-            fileInput.value = '';
-        }
-
-        this.planoForm.patchValue({ archivo: null });
-    }
-
-    openInitialRevisionModal(): void {
-        const message = this.domSanitizer.bypassSecurityTrustHtml(
-            '¿Desea iniciar la revisión en 0 o introducir un número de revisión inicial?'
-        );
-
-        const dialogRef = this.dialog.open(GenericModalComponent, {
-            width: '400px',
-            data: {
-                title: 'Revisión inicial',
-                message: message,
-                showCloseButton: true,
-                showConfirmButton: true,
-                confirmButtonText: 'Confirmar',
-                cancelButtonText: 'Cancelar',
-                type: 'warning',
-                customComponent: RevisionInicialInputComponent,
-                // componentData: { initialRevision: this.initialRevision },
-
-                onConfirm: () => {
-                    this.crearPieza()
-                },
-                onCancel: () => {
-                    this.initialRevision = 0;
-                    this.crearPieza()
-                }
-            }
-        });
-    }
-
-    crearPieza(): void {
-        this.subirPlano();
-
-        const piezaData = this.piezaForm.getRawValue();
-        const nombreControl = this.piezaForm.get('nombre');
-        const nombreValue = nombreControl.value;
-        const nombre = typeof nombreValue === 'object' && nombreValue !== null ? nombreValue.nombre : nombreValue;
-        const moldeValue = this.piezaForm.get('moldeId').value;
-        const moldeId = typeof moldeValue === 'object' && moldeValue !== null ? moldeValue.id : moldeValue;
-        const clienteValue = this.piezaForm.get('clienteId').value;
-        const clienteId = typeof clienteValue === 'object' && clienteValue !== null ? clienteValue.id : clienteValue;
-        const pieza: Pieza = {
-            ...piezaData,
-            nombre: nombre,
-            moldeId: moldeId,
-            clienteId: clienteId,
-            revision: this.initialRevision.toString()
-        };
-
-        this.abmPiezaService.agregarPieza(pieza).subscribe({
-            next: () => {
-                this.openSnackBar(true, 'Pieza creada correctamente.', 'green');
-                this.abmPiezaService.events.next('piezaGuardada');
-            },
-            error: (error) => {
-                this.openSnackBar(false, 'Error al crear la pieza.');
-            }
-        });
-    }
-
-    displayFormula(formula?: { id: number; nombre: string }): string | undefined {
-        return formula ? formula.nombre : undefined;
-    }
-
-    private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-        const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-        const defaultCss: string = css ? css : 'red';
-        const snackBarMessage = message ? message : defaultMessage;
-        const snackBarCss = css ? css : defaultCss;
-        const snackBarDuration = duration ? duration : 5000;
-
-        this.snackBar.open(snackBarMessage, 'X', {
-            duration: snackBarDuration,
-            panelClass: `${snackBarCss}-snackbar`,
+    private openSnackBar(isSuccess: boolean, message: string, cssClass?: string, duration?: number): void {
+        this.snackBar.open(message, 'X', {
+            duration: duration || 5000,
+            panelClass: [isSuccess ? 'green-snackbar' : 'red-snackbar', cssClass || ''],
             horizontalPosition: 'center',
             verticalPosition: 'bottom',
         });
@@ -557,13 +503,28 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     private setupAutocomplete(formControlName: string, data$: Observable<any[]>): Observable<any[]> {
         return combineLatest([
-            this.piezaForm.get(formControlName).valueChanges.pipe(startWith('')),
+            this.piezaForm.get(formControlName).valueChanges.pipe(
+                startWith(''),
+                map(value => typeof value === 'string' ? value : value?.nombre || '')
+            ),
             data$
         ]).pipe(
-            map(([value, data]) => {
-                const filterValue = typeof value === 'string' ? value.toLowerCase() : (value?.nombre || '').toLowerCase();
-                return data.filter(item => item.nombre.toLowerCase().includes(filterValue));
+            map(([filterValue, data]) => {
+                const lowerFilterValue = filterValue.toLowerCase();
+                return data.filter(item => item.nombre.toLowerCase().includes(lowerFilterValue));
+            }),
+            catchError(error => {
+                console.error(`Error ${formControlName}:`, error);
+                return of([]);
             })
         );
+    }
+
+    private restoreSaveButtonState(): void {
+        this.abmPiezaService.events.next({
+            mostrarBotonEdicion: true,
+            botonEdicionTexto: 'Guardar Pieza',
+            nombrePieza: this.piezaForm.get('nombre')?.value?.nombre || this.piezaForm.get('nombre')?.value
+        });
     }
 }

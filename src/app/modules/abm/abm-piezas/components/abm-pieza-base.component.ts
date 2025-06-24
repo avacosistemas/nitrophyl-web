@@ -1,5 +1,5 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnDestroy, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
@@ -63,29 +63,38 @@ export class ABMPiezaBaseComponent implements OnDestroy {
         }
     }
 
-
     isFormDirty(): boolean {
         return this.piezaForm.dirty || this.form.dirty;
     }
 
 
     updateViewEvents(): void {
-        let mostrarBoton = this.mode !== 'view';
+        if (this.mode === 'view') {
+            this.abmPiezaService.events.next({
+                mostrarBotonEdicion: false,
+                nombrePieza: this.piezaForm.get('nombre').value,
+                botonEdicionTexto: ''
+            });
+            return;
+        }
+
+        let mostrarBoton = false;
+        let botonTexto = 'Guardar Pieza';
+
+        if (this.currentTab === 0) {
+            mostrarBoton = true;
+        } else {
+            mostrarBoton = false;
+        }
 
         if (this.mode === 'create') {
-            mostrarBoton = false;
+            mostrarBoton = this.currentTab === 0;
         }
 
         this.abmPiezaService.events.next({
             mostrarBotonEdicion: mostrarBoton,
             nombrePieza: this.piezaForm.get('nombre').value,
+            botonEdicionTexto: botonTexto
         });
-
-        let viewEventText = '';
-        if (this.mode !== 'view') {
-            viewEventText = 'Guardar Pieza';
-        }
-        this.abmPiezaService.viewEvents.next(viewEventText);
     }
-
 }

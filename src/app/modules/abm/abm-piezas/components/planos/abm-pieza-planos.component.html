@@ -1,20 +1,27 @@
 <div>
+    <div class="flex justify-end mb-4" *ngIf="mode !== 'view'">
+        <button mat-flat-button color="accent" (click)="openPlanoUploadModal()">
+            <mat-icon svgIcon="heroicons_outline:plus"></mat-icon>
+            <span class="ml-2">Subir Plano</span>
+        </button>
+    </div>
+
     <table mat-table [dataSource]="planos" class="border-2 rounded-2xl w-full">
         <ng-container matColumnDef="codigo">
             <th mat-header-cell *matHeaderCellDef> Código </th>
             <td mat-cell *matCellDef="let element"> {{element.codigo}} </td>
         </ng-container>
         <ng-container matColumnDef="revision">
-            <th mat-header-cell *matHeaderCellDef class="w-16 px-3"> Revisión </th>
-            <td mat-cell *matCellDef="let element" class="w-16 px-3 text-center"> {{element.revision}} </td>
+            <th mat-header-cell *matHeaderCellDef class="w-24 px-3 text-center"> Revisión </th>
+            <td mat-cell *matCellDef="let element" class="w-24 px-3 text-center"> {{element.revision}} </td>
         </ng-container>
         <ng-container matColumnDef="clasificacion">
             <th mat-header-cell *matHeaderCellDef class="px-3"> Clasificación </th>
             <td mat-cell *matCellDef="let element" class="px-3"> {{element.clasificacion}} </td>
         </ng-container>
         <ng-container matColumnDef="descripcion">
-            <th mat-header-cell *matHeaderCellDef> Descripción </th>
-            <td mat-cell *matCellDef="let element">
+            <th mat-header-cell *matHeaderCellDef class="w-24 text-center"> Descripción </th>
+            <td mat-cell *matCellDef="let element" class="w-24 text-center">
                 <button mat-icon-button *ngIf="element.descripcion"
                     (click)="openObservacionModal(element.descripcion, element.codigo)">
                     <mat-icon>comment</mat-icon>
@@ -22,33 +29,32 @@
             </td>
         </ng-container>
         <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef class="w-22"> Fecha </th>
-            <td mat-cell *matCellDef="let element" class="w-22"> {{element.fecha}} </td>
+            <th mat-header-cell *matHeaderCellDef class="w-32"> Fecha </th>
+            <td mat-cell *matCellDef="let element" class="w-32"> {{element.fecha | date:'dd/MM/yyyy'}} </td>
         </ng-container>
         <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef class="w-10"></th>
-            <td mat-cell *matCellDef="let row" class="w-10 text-right flex flex-col">
-                <ng-container *ngIf="mode !== 'view'">
-                    <button>
-                        <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver" (click)="openPlano(row)">
-                        </mat-icon>
+            <th mat-header-cell *matHeaderCellDef></th>
+            <td mat-cell *matCellDef="let row" class="w-32">
+                <div class="flex gap-1 justify-end">
+                    <button mat-icon-button (click)="openPlano(row)">
+                        <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"></mat-icon>
                     </button>
-                    <button>
-                        <mat-icon svgIcon="heroicons_solid:download" matTooltip="Descargar"
-                            (click)="downloadPlano(row)">
-                        </mat-icon>
+                    <button mat-icon-button (click)="downloadPlano(row)">
+                        <mat-icon svgIcon="heroicons_solid:download" matTooltip="Descargar"></mat-icon>
                     </button>
-                    <button>
-                        <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar" (click)="eliminarPlano(row)">
-                        </mat-icon>
+                    <button mat-icon-button *ngIf="mode !== 'view'" (click)="eliminarPlano(row)">
+                        <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar"></mat-icon>
                     </button>
-                </ng-container>
+                </div>
             </td>
         </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumnsPlanos"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumnsPlanos;"></tr>
         <tr *matNoDataRow>
-            <td class="text-center py-4" colspan="6" *ngIf="sinDatos">No hay planos asociados a esta pieza.</td>
+            <td class="text-center py-4" [attr.colspan]="displayedColumnsPlanos.length" *ngIf="sinDatos">
+                No hay planos asociados a esta pieza.
+            </td>
         </tr>
     </table>
 </div>

@@ -44,7 +44,7 @@
 
     <div class="modal-content pt-0 pb-2 flex flex-col gap-2">
         <div *ngIf="data.message" class="message" [innerHTML]="data.message"></div>
-        <ng-template #customComponentContainer></ng-template>
+        <div #customComponentContainer></div>
     </div>
 
     <div mat-dialog-actions class="flex shrink-0 items-center gap-2 flex-row-reverse">

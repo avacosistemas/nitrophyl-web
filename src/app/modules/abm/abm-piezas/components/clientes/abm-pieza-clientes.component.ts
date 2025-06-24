@@ -11,6 +11,7 @@ import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { PiezaCliente } from '../../models/pieza.model';
 
 @Component({
   selector: 'app-abm-pieza-clientes',
@@ -22,13 +23,14 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
   clientes$: Array<any> = [];
-  selectedClients = new MatTableDataSource<{ idCliente: number; nombre: string }>([]);
+  selectedClients = new MatTableDataSource<PiezaCliente>([]);
 
-  baseDisplayedColumns: string[] = ['idCliente', 'nombre'];
+  baseDisplayedColumns: string[] = ['idCliente', 'nombreCliente', 'nombrePiezaCliente'];
   displayedColumnsClients: string[];
 
   clienteForm: FormGroup;
   sinDatos: boolean = false;
+  isLoading: boolean = false;
   private subscription: Subscription = new Subscription();
 
   constructor(
@@ -44,25 +46,30 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
   ) {
     super(fb, router, route, abmPiezaService, dialog);
     this.clienteForm = this.fb.group({
-      clienteId: [null, Validators.required]
+      clienteId: [null, Validators.required],
+      nombrePiezaPersonalizado: ['']
     });
   }
 
   ngOnInit(): void {
     this.setDisplayedColumns();
-    this.loadClientes();
-    this.loadSelectedClients();
+    this.loadClientesDropdown();
+    if (this.piezaId) {
+      this.loadSelectedClients();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.mode) {
       this.setDisplayedColumns();
-
       if (this.mode === 'view') {
         this.clienteForm.disable();
       } else {
         this.clienteForm.enable();
       }
+    }
+    if (changes.piezaId && changes.piezaId.currentValue) {
+      this.loadSelectedClients();
     }
   }
 
@@ -78,44 +85,36 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
     }
   }
 
-  loadClientes(): void {
+  loadClientesDropdown(): void {
     this.subscription.add(
       this._clients.getClientes().subscribe({
         next: (res: any) => {
-          if (res && res.data) {
-            this.clientes$ = res.data;
-          } else {
-            console.warn('No se recibieron datos de clientes o el formato es incorrecto.');
-            this.clientes$ = [];
-          }
+          this.clientes$ = res && res.data ? res.data : [];
         },
         error: (err: any) => {
-          console.error('Error al cargar los clientes:', err);
-          this.openSnackBar(false, 'Error al cargar los clientes.');
-          this.clientes$ = [];
+          console.error('Error al cargar la lista de clientes:', err);
+          this.openSnackBar(false, 'Error al cargar la lista de clientes.');
         }
       })
     );
   }
 
   loadSelectedClients(): void {
+    this.isLoading = true;
     this.subscription.add(
-      this.abmPiezaService.getClientes().subscribe({
-        next: (clientes: any) => {
-          if (clientes && clientes.data) {
-            this.selectedClients = new MatTableDataSource<{ idCliente: number; nombre: string }>(clientes.data);
-            this.selectedClients.data.length === 0 ? this.sinDatos = true : this.sinDatos = false;
-          } else {
-            console.warn('No se recibieron datos de clientes seleccionados o el formato es incorrecto.');
-            this.sinDatos = true;
-            this.selectedClients = new MatTableDataSource<{ idCliente: number; nombre: string }>([]);
-          }
+      this.abmPiezaService.getClientesPorPieza(this.piezaId).subscribe({
+        next: (response: any) => {
+          const clientesAsociados = response && response.data ? response.data : [];
+          this.selectedClients.data = clientesAsociados;
+          this.sinDatos = clientesAsociados.length === 0;
+          this.isLoading = false;
         },
         error: (err: any) => {
-          console.error('Error al cargar los clientes seleccionados:', err);
-          this.openSnackBar(false, 'Error al cargar los clientes seleccionados.');
+          console.error('Error al cargar los clientes asociados:', err);
+          this.openSnackBar(false, 'Error al cargar los clientes asociados.');
           this.sinDatos = true;
-          this.selectedClients = new MatTableDataSource<{ idCliente: number; nombre: string }>([]);
+          this.isLoading = false;
+          this.selectedClients.data = [];
         }
       })
     );
@@ -128,8 +127,9 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
     }
 
     const clienteId = this.clienteForm.get('clienteId').value;
-    const selectedClient = this.clientes$.find(cliente => cliente.id === clienteId);
+    const nombrePersonalizado = this.clienteForm.get('nombrePiezaPersonalizado').value;
 
+    const selectedClient = this.clientes$.find(cliente => cliente.id === clienteId);
     if (!selectedClient) {
       this.openSnackBar(false, 'Cliente no encontrado.');
       return;
@@ -141,35 +141,53 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
       return;
     }
 
-    const data = this.selectedClients.data;
-    data.push({ idCliente: selectedClient.id, nombre: selectedClient.nombre });
-    this.selectedClients.data = data;
-    this.sinDatos = false;
-
-    const clienteData = {
-      clienteId: selectedClient.id,
-      nombre: selectedClient.nombre,
-      piezaId: this.piezaId
+    const dto = {
+      idPieza: this.piezaId,
+      idCliente: selectedClient.id,
+      nombreCliente: selectedClient.nombre,
+      nombrePiezaCliente: nombrePersonalizado
     };
 
-    this.clienteForm.reset();
-    this.clienteForm.updateValueAndValidity();
-    this.guardarClientesMock(clienteData, 'Cliente agregado.');
+    this.isLoading = true;
+    this.subscription.add(
+      this.abmPiezaService.agregarClienteAPieza(dto).subscribe({
+        next: () => {
+          this.openSnackBar(true, 'Cliente agregado correctamente.', 'green');
+          this.loadSelectedClients();
+          this.clienteForm.reset();
+          this.clienteForm.updateValueAndValidity();
+        },
+        error: (err) => {
+          console.error('Error al agregar el cliente:', err);
+          this.openSnackBar(false, 'Error al agregar el cliente.');
+          this.isLoading = false;
+        }
+      })
+    );
   }
 
-  eliminarCliente(row: any): void {
-    const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar al cliente <span class="font-bold">${row.nombre}</span>?`);
+  eliminarCliente(row: PiezaCliente): void {
+    const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar la asociación con el cliente <span class="font-bold">${row.nombreCliente}</span>?`);
     this.openConfirmationModal(mensaje, () => {
-      const data = this.selectedClients.data;
-      data.splice(data.indexOf(row), 1);
-      this.selectedClients.data = data;
-      this.selectedClients.data.length === 0 ? this.sinDatos = true : this.sinDatos = false;
-      this.guardarClientesMock(row, 'Cliente eliminado.');
+      this.isLoading = true;
+      this.subscription.add(
+        this.abmPiezaService.eliminarClienteDePieza(row.id).subscribe({
+          next: () => {
+            this.openSnackBar(true, 'Cliente eliminado correctamente.', 'green');
+            this.loadSelectedClients();
+          },
+          error: (err) => {
+            console.error('Error al eliminar el cliente:', err);
+            this.openSnackBar(false, 'Error al eliminar el cliente.');
+            this.isLoading = false;
+          }
+        })
+      );
     });
   }
 
   openConfirmationModal(message: SafeHtml, onConfirm: () => void): void {
-    const dialogRef = this.dialog.open(GenericModalComponent, {
+    this.dialog.open(GenericModalComponent, {
       width: '400px',
       data: {
         title: 'Confirmar eliminación',
@@ -182,10 +200,6 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
         onConfirm: onConfirm
       }
     });
-  }
-
-  guardarClientesMock(data: any, message: string): void {
-    this.openSnackBar(true, message, 'green');
   }
 
   private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {

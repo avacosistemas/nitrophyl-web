@@ -1,23 +1,62 @@
+
 export interface Pieza {
     id: number;
-    nombre: string;
-    formula?: string;
-    material?: string;
-    revision?: string;
-    fechaRevision?: Date;
+    vigente: boolean;
+    codigo: string;
+    denominacion: string;
     tipo?: string;
-    vigente?: boolean;
-    permiteEditar?: boolean;
-    permiteGenerarRevision?: boolean;
-    permiteMarcarRevision?: boolean;
-    moldeId?: number;
+    material: string;
+    formula?: string;
+    molde?: string;
+    idMolde?: number;
+    clienteId?: number;
+    nombreCliente?: string;
+    nombrePiezaPersonalizado?: string;
+    dureza?: number;
+    unidadDureza?: string;
+    durezaMinima?: number;
+    durezaMaxima?: number;
     espesorPlanchaMin?: number;
     espesorPlanchaMax?: number;
     pesoCrudo?: number;
     observacionesPesoCrudo?: string;
-    dureza?: number
-    clienteId?: number;
-    nombrePiezaPersonalizado?: string;
+    observacionesMolde?: string;
+    revision: number;
+    fechaRevision: number;
+    observacionesRevision?: string;
+    puedeMarcarVigente: boolean;
+    puedeGenerarRevision: boolean;
+}
+
+export interface PiezaNombreResponse {
+  status: string;
+  data: {
+    page: Pieza[];
+    totalReg: number;
+  };
+}
+
+export interface PiezaCliente {
+    id: number;
+    idCliente: number;
+    idPieza: number;
+    nombreCliente: string;
+    nombrePiezaCliente: string;
+    fechaCreacion?: string;
+    fechaActualizacion?: string;
+    usuarioCreacion?: string;
+    usuarioActualizacion?: string;
+}
+
+export interface Dimension {
+    tipoDimension: string;
+    valor: number;
+    observaciones?: string;
+}
+
+export interface PiezaDimension extends Dimension {
+    id: number;
+    idPieza: number;
 }
 
 export interface TipoInsumo {
@@ -41,12 +80,6 @@ export interface InsumoPieza {
     medidaObservaciones?: string;
     tratamiento?: string;
     adhesivos?: string[];
-    observaciones?: string;
-}
-
-export interface Dimension {
-    tipoDimension: string;
-    valor: number;
     observaciones?: string;
 }
 

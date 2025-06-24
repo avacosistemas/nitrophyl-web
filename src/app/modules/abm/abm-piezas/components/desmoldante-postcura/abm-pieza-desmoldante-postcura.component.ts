@@ -1,11 +1,10 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { DesmoldantePostCura } from '../../models/pieza.model';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -21,11 +20,6 @@ export class ABMPiezaDesmoldantePostcuraComponent extends ABMPiezaBaseComponent 
   desmoldantes$: Observable<string[]>;
 
   mostrarObservacionesDesmoldante = false;
-
-  desmoldanteControl = new FormControl('');
-  observacionesDesmoldanteControl = new FormControl('');
-  postcuraControl = new FormControl('');
-
   form: FormGroup;
 
   constructor(
@@ -39,56 +33,64 @@ export class ABMPiezaDesmoldantePostcuraComponent extends ABMPiezaBaseComponent 
     super(fb, router, route, abmPiezaService, dialog);
 
     this.form = this.fb.group({
-      desmoldante: this.desmoldanteControl,
-      observacionesDesmoldante: this.observacionesDesmoldanteControl,
-      postcura: this.postcuraControl
+      desmoldante: [''],
+      observacionesDesmoldante: [''],
+      postcura: ['']
     });
   }
 
   ngOnInit(): void {
-    this.desmoldantePostCura$ = this.abmPiezaService.getDesmoldantePostCura(this.piezaId);
-    this.desmoldantes$ = this.abmPiezaService.getDesmoldantes();
+    if (this.piezaId) {
+      this.desmoldantePostCura$ = this.abmPiezaService.getDesmoldantePostCura(this.piezaId);
+      this.desmoldantes$ = this.abmPiezaService.getDesmoldantes();
 
-    this.desmoldantePostCura$.subscribe(data => {
-      this.form.patchValue({
-        desmoldante: data.desmoldante,
-        observacionesDesmoldante: data.observacionesDesmoldante,
-        postcura: data.postcura
+      this.desmoldantePostCura$.subscribe(data => {
+        if (data) {
+          this.form.patchValue(data);
+          this.mostrarObservacionesDesmoldante = data.desmoldante !== 'No';
+        }
       });
-      this.mostrarObservacionesDesmoldante = data.desmoldante !== 'No';
-    });
+    }
 
     this.form.get('desmoldante').valueChanges.subscribe(value => {
       this.mostrarObservacionesDesmoldante = value !== 'No';
     });
+
+    if (this.mode === 'view') {
+      this.form.disable();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.mode) {
-      const mode = changes.mode.currentValue;
-
-      if (mode === 'view') {
-        this.form.disable({ emitEvent: false });
+      const currentMode = changes.mode.currentValue;
+      if (currentMode === 'view') {
+        this.form.disable();
       } else {
-        this.form.enable({ emitEvent: false });
+        this.form.enable();
       }
     }
   }
 
-  guardarDesmoldantePostCura(): void {
-    if (this.form.valid) {
-      const data: DesmoldantePostCura = {
-        desmoldante: this.form.get('desmoldante').value,
-        observacionesDesmoldante: this.form.get('observacionesDesmoldante').value,
-        postcura: this.form.get('postcura').value
-      };
-
-      this.abmPiezaService.updateDesmoldantePostCura(this.piezaId, data).subscribe(() => {
-        this.openSnackBar(true, 'Desmoldante/PostCura guardado (mock).', 'green');
-      });
+  public guardar(): void {
+    if (this.form.invalid) {
+      this.openSnackBar(false, 'El formulario no es válido.', 'red');
+      return;
     }
+
+    const data: DesmoldantePostCura = this.form.value;
+
+    this.abmPiezaService.updateDesmoldantePostCura(this.piezaId, data).subscribe({
+      next: () => {
+        this.openSnackBar(true, 'Desmoldante/Postcura guardado correctamente.', 'green');
+      },
+      error: (err) => {
+        console.error('Error al guardar Desmoldante/Postcura', err);
+        this.openSnackBar(false, 'Error al guardar los datos.', 'red');
+      }
+    });
   }
-  
+
   private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
     const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
     const defaultCss: string = css ? css : 'red';

@@ -12,6 +12,12 @@ import { startWith, map } from 'rxjs/operators';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { Molde } from '../../models/pieza.model';
 
+interface MoldeAsociado {
+  id: number;
+  nombre: string;
+  observaciones?: string;
+}
+
 @Component({
   selector: 'app-abm-pieza-moldes',
   templateUrl: './abm-pieza-moldes.component.html',
@@ -21,18 +27,18 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
   @Input() piezaId: number;
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
-  moldes = new MatTableDataSource<Molde>([]);
+  moldes = new MatTableDataSource<MoldeAsociado>([]);
   sinDatos: boolean = false;
 
-  baseDisplayedColumns: string[] = ['nombre'];
+  baseDisplayedColumns: string[] = ['nombre', 'observaciones'];
   displayedColumnsMoldes: string[];
 
   filteredMoldes: Observable<Molde[]>;
-  moldeCtrl = new FormControl(null, Validators.required);
+  moldeForm: FormGroup;
 
   private subscription: Subscription = new Subscription();
 
-  moldesMock: Molde[] = [
+  moldesDisponibles: Molde[] = [
     { id: 1, nombre: 'Molde A' },
     { id: 2, nombre: 'Molde B' },
     { id: 3, nombre: 'Molde C' },
@@ -50,15 +56,20 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
     private domSanitizer: DomSanitizer
   ) {
     super(fb, router, route, abmPiezaService, dialog);
+    this.moldeForm = this.fb.group({
+      molde: [null, Validators.required],
+      observaciones: [''] 
+    });
   }
 
   ngOnInit(): void {
     this.setDisplayedColumns();
     this.loadMoldes();
 
-    this.filteredMoldes = this.moldeCtrl.valueChanges.pipe(
+    this.filteredMoldes = this.moldeForm.get('molde').valueChanges.pipe(
       startWith(''),
-      map(molde => (molde ? this._filterMoldes(molde) : this.moldesMock.slice())),
+      map(value => (typeof value === 'string' ? value : value?.nombre)),
+      map(nombre => (nombre ? this._filterMoldes(nombre) : this.moldesDisponibles.slice())),
     );
   }
 
@@ -67,9 +78,9 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
       this.setDisplayedColumns();
 
       if (this.mode === 'view') {
-        this.moldeCtrl.disable();
+        this.moldeForm.disable();
       } else {
-        this.moldeCtrl.enable();
+        this.moldeForm.enable();
       }
     }
   }
@@ -87,16 +98,16 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
   }
 
   loadMoldes(): void {
-    this.moldes = new MatTableDataSource<Molde>([]);
+    this.moldes = new MatTableDataSource<MoldeAsociado>([]);
     this.sinDatos = this.moldes.data.length === 0;
   }
 
   addMolde(): void {
-    if (this.moldeCtrl.valid) {
-      const selectedMolde: Molde = this.moldeCtrl.value;
+    if (this.moldeForm.valid) {
+      const { molde: selectedMolde, observaciones } = this.moldeForm.value;
 
-      if (!selectedMolde) {
-        this.openSnackBar(false, 'Por favor, seleccione un molde.');
+      if (!selectedMolde || typeof selectedMolde === 'string') {
+        this.openSnackBar(false, 'Por favor, seleccione un molde válido de la lista.');
         return;
       }
 
@@ -107,26 +118,31 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
       }
 
       const data = this.moldes.data;
-      data.push(selectedMolde);
+
+      data.push({
+        id: selectedMolde.id,
+        nombre: selectedMolde.nombre,
+        observaciones: observaciones
+      });
       this.moldes.data = data;
       this.sinDatos = false;
 
-      this.moldeCtrl.setValue(null);
-      this.openSnackBar(true, 'Molde agregado (mock).', 'green');
+      this.moldeForm.reset();
+      this.openSnackBar(true, 'Molde agregado.', 'green');
 
     } else {
       this.openSnackBar(false, 'Por favor, seleccione un molde.');
     }
   }
 
-  eliminarMolde(row: Molde): void {
+  eliminarMolde(row: MoldeAsociado): void {
     const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar el molde <span class="font-bold">${row.nombre}</span>?`);
     this.openConfirmationModal(mensaje, () => {
       const data = this.moldes.data;
       data.splice(data.indexOf(row), 1);
       this.moldes.data = data;
       this.sinDatos = this.moldes.data.length === 0;
-      this.openSnackBar(true, 'Molde eliminado (mock).', 'green');
+      this.openSnackBar(true, 'Molde eliminado.', 'green');
     });
   }
 
@@ -147,16 +163,16 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
   }
 
   clearMolde(): void {
-    this.moldeCtrl.setValue(null);
+    this.moldeForm.get('molde').reset();
   }
 
   displayFn(molde: Molde): string {
     return molde && molde.nombre ? molde.nombre : '';
   }
 
-  private _filterMoldes(value: string): Molde[] {
-    const filterValue = value.toLowerCase();
-    return this.moldesMock.filter(molde => molde.nombre.toLowerCase().includes(filterValue));
+  private _filterMoldes(name: string): Molde[] {
+    const filterValue = name.toLowerCase();
+    return this.moldesDisponibles.filter(molde => molde.nombre.toLowerCase().includes(filterValue));
   }
 
   private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {

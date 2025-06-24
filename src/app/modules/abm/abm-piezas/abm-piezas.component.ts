@@ -66,11 +66,7 @@ export class ABMPiezasComponent implements OnInit, AfterContentChecked, OnDestro
     }
 
     ngAfterContentChecked(): void {
-        try {
-            this.cdref.detectChanges();
-        } catch (error) {
-            console.error('Error en la detección de cambios:', error);
-        }
+        // 
     }
 
     ngOnDestroy(): void {
@@ -83,11 +79,11 @@ export class ABMPiezasComponent implements OnInit, AfterContentChecked, OnDestro
         if (action === 'close') {
             this.close();
         } else if (action === 'edit') {
-            this._abmPiezasService.events.next('ejecutarAccion');
+            this._abmPiezasService.events.next({ type: 'ejecutarAccion' });
         } else if (action === 'create') {
             this.router.navigate(['/procesos-piezas/create']);
         } else if (action === 'Añadir Esquema') {
-            this._abmPiezasService.events.next('ejecutarAccion');
+            this._abmPiezasService.events.next({ type: 'ejecutarAccion' });
         }
     }
 
@@ -152,7 +148,7 @@ export class ABMPiezasComponent implements OnInit, AfterContentChecked, OnDestro
         if (this.piezaId !== null) {
             this._abmPiezasService.getPieza(this.piezaId).subscribe(pieza => {
                 if (pieza) {
-                    this.piezaNombre = pieza.nombre;
+                    this.piezaNombre = pieza.denominacion;
                     this.cdref.markForCheck();
                 }
             });

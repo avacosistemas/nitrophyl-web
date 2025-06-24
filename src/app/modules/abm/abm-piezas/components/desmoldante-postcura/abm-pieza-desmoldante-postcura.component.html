@@ -1,5 +1,4 @@
-<div>
-  <form [formGroup]="form" (ngSubmit)="guardarDesmoldantePostCura()" class="mat-form-without-wrapper">
+<form [formGroup]="form" (ngSubmit)="guardar()" class="mat-form-without-wrapper">
     <mat-form-field appearance="outline" class="form-field">
       <mat-label>Desmoldante</mat-label>
       <mat-select formControlName="desmoldante">
@@ -17,5 +16,4 @@
       <mat-label>PostCura</mat-label>
       <textarea matInput formControlName="postcura"></textarea>
     </mat-form-field>
-  </form>
-</div>
+</form>

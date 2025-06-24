@@ -9,10 +9,10 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Plano } from '../../models/pieza.model';
 import { Subscription } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { MatIconRegistry } from '@angular/material/icon';
 import * as FileSaver from 'file-saver';
 import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { ABMPiezaPlanoModalComponent } from './modal-plano/abm-pieza-plano-modal.component';
 
 @Component({
     selector: 'app-abm-pieza-planos',
@@ -26,8 +26,8 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
     planos = new MatTableDataSource<Plano>([]);
     baseDisplayedColumnsPlanos: string[] = ['codigo', 'revision', 'clasificacion', 'descripcion', 'fecha'];
     displayedColumnsPlanos: string[];
-    private planoSubscription: Subscription;
     sinDatos: boolean = false;
+    subscriptions: Subscription[] = [];
 
     constructor(
         protected fb: FormBuilder,
@@ -37,36 +37,20 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
         public dialog: MatDialog,
         private snackBar: MatSnackBar,
         private domSanitizer: DomSanitizer,
-        private matIconRegistry: MatIconRegistry
     ) {
         super(fb, router, route, abmPiezaService, dialog);
-        this.form = this.fb.group({});
-
-        this.matIconRegistry.addSvgIcon(
-            "heroicons_solid:eye",
-            this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/heroicons_solid/eye.svg")
-        );
-        this.matIconRegistry.addSvgIcon(
-            "heroicons_solid:download",
-            this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/heroicons_solid/download.svg")
-        );
-        this.matIconRegistry.addSvgIcon(
-            "heroicons_solid:trash",
-            this.domSanitizer.bypassSecurityTrustResourceUrl("assets/icons/heroicons_solid/trash.svg")
-        );
     }
 
     ngOnInit(): void {
         this.setDisplayedColumns();
         this.loadPlanos();
 
-        this.subscriptions.push(
-            this.abmPiezaService.events.subscribe(event => {
-                if (event === 'planoSubido') {
-                    this.loadPlanos();
-                }
-            })
-        );
+        const serviceEventSub = this.abmPiezaService.events.subscribe(event => {
+            if (event === 'planoSubido') {
+                this.loadPlanos();
+            }
+        });
+        this.subscriptions.push(serviceEventSub);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -76,101 +60,116 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
     }
 
     ngOnDestroy(): void {
-        if (this.planoSubscription) {
-            this.planoSubscription.unsubscribe();
-        }
+        this.subscriptions.forEach(sub => sub.unsubscribe());
     }
 
     setDisplayedColumns(): void {
-        if (this.mode === 'view') {
-            this.displayedColumnsPlanos = this.baseDisplayedColumnsPlanos;
-        } else {
-            this.displayedColumnsPlanos = [...this.baseDisplayedColumnsPlanos, 'acciones'];
-        }
+        const actions = this.mode === 'view' ? [] : ['acciones'];
+        this.displayedColumnsPlanos = [...this.baseDisplayedColumnsPlanos, ...actions];
     }
 
     loadPlanos(): void {
-        if (this.piezaId) {
-            this.planoSubscription = this.abmPiezaService.getPlanos(this.piezaId).subscribe(planos => {
-                this.planos.data = planos;
-                this.sinDatos = this.planos.data.length === 0;
-            });
-        } else {
+        if (!this.piezaId) {
             this.sinDatos = true;
             this.planos.data = [];
+            return;
         }
+
+        const sub = this.abmPiezaService.getPlanos(this.piezaId).subscribe({
+            next: planos => {
+                this.planos.data = planos;
+                this.sinDatos = planos.length === 0;
+            },
+            error: err => {
+                this.openSnackBar(false, 'Error al cargar los planos.');
+                console.error(err);
+            }
+        });
+        this.subscriptions.push(sub);
+    }
+
+    openPlanoUploadModal(): void {
+        const dialogRef = this.dialog.open(ABMPiezaPlanoModalComponent, {
+            width: '600px',
+            data: {
+                title: 'Subir Nuevo Plano',
+                fileTypeDescription: 'Plano (PDF)',
+                acceptFileTypes: '.pdf',
+                showClassification: true,
+                clasificacionOptions: [
+                    { value: 'NITROPHYL', label: 'NITROPHYL' },
+                    { value: 'CLIENTE', label: 'CLIENTE' }
+                ],
+                serviceUpload: (dto) => this.abmPiezaService.uploadPlano({ ...dto, idPieza: this.piezaId })
+            }
+        });
+
+        const sub = dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.loadPlanos();
+            }
+        });
+        this.subscriptions.push(sub);
     }
 
     public openPlano(plano: Plano): void {
-        this.abmPiezaService.downloadPlano(plano.id).subscribe({
-            next: (response: any) => {
-                const base64Content = response?.data?.archivo;
-
-                if (!base64Content) {
-                    console.error('No se recibió un string Base64 válido del backend.');
-                    this.openSnackBar(false, 'Error al obtener el plano', 'red');
-                    return;
-                }
-
-                this.dialog.open(PDFModalDialogComponent, {
-                    maxWidth: '75%',
-                    width: '80vw',
-                    height: '90vh',
-                    data: {
-                        src: base64Content,
-                        title: plano.nombreArchivo,
-                        showDownloadButton: true
-                    },
-                });
-
+        const sub = this.abmPiezaService.downloadPlano(plano.id).subscribe({
+            next: (blob: Blob) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    this.dialog.open(PDFModalDialogComponent, {
+                        maxWidth: '75%',
+                        width: '80vw',
+                        height: '90vh',
+                        data: {
+                            src: reader.result as string,
+                            title: plano.nombreArchivo,
+                            showDownloadButton: true
+                        },
+                    });
+                };
+                reader.readAsDataURL(blob);
             },
-            error: (error) => {
-                console.error('Error al descargar el plano:', error);
-                this.openSnackBar(false, 'Error al obtener el plano', 'red');
+            error: (err) => {
+                this.openSnackBar(false, 'Error al obtener el plano para visualizar.');
+                console.error(err);
             }
         });
+        this.subscriptions.push(sub);
     }
 
     public downloadPlano(plano: Plano): void {
-        this.abmPiezaService.downloadPlano(plano.id).subscribe((response: any) => {
-            if (response?.status === 'OK' && response?.data?.archivo) {
-                const byteCharacters = atob(response.data.archivo);
-                const byteArrays = [];
-
-                for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-                    const slice = byteCharacters.slice(offset, offset + 512);
-                    const byteNumbers = new Array(slice.length);
-
-                    for (let i = 0; i < slice.length; i++) {
-                        byteNumbers[i] = slice.charCodeAt(i);
-                    }
-
-                    const byteArray = new Uint8Array(byteNumbers);
-                    byteArrays.push(byteArray);
-                }
-
-                const blob = new Blob(byteArrays, { type: 'application/pdf' });
+        const sub = this.abmPiezaService.downloadPlano(plano.id).subscribe({
+            next: (blob) => {
                 FileSaver.saveAs(blob, plano.nombreArchivo);
-            } else {
-                console.error('No se recibió un string Base64 válido del backend.');
-                this.openSnackBar(false, 'Error al descargar el plano', 'red');
+            },
+            error: (err) => {
+                this.openSnackBar(false, 'Error al descargar el plano.');
+                console.error(err);
             }
         });
+        this.subscriptions.push(sub);
     }
 
     eliminarPlano(plano: Plano): void {
         const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar el plano <span class="font-bold">${plano.nombreArchivo}</span>?`);
         this.openConfirmationModal(mensaje, () => {
-            const data = this.planos.data;
-            data.splice(data.indexOf(plano), 1);
-            this.planos.data = data;
-            this.sinDatos = this.planos.data.length === 0;
-            this.openSnackBar(true, 'Plano eliminado (mock).', 'green');
+            const sub = this.abmPiezaService.deletePlano(plano.id).subscribe({
+                next: () => {
+                    this.openSnackBar(true, 'Plano eliminado correctamente.');
+                    this.loadPlanos();
+                },
+                error: err => {
+                    this.openSnackBar(false, 'Error al eliminar el plano.');
+                    console.error(err);
+                }
+            });
+            this.subscriptions.push(sub);
         });
     }
 
     openConfirmationModal(message: SafeHtml, onConfirm: () => void): void {
-        const dialogRef = this.dialog.open(GenericModalComponent, {
+        this.dialog.open(GenericModalComponent, {
             width: '400px',
             data: {
                 title: 'Confirmar eliminación',
@@ -186,7 +185,7 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
     }
 
     openObservacionModal(observacion: string, nombreArchivo: string): void {
-        const dialogRef = this.dialog.open(GenericModalComponent, {
+        this.dialog.open(GenericModalComponent, {
             width: '500px',
             data: {
                 title: `Observaciones: ${nombreArchivo}`,

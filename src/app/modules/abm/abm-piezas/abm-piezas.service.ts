@@ -13,10 +13,14 @@ import {
     Bombeo,
     Plano,
     Molde,
+    PiezaNombreResponse,
+    PiezaDimension
 } from './models/pieza.model';
 import { BehaviorSubject, Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { catchError, delay, map } from 'rxjs/operators';
 import { base64Content, base64Imagen } from './base64-data';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from 'environments/environment';
 
 @Injectable({
     providedIn: 'root',
@@ -25,73 +29,88 @@ export class ABMPiezaService {
     viewEvents = new EventEmitter<any>();
     public events = new BehaviorSubject<any>(null);
 
-    private piezasMock: Pieza[] = [
-        {
-            id: 1,
-            nombre: 'Pieza A',
-            formula: 'A001',
-            material: 'Material X',
-            revision: '1',
-            fechaRevision: new Date(),
-            moldeId: 1,
-            espesorPlanchaMin: 2,
-            espesorPlanchaMax: 3,
-            pesoCrudo: 150,
-            observacionesPesoCrudo: 'Peso aproximado',
-            tipo: 'Tipo 1',
-            vigente: true,
-            permiteEditar: true,
-            permiteGenerarRevision: true,
-            permiteMarcarRevision: true,
-            dureza: 90,
-            clienteId: 1,
-            nombrePiezaPersonalizado: 'Personalizado A'
-        },
-        {
-            id: 2,
-            nombre: 'Pieza B',
-            formula: 'A002',
-            material: 'Material Y',
-            revision: '2',
-            fechaRevision: new Date(),
-            moldeId: 2,
-            espesorPlanchaMin: 1,
-            espesorPlanchaMax: 2,
-            pesoCrudo: 80,
-            observacionesPesoCrudo: 'Sin rebabas',
-            tipo: 'Tipo 2',
-            vigente: false,
-            permiteEditar: false,
-            permiteGenerarRevision: true,
-            permiteMarcarRevision: false,
-            dureza: 80,
-            clienteId: 2,
-            nombrePiezaPersonalizado: 'Personalizado B'
-        },
-        {
-            id: 3,
-            nombre: 'Pieza C',
-            formula: 'A003',
-            material: 'Material Z',
-            revision: '3',
-            fechaRevision: new Date(),
-            moldeId: 3,
-            espesorPlanchaMin: 3,
-            espesorPlanchaMax: 3,
-            pesoCrudo: 220,
-            observacionesPesoCrudo: 'Requiere pulido',
-            tipo: 'Tipo 1',
-            vigente: true,
-            permiteEditar: true,
-            permiteGenerarRevision: false,
-            permiteMarcarRevision: true,
-            dureza: 100,
-            clienteId: 3,
-            nombrePiezaPersonalizado: 'Personalizado C'
-        },
-    ];
+    private readonly API_BASE_URL = environment.server;
+    private readonly API_PIEZA_URL = `${this.API_BASE_URL}pieza`;
+    private readonly API_PIEZA_PLANO_URL = `${this.API_BASE_URL}piezaPlano`;
+    private readonly API_PIEZA_CLIENTE_URL = `${this.API_BASE_URL}piezaCliente`;
+    private readonly API_PIEZA_DIMENSION_URL = `${this.API_BASE_URL}piezaDimension`;
+    private readonly API_PIEZA_TIPO_URL = `${this.API_BASE_URL}piezaTipo`;
+    private readonly API_MOLDE_URL = `${this.API_BASE_URL}molde`;
+
+    constructor(private http: HttpClient) { }
+
+    getDimensionesPorPieza(idPieza: number): Observable<any> {
+        const params = new HttpParams().set('idPieza', idPieza.toString());
+        return this.http.get<any>(this.API_PIEZA_DIMENSION_URL, { params });
+    }
+
+    agregarDimensionAPieza(dto: any): Observable<PiezaDimension> {
+        return this.http.post<PiezaDimension>(this.API_PIEZA_DIMENSION_URL, dto);
+    }
+
+    actualizarDimensionDePieza(id: number, dto: any): Observable<PiezaDimension> {
+        return this.http.put<PiezaDimension>(`${this.API_PIEZA_DIMENSION_URL}/${id}`, dto);
+    }
+
+    eliminarDimensionDePieza(id: number): Observable<any> {
+        return this.http.delete<any>(`${this.API_PIEZA_DIMENSION_URL}/${id}`);
+    }
+
+    getClientesPorPieza(idPieza: number): Observable<any> {
+        const params = new HttpParams().set('idPieza', idPieza.toString());
+        return this.http.get<any>(this.API_PIEZA_CLIENTE_URL, { params });
+    }
+
+    agregarClienteAPieza(dto: any): Observable<any> {
+        return this.http.post<any>(this.API_PIEZA_CLIENTE_URL, dto);
+    }
+
+    eliminarClienteDePieza(idAsociacion: number): Observable<any> {
+        return this.http.delete<any>(`${this.API_PIEZA_CLIENTE_URL}/${idAsociacion}`);
+    }
 
     private moldesAsociadosMock: Molde[] = [];
+
+    getPiezas(params: any): Observable<any> {
+        return this.http.get<any>(this.API_PIEZA_URL, { params });
+    }
+
+    getPieza(id: number): Observable<Pieza | undefined> {
+        return this.http.get<Pieza>(`${this.API_PIEZA_URL}/${id}`);
+    }
+
+    agregarPieza(dto: any): Observable<any> {
+        return this.http.post<any>(this.API_PIEZA_URL, dto);
+    }
+
+    clonarPieza(idPieza: number): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_URL}/clonar/${idPieza}`, {});
+    }
+
+    marcarVigente(idPieza: number): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_URL}/marcarvigente/${idPieza}`, {});
+    }
+
+    getPlanos(idPieza: number): Observable<Plano[]> {
+        const params = new HttpParams().set('idPieza', idPieza.toString());
+        return this.http.get<Plano[]>(this.API_PIEZA_PLANO_URL, { params });
+    }
+
+    uploadPlano(dto: any): Observable<any> {
+        return this.http.post(this.API_PIEZA_PLANO_URL, dto);
+    }
+
+    downloadPlano(idPlano: number): Observable<Blob> {
+        return this.http.get(`${this.API_PIEZA_PLANO_URL}/${idPlano}/download`, { responseType: 'blob' });
+    }
+
+    deletePlano(idPlano: number): Observable<any> {
+        return this.http.delete(`${this.API_PIEZA_PLANO_URL}/${idPlano}`);
+    }
+
+    private simulateApiCall<T>(data: T, delayTime: number = 500): Observable<T> {
+        return of(data).pipe(delay(delayTime));
+    }
 
     agregarMolde(piezaId: number, molde: Molde): Observable<any> {
         this.moldesAsociadosMock.push(molde);
@@ -171,12 +190,6 @@ export class ABMPiezaService {
         { id: 6, nombre: 'arandela chica', tipoId: 10 },
     ];
 
-    private dimensionesMock: Dimension[] = [
-        { tipoDimension: 'ALTO', valor: 100, observaciones: 'Total' },
-        { tipoDimension: 'ANCHO', valor: 50, observaciones: 'Base' },
-        { tipoDimension: 'PROFUNDIDAD', valor: 25, observaciones: 'Máxima' },
-    ];
-
     private prensasMock: Prensa[] = [
         { id: 1, nombre: 'Prensa A' },
         { id: 2, nombre: 'Prensa B' },
@@ -214,18 +227,6 @@ export class ABMPiezaService {
         imagenEmbalaje: base64Imagen,
     };
 
-    private planosMock: Plano[] = [
-        { id: 1, nombreArchivo: 'plano1.pdf', clasificacion: 'NITROPHYL', descripcion: 'Plano general', version: '1', fecha: '2024-01-01', codigo: 'PG001', revision: 1 },
-        { id: 2, nombreArchivo: 'plano2.pdf', clasificacion: 'CLIENTE', descripcion: 'Plano detalle', version: '2', fecha: '2024-02-15', codigo: 'PD002', revision: 2 },
-    ];
-
-    private piezasSubject = new BehaviorSubject<Pieza[]>(this.piezasMock);
-    piezas$ = this.piezasSubject.asObservable();
-
-    private simulateApiCall<T>(data: T, delayTime: number = 500): Observable<T> {
-        return of(data).pipe(delay(delayTime));
-    }
-
     getJerarquiaTipos(tipo: TipoInsumo): Observable<TipoInsumo[]> {
         return of(this.getJerarquiaTiposSincrono(tipo));
     }
@@ -245,55 +246,12 @@ export class ABMPiezaService {
         return jerarquia;
     }
 
-    getPiezas(): Observable<Pieza[]> {
-        return this.simulateApiCall(this.piezasMock);
-    }
-
-    getPieza(id: number): Observable<Pieza | undefined> {
-        return this.simulateApiCall(this.piezasMock.find((pieza) => pieza.id === id));
-    }
-
-    agregarPieza(pieza: Pieza): Observable<Pieza> {
-        pieza.id = this.piezasMock.length + 1;
-        this.piezasMock.push(pieza);
-        this.piezasSubject.next([...this.piezasMock]);
-        return this.simulateApiCall(pieza);
-    }
-
     editarPieza(pieza: Pieza): Observable<Pieza> {
-        const index = this.piezasMock.findIndex((p) => p.id === pieza.id);
-        if (index !== -1) {
-            this.piezasMock[index] = pieza;
-            this.piezasSubject.next([...this.piezasMock]);
-        }
         return this.simulateApiCall(pieza);
     }
 
     editarPiezaEnBackend(pieza: Pieza): Observable<Pieza> {
         return this.simulateApiCall(pieza);
-    }
-
-    generarNuevaRevision(piezaId: number): Observable<Pieza> {
-        const pieza = this.piezasMock.find((p) => p.id === piezaId);
-        if (pieza) {
-            const nuevaRevision = { ...pieza, revision: (parseInt(pieza.revision) + 1).toString(), vigente: false };
-            this.piezasMock.push(nuevaRevision);
-            this.piezasSubject.next([...this.piezasMock]);
-            return this.simulateApiCall(nuevaRevision);
-        } else {
-            return of(undefined);
-        }
-    }
-
-    marcarVigente(piezaId: number): Observable<Pieza> {
-        const pieza = this.piezasMock.find((p) => p.id === piezaId);
-        if (pieza) {
-            pieza.vigente = true;
-            this.piezasSubject.next([...this.piezasMock]);
-            return this.simulateApiCall(pieza);
-        } else {
-            return of(undefined);
-        }
     }
 
     getFormulas(): Observable<{ id: number; nombre: string }[]> {
@@ -305,19 +263,14 @@ export class ABMPiezaService {
     }
 
     getMoldes(): Observable<{ id: number; nombre: string }[]> {
-        return this.simulateApiCall([
-            { id: 1, nombre: 'Molde A' },
-            { id: 2, nombre: 'Molde B' },
-            { id: 3, nombre: 'Molde C' },
-        ]);
-    }
+        const params = new HttpParams()
+            .set('asc', 'true')
+            .set('first', '1')
+            .set('rows', '99');
 
-    getClientes(): Observable<{ id: number; nombre: string }[]> {
-        return this.simulateApiCall([
-            { id: 1, nombre: 'Cliente X' },
-            { id: 2, nombre: 'Cliente Y' },
-            { id: 3, nombre: 'Cliente Z' },
-        ]);
+        return this.http.get<any>(this.API_MOLDE_URL, { params }).pipe(
+            map(response => response.data.page || [])
+        );
     }
 
     getTiposInsumo(): Observable<TipoInsumo[]> {
@@ -336,22 +289,10 @@ export class ABMPiezaService {
         return this.simulateApiCall(this.insumosPiezaMock);
     }
 
-    getDimensiones(piezaId: number): Observable<Dimension[]> {
-        return this.simulateApiCall(this.dimensionesMock);
-    }
-
-    updatePiezaDimensiones(piezaId: number, dimensiones: Dimension[]): Observable<any> {
-        dimensiones.forEach(dm => {
-            const index = this.dimensionesMock.findIndex(d => d.tipoDimension === dm.tipoDimension && d.observaciones === dm.observaciones);
-            if (index !== -1) {
-                this.dimensionesMock[index] = dm;
-            }
-        });
-        return this.simulateApiCall({ status: 'OK' });
-    }
-
-    getTipoPieza(): Observable<string[]> {
-        return this.simulateApiCall(['Diafragma', 'Otro Tipo', 'Baldoza' ]);
+    getPiezaTipo(): Observable<{ id: number; nombre: string }[]> {
+        return this.http.get<any>(this.API_PIEZA_TIPO_URL).pipe(
+            map(response => response.data || [])
+        );
     }
 
     getTiposDimension(): Observable<string[]> {
@@ -417,41 +358,26 @@ export class ABMPiezaService {
         return this.simulateApiCall({ status: 'OK' });
     }
 
-    getPlanos(piezaId: number): Observable<Plano[]> {
-        return this.simulateApiCall(this.planosMock);
-    }
+    getPiezaNombre(): Observable<string[]> {
+        const params = new HttpParams()
+            .set('asc', 'true')
+            .set('first', '1')
+            .set('rows', '999');
+        // .set('soloVigentes', 'true');
 
-    uploadPlano(
-        piezaId: number,
-        archivo: string,
-        nombreArchivo: string,
-        descripcion: string,
-        clasificacion: string,
-        codigo: string,
-        revision: number
-    ): Observable<any> {
-        console.log("Simulando la carga del plano con los datos:", {
-            piezaId, archivo, nombreArchivo, descripcion, clasificacion, codigo, revision
-        });
-        const newPlano: Plano = {
-            nombreArchivo: nombreArchivo,
-            clasificacion: clasificacion,
-            descripcion: descripcion,
-            version: revision.toString(),
-            fecha: new Date().toISOString().slice(0, 10),
-            codigo: codigo,
-            revision: revision,
-        };
-
-        return this.simulateApiCall({ status: 'ok', plano: newPlano });
-    }
-
-    getPiezaNombre(): Observable<{ id: number; nombre: string }[]> {
-        return this.simulateApiCall([
-            { id: 1, nombre: 'Pieza D' },
-            { id: 2, nombre: 'Pieza E' },
-            { id: 3, nombre: 'Pieza F' },
-        ]);
+        return this.http.get<PiezaNombreResponse>(this.API_PIEZA_URL, { params }).pipe(
+            map(response => {
+                if (!response || !response.data || !Array.isArray(response.data.page)) {
+                    return [];
+                }
+                const todasLasDenominaciones = response.data.page.map(pieza => pieza.denominacion);
+                return [...new Set(todasLasDenominaciones)];
+            }),
+            catchError(error => {
+                console.error('Error al obtener los nombres de las piezas:', error);
+                return of([]);
+            })
+        );
     }
 
     updateButtonState(state: any) {
@@ -463,18 +389,6 @@ export class ABMPiezaService {
             });
         } else {
             this.events.next(state);
-        }
-    }
-
-    downloadPlano(planoId: number): Observable<any> {
-        const plano = this.planosMock.find((p) => p.id === planoId);
-        if (plano) {
-            return this.simulateApiCall({
-                status: 'OK',
-                data: { archivo: base64Content, nombreArchivo: plano.nombreArchivo },
-            });
-        } else {
-            return this.simulateApiCall(undefined);
         }
     }
 }

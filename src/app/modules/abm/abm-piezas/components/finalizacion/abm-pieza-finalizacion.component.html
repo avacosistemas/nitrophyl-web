@@ -1,5 +1,5 @@
 <div>
-  <form [formGroup]="form" (ngSubmit)="guardarFinalizacion()" class="mat-form-without-wrapper">
+  <form [formGroup]="form" (ngSubmit)="guardar()" class="mat-form-without-wrapper">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <mat-form-field appearance="outline" class="w-full">
         <mat-label>Refilado</mat-label>
@@ -38,7 +38,7 @@
           </label>
         </ng-container>
       </div>
-      <button *ngIf="selectedFile || safeImageUrl" type="button" mat-icon-button class="absolute top-1 right-2"
+      <button *ngIf="(selectedFile || safeImageUrl) && mode !== 'view'" type="button" mat-icon-button class="absolute top-1 right-2"
         (click)="removeSelectedFile()">
         <mat-icon>cancel</mat-icon>
       </button>

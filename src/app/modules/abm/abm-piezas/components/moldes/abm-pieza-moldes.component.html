@@ -1,23 +1,31 @@
 <div class="w-full">
   <div *ngIf="mode !== 'view'">
     <form [formGroup]="moldeForm" (ngSubmit)="addMolde()" class="w-full mat-form-without-wrapper">
-      <div class="flex justify-center gap-3">
-        <mat-form-field class="min-w-[25%]" appearance="outline">
+      <div class="flex flex-col md:flex-row justify-center items-start gap-3">
+
+        <mat-form-field class="w-full md:w-1/3" appearance="outline">
           <mat-label>Molde</mat-label>
-          <input type="text" placeholder="Buscar molde" aria-label="Molde" matInput [formControl]="moldeCtrl"
+          <input type="text" placeholder="Buscar molde" aria-label="Molde" matInput formControlName="molde"
             [matAutocomplete]="auto">
           <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
             <mat-option *ngFor="let molde of filteredMoldes | async" [value]="molde">
               {{molde.nombre}}
             </mat-option>
           </mat-autocomplete>
-          <button mat-button *ngIf="moldeCtrl.value" matSuffix mat-icon-button aria-label="Clear"
+          <button mat-button *ngIf="moldeForm.get('molde').value" matSuffix mat-icon-button aria-label="Clear"
             (click)="clearMolde()">
             <mat-icon>close</mat-icon>
           </button>
         </mat-form-field>
-        <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
-          mat-flat-button type="button" (click)="addMolde()" [disabled]="!moldeCtrl.value">
+
+        <mat-form-field class="w-full md:w-1/3" appearance="outline">
+          <mat-label>Observaciones</mat-label>
+          <textarea matInput formControlName="observaciones" placeholder="Añadir notas sobre el molde..."
+            rows="1"></textarea>
+        </mat-form-field>
+
+        <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent w-full md:w-auto sm:mt-2.5"
+          mat-flat-button type="button" (click)="addMolde()" [disabled]="!moldeForm.get('molde').value">
           <span class="mat-button-wrapper"> Agregar </span>
           <span matripple="" class="mat-ripple mat-button-ripple"></span>
         </button>
@@ -25,11 +33,17 @@
     </form>
   </div>
 
-  <table mat-table [dataSource]="moldes" class="border-2 rounded-2xl w-full">
+  <table mat-table [dataSource]="moldes" class="border-2 rounded-2xl w-full mt-6">
     <ng-container matColumnDef="nombre">
       <th mat-header-cell *matHeaderCellDef> Nombre </th>
       <td mat-cell *matCellDef="let element">{{ element.nombre }} </td>
     </ng-container>
+
+    <ng-container matColumnDef="observaciones">
+      <th mat-header-cell *matHeaderCellDef> Observaciones </th>
+      <td mat-cell *matCellDef="let element">{{ element.observaciones || '-' }} </td>
+    </ng-container>
+
     <ng-container matColumnDef="acciones">
       <th mat-header-cell *matHeaderCellDef></th>
       <td mat-cell *matCellDef="let row">
@@ -40,11 +54,13 @@
         </ng-container>
       </td>
     </ng-container>
+
     <tr mat-header-row *matHeaderRowDef="displayedColumnsMoldes"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumnsMoldes;"></tr>
 
     <tr *matNoDataRow>
-      <td class="text-center py-4" colspan="2" *ngIf="sinDatos">No hay moldes asociados a esta pieza.</td>
+      <td class="text-center py-4" [attr.colspan]="displayedColumnsMoldes.length" *ngIf="sinDatos">No hay moldes
+        asociados a esta pieza.</td>
     </tr>
   </table>
 </div>

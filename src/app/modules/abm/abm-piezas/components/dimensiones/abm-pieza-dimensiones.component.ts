@@ -2,15 +2,14 @@ import { Component, OnInit, Input, OnDestroy, OnChanges, SimpleChanges } from '@
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ABMPiezaService } from '../../abm-piezas.service';
-import { Dimension } from '../../models/pieza.model';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { PiezaDimension } from '../../models/pieza.model';
+import { Observable, Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
 @Component({
@@ -23,17 +22,16 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
     dimensionForm: FormGroup;
-    dimensiones = new MatTableDataSource<Dimension>([]);
+    dimensiones = new MatTableDataSource<PiezaDimension>([]);
     tiposDimension$: Observable<string[]>;
     sinDatos: boolean = false;
+    isLoading: boolean = false;
     editMode: boolean = false;
-    dimensionToEdit: Dimension | null = null;
+    dimensionToEdit: PiezaDimension | null = null;
+    private subscription: Subscription = new Subscription();
 
-    baseDisplayedColumns: string[] = ['dimension', 'valor', 'observaciones'];
+    baseDisplayedColumns: string[] = ['tipoDimension', 'valor', 'observaciones'];
     displayedColumnsDimensiones: string[];
-
-    private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
-    private dimensionValueChangesSubscription: Subscription;
 
     constructor(
         protected fb: FormBuilder,
@@ -55,16 +53,11 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     }
 
     ngOnInit(): void {
-        this.tiposDimension$ = this.abmPiezaService.getTiposDimension();
         this.setDisplayedColumns();
-        this.loadDimensiones();
-
-        this.dimensionValueChangesSubscription = this.dimensionValueChanges.pipe(
-            debounceTime(1000),
-            distinctUntilChanged((a, b) => a.dimension.tipoDimension === b.dimension.tipoDimension && a.newValue === b.newValue)
-        ).subscribe(({ dimension, newValue }) => {
-            this.updateDimensionValue(dimension, newValue);
-        });
+        this.tiposDimension$ = this.abmPiezaService.getTiposDimension();
+        if (this.piezaId) {
+            this.loadDimensiones();
+        }
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -76,12 +69,13 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
                 this.dimensionForm.enable();
             }
         }
+        if (changes.piezaId && changes.piezaId.currentValue) {
+            this.loadDimensiones();
+        }
     }
 
     ngOnDestroy(): void {
-        if (this.dimensionValueChangesSubscription) {
-            this.dimensionValueChangesSubscription.unsubscribe();
-        }
+        this.subscription.unsubscribe();
     }
 
     setDisplayedColumns(): void {
@@ -93,86 +87,88 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     }
 
     loadDimensiones(): void {
-        if (this.piezaId) {
-            this.abmPiezaService.getDimensiones(this.piezaId).subscribe(dimensiones => {
-                this.dimensiones = new MatTableDataSource<Dimension>(dimensiones);
-                this.sinDatos = this.dimensiones.data.length === 0;
-            });
-        } else {
-            this.sinDatos = true;
-            this.dimensiones = new MatTableDataSource<Dimension>([]);
-        }
+        if (!this.piezaId) return;
+        this.isLoading = true;
+        this.subscription.add(
+            this.abmPiezaService.getDimensionesPorPieza(this.piezaId).subscribe({
+                next: (response: any) => {
+                    const dimensiones = response && response.data ? response.data : [];
+                    this.dimensiones.data = dimensiones;
+                    this.sinDatos = dimensiones.length === 0;
+                    this.isLoading = false;
+                },
+                error: (err) => {
+                    this.openSnackBar('Error al cargar las dimensiones.', 'X', 'red-snackbar');
+                    this.isLoading = false;
+                    this.sinDatos = true;
+                }
+            })
+        );
     }
 
-    addDimension(): void {
-        if (this.dimensionForm.valid) {
-            const newDimension: Dimension = {
-                tipoDimension: this.dimensionForm.get('tipoDimension').value,
-                valor: this.dimensionForm.get('valor').value,
-                observaciones: this.dimensionForm.get('observaciones').value
-            };
-
-            const data = this.dimensiones.data;
-            data.push(newDimension);
-            this.dimensiones.data = data;
-            this.sinDatos = false;
-
-            this.dimensionForm.reset();
-            this.openSnackBar('Dimensión agregada (mock).', 'X', 'green-snackbar');
-            this.loadDimensiones();
-
-        } else {
-            this.openSnackBar('Por favor, complete todos los campos.', 'X', 'red-snackbar');
+    addOrUpdateDimension(): void {
+        if (this.dimensionForm.invalid) {
+            this.openSnackBar('Por favor, complete todos los campos requeridos.', 'X', 'red-snackbar');
+            return;
         }
-    }
 
-    updateDimension(): void {
-        if (this.dimensionForm.valid && this.dimensionToEdit) {
-            const index = this.dimensiones.data.findIndex(d =>
-                d.tipoDimension === this.dimensionToEdit.tipoDimension && d.valor === this.dimensionToEdit.valor && d.observaciones === this.dimensionToEdit.observaciones
+        this.isLoading = true;
+        const formValue = this.dimensionForm.value;
+
+        if (this.editMode && this.dimensionToEdit) {
+            const dto = { ...formValue, idPieza: this.piezaId, id: this.dimensionToEdit.id };
+            this.subscription.add(
+                this.abmPiezaService.actualizarDimensionDePieza(this.dimensionToEdit.id, dto).subscribe({
+                    next: () => {
+                        this.openSnackBar('Dimensión actualizada correctamente.', 'X', 'green-snackbar');
+                        this.cancelEdit();
+                        this.loadDimensiones();
+                    },
+                    error: (err) => {
+                        this.openSnackBar('Error al actualizar la dimensión.', 'X', 'red-snackbar');
+                        this.isLoading = false;
+                    }
+                })
             );
-
-            if (index > -1) {
-                const updatedDimension: Dimension = {
-                    tipoDimension: this.dimensionForm.get('tipoDimension').value,
-                    valor: this.dimensionForm.get('valor').value,
-                    observaciones: this.dimensionForm.get('observaciones').value
-                };
-
-                const data = [...this.dimensiones.data];
-                data[index] = updatedDimension;
-                this.dimensiones.data = data;
-
-                this.abmPiezaService.updatePiezaDimensiones(this.piezaId, this.dimensiones.data).subscribe(() => {
-                    this.openSnackBar(`Dimensión ${this.dimensionToEdit.tipoDimension} actualizada.`, 'X', 'green-snackbar');
-                }, error => {
-                    this.openSnackBar(`Error al actualizar la dimensión ${this.dimensionToEdit.tipoDimension}.`, 'X', 'red-snackbar');
-                });
-
-                this.cancelEdit();
-                this.loadDimensiones();
-            } else {
-                this.openSnackBar('No se encontró la dimensión a editar.', 'X', 'red-snackbar');
-            }
         } else {
-            this.openSnackBar('Por favor, complete todos los campos.', 'X', 'red-snackbar');
+            const dto = { ...formValue, idPieza: this.piezaId };
+            this.subscription.add(
+                this.abmPiezaService.agregarDimensionAPieza(dto).subscribe({
+                    next: () => {
+                        this.openSnackBar('Dimensión agregada correctamente.', 'X', 'green-snackbar');
+                        this.dimensionForm.reset();
+                        this.loadDimensiones();
+                    },
+                    error: (err) => {
+                        this.openSnackBar('Error al agregar la dimensión.', 'X', 'red-snackbar');
+                        this.isLoading = false;
+                    }
+                })
+            );
         }
     }
 
-    eliminarDimension(row: Dimension): void {
+    eliminarDimension(row: PiezaDimension): void {
         const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar la dimensión <span class="font-bold">${row.tipoDimension}</span>?`);
         this.openConfirmationModal(mensaje, () => {
-            const data = this.dimensiones.data;
-            data.splice(data.indexOf(row), 1);
-            this.dimensiones.data = data;
-            this.sinDatos = this.dimensiones.data.length === 0;
-            this.openSnackBar('Dimensión eliminada (mock).', 'X', 'green-snackbar');
-            this.loadDimensiones();
+            this.isLoading = true;
+            this.subscription.add(
+                this.abmPiezaService.eliminarDimensionDePieza(row.id).subscribe({
+                    next: () => {
+                        this.openSnackBar('Dimensión eliminada correctamente.', 'X', 'green-snackbar');
+                        this.loadDimensiones();
+                    },
+                    error: (err) => {
+                        this.openSnackBar('Error al eliminar la dimensión.', 'X', 'red-snackbar');
+                        this.isLoading = false;
+                    }
+                })
+            );
         });
     }
 
     openConfirmationModal(message: SafeHtml, onConfirm: () => void): void {
-        const dialogRef = this.dialog.open(GenericModalComponent, {
+        this.dialog.open(GenericModalComponent, {
             width: '400px',
             data: {
                 title: 'Confirmar eliminación',
@@ -187,37 +183,13 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         });
     }
 
-    onDimensionValueChanged(element: Dimension, value: any) {
-        this.dimensionValueChanges.next({ dimension: element, newValue: value });
-    }
-
-    updateDimensionValue(dimension: Dimension, newValue: any) {
-        const data = this.dimensiones.data;
-        const index = data.findIndex(d => d.tipoDimension === dimension.tipoDimension && d.observaciones === dimension.observaciones);
-
-        if (index > -1) {
-            data[index] = { ...dimension, valor: newValue };
-            this.dimensiones.data = data;
-
-            this.openSnackBar(`Dimensión ${dimension.tipoDimension} actualizada (mock).`, 'X', 'green-snackbar');
-
-        }
-    }
-
-    openSnackBar(message: string, action: string, className: string) {
-        this.snackBar.open(message, action, {
-            duration: 5000,
-            panelClass: className
-        });
-    }
-
-    startEdit(dimension: Dimension): void {
+    startEdit(dimension: PiezaDimension): void {
         this.editMode = true;
         this.dimensionToEdit = { ...dimension };
         this.dimensionForm.setValue({
             tipoDimension: dimension.tipoDimension,
             valor: dimension.valor,
-            observaciones: dimension.observaciones
+            observaciones: dimension.observaciones || null
         });
     }
 
@@ -225,6 +197,15 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         this.editMode = false;
         this.dimensionToEdit = null;
         this.dimensionForm.reset();
+    }
+
+    openSnackBar(message: string, action: string, className: string, duration: number = 5000) {
+        this.snackBar.open(message, action, {
+            duration: duration,
+            panelClass: className,
+            horizontalPosition: 'center',
+            verticalPosition: 'bottom',
+        });
     }
 
     get buttonText(): string {

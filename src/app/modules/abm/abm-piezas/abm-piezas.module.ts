@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ABMPiezasRoutingModule } from './abm-piezas-routing.module';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatSortModule } from '@angular/material/sort';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ABMPiezasComponent } from './abm-piezas.component';
@@ -72,6 +73,7 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
     MatTabsModule,
     MatSelectModule,
     MatTooltipModule,
+    MatSortModule,
     MatCheckboxModule,
     SharedModule,
     MatExpansionModule,
