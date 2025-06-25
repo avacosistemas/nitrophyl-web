@@ -124,7 +124,7 @@ export class NavegacionService {
           id: 'procesos-piezas',
           link: '/procesos-piezas/grid',
           title: 'Procesos y Piezas',
-          permissionCode: 'MENU_PRODUCCION_PIEZAS',
+          permissionCode: 'MENU_PROCESOS_PIEZAS',
           type: 'basic',
         },
         {

@@ -1,5 +1,5 @@
 <div class="flex flex-row items-center items-start justify-center flex-auto min-w-0">
-    <div class="w-full w-auto p-16 rounded-2xl shadow bg-card" style="max-width:fit-content;">
+    <div class="w-full w-auto p-10 rounded-3xl shadow bg-card" style="max-width:fit-content;">
         <div class="w-full max-w-80 w-80 mx-auto mx-0">
             <!-- Logo -->
 
@@ -7,7 +7,7 @@
             <!--div class="mt-8 text-4xl font-extrabold tracking-tight leading-tight" style="background-color: #94a3; text-align: center;"><img src="assets/images/logo/200-logo-nitro.png"></div-->
             <!-- Logo -->
             <div class="w-full">
-                <img src="assets/images/logo/logo-text.svg">
+                <img src="assets/images/logo/logo-text.svg" class="h-16">
             </div>
 
             <!-- Title -->
@@ -48,7 +48,7 @@
                 </mat-form-field>
 
                 <!-- Submit button -->
-                <button type="submit" class="fuse-mat-button-large w-full mt-6" mat-flat-button [color]="'primary'"
+                <button type="submit" class="fuse-mat-button-large w-full" mat-flat-button [color]="'primary'"
                     [disabled]="loginForm.invalid || loginForm.disabled">
                     <span *ngIf="!loginForm.disabled">
                         Ingresar
@@ -56,6 +56,12 @@
                     <mat-progress-spinner *ngIf="loginForm.disabled" [diameter]="24"
                         [mode]="'indeterminate'"></mat-progress-spinner>
                 </button>
+
+                <div class="w-full mt-6 text-center text-md">
+                    <a class="font-medium text-primary-500 hover:underline"
+                        [routerLink]="['/forgot-password']">Recuperar contraseña
+                    </a>
+                </div>
             </form>
 
 

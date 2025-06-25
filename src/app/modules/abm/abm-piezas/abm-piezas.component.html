@@ -10,21 +10,21 @@
     {
         type: 'flat',
         label: botonEdicion,
-        condition: mostrarBotonEdicion,
+        condition: ('PROCESOS_PIEZAS_EDIT' | hasPermission) && (mostrarBotonEdicion),
         isDisabled: false,
         action: 'edit'
     },
     {
         type: 'stroked',
         label: 'Cerrar',
-        condition: titulo !== 'Consulta Piezas',
+        condition: ('PROCESOS_PIEZAS_VIEW' | hasPermission) && (titulo === 'Consulta Piezas'),
         isDisabled: false,
         action: 'close'
     },
     {
         type: 'flat',
         label: 'Crear nueva pieza',
-        condition: titulo === 'Consulta Piezas',
+        condition: ('PROCESOS_PIEZAS_CREATE' | hasPermission) && (titulo === 'Consulta Piezas'),
         isDisabled: false,
         action: 'create'
     }

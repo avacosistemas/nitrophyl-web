@@ -123,8 +123,11 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
         localStorage.setItem('navigationAppearance', this.navigationAppearance);
     }
 
-    signOut(): void
-    {
+    signOut(): void {
         this._router.navigate(['/sign-out']);
+    }
+
+    changePassword(): void {
+        this._router.navigate(['/change-password']);
     }
 }

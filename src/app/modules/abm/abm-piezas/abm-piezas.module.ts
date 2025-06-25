@@ -40,6 +40,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ABMPiezaModalPlanoModule } from './components/planos/modal-plano/abm-pieza-plano-modal.module';
 import { MatCheckboxModule } from "@angular/material/checkbox";
+import { CoreSharedModule } from 'app/core/shared/shared.module';
 
 @NgModule({
   declarations: [
@@ -85,7 +86,8 @@ import { MatCheckboxModule } from "@angular/material/checkbox";
     ABMPiezaEsquemaModalModule,
     MatDialogModule,
     MatSlideToggleModule,
-    ABMPiezaModalPlanoModule
+    ABMPiezaModalPlanoModule,
+    CoreSharedModule
   ]
 })
 export class ABMPiezasModule { }

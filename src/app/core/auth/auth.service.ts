@@ -64,9 +64,9 @@ export class AuthService {
      *
      * @param email
      */
-    forgotPassword(email: string): Observable<any> {
-        const apiURL = this.getApiUrl('auth/forgot-password');
-        return this._httpClient.post(apiURL, email);
+    forgotPassword(username: string): Observable<any> {
+        const apiURL = this.getApiUrl('password/reset/');
+        return this._httpClient.post(apiURL, { username });
     }
 
     /**
@@ -90,7 +90,6 @@ export class AuthService {
         return this._httpClient.post(apiURL, credentials).pipe(
             switchMap((response: any) => {
                 if (response && response.token) {
-                    // Guardar el token
                     this.accessToken = response.token;
                     this._authenticated = true;
 
@@ -98,6 +97,7 @@ export class AuthService {
                         name: response.name,
                         lastname: response.lastname,
                         email: response.email,
+                        username: credentials.username
                     };
                     localStorage.setItem('userData', JSON.stringify(user));
                     localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
@@ -164,7 +164,7 @@ export class AuthService {
         localStorage.removeItem('userPermissions');
         this._authenticated = false;
         return of(true);
-    }    
+    }
 
     /**
      * Sign up
@@ -221,7 +221,7 @@ export class AuthService {
         return JSON.parse(localStorage.getItem('userPermissions') || '[]');
     }
 
-    getUserData(): { name: string; lastname: string; email: string } | null {
+    getUserData(): { name: string; lastname: string; email: string; username: string } | null {
         const userData = localStorage.getItem('userData');
         return userData ? JSON.parse(userData) : null;
     }

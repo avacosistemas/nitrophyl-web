@@ -21,11 +21,20 @@
         </div>
         <!-- User -->
         <div class="flex items-center w-full px-6 py-8 border-t">
-            <!-- Etiqueta con dropdown profile -->
-            <!-- <user></user> -->
-            <button mat-icon-button (click)="signOut()">
-                <mat-icon>logout</mat-icon>
+            <button mat-icon-button [matMenuTriggerFor]="userMenu">
+                <mat-icon>account_circle</mat-icon>
             </button>
+
+            <mat-menu #userMenu="matMenu">
+                <button mat-menu-item (click)="changePassword()">
+                    <mat-icon>password</mat-icon>
+                    <span>Cambiar contraseña</span>
+                </button>
+                <button mat-menu-item (click)="signOut()">
+                    <mat-icon>logout</mat-icon>
+                    <span>Cerrar sesión</span>
+                </button>
+            </mat-menu>
 
             <div class="flex flex-col w-full ml-4 overflow-hidden">
                 <div

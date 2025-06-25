@@ -163,6 +163,7 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'procesos-piezas',
+         data: { permission: 'MENU_PROCESOS_PIEZAS' },
         loadChildren: () =>
           import('app/modules/abm/abm-piezas/abm-piezas.module').then(
             (m: any) => m.ABMPiezasModule
@@ -242,6 +243,13 @@ export const appRoutes: Route[] = [
           import('app/modules/abm/abm-configuracion/abm-configuracion.module').then(
             (m: any) => m.ABMConfiguracionModule
           )
+      },
+      {
+        path: 'change-password',
+        loadChildren: () =>
+          import('app/modules/auth/change-password/change-password.module').then(
+            (m: any) => m.AuthChangePasswordModule
+          ),
       },
     ],
   },
