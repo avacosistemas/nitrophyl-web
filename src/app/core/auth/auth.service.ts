@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
@@ -105,11 +105,16 @@ export class AuthService {
                     this._userService.user = user;
 
                     return of(response);
-                } else {
-                    return throwError(() => new Error('Token no encontrado'));
                 }
+                return throwError(() => new Error('Respuesta de éxito inesperada sin token.'));
             }),
-            catchError(error => throwError(() => new Error('Autenticación fallida')))
+            catchError((error: HttpErrorResponse) => {
+                if (error.status === 409 && error.error?.status === 'CHANGE_PASSWORD_REQUIRED') {
+                    return of(error.error);
+                }
+
+                return throwError(() => error);
+            })
         );
     }
 

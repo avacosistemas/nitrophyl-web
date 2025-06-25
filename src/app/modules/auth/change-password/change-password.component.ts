@@ -1,11 +1,10 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { finalize } from 'rxjs';
-import { Router } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
-import { ChangePasswordService, UpdatePasswordPayload } from './change-password.service';
+import { ChangePasswordService, UpdatePasswordPayload } from 'app/core/auth/change-password.service';
 
 export const passwordMatchValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     const newPassword = control.get('newPassword');
@@ -27,6 +26,7 @@ export class AuthChangePasswordComponent implements OnInit {
     };
     changePasswordForm: FormGroup;
     showAlert: boolean = false;
+    updateSuccessful: boolean = false;
 
     private readonly errorMessages: { [key: string]: string } = {
         'user.currentpassword.invalid': 'La contraseña actual no es válida.',
@@ -34,7 +34,6 @@ export class AuthChangePasswordComponent implements OnInit {
 
     constructor(
         private _formBuilder: FormBuilder,
-        private _router: Router,
         private _authService: AuthService,
         private _changePasswordService: ChangePasswordService
     ) {
@@ -80,19 +79,21 @@ export class AuthChangePasswordComponent implements OnInit {
         this._changePasswordService.updatePassword(payload)
             .pipe(
                 finalize(() => {
-                    this.changePasswordForm.enable();
+                    if (!this.updateSuccessful) {
+                        this.changePasswordForm.enable();
+                    }
                     this.showAlert = true;
                 })
             )
-            .subscribe(
-                () => {
+            .subscribe({
+                next: () => {
+                    this.updateSuccessful = true;
                     this.alert = {
                         type: 'success',
                         message: '¡Tu contraseña ha sido actualizada correctamente!'
                     };
-                    setTimeout(() => this._router.navigate(['/welcome']), 2000);
                 },
-                (error) => {
+                error: (error) => {
                     const errorKey = error.error?.message;
                     const defaultMessage = 'Ha ocurrido un error inesperado. Por favor, intente de nuevo.';
                     const message = this.errorMessages[errorKey] || defaultMessage;
@@ -102,6 +103,6 @@ export class AuthChangePasswordComponent implements OnInit {
                         message: message
                     };
                 }
-            );
+            });
     }
 }

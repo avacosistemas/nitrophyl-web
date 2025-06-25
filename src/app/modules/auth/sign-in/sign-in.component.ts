@@ -20,9 +20,6 @@ export class AuthSignInComponent implements OnInit {
     loginForm: FormGroup;
     showAlert: boolean = false;
 
-    /**
-     * Constructor
-     */
     constructor(
         private _formBuilder: FormBuilder,
         private _authService: AuthService,
@@ -35,11 +32,15 @@ export class AuthSignInComponent implements OnInit {
             username: ['', [Validators.required]],
             password: ['', Validators.required]
         });
+
+        this._activatedRoute.queryParamMap.subscribe(params => {
+            const usernameFromForgot = params.get('username');
+            if (usernameFromForgot) {
+                this.loginForm.get('username').setValue(usernameFromForgot);
+            }
+        });
     }
 
-    /**
-     * Manejar el inicio de sesión
-     */
     login(event: Event): void {
         event.preventDefault();
 
@@ -52,23 +53,43 @@ export class AuthSignInComponent implements OnInit {
 
         this._authService.signIn(this.loginForm.value).subscribe({
             next: (response) => {
+                console.log("el componente response", response);
+                if (response && response.status === 'CHANGE_PASSWORD_REQUIRED') {
+
+                    const tempCredentials = {
+                        username: this.loginForm.get('username').value,
+                        temporaryPassword: this.loginForm.get('password').value
+                    };
+
+                    localStorage.setItem('tempUserCredentials', JSON.stringify(tempCredentials));
+
+                    this._router.navigate(['/reset-password']);
+                    return;
+                }
+
                 if (response && response.permissions) {
                     localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
                     this._authService.handleLoginSuccess(response);
                     const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('welcome') || 'welcome';
                     this._router.navigateByUrl(redirectURL);
+                } else {
+                    this.handleLoginError('Respuesta inesperada del servidor.');
                 }
             },
             error: (error) => {
-                this.loginForm.enable();
-                this.loginForm.reset();
-
-                this.alert = {
-                    type: 'error',
-                    message: 'Usuario o contraseña incorrectos. Por favor, intenta de nuevo.'
-                };
-                this.showAlert = true;
+                this.handleLoginError('Usuario o contraseña incorrectos. Por favor, intenta de nuevo.');
             }
         });
+    }
+
+
+    private handleLoginError(message: string): void {
+        this.loginForm.enable();
+
+        this.alert = {
+            type: 'error',
+            message: message
+        };
+        this.showAlert = true;
     }
 }

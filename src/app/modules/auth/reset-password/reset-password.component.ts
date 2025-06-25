@@ -1,111 +1,95 @@
-import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { Router } from '@angular/router';
+import { finalize, switchMap } from 'rxjs';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseValidators } from '@fuse/validators';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
+import { ChangePasswordService, UpdatePasswordPayload } from 'app/core/auth/change-password.service';
 
 @Component({
-    selector     : 'auth-reset-password',
-    templateUrl  : './reset-password.component.html',
-    encapsulation: ViewEncapsulation.None,
-    animations   : fuseAnimations
+    selector: 'auth-reset-password',
+    templateUrl: './reset-password.component.html',
+    animations: fuseAnimations
 })
-export class AuthResetPasswordComponent implements OnInit
-{
+export class AuthResetPasswordComponent implements OnInit {
     @ViewChild('resetPasswordNgForm') resetPasswordNgForm: NgForm;
 
     alert: { type: FuseAlertType; message: string } = {
-        type   : 'success',
+        type: 'success',
         message: ''
     };
     resetPasswordForm: FormGroup;
     showAlert: boolean = false;
+    private tempCredentials: { username: string, temporaryPassword: string };
 
-    /**
-     * Constructor
-     */
     constructor(
+        private _formBuilder: FormBuilder,
+        private _router: Router,
         private _authService: AuthService,
-        private _formBuilder: FormBuilder
-    )
-    {
-    }
+        private _changePasswordService: ChangePasswordService
+    ) { }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Lifecycle hooks
-    // -----------------------------------------------------------------------------------------------------
+    ngOnInit(): void {
+        const storedCredentials = localStorage.getItem('tempUserCredentials');
 
-    /**
-     * On init
-     */
-    ngOnInit(): void
-    {
-        // Create the form
+        if (!storedCredentials) {
+            console.error('No se encontraron credenciales temporales. Redirigiendo...');
+            this._router.navigate(['/sign-in']);
+            return;
+        }
+
+        this.tempCredentials = JSON.parse(storedCredentials);
+
         this.resetPasswordForm = this._formBuilder.group({
-                password       : ['', Validators.required],
-                passwordConfirm: ['', Validators.required]
-            },
+            password: ['', Validators.required],
+            passwordConfirm: ['', Validators.required]
+        },
             {
                 validators: FuseValidators.mustMatch('password', 'passwordConfirm')
             }
         );
     }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * Reset password
-     */
-    resetPassword(): void
-    {
-        // Return if the form is invalid
-        if ( this.resetPasswordForm.invalid )
-        {
+    updatePasswordAndLogin(): void {
+        if (this.resetPasswordForm.invalid) {
             return;
         }
 
-        // Disable the form
         this.resetPasswordForm.disable();
-
-        // Hide the alert
         this.showAlert = false;
 
-        // Send the request to the server
-        this._authService.resetPassword(this.resetPasswordForm.get('password').value)
-            .pipe(
-                finalize(() => {
+        const newPassword = this.resetPasswordForm.get('password').value;
 
-                    // Re-enable the form
-                    this.resetPasswordForm.enable();
+        const payload: UpdatePasswordPayload = {
+            username: this.tempCredentials.username,
+            password: this.tempCredentials.temporaryPassword,
+            newPassword: newPassword
+        };
 
-                    // Reset the form
-                    this.resetPasswordNgForm.resetForm();
-
-                    // Show the alert
-                    this.showAlert = true;
-                })
-            )
-            .subscribe(
-                (response) => {
-
-                    // Set the alert
-                    this.alert = {
-                        type   : 'success',
-                        message: 'Your password has been reset.'
-                    };
-                },
-                (response) => {
-
-                    // Set the alert
-                    this.alert = {
-                        type   : 'error',
-                        message: 'Something went wrong, please try again.'
-                    };
-                }
-            );
+        this._changePasswordService.updatePassword(payload).pipe(
+            switchMap(() => {
+                return this._authService.signIn({
+                    username: this.tempCredentials.username,
+                    password: newPassword
+                });
+            }),
+            finalize(() => {
+                localStorage.removeItem('tempUserCredentials');
+            })
+        ).subscribe({
+            next: (loginResponse) => {
+                this._router.navigate(['/welcome']);
+            },
+            error: (err) => {
+                this.resetPasswordForm.enable();
+                this.showAlert = true;
+                this.alert = {
+                    type: 'error',
+                    message: err.error?.message || 'Ocurrió un error. Por favor, verifica la contraseña o inténtalo de nuevo.'
+                };
+            }
+        });
     }
 }
