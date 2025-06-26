@@ -128,6 +128,14 @@ export class NavegacionService {
           type: 'basic',
         },
         {
+          icon: 'heroicons_outline:color-swatch',
+          id: 'pieza-tipo',
+          link: '/pieza-tipo/grid',
+          title: 'Tipos de Pieza',
+          permissionCode: 'MENU_PIEZA_TIPO',
+          type: 'basic',
+        },
+        {
           icon: 'heroicons_outline:cube',
           id: 'productos',
           link: '/productos/grid',
@@ -180,7 +188,7 @@ export class NavegacionService {
     },
   ];
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   public get(): FuseNavigationItem[] {
     const userPermissions: string[] = this.authService.getUserPermissions();

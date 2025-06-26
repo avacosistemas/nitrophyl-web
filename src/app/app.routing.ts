@@ -163,10 +163,18 @@ export const appRoutes: Route[] = [
       },
       {
         path: 'procesos-piezas',
-         data: { permission: 'MENU_PROCESOS_PIEZAS' },
+        data: { permission: 'MENU_PROCESOS_PIEZAS' },
         loadChildren: () =>
           import('app/modules/abm/abm-piezas/abm-piezas.module').then(
             (m: any) => m.ABMPiezasModule
+          ),
+      },
+      {
+        path: 'pieza-tipo',
+        data: { permission: 'MENU_PIEZA_TIPO' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-pieza-tipo/abm-pieza-tipo.module').then(
+            (m: any) => m.ABMPiezaTipoModule
           ),
       },
       {

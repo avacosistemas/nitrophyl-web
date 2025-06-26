@@ -1,0 +1,19 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <app-header [title]="title" [breadcrumbs]="[
+        { title: 'ABM',  route: [], condition: true },
+        { title: 'Tipos de Pieza', route: ['/pieza-tipo/list'], condition: true }
+      ]" [buttons]="[
+      {
+        type: 'flat',
+        label: 'Crear Tipo de Pieza',
+        condition: true,
+        isDisabled: false,
+        action: 'create'
+      }
+    ]" (buttonAction)="handleAction($event)">
+  </app-header>
+
+  <div class="flex-auto overflow-y-auto content-scroll">
+    <router-outlet (activate)="onChildActivate($event)"></router-outlet>
+  </div>
+</div>
