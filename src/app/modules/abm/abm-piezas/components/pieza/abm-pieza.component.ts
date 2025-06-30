@@ -81,7 +81,10 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
     }
 
     ngAfterViewInit(): void {
-        setTimeout(() => this.actualizarEstadoBotones());
+        setTimeout(() => {
+            this.piezaForm = this.abmPiezaCrearEditarComponent.piezaForm;
+            this.actualizarEstadoBotones();
+        });
     }
 
     ngOnDestroy(): void {
@@ -140,7 +143,9 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
     ejecutarAccionPrincipal(): void {
         switch (this.currentTab) {
             case 0:
-                this.onGuardarPieza();
+                if (this.abmPiezaCrearEditarComponent) {
+                    this.abmPiezaCrearEditarComponent.guardarPieza();
+                }
                 break;
             case 2:
                 this.abrirModalAgregarInsumo();

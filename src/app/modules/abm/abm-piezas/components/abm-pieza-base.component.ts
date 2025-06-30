@@ -64,11 +64,16 @@ export class ABMPiezaBaseComponent implements OnDestroy {
     }
 
     isFormDirty(): boolean {
-        return this.piezaForm.dirty || this.form.dirty;
+        if (!this.piezaForm) {
+            return false;
+        }
+        return this.piezaForm.dirty;
     }
 
 
     updateViewEvents(): void {
+        if (!this.piezaForm) { return; }
+
         if (this.mode === 'view') {
             this.abmPiezaService.events.next({
                 mostrarBotonEdicion: false,
@@ -79,7 +84,7 @@ export class ABMPiezaBaseComponent implements OnDestroy {
         }
 
         let mostrarBoton = false;
-        let botonTexto = 'Guardar Pieza';
+        let botonTexto = this.mode === 'create' ? 'Crear Pieza' : 'Guardar Pieza';
 
         if (this.currentTab === 0) {
             mostrarBoton = true;
@@ -96,5 +101,18 @@ export class ABMPiezaBaseComponent implements OnDestroy {
             nombrePieza: this.piezaForm.get('nombre').value,
             botonEdicionTexto: botonTexto
         });
+    }
+
+    public resetBaseFormState(): void {
+        if (this.piezaForm) {
+            this.piezaForm.reset();
+            this.piezaForm.markAsPristine();
+            this.piezaForm.markAsUntouched();
+        }
+        if (this.form) {
+            this.form.reset();
+            this.form.markAsPristine();
+            this.form.markAsUntouched();
+        }
     }
 }

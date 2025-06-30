@@ -17,7 +17,7 @@
     {
         type: 'stroked',
         label: 'Cerrar',
-        condition: ('PROCESOS_PIEZAS_VIEW' | hasPermission) && (titulo === 'Consulta Piezas'),
+        condition: ('PROCESOS_PIEZAS_VIEW' | hasPermission) && (titulo === 'Nueva Pieza' || titulo === 'Edición Pieza' || titulo === 'Vista Pieza'),
         isDisabled: false,
         action: 'close'
     },

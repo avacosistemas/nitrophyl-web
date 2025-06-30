@@ -6,7 +6,7 @@ import {
     ViewChild,
     Output,
     EventEmitter,
-    ElementRef
+    ElementRef,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -128,6 +128,9 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     }
 
     ngOnInit(): void {
+        this.setupConditionalValidators();
+        this.inicializarFormularios();
+
         if (this.mode === 'view') {
             this.piezaForm.disable();
             this.planoForm.disable();
@@ -139,7 +142,6 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         }
 
         this.loadAllData();
-        this.setupConditionalValidators();
     }
 
     ngAfterViewInit(): void {
@@ -284,6 +286,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 this.openSnackBar(false, 'Por favor, complete todos los campos requeridos y revise el plano.', 'red');
                 this.piezaForm.markAllAsTouched();
                 this.planoForm.markAllAsTouched();
+                this.restoreSaveButtonState();
                 return;
             }
             this.openInitialRevisionModal();
@@ -351,10 +354,18 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         });
     }
 
+    private inicializarFormularios(): void {
+        this.piezaForm.reset();
+        this.planoForm.reset();
+
+        this.removeSelectedFile();
+    }
+
     private enviarDatosEdicion(): void {
         if (this.piezaForm.invalid) {
             this.openSnackBar(false, 'Por favor, complete todos los campos requeridos para la edición.', 'red');
             this.piezaForm.markAllAsTouched();
+            this.restoreSaveButtonState();
             return;
         }
 
