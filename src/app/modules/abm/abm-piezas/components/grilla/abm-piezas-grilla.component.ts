@@ -59,7 +59,8 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     this.searchForm = this.formBuilder.group({
       nombre: [null],
       idFormula: [null],
-      idMaterial: [null],
+      idMaterial: [null]
+      // soloVigentes: [null]
     });
   }
 
@@ -117,8 +118,8 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       first: this.paginator.pageIndex * this.paginator.pageSize + 1,
       rows: this.paginator.pageSize,
       asc: this.sort.direction !== 'desc',
-      // idx: this.sort.active || 'id',
-      // soloVigentes: this.soloVigentes.value,
+      idx: this.sort.active || 'codigo',
+      soloVigentes: this.soloVigentes.value,
       nombre: formValues.nombre,
       idFormula: typeof formValues.idFormula === 'object' ? formValues.idFormula?.id : formValues.idFormula,
       idMaterial: typeof formValues.idMaterial === 'object' ? formValues.idMaterial?.id : formValues.idMaterial,
