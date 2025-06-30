@@ -362,8 +362,8 @@ export class ABMPiezaService {
         const params = new HttpParams()
             .set('asc', 'true')
             .set('first', '1')
-            .set('rows', '999');
-        // .set('soloVigentes', 'true');
+            .set('rows', '999')
+            .set('soloVigentes', 'true');
 
         return this.http.get<PiezaNombreResponse>(this.API_PIEZA_URL, { params }).pipe(
             map(response => {

@@ -1,5 +1,6 @@
 <div>
-    <form [formGroup]="piezaForm" (ngSubmit)="guardarPieza()" class="mat-form-without-wrapper flex flex-col gap-4">
+    <form #piezaFormDirective [formGroup]="piezaForm" (ngSubmit)="guardarPieza()"
+        class="mat-form-without-wrapper flex flex-col gap-4">
         <div class="flex gap-4 grid grid-cols-2">
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
@@ -196,7 +197,7 @@
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Plano
                 </span>
-                <div class="flex flex-col gap-1" [formGroup]="planoForm">
+                <div class="flex flex-col gap-1" formGroupName="plano">
                     <label for="file-upload" class="cursor-pointer mb-4 relative" *ngIf="mode === 'create'">
                         <div
                             class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
@@ -223,7 +224,7 @@
                         <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Revisión</mat-label>
                             <input matInput type="number" formControlName="planoRevision" required>
-                            <mat-error *ngIf="planoForm.get('planoRevision')?.hasError('pattern')">
+                            <mat-error *ngIf="piezaForm.get('plano.planoRevision')?.hasError('pattern')">
                                 Debe ser un número entero.
                             </mat-error>
                         </mat-form-field>

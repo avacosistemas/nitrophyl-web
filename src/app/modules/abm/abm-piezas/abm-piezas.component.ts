@@ -115,6 +115,7 @@ export class ABMPiezasComponent implements OnInit, AfterContentChecked, OnDestro
         this.piezaTitulo = null;
         this.piezaNombre = '';
         this.mostrarBotonEdicion = false;
+        this._abmPiezasService.events.next(null);
     }
 
     private establecerTituloVista(): void {

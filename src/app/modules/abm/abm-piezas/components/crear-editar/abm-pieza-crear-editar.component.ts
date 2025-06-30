@@ -7,8 +7,9 @@ import {
     Output,
     EventEmitter,
     ElementRef,
+    OnDestroy
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormGroupDirective } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
@@ -22,8 +23,6 @@ import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.c
 import { DomSanitizer } from '@angular/platform-browser';
 import { FormulasService } from 'app/shared/services/formulas.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
-import { IFormula } from 'app/shared/models/formula.interface';
-import { Cliente } from 'app/shared/models/cliente.model';
 import { RevisionInicialInputComponent } from './revision-inicial-input.component';
 
 interface ForkJoinResults {
@@ -39,12 +38,11 @@ interface ForkJoinResults {
     templateUrl: './abm-pieza-crear-editar.component.html',
     styleUrls: ['./abm-pieza-crear-editar.component.scss'],
 })
-export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implements OnInit, AfterViewInit {
+export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() piezaId: number | null = null;
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
     piezaForm: FormGroup;
-    planoForm: FormGroup;
 
     pieceNames$: Observable<string[]>;
     tiposPieza$: Observable<{ id: number; nombre: string }[]>;
@@ -64,6 +62,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     @ViewChild('tipoInput') tipoInput: ElementRef;
     @ViewChild('moldeInput') moldeInput: ElementRef;
     @ViewChild('clienteInput') clienteInput: ElementRef;
+    @ViewChild('piezaFormDirective') piezaFormDirective: FormGroupDirective;
 
     typesFail: boolean = false;
 
@@ -116,24 +115,22 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             revision: [{ value: null, disabled: true }],
             fechaRevision: [{ value: null, disabled: true }],
             observacionesRevision: [{ value: null, disabled: false }],
-        });
 
-        this.planoForm = this.fb.group({
-            archivo: [{ value: null, disabled: false }],
-            planoCodigo: [{ value: null, disabled: false }, Validators.required],
-            planoRevision: [{ value: null, disabled: false }, [Validators.required, Validators.pattern("^[0-9]*$")]],
-            planoClasificacion: [{ value: null, disabled: false }, Validators.required],
-            planoObservaciones: [{ value: null, disabled: false }],
+
+            plano: this.fb.group({
+                archivo: [{ value: null, disabled: false }],
+                planoCodigo: [{ value: null, disabled: false }, Validators.required],
+                planoRevision: [{ value: null, disabled: false }, [Validators.required, Validators.pattern("^[0-9]*$")]],
+                planoClasificacion: [{ value: null, disabled: false }, Validators.required],
+                planoObservaciones: [{ value: null, disabled: false }],
+            }),
         });
     }
 
     ngOnInit(): void {
         this.setupConditionalValidators();
-        this.inicializarFormularios();
-
         if (this.mode === 'view') {
             this.piezaForm.disable();
-            this.planoForm.disable();
         } else if (this.mode === 'edit') {
             this.piezaForm.get('nombre').disable();
             this.piezaForm.get('idTipoPieza').disable();
@@ -144,7 +141,17 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         this.loadAllData();
     }
 
+    ngOnDestroy(): void {
+        super.ngOnDestroy();
+    }
+
     ngAfterViewInit(): void {
+        setTimeout(() => {
+            if (this.mode === 'create' && this.piezaFormDirective) {
+                this.piezaFormDirective.resetForm();
+                this.removeSelectedFile();
+            }
+        });
     }
 
     setupConditionalValidators(): void {
@@ -282,10 +289,9 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     guardarPieza(): void {
         if (this.mode === 'create') {
-            if (this.piezaForm.invalid || this.planoForm.invalid) {
+            if (this.piezaForm.invalid) {
                 this.openSnackBar(false, 'Por favor, complete todos los campos requeridos y revise el plano.', 'red');
                 this.piezaForm.markAllAsTouched();
-                this.planoForm.markAllAsTouched();
                 this.restoreSaveButtonState();
                 return;
             }
@@ -294,6 +300,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.enviarDatosEdicion();
         }
     }
+
 
     public crearPieza(revisionInicial: number): void {
         if (this.selectedFile) {
@@ -309,31 +316,30 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     }
 
     private enviarDatosCreacion(revisionInicial: number, planoArchivo: string | null): void {
-        const piezaValues = this.piezaForm.getRawValue();
-        const planoValues = this.planoForm.getRawValue();
+        const formValues = this.piezaForm.getRawValue();
 
         const dto = {
-            codigo: piezaValues.codigo,
-            denominacion: piezaValues.nombre?.nombre || piezaValues.nombre,
-            durezaMaxima: piezaValues.durezaMaxima,
-            durezaMinima: piezaValues.durezaMinima,
-            espesorMaximo: piezaValues.espesorMaximo,
-            espesorMinimo: piezaValues.espesorMinimo,
-            idCliente: piezaValues.idCliente?.id,
-            idFormula: piezaValues.idFormula?.id,
-            idMolde: piezaValues.idMolde?.id,
-            idTipoPieza: piezaValues.idTipoPieza?.id,
-            nombrePiezaCliente: piezaValues.nombrePiezaCliente,
-            observacionesMolde: piezaValues.observacionesMolde,
-            observacionesPesoCrudo: piezaValues.observacionesPesoCrudo,
-            pesoCrudo: piezaValues.pesoCrudo,
+            codigo: formValues.codigo,
+            denominacion: formValues.nombre?.nombre || formValues.nombre,
+            durezaMaxima: formValues.durezaMaxima,
+            durezaMinima: formValues.durezaMinima,
+            espesorMaximo: formValues.espesorMaximo,
+            espesorMinimo: formValues.espesorMinimo,
+            idCliente: formValues.idCliente?.id,
+            idFormula: formValues.idFormula?.id,
+            idMolde: formValues.idMolde?.id,
+            idTipoPieza: formValues.idTipoPieza?.id,
+            nombrePiezaCliente: formValues.nombrePiezaCliente,
+            observacionesMolde: formValues.observacionesMolde,
+            observacionesPesoCrudo: formValues.observacionesPesoCrudo,
+            pesoCrudo: formValues.pesoCrudo,
             planoArchivo: planoArchivo,
-            planoClasificacion: planoValues.planoClasificacion,
-            planoCodigo: planoValues.planoCodigo,
-            planoObservaciones: planoValues.planoObservaciones,
-            planoRevision: planoValues.planoRevision,
+            planoClasificacion: formValues.plano.planoClasificacion,
+            planoCodigo: formValues.plano.planoCodigo,
+            planoObservaciones: formValues.plano.planoObservaciones,
+            planoRevision: formValues.plano.planoRevision,
             revisionIncial: revisionInicial,
-            unidadDureza: piezaValues.tipoDureza,
+            unidadDureza: formValues.tipoDureza,
         };
 
         this.abmPiezaService.agregarPieza(dto).subscribe({
@@ -354,13 +360,6 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         });
     }
 
-    private inicializarFormularios(): void {
-        this.piezaForm.reset();
-        this.planoForm.reset();
-
-        this.removeSelectedFile();
-    }
-
     private enviarDatosEdicion(): void {
         if (this.piezaForm.invalid) {
             this.openSnackBar(false, 'Por favor, complete todos los campos requeridos para la edición.', 'red');
@@ -369,35 +368,35 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             return;
         }
 
-        const piezaValues = this.piezaForm.getRawValue();
+        const formValues = this.piezaForm.getRawValue();
 
         const dto: Pieza = {
             id: this.piezaId,
             vigente: this.pieza.vigente,
-            codigo: piezaValues.codigo,
-            denominacion: piezaValues.nombre?.nombre || piezaValues.nombre,
+            codigo: formValues.codigo,
+            denominacion: formValues.nombre?.nombre || formValues.nombre,
             tipo: this.pieza.tipo,
             material: this.pieza.material,
             formula: this.pieza.formula,
             molde: this.pieza.molde,
             idMolde: this.pieza.idMolde,
-            revision: piezaValues.revision,
-            fechaRevision: piezaValues.fechaRevision,
+            revision: formValues.revision,
+            fechaRevision: formValues.fechaRevision,
             puedeMarcarVigente: this.pieza.puedeMarcarVigente,
             puedeGenerarRevision: this.pieza.puedeGenerarRevision,
-            espesorPlanchaMin: piezaValues.espesorMinimo,
-            espesorPlanchaMax: piezaValues.espesorMaximo,
-            pesoCrudo: piezaValues.pesoCrudo,
-            observacionesPesoCrudo: piezaValues.observacionesPesoCrudo,
-            dureza: piezaValues.dureza,
-            clienteId: piezaValues.idCliente?.id || this.pieza.clienteId,
-            nombreCliente: piezaValues.idCliente?.nombre || this.pieza.nombreCliente,
-            nombrePiezaPersonalizado: piezaValues.nombrePiezaCliente,
-            unidadDureza: piezaValues.tipoDureza,
-            observacionesMolde: piezaValues.observacionesMolde,
-            durezaMinima: piezaValues.durezaMinima,
-            durezaMaxima: piezaValues.durezaMaxima,
-            observacionesRevision: piezaValues.observacionesRevision
+            espesorPlanchaMin: formValues.espesorMinimo,
+            espesorPlanchaMax: formValues.espesorMaximo,
+            pesoCrudo: formValues.pesoCrudo,
+            observacionesPesoCrudo: formValues.observacionesPesoCrudo,
+            dureza: formValues.dureza,
+            clienteId: formValues.idCliente?.id || this.pieza.clienteId,
+            nombreCliente: formValues.idCliente?.nombre || this.pieza.nombreCliente,
+            nombrePiezaPersonalizado: formValues.nombrePiezaCliente,
+            unidadDureza: formValues.tipoDureza,
+            observacionesMolde: formValues.observacionesMolde,
+            durezaMinima: formValues.durezaMinima,
+            durezaMaxima: formValues.durezaMaxima,
+            observacionesRevision: formValues.observacionesRevision
         };
 
         this.abmPiezaService.editarPieza(dto).subscribe({
@@ -472,7 +471,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             }
             this.selectedFile = file;
             this.fileExtension = file.name.split('.').pop() || '';
-            this.planoForm.get('archivo').setValue(file);
+            this.piezaForm.get('plano.archivo').setValue(file);
         } else {
             this.selectedFile = null;
             this.openSnackBar(false, "No se ha seleccionado ningún archivo.", 'red');
@@ -481,7 +480,9 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     removeSelectedFile(): void {
         this.selectedFile = null;
-        this.planoForm.get('archivo').setValue(null);
+        if (this.piezaForm) {
+            this.piezaForm.get('plano.archivo').setValue(null);
+        }
         const input = document.getElementById('file-upload') as HTMLInputElement;
         if (input) input.value = '';
         this.fileExtension = '';
