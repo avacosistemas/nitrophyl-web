@@ -27,7 +27,7 @@
                                     <mat-icon>close</mat-icon>
                                 </button>
                                 <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFn">
-                                    <mat-option *ngFor="let formula of formulas$ | async" [value]="formula">
+                                    <mat-option *ngFor="let formula of filteredFormulas$ | async" [value]="formula">
                                         {{formula.nombre}}
                                     </mat-option>
                                 </mat-autocomplete>
@@ -42,7 +42,7 @@
                                     <mat-icon>close</mat-icon>
                                 </button>
                                 <mat-autocomplete #autoMaterial="matAutocomplete" [displayWith]="displayFn">
-                                    <mat-option *ngFor="let material of materials$ | async" [value]="material">
+                                    <mat-option *ngFor="let material of filteredMaterials$ | async" [value]="material">
                                         {{material.nombre}} ({{material.codigo}})
                                     </mat-option>
                                 </mat-autocomplete>
@@ -50,7 +50,7 @@
 
                         </div>
 
-                        <mat-checkbox [formControl]="soloVigentes">Solo Vigentes</mat-checkbox>
+                        <mat-checkbox formControlName="soloVigentes">Solo Vigentes</mat-checkbox>
 
                         <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
                             <button mat-flat-button (click)="search()"

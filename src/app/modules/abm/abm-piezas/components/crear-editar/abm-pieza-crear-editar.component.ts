@@ -147,8 +147,10 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     ngAfterViewInit(): void {
         setTimeout(() => {
-            if (this.mode === 'create' && this.piezaFormDirective) {
-                this.piezaFormDirective.resetForm();
+            if (this.mode === 'create' && this.piezaForm) {
+                this.piezaForm.reset();
+                this.piezaForm.markAsPristine();
+                this.piezaForm.markAsUntouched();
                 this.removeSelectedFile();
             }
         });

@@ -46,6 +46,12 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
   soloVigentes = new FormControl(true);
 
+  private allFormulas: IFormula[] = [];
+  private allMaterials: any[] = [];
+
+  filteredFormulas$: Observable<IFormula[]>;
+  filteredMaterials$: Observable<any[]>;
+
   constructor(
     private abmPiezaService: ABMPiezaService,
     private router: Router,
@@ -59,8 +65,8 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     this.searchForm = this.formBuilder.group({
       nombre: [null],
       idFormula: [null],
-      idMaterial: [null]
-      // soloVigentes: [null]
+      idMaterial: [null],
+      soloVigentes: [true]
     });
   }
 
@@ -75,9 +81,8 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
 
-    merge(this.sort.sortChange, this.paginator.page, this.soloVigentes.valueChanges)
+    merge(this.sort.sortChange, this.paginator.page)
       .pipe(
         startWith({}),
         tap(() => this.isLoading = true),
@@ -105,6 +110,10 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       .subscribe(data => {
         this.dataSource.data = data;
       });
+
+    setTimeout(() => {
+      this.paginator.page.emit();
+    });
   }
 
   ngOnDestroy(): void {
@@ -119,7 +128,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       rows: this.paginator.pageSize,
       asc: this.sort.direction !== 'desc',
       idx: this.sort.active || 'codigo',
-      soloVigentes: this.soloVigentes.value,
+      soloVigentes: formValues.soloVigentes,
       nombre: formValues.nombre,
       idFormula: typeof formValues.idFormula === 'object' ? formValues.idFormula?.id : formValues.idFormula,
       idMaterial: typeof formValues.idMaterial === 'object' ? formValues.idMaterial?.id : formValues.idMaterial,
@@ -147,11 +156,13 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
   search(): void {
     this.paginator.pageIndex = 0;
-    this.refreshGrid();
+    this.paginator.page.emit();
   }
 
   limpiarFiltros(): void {
-    this.searchForm.reset();
+    this.searchForm.reset({
+      soloVigentes: true
+    });
     this.soloVigentes.setValue(true);
   }
 
@@ -237,8 +248,8 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   loadAutocompleteData(): void {
     const errorMsg: string = 'ABMPiezasGrillaComponent => loadAutocompleteData: ';
 
-    forkJoin([
-      this._materials.get().pipe(
+    forkJoin({
+      materials: this._materials.get().pipe(
         catchError((err: any) => {
           console.error(errorMsg, 'Error en _material', err);
           this.materialsFail = true;
@@ -246,7 +257,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
           return of({ data: [] } as IMaterialsResponse);
         })
       ),
-      this._formulas.get().pipe(
+      formulas: this._formulas.get().pipe(
         catchError((err: any) => {
           console.error(errorMsg, 'Error en _formulas:', err);
           this.formulasFail = true;
@@ -254,13 +265,39 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
           return of({ data: [] } as IFormulasResponse);
         })
       ),
-    ]).pipe(takeUntil(this._destroying$))
-      .subscribe(([materialsResponse, formulasResponse]) => {
-        this.materials$ = of(Array.isArray(materialsResponse.data) ? materialsResponse.data : [materialsResponse.data]);
-        const formulasData = Array.isArray(formulasResponse.data)
-          ? formulasResponse.data
-          : [formulasResponse.data];
-        this.formulas$ = of(formulasData);
+    }).pipe(takeUntil(this._destroying$))
+      .subscribe(({ materials, formulas }) => {
+        this.allMaterials = Array.isArray(materials.data) ? materials.data : [materials.data];
+        this.allFormulas = Array.isArray(formulas.data) ? formulas.data : [formulas.data];
+        this.setupFilters();
       });
+  }
+
+  private setupFilters(): void {
+    this.filteredFormulas$ = this.searchForm.get('idFormula').valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const name = typeof value === 'string' ? value : value?.nombre;
+        return name ? this._filterFormulas(name) : this.allFormulas.slice();
+      })
+    );
+
+    this.filteredMaterials$ = this.searchForm.get('idMaterial').valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const name = typeof value === 'string' ? value : value?.nombre;
+        return name ? this._filterMaterials(name) : this.allMaterials.slice();
+      })
+    );
+  }
+
+  private _filterFormulas(value: string): IFormula[] {
+    const filterValue = value.toLowerCase();
+    return this.allFormulas.filter(formula => formula.nombre.toLowerCase().includes(filterValue));
+  }
+
+  private _filterMaterials(value: string): any[] {
+    const filterValue = value.toLowerCase();
+    return this.allMaterials.filter(material => material.nombre.toLowerCase().includes(filterValue));
   }
 }
