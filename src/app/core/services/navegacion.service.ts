@@ -114,7 +114,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_outline:cube-transparent',
           id: 'procesos-piezas',
-          link: '/procesos-piezas/grid',
+          link: '/procesos-piezas',
           title: 'Procesos y Piezas',
           permissionCode: 'MENU_PROCESOS_PIEZAS',
           type: 'basic',

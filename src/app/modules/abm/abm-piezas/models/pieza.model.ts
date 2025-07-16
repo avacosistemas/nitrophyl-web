@@ -1,3 +1,12 @@
+export interface ApiResponse<T> {
+    status: string;
+    data: T;
+}
+
+export interface IPaginatedResponse<T> {
+    page: T[];
+    totalReg: number;
+}
 
 export interface Pieza {
     id: number;
@@ -7,33 +16,77 @@ export interface Pieza {
     tipo?: string;
     material: string;
     formula?: string;
-    molde?: string;
-    idMolde?: number;
-    clienteId?: number;
-    nombreCliente?: string;
-    nombrePiezaPersonalizado?: string;
-    dureza?: number;
-    unidadDureza?: string;
-    durezaMinima?: number;
-    durezaMaxima?: number;
-    espesorPlanchaMin?: number;
-    espesorPlanchaMax?: number;
-    pesoCrudo?: number;
-    observacionesPesoCrudo?: string;
-    observacionesMolde?: string;
     revision: number;
     fechaRevision: number;
-    observacionesRevision?: string;
     puedeMarcarVigente: boolean;
     puedeGenerarRevision: boolean;
 }
 
-export interface PiezaNombreResponse {
-  status: string;
-  data: {
-    page: Pieza[];
-    totalReg: number;
-  };
+export interface PiezaProceso {
+    id: number;
+    denominacion: string;
+    tipo: string;
+    codigo: string;
+    nombreFormula: string;
+    durezaMinima: number;
+    durezaMaxima: number;
+    unidadDureza: 'SHORE_A' | 'SHORE_D';
+    espesorMinimo: number | null;
+    espesorMaximo: number | null;
+    pesoCrudo: number | null;
+    observacionesPesoCrudo: string | null;
+    revision: number;
+    fechaRevision: number;
+    vigente: boolean;
+    fechaCreacionPiezaProceso: number;
+    observacionesRevision: string | null;
+    precalentamientoValor: number | null;
+    precalentamientoUnidad: string | null;
+    prensas: Prensa[];
+    vulcanizacionTiempo: number;
+    vulcanizacionTemperaturaMin: number;
+    vulcanizacionTemperaturaMax: number;
+    bombeos: Bombeo[];
+    desmoldante: string | null;
+    postCura: string | null;
+}
+
+export interface PiezaCreateDTO {
+    codigo: string;
+    denominacion: string;
+    durezaMaxima: number;
+    durezaMinima: number;
+    espesorMaximo: number | null;
+    espesorMinimo: number | null;
+    idCliente: number;
+    idFormula: number;
+    idMolde: number;
+    idTipoPieza: number;
+    nombrePiezaCliente?: string;
+    observacionesMolde?: string;
+    observacionesPesoCrudo?: string;
+    pesoCrudo: number | null;
+    planoArchivo?: string;
+    planoClasificacion?: string;
+    planoCodigo?: string;
+    planoObservaciones?: string;
+    planoRevision?: number;
+    revisionIncial: number;
+    unidadDureza: string;
+}
+
+export interface PiezaUpdateDTO {
+    denominacion: string;
+    idTipoPieza: number;
+    idFormula: number;
+    durezaMinima: number;
+    durezaMaxima: number;
+    unidadDureza: string;
+    espesorMinimo: number | null;
+    espesorMaximo: number | null;
+    pesoCrudo: number | null;
+    observacionesPesoCrudo: string | null;
+    observacionesRevision: string | null;
 }
 
 export interface PiezaCliente {
@@ -41,57 +94,41 @@ export interface PiezaCliente {
     idCliente: number;
     idPieza: number;
     nombreCliente: string;
-    nombrePiezaCliente: string;
-    fechaCreacion?: string;
-    fechaActualizacion?: string;
-    usuarioCreacion?: string;
-    usuarioActualizacion?: string;
+    nombrePiezaPersonalizado: string;
 }
 
-export interface Dimension {
-    tipoDimension: string;
+export interface PiezaDimension {
+    id: number;
+    idPieza: number;
+    tipo: string;
     valor: number;
     observaciones?: string;
 }
 
-export interface PiezaDimension extends Dimension {
+export interface Plano {
     id: number;
     idPieza: number;
+    archivo?: string | null;
+    codigo: string;
+    revision: number;
+    clasificacion: string;
+    observaciones: string;
+    nombreArchivo?: string;
+    fecha?: string;
+    safeUrl?: any;
 }
 
-export interface TipoInsumo {
-    id: number;
-    nombre: string;
-    subniveles?: TipoInsumo[];
-    padre?: TipoInsumo;
-}
-
-export interface Insumo {
-    id: number;
-    nombre: string;
-    tipoId: number;
-}
-
-export interface InsumoPieza {
-    id?: number;
-    tipo: TipoInsumo[];
-    nombreInsumo: Insumo;
-    medidaValor?: number;
-    medidaObservaciones?: string;
-    tratamiento?: string;
-    adhesivos?: string[];
-    observaciones?: string;
-}
-
-export interface Prensa {
+export interface Molde {
     id: number;
     nombre: string;
 }
 
-export interface Bombeo {
-    cantidad: number;
-    tipo: string;
-    presion: number;
+export interface IPiezaMolde {
+    id: number;
+    idMolde: number;
+    idPieza: number;
+    codigo: string;
+    observaciones: string | null;
 }
 
 export interface Moldeo {
@@ -105,40 +142,84 @@ export interface Moldeo {
     bombas: Bombeo[];
 }
 
-export interface DesmoldantePostCura {
-    desmoldante: string;
-    observacionesDesmoldante: string;
-    postcura: string;
+export interface Prensa {
+    id: number;
+    nombre: string;
+}
+
+export interface Bombeo {
+    id?: number;
+    tipo: 'AUTOMATICO' | 'ESCALONADO';
+    cantidad: number;
+    presion: number;
+}
+
+export interface Insumo {
+    id: number;
+    nombre: string;
+    idTipo: number;
+    tipoNombre: string;
+    usuarioCreacion?: string;
+    fechaCreacion?: number;
+    usuarioActualizacion?: string;
+    fechaActualizacion?: number;
+}
+
+export interface IInsumoTratado {
+    id: number;
+    idPieza: number;
+    insumo: string;
+    idInsumo: number;
+    tipo: ITipoInsumoJerarquico;
+    medidaValor: string;
+    medidaObservaciones: string;
+    tratamiento: string;
+    idTratamiento: number;
+    observaciones: string;
+    adhesivos: IAdhesivo[];
+}
+
+export interface ITipoInsumoJerarquico {
+    id: number;
+    nombre: string;
+    padre: ITipoInsumoJerarquico | null;
+    usuarioCreacion?: string;
+    fechaCreacion?: number;
+    usuarioActualizacion?: string;
+    fechaActualizacion?: number;
+}
+
+export interface IAdhesivo {
+    id: number;
+    nombre: string;
+}
+
+export interface ITratamiento {
+    id: number;
+    nombre: string;
 }
 
 export interface Esquema {
     id: number;
+    idProceso?: number;
     titulo: string;
-    pasos?: string[];
-    imagenBase64?: string;
+    pasos?: PasoEsquema[];
+    imagen?: string;
     safeImagenUrl?: any;
 }
 
+export interface PasoEsquema {
+    id?: number;
+    paso: number;
+    descripcion: string;
+}
+
 export interface Finalizacion {
+    id?: number;
+    idProceso?: number;
     refilado: string;
     identificacion: string;
     embalaje: string;
-    imagenEmbalaje?: string;
-}
-
-export interface Plano {
-    id?: number;
-    nombreArchivo: string;
-    clasificacion: string;
-    descripcion: string;
-    version: string;
-    fecha: string;
-    archivo?: string;
-    codigo: string;
-    revision: number;
-}
-
-export interface Molde {
-    id: number;
-    nombre: string;
+    imagenTerminada?: string;
+    safeImageUrl?: any;
 }

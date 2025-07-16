@@ -3,9 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { Finalizacion } from '../../models/pieza.model';
-import { Observable } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
@@ -16,12 +14,13 @@ import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal
   styleUrls: ['./abm-pieza-finalizacion.component.scss']
 })
 export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent implements OnInit, OnChanges {
+  @Input() piezaId: number;
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
-  finalizacion$: Observable<Finalizacion>;
   selectedFile: File | null = null;
   safeImageUrl: SafeUrl | null = null;
   initialImageBase64: string | null = null;
+  isLoading: boolean = false;
   form: FormGroup;
 
   constructor(
@@ -29,7 +28,7 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
     protected router: Router,
     protected route: ActivatedRoute,
     protected abmPiezaService: ABMPiezaService,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     public dialog: MatDialog,
     private cdRef: ChangeDetectorRef,
     private sanitizer: DomSanitizer
@@ -44,17 +43,7 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
 
   ngOnInit(): void {
     if (this.piezaId) {
-      this.finalizacion$ = this.abmPiezaService.getFinalizacion(this.piezaId);
-      this.finalizacion$.subscribe(data => {
-        if (data) {
-          this.form.patchValue(data);
-          if (data.imagenEmbalaje) {
-            this.initialImageBase64 = data.imagenEmbalaje;
-            const base64Image = data.imagenEmbalaje.startsWith('data:image') ? data.imagenEmbalaje : 'data:image/png;base64,' + data.imagenEmbalaje;
-            this.safeImageUrl = this.sanitizer.bypassSecurityTrustUrl(base64Image);
-          }
-        }
-      });
+      this.loadTerminacionData();
     }
 
     if (this.mode === 'view') {
@@ -63,35 +52,71 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.mode) {
-      const currentMode = changes.mode.currentValue;
-      if (currentMode === 'view') {
+    if (changes.mode && !changes.mode.firstChange) {
+      if (changes.mode.currentValue === 'view') {
         this.form.disable();
       } else {
         this.form.enable();
       }
     }
+    if (changes.piezaId && changes.piezaId.currentValue) {
+      this.loadTerminacionData();
+    }
+  }
+
+  loadTerminacionData(): void {
+    this.isLoading = true;
+    this.abmPiezaService.getTerminacion(this.piezaId).subscribe({
+      next: (response) => {
+        const data = response.data;
+        if (data) {
+          this.form.patchValue(data);
+          if (data.imagenTerminada) {
+            this.initialImageBase64 = data.imagenTerminada;
+            const base64Image = data.imagenTerminada.startsWith('data:image') ? data.imagenTerminada : 'data:image/png;base64,' + data.imagenTerminada;
+            this.safeImageUrl = this.sanitizer.bypassSecurityTrustUrl(base64Image);
+          } else {
+            this.initialImageBase64 = null;
+            this.safeImageUrl = null;
+          }
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error al cargar datos de terminación', err);
+        if (err.status !== 404) {
+          this.notificationService.showError('Error al cargar los datos de terminación.');
+        }
+        this.isLoading = false;
+      }
+    });
   }
 
   public guardar(): void {
     if (this.form.invalid) {
-      this.openSnackBar(false, 'El formulario no es válido.', 'red');
+      this.notificationService.showError('El formulario no es válido.');
       return;
     }
 
+    this.isLoading = true;
+
     const saveData = (imageBase64: string | null) => {
-      const data: Finalizacion = {
+      const dto = {
         ...this.form.value,
-        imagenEmbalaje: imageBase64
+        imagenTerminada: imageBase64
       };
 
-      this.abmPiezaService.updateFinalizacion(this.piezaId, data).subscribe({
+      this.abmPiezaService.updateTerminacion(this.piezaId, dto).subscribe({
         next: () => {
-          this.openSnackBar(true, 'Finalización guardada correctamente.', 'green');
+          this.notificationService.showSuccess('Datos de terminación guardados correctamente.');
+          this.form.markAsPristine();
+          this.isLoading = false;
+          this.initialImageBase64 = imageBase64;
         },
         error: (err) => {
-          console.error('Error al guardar la finalización', err);
-          this.openSnackBar(false, 'Error al guardar los datos.', 'red');
+          console.error('Error al guardar la terminación', err);
+          this.notificationService.showError('Error al guardar los datos.');
+          this.isLoading = false;
         }
       });
     };
@@ -99,7 +124,8 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
     if (this.selectedFile) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        saveData(e.target.result);
+        const base64Content = (e.target.result as string).split(',')[1];
+        saveData(base64Content);
       };
       reader.readAsDataURL(this.selectedFile);
     } else {
@@ -129,33 +155,16 @@ export class ABMPiezaFinalizacionComponent extends ABMPiezaBaseComponent impleme
   }
 
   openImageModal(): void {
-    if (!this.safeImageUrl) {
-      return;
-    }
+    if (!this.safeImageUrl) return;
     this.dialog.open(ImgModalDialogComponent, {
       data: {
         imgSrc: this.safeImageUrl,
         imgType: 'url',
-        title: 'Imagen de Embalaje',
-        imgAlt: 'Imagen de embalaje'
+        title: 'Imagen de Pieza Terminada',
+        imgAlt: 'Imagen de pieza terminada'
       },
       width: '80%',
       maxWidth: '800px'
-    });
-  }
-
-  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-    const defaultCss: string = css ? css : 'red';
-    const snackBarMessage = message ? message : defaultMessage;
-    const snackBarCss = css ? css : defaultCss;
-    const snackBarDuration = duration ? duration : 5000;
-
-    this.snackBar.open(snackBarMessage, 'X', {
-      duration: snackBarDuration,
-      panelClass: `${snackBarCss}-snackbar`,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
     });
   }
 }

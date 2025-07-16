@@ -8,26 +8,14 @@
                     Pieza
                 </span>
                 <div class="flex flex-col gap-1">
-                    <mat-form-field appearance="outline" class="form-field w-full" *ngIf="mode === 'create'">
+                    <mat-form-field appearance="outline" class="form-field w-full">
                         <mat-label>Código</mat-label>
-                        <input type="text" matInput formControlName="codigo" required>
-                        <mat-error *ngIf="piezaForm.get('codigo').hasError('required')">El código es
-                            requerido</mat-error>
+                        <input type="text" matInput formControlName="codigo">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="form-field w-full">
                         <mat-label>Nombre de la Pieza</mat-label>
-                        <input type="text" matInput formControlName="nombre" required [matAutocomplete]="autoNombre">
-                        <button mat-icon-button matSuffix
-                            *ngIf="piezaForm.get('nombre')?.value && mode !== 'view' && !piezaForm.get('nombre').disabled"
-                            (click)="piezaForm.get('nombre').setValue(null); $event.stopPropagation()">
-                            <mat-icon>close</mat-icon>
-                        </button>
-                        <mat-autocomplete #autoNombre="matAutocomplete">
-                            <mat-option *ngFor="let pieceName of filteredPieceNames$ | async" [value]="pieceName">
-                                {{ pieceName }}
-                            </mat-option>
-                        </mat-autocomplete>
+                        <input type="text" matInput formControlName="nombre" required>
                         <mat-error *ngIf="piezaForm.get('nombre').hasError('required')">El nombre es
                             requerido</mat-error>
                     </mat-form-field>
@@ -36,11 +24,6 @@
                         <mat-label>Tipo</mat-label>
                         <input type="text" matInput placeholder="Tipo" #tipoInput formControlName="idTipoPieza"
                             [matAutocomplete]="autoTipo">
-                        <button mat-icon-button matSuffix
-                            *ngIf="piezaForm.get('idTipoPieza')?.value && mode !== 'view' && !piezaForm.get('idTipoPieza').disabled"
-                            (click)="piezaForm.get('idTipoPieza').setValue(null); $event.stopPropagation()">
-                            <mat-icon>close</mat-icon>
-                        </button>
                         <mat-autocomplete #autoTipo="matAutocomplete" [displayWith]="displayFn">
                             <mat-option *ngFor="let tipo of filteredTiposPieza$ | async" [value]="tipo">
                                 {{ tipo.nombre }}
@@ -50,32 +33,35 @@
                             requerido</mat-error>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="form-field w-full ">
-                        <mat-label>Molde</mat-label>
-                        <input type="text" matInput formControlName="idMolde" required #moldeInput
-                            [matAutocomplete]="autoMolde">
-                        <button mat-icon-button matSuffix
-                            *ngIf="piezaForm.get('idMolde')?.value && mode !== 'view' && !piezaForm.get('idMolde').disabled"
-                            (click)="piezaForm.get('idMolde').setValue(null); $event.stopPropagation()">
-                            <mat-icon>close</mat-icon>
-                        </button>
-                        <mat-autocomplete #autoMolde="matAutocomplete" [displayWith]="displayMolde">
-                            <mat-option *ngFor="let molde of filteredMoldes$ | async" [value]="molde">
-                                {{ molde.nombre }}
-                            </mat-option>
-                        </mat-autocomplete>
-                        <mat-error *ngIf="piezaForm.get('idMolde').hasError('required')">El molde es
-                            requerido</mat-error>
-                    </mat-form-field>
+                    <div *ngIf="mode === 'create'">
+                        <mat-form-field appearance="outline" class="form-field w-full ">
+                            <mat-label>Molde</mat-label>
+                            <input type="text" matInput formControlName="idMolde" required #moldeInput
+                                [matAutocomplete]="autoMolde">
+                            <button mat-icon-button matSuffix
+                                *ngIf="piezaForm.get('idMolde')?.value && mode !== 'view' && !piezaForm.get('idMolde').disabled"
+                                (click)="piezaForm.get('idMolde').setValue(null); $event.stopPropagation()">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                            <mat-autocomplete #autoMolde="matAutocomplete" [displayWith]="displayMolde">
+                                <mat-option *ngFor="let molde of filteredMoldes$ | async" [value]="molde">
+                                    {{ molde.nombre }}
+                                </mat-option>
+                            </mat-autocomplete>
+                            <mat-error *ngIf="piezaForm.get('idMolde').hasError('required')">El molde es
+                                requerido</mat-error>
+                        </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="form-field w-full ">
-                        <mat-label>Observaciones Molde</mat-label>
-                        <input matInput formControlName="observacionesMolde">
-                    </mat-form-field>
+                        <mat-form-field appearance="outline" class="form-field w-full ">
+                            <mat-label>Observaciones Molde</mat-label>
+                            <input matInput formControlName="observacionesMolde">
+                        </mat-form-field>
+                    </div>
                 </div>
             </div>
+
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
-                *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
+                *ngIf="mode === 'create'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Cliente
                 </span>
@@ -102,7 +88,8 @@
                     </mat-form-field>
                 </div>
             </div>
-            <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
+
+            <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4 col-span-2 md:col-span-1"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Fórmula
@@ -113,11 +100,6 @@
                             <mat-label>Fórmula</mat-label>
                             <input type="text" matInput formControlName="idFormula" required #formulaInput
                                 [matAutocomplete]="autoFormula" [displayWith]="displayFormula">
-                            <button mat-icon-button matSuffix
-                                *ngIf="piezaForm.get('idFormula')?.value && mode !== 'view' && !piezaForm.get('idFormula').disabled"
-                                (click)="piezaForm.get('idFormula').setValue(null); $event.stopPropagation()">
-                                <mat-icon>close</mat-icon>
-                            </button>
                             <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFormula">
                                 <mat-option *ngFor="let formula of filteredFormulas$ | async" [value]="formula">
                                     {{ formula.nombre }}
@@ -126,48 +108,30 @@
                             <mat-error *ngIf="piezaForm.get('idFormula').hasError('required')">La fórmula es
                                 requerida</mat-error>
                         </mat-form-field>
-                        <ng-container *ngIf="mode === 'edit' || mode === 'view'">
-                            <mat-form-field appearance="outline" class="form-field w-full ">
-                                <mat-label>Dureza</mat-label>
-                                <input matInput type="number" formControlName="dureza" required>
-                                <mat-error *ngIf="piezaForm.get('dureza').hasError('required')">La dureza es
-                                    requerida</mat-error>
-                                <mat-error *ngIf="piezaForm.get('dureza')?.hasError('pattern')">
-                                    Debe ser un número entero.
-                                </mat-error>
-                            </mat-form-field>
-                        </ng-container>
-                        <ng-container *ngIf="mode === 'create'">
-                            <mat-form-field appearance="outline" class="form-field w-full">
-                                <mat-label>Tipo de Dureza</mat-label>
-                                <mat-select formControlName="tipoDureza" required>
-                                    <mat-option *ngFor="let option of tiposDurezaOptions" [value]="option.value">
-                                        {{ option.label }}
-                                    </mat-option>
-                                </mat-select>
-                                <mat-error *ngIf="piezaForm.get('tipoDureza').hasError('required')">El tipo es
-                                    requerido</mat-error>
-                            </mat-form-field>
-                        </ng-container>
+
+                        <mat-form-field *ngIf="mode === 'create'" appearance="outline" class="form-field w-full">
+                            <mat-label>Unidad de Dureza</mat-label>
+                            <mat-select formControlName="unidadDureza" required>
+                                <mat-option *ngFor="let option of tiposDurezaOptions" [value]="option.value">
+                                    {{ option.label }}
+                                </mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="piezaForm.get('unidadDureza').hasError('required')">El tipo es
+                                requerido</mat-error>
+                        </mat-form-field>
                     </div>
-                    <div class="flex gap-4" *ngIf="mode === 'create'">
+                    <div class="flex gap-4">
                         <mat-form-field appearance="outline" class="form-field w-full">
-                            <mat-label>Dureza Mínima (Shore)</mat-label>
+                            <mat-label>Dureza Mínima</mat-label>
                             <input matInput type="number" formControlName="durezaMinima" required>
                             <mat-error *ngIf="piezaForm.get('durezaMinima').hasError('required')">Valor
                                 requerido</mat-error>
-                            <mat-error *ngIf="piezaForm.get('durezaMinima')?.hasError('pattern')">
-                                Debe ser un número entero.
-                            </mat-error>
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="form-field w-full">
-                            <mat-label>Dureza Máxima (Shore)</mat-label>
+                            <mat-label>Dureza Máxima</mat-label>
                             <input matInput type="number" formControlName="durezaMaxima" required>
                             <mat-error *ngIf="piezaForm.get('durezaMaxima').hasError('required')">Valor
                                 requerido</mat-error>
-                            <mat-error *ngIf="piezaForm.get('durezaMaxima')?.hasError('pattern')">
-                                Debe ser un número entero.
-                            </mat-error>
                         </mat-form-field>
                     </div>
                     <div class="flex gap-4">
@@ -192,6 +156,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
                 *ngIf="mode === 'create'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
@@ -224,9 +189,6 @@
                         <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Revisión</mat-label>
                             <input matInput type="number" formControlName="planoRevision" required>
-                            <mat-error *ngIf="piezaForm.get('plano.planoRevision')?.hasError('pattern')">
-                                Debe ser un número entero.
-                            </mat-error>
                         </mat-form-field>
                     </div>
                     <mat-form-field appearance="outline">
@@ -264,10 +226,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-2 flex justify-center w-full" *ngIf="mode === 'edit'">
-                            <button mat-flat-button
-                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-                                (click)="generarNuevaRevision()">
+                        <div class="mt-2 flex justify-center w-full"
+                            *ngIf="mode === 'edit' && ('PROCESOS_PIEZAS_GENERAR_REVISION' | hasPermission)">
+                            <button type="button" mat-flat-button (click)="generarNuevaRevision()"
+                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent">
                                 <span class="mat-button-wrapper">Generar Nueva Revisión</span>
                                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
                             </button>

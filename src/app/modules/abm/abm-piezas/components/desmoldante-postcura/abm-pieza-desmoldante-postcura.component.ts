@@ -1,11 +1,11 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { DesmoldantePostCura } from '../../models/pieza.model';
+import { PiezaProceso } from '../../models/pieza.model';
 import { Observable } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
@@ -14,12 +14,10 @@ import { MatDialog } from '@angular/material/dialog';
   styleUrls: ['./abm-pieza-desmoldante-postcura.component.scss']
 })
 export class ABMPiezaDesmoldantePostcuraComponent extends ABMPiezaBaseComponent implements OnInit, OnChanges {
-
+  @Input() piezaId: number;
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
-  desmoldantePostCura$: Observable<DesmoldantePostCura>;
-  desmoldantes$: Observable<string[]>;
+  @Input() piezaProcesoData: PiezaProceso | null = null;
 
-  mostrarObservacionesDesmoldante = false;
   form: FormGroup;
 
   constructor(
@@ -27,44 +25,30 @@ export class ABMPiezaDesmoldantePostcuraComponent extends ABMPiezaBaseComponent 
     protected router: Router,
     protected route: ActivatedRoute,
     protected abmPiezaService: ABMPiezaService,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     public dialog: MatDialog
   ) {
     super(fb, router, route, abmPiezaService, dialog);
 
     this.form = this.fb.group({
       desmoldante: [''],
-      observacionesDesmoldante: [''],
-      postcura: ['']
+      postCura: ['']
     });
   }
 
   ngOnInit(): void {
-    if (this.piezaId) {
-      this.desmoldantePostCura$ = this.abmPiezaService.getDesmoldantePostCura(this.piezaId);
-      this.desmoldantes$ = this.abmPiezaService.getDesmoldantes();
-
-      this.desmoldantePostCura$.subscribe(data => {
-        if (data) {
-          this.form.patchValue(data);
-          this.mostrarObservacionesDesmoldante = data.desmoldante !== 'No';
-        }
-      });
-    }
-
-    this.form.get('desmoldante').valueChanges.subscribe(value => {
-      this.mostrarObservacionesDesmoldante = value !== 'No';
-    });
-
     if (this.mode === 'view') {
       this.form.disable();
     }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.mode) {
-      const currentMode = changes.mode.currentValue;
-      if (currentMode === 'view') {
+    if (changes.piezaProcesoData && changes.piezaProcesoData.currentValue) {
+      this.patchDesmoldanteForm(changes.piezaProcesoData.currentValue);
+    }
+
+    if (changes.mode && !changes.mode.firstChange) {
+      if (changes.mode.currentValue === 'view') {
         this.form.disable();
       } else {
         this.form.enable();
@@ -72,37 +56,40 @@ export class ABMPiezaDesmoldantePostcuraComponent extends ABMPiezaBaseComponent 
     }
   }
 
-  public guardar(): void {
-    if (this.form.invalid) {
-      this.openSnackBar(false, 'El formulario no es válido.', 'red');
-      return;
-    }
+  private patchDesmoldanteForm(data: PiezaProceso): void {
+    if (!data) return;
 
-    const data: DesmoldantePostCura = this.form.value;
-
-    this.abmPiezaService.updateDesmoldantePostCura(this.piezaId, data).subscribe({
-      next: () => {
-        this.openSnackBar(true, 'Desmoldante/Postcura guardado correctamente.', 'green');
-      },
-      error: (err) => {
-        console.error('Error al guardar Desmoldante/Postcura', err);
-        this.openSnackBar(false, 'Error al guardar los datos.', 'red');
-      }
+    this.form.patchValue({
+      desmoldante: data.desmoldante,
+      postCura: data.postCura
     });
   }
 
-  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-    const defaultCss: string = css ? css : 'red';
-    const snackBarMessage = message ? message : defaultMessage;
-    const snackBarCss = css ? css : defaultCss;
-    const snackBarDuration = duration ? duration : 5000;
+  public guardar(): void {
+    if (this.form.invalid) {
+      this.notificationService.showError('El formulario no es válido.');
+      return;
+    }
 
-    this.snackBar.open(snackBarMessage, 'X', {
-      duration: snackBarDuration,
-      panelClass: `${snackBarCss}-snackbar`,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
+    if (!this.piezaId) {
+      this.notificationService.showError('No se ha identificado la pieza para guardar.');
+      return;
+    }
+
+    const dataToSave = {
+      desmoldante: this.form.get('desmoldante').value,
+      postCura: this.form.get('postCura').value
+    };
+
+    this.abmPiezaService.updateDesmoldantePostcura(this.piezaId, dataToSave).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Datos de Desmoldante/Postcura guardados correctamente.');
+        this.form.markAsPristine();
+      },
+      error: (err) => {
+        console.error('Error al guardar Desmoldante/Postcura', err);
+        this.notificationService.showError('Error al guardar los datos.');
+      }
     });
   }
 }

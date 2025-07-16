@@ -3,11 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { Subscription } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, Subscription } from 'rxjs';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
@@ -22,15 +21,17 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
   @Input() piezaId: number;
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
-  clientes$: Array<any> = [];
+  clientesDisponibles$: Array<any> = [];
   selectedClients = new MatTableDataSource<PiezaCliente>([]);
 
-  baseDisplayedColumns: string[] = ['idCliente', 'nombreCliente', 'nombrePiezaCliente'];
+  baseDisplayedColumns: string[] = ['idCliente', 'nombreCliente', 'nombrePiezaPersonalizado'];
   displayedColumnsClients: string[];
 
   clienteForm: FormGroup;
   sinDatos: boolean = false;
   isLoading: boolean = false;
+  editMode: boolean = false;
+  clienteToEdit: PiezaCliente | null = null;
   private subscription: Subscription = new Subscription();
 
   constructor(
@@ -38,9 +39,8 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
     protected router: Router,
     protected route: ActivatedRoute,
     protected abmPiezaService: ABMPiezaService,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     public dialog: MatDialog,
-    private matIconRegistry: MatIconRegistry,
     private domSanitizer: DomSanitizer,
     private _clients: ClientesService
   ) {
@@ -78,22 +78,18 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
   }
 
   setDisplayedColumns(): void {
-    if (this.mode === 'view') {
-      this.displayedColumnsClients = this.baseDisplayedColumns;
-    } else {
-      this.displayedColumnsClients = [...this.baseDisplayedColumns, 'acciones'];
-    }
+    this.displayedColumnsClients = this.mode === 'view'
+      ? this.baseDisplayedColumns
+      : [...this.baseDisplayedColumns, 'acciones'];
   }
 
   loadClientesDropdown(): void {
     this.subscription.add(
       this._clients.getClientes().subscribe({
-        next: (res: any) => {
-          this.clientes$ = res && res.data ? res.data : [];
-        },
-        error: (err: any) => {
+        next: (res: any) => this.clientesDisponibles$ = res?.data || [],
+        error: (err) => {
           console.error('Error al cargar la lista de clientes:', err);
-          this.openSnackBar(false, 'Error al cargar la lista de clientes.');
+          this.notificationService.showError('Error al cargar la lista de clientes.');
         }
       })
     );
@@ -103,117 +99,121 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
     this.isLoading = true;
     this.subscription.add(
       this.abmPiezaService.getClientesPorPieza(this.piezaId).subscribe({
-        next: (response: any) => {
-          const clientesAsociados = response && response.data ? response.data : [];
+        next: (response) => {
+          const clientesAsociados = response?.data || [];
           this.selectedClients.data = clientesAsociados;
           this.sinDatos = clientesAsociados.length === 0;
           this.isLoading = false;
         },
-        error: (err: any) => {
+        error: (err) => {
           console.error('Error al cargar los clientes asociados:', err);
-          this.openSnackBar(false, 'Error al cargar los clientes asociados.');
+          this.notificationService.showError('Error al cargar los clientes asociados.');
           this.sinDatos = true;
           this.isLoading = false;
-          this.selectedClients.data = [];
         }
       })
     );
   }
 
-  agregarCliente(): void {
+  addOrUpdateCliente(): void {
     if (this.clienteForm.invalid) {
-      this.openSnackBar(false, 'Por favor, seleccione un cliente.');
+      this.notificationService.showError('Por favor, complete los campos requeridos.');
       return;
     }
-
-    const clienteId = this.clienteForm.get('clienteId').value;
-    const nombrePersonalizado = this.clienteForm.get('nombrePiezaPersonalizado').value;
-
-    const selectedClient = this.clientes$.find(cliente => cliente.id === clienteId);
-    if (!selectedClient) {
-      this.openSnackBar(false, 'Cliente no encontrado.');
-      return;
-    }
-
-    const alreadyAdded = this.selectedClients.data.some(c => c.idCliente === selectedClient.id);
-    if (alreadyAdded) {
-      this.openSnackBar(false, 'El cliente ya está asociado a esta pieza.');
-      return;
-    }
-
-    const dto = {
-      idPieza: this.piezaId,
-      idCliente: selectedClient.id,
-      nombreCliente: selectedClient.nombre,
-      nombrePiezaCliente: nombrePersonalizado
-    };
 
     this.isLoading = true;
-    this.subscription.add(
-      this.abmPiezaService.agregarClienteAPieza(dto).subscribe({
-        next: () => {
-          this.openSnackBar(true, 'Cliente agregado correctamente.', 'green');
-          this.loadSelectedClients();
-          this.clienteForm.reset();
-          this.clienteForm.updateValueAndValidity();
-        },
-        error: (err) => {
-          console.error('Error al agregar el cliente:', err);
-          this.openSnackBar(false, 'Error al agregar el cliente.');
-          this.isLoading = false;
-        }
-      })
-    );
+    const formValue = this.clienteForm.value;
+
+    if (this.editMode) {
+      const dto = {
+        idCliente: this.clienteToEdit.idCliente,
+        idPieza: this.piezaId,
+        nombrePiezaPersonalizado: formValue.nombrePiezaPersonalizado
+      };
+      this.subscription.add(
+        this.abmPiezaService.actualizarClienteDePieza(this.clienteToEdit.id, dto).subscribe(this.handleResponse('Cliente actualizado'))
+      );
+    } else {
+      const alreadyAdded = this.selectedClients.data.some(c => c.idCliente === formValue.clienteId);
+      if (alreadyAdded) {
+        this.notificationService.showError('El cliente ya está asociado a esta pieza.');
+        this.isLoading = false;
+        return;
+      }
+      const dto = {
+        idCliente: formValue.clienteId,
+        idPieza: this.piezaId,
+        nombrePiezaPersonalizado: formValue.nombrePiezaPersonalizado
+      };
+      this.subscription.add(
+        this.abmPiezaService.agregarClienteAPieza(dto).subscribe(this.handleResponse('Cliente agregado'))
+      );
+    }
+  }
+
+  startEdit(cliente: PiezaCliente): void {
+    this.editMode = true;
+    this.clienteToEdit = cliente;
+    this.clienteForm.patchValue({
+      clienteId: cliente.idCliente,
+      nombrePiezaPersonalizado: cliente.nombrePiezaPersonalizado
+    });
+    this.clienteForm.get('clienteId').disable();
+  }
+
+  cancelEdit(): void {
+    this.editMode = false;
+    this.clienteToEdit = null;
+    this.clienteForm.reset();
+    this.clienteForm.get('clienteId').enable();
+  }
+
+  private handleResponse(successMessage: string) {
+    return {
+      next: () => {
+        this.notificationService.showSuccess(`${successMessage} correctamente.`);
+        this.cancelEdit();
+        this.loadSelectedClients();
+      },
+      error: (err) => {
+        console.error(`Error al procesar cliente:`, err);
+        this.notificationService.showError(`Error al ${successMessage.toLowerCase()}.`);
+        this.isLoading = false;
+      }
+    };
   }
 
   eliminarCliente(row: PiezaCliente): void {
     const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar la asociación con el cliente <span class="font-bold">${row.nombreCliente}</span>?`);
-    this.openConfirmationModal(mensaje, () => {
-      this.isLoading = true;
-      this.subscription.add(
-        this.abmPiezaService.eliminarClienteDePieza(row.id).subscribe({
-          next: () => {
-            this.openSnackBar(true, 'Cliente eliminado correctamente.', 'green');
-            this.loadSelectedClients();
-          },
-          error: (err) => {
-            console.error('Error al eliminar el cliente:', err);
-            this.openSnackBar(false, 'Error al eliminar el cliente.');
-            this.isLoading = false;
-          }
-        })
-      );
+
+    const sub = this.openConfirmationModal(mensaje).subscribe(confirmed => {
+      if (confirmed) {
+        this.isLoading = true;
+        this.subscription.add(
+          this.abmPiezaService.eliminarClienteDePieza(row.id).subscribe(this.handleResponse('Cliente eliminado'))
+        );
+      }
     });
+    this.subscription.add(sub);
   }
 
-  openConfirmationModal(message: SafeHtml, onConfirm: () => void): void {
-    this.dialog.open(GenericModalComponent, {
+  openConfirmationModal(message: SafeHtml): Observable<boolean> {
+    const dialogRef = this.dialog.open(GenericModalComponent, {
       width: '400px',
       data: {
         title: 'Confirmar eliminación',
         message: message,
-        showCloseButton: true,
         showConfirmButton: true,
         confirmButtonText: 'Eliminar',
         cancelButtonText: 'Cancelar',
         type: 'warning',
-        onConfirm: onConfirm
       }
     });
+
+    return dialogRef.afterClosed();
   }
 
-  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-    const defaultCss: string = css ? css : 'red';
-    const snackBarMessage = message ? message : defaultMessage;
-    const snackBarCss = css ? css : defaultCss;
-    const snackBarDuration = duration ? duration : 5000;
-
-    this.snackBar.open(snackBarMessage, 'X', {
-      duration: snackBarDuration,
-      panelClass: `${snackBarCss}-snackbar`,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
+  get buttonText(): string {
+    return this.editMode ? 'Actualizar' : 'Agregar';
   }
 }

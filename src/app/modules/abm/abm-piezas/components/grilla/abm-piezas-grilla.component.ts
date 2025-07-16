@@ -5,7 +5,7 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Observable, Subject, forkJoin, merge, of } from 'rxjs';
 import { startWith, switchMap, map, catchError, takeUntil, tap } from 'rxjs/operators';
@@ -58,7 +58,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     private formBuilder: FormBuilder,
     private dialog: MatDialog,
     private sanitizer: DomSanitizer,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     private _formulas: FormulasService,
     private _materials: MaterialsService
   ) {
@@ -91,7 +91,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
           return this.abmPiezaService.getPiezas(params).pipe(
             catchError(() => {
               this.isLoading = false;
-              this.openSnackBar('Error al cargar los datos de la grilla.', false);
+              this.notificationService.showError('Error al cargar los datos de la grilla.');
               return of({ data: { page: [], totalReg: 0 } });
             })
           );
@@ -147,13 +147,6 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     this.paginator.page.emit();
   }
 
-  private openSnackBar(message: string, isSuccess: boolean): void {
-    this.snackBar.open(message, 'Cerrar', {
-      duration: 4000,
-      panelClass: isSuccess ? 'green-snackbar' : 'red-snackbar',
-    });
-  }
-
   search(): void {
     this.paginator.pageIndex = 0;
     this.paginator.page.emit();
@@ -181,12 +174,12 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     this.openConfirmationModal(message, () => {
       this.abmPiezaService.clonarPieza(pieza.id).subscribe({
         next: () => {
-          this.openSnackBar('Nueva revisión generada exitosamente.', true);
+          this.notificationService.showSuccess('Nueva revisión generada exitosamente.');
           this.refreshGrid();
         },
         error: (err) => {
           console.error('Error al generar nueva revisión:', err);
-          this.openSnackBar('Error al generar la nueva revisión.', false);
+          this.notificationService.showError('Error al generar la nueva revisión.');
         }
       });
     }, 'Generar Nueva Revisión');
@@ -199,12 +192,12 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     this.openConfirmationModal(message, () => {
       this.abmPiezaService.marcarVigente(pieza.id).subscribe({
         next: () => {
-          this.openSnackBar('Pieza marcada como vigente exitosamente.', true);
+          this.notificationService.showSuccess('Pieza marcada como vigente exitosamente.');
           this.refreshGrid();
         },
         error: (err) => {
           console.error('Error al marcar como vigente:', err);
-          this.openSnackBar('Error al marcar la pieza como vigente.', false);
+          this.notificationService.showError('Error al marcar la pieza como vigente.');
         }
       });
     }, 'Marcar como Vigente');

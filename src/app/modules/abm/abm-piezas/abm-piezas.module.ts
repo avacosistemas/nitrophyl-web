@@ -41,6 +41,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ABMPiezaModalPlanoModule } from './components/planos/modal-plano/abm-pieza-plano-modal.module';
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { CoreSharedModule } from 'app/core/shared/shared.module';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
@@ -87,7 +88,8 @@ import { CoreSharedModule } from 'app/core/shared/shared.module';
     MatDialogModule,
     MatSlideToggleModule,
     ABMPiezaModalPlanoModule,
-    CoreSharedModule
+    CoreSharedModule,
+    MatProgressSpinnerModule,
   ]
 })
 export class ABMPiezasModule { }

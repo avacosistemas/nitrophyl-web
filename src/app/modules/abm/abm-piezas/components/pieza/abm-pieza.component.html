@@ -21,13 +21,15 @@
 
     <mat-tab label="Moldeo" *ngIf="piezaId">
       <div>
-        <app-abm-pieza-moldeo [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-moldeo>
+        <app-abm-pieza-moldeo [piezaId]="piezaId" [mode]="mode"
+          [piezaProcesoData]="piezaProceso"></app-abm-pieza-moldeo>
       </div>
     </mat-tab>
 
     <mat-tab label="Desmoldante/PostCura" *ngIf="piezaId">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <app-abm-pieza-desmoldante-postcura [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-desmoldante-postcura>
+        <app-abm-pieza-desmoldante-postcura [piezaId]="piezaId" [mode]="mode"
+          [piezaProcesoData]="piezaProceso"></app-abm-pieza-desmoldante-postcura>
       </div>
     </mat-tab>
 

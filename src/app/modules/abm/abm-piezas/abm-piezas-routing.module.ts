@@ -11,6 +11,11 @@ const routes: Routes = [
     component: ABMPiezasComponent,
     children: [
       {
+        path: '',
+        redirectTo: 'grid',
+        pathMatch: 'full'
+      },
+      {
         path: 'grid',
         component: ABMPiezasGrillaComponent,
         canActivate: [PermissionGuard],
@@ -26,13 +31,13 @@ const routes: Routes = [
         path: ':id/edit',
         component: ABMPiezaComponent,
         canActivate: [PermissionGuard],
-        data: { permission: 'PROCESOS_PIEZAS_EDIT', mode: 'EDIT' },
+        data: { permission: 'PROCESOS_PIEZAS_EDIT', mode: 'edit' },
       },
       {
         path: ':id/view',
         component: ABMPiezaComponent,
         canActivate: [PermissionGuard],
-        data: { permission: 'PROCESOS_PIEZAS_VIEW', mode: 'VIEW' },
+        data: { permission: 'PROCESOS_PIEZAS_VIEW', mode: 'view' },
       },
     ],
   },

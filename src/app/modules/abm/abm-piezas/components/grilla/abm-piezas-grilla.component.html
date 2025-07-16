@@ -130,13 +130,13 @@
                                     <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"></mat-icon>
                                 </button>
                                 <button mat-icon-button
-                                    *ngIf="('PROCESOS_PIEZAS_GENERAR_REVISION' | hasPermission) && (row.puedeGenerarRevision)"
+                                    *ngIf="('PROCESOS_PIEZAS_GENERAR_REVISION' | hasPermission) && row.puedeGenerarRevision"
                                     (click)="generarNuevaRevision(row)">
                                     <mat-icon svgIcon="heroicons_solid:plus-circle"
                                         matTooltip="Generar nueva revisión"></mat-icon>
                                 </button>
                                 <button mat-icon-button
-                                    *ngIf="('PROCESOS_PIEZAS_MARCAR_VIGENTE' | hasPermission) && (row.puedeMarcarVigente)"
+                                    *ngIf="('PROCESOS_PIEZAS_MARCAR_VIGENTE' | hasPermission) && row.puedeMarcarVigente"
                                     (click)="marcarVigente(row)">
                                     <mat-icon svgIcon="heroicons_solid:check-circle"
                                         matTooltip="Marcar como vigente"></mat-icon>

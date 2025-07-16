@@ -1,14 +1,14 @@
-import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { Prensa, Bombeo, Moldeo } from '../../models/pieza.model';
-import { Observable, of } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Prensa, Bombeo, Moldeo, PiezaProceso } from '../../models/pieza.model';
+import { Observable, of, Subject, merge } from 'rxjs';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
-import { startWith, switchMap, map } from 'rxjs/operators';
-import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { startWith, map, switchMap, debounceTime, catchError, filter } from 'rxjs/operators';
 
 @Component({
     selector: 'app-abm-pieza-moldeo',
@@ -16,117 +16,137 @@ import { MatSlideToggleChange } from '@angular/material/slide-toggle';
     styleUrls: ['./abm-pieza-moldeo.component.scss']
 })
 export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements OnInit, OnChanges {
+    @Input() piezaId: number;
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
-    moldeo$: Observable<Moldeo>;
-    prensas$: Observable<Prensa[]>;
-    tiposBombeo$: Observable<string[]>;
+    @Input() piezaProcesoData: PiezaProceso | null = null;
+    @ViewChild('prensaInput') prensaInput: ElementRef<HTMLInputElement>;
+
+    prensasDisponibles$: Observable<Prensa[]>;
+
+    tiposBombeo: string[] = ['AUTOMATICO', 'ESCALONADO'];
 
     moldeoForm = this.fb.group({
-        precalentamientoHabilitado: [{ value: false, disabled: this.mode === 'view' }],
+        precalentamientoHabilitado: [false],
         precalentamientoTiempo: [{ value: null, disabled: true }],
         precalentamientoUnidad: [{ value: 'minutos', disabled: true }],
-        vulcanizacionTiempo: [{ value: null, disabled: this.mode === 'view' }, Validators.required],
-        vulcanizacionTemperaturaMinima: [{ value: null, disabled: this.mode === 'view' }, Validators.required],
-        vulcanizacionTemperaturaMaxima: [{ value: null, disabled: this.mode === 'view' }, Validators.required],
+        vulcanizacionTiempo: [null, Validators.required],
+        vulcanizacionTemperaturaMinima: [null, Validators.required],
+        vulcanizacionTemperaturaMaxima: [null, Validators.required],
         bombas: this.fb.array([]),
+        prensasSeleccionadas: this.fb.array([])
     });
 
-
-    prensaCtrl = new FormControl({ value: '', disabled: this.mode === 'view' });
+    prensaCtrl = new FormControl('');
     prensasAgregadas: Prensa[] = [];
     filteredPrensas$: Observable<Prensa[]>;
 
-
-    cantidadCtrl = new FormControl({ value: '', disabled: this.mode === 'view' }, Validators.required);
-    tipoCtrl = new FormControl({ value: '', disabled: this.mode === 'view' }, Validators.required);
-    presionCtrl = new FormControl({ value: '', disabled: this.mode === 'view' });
+    cantidadCtrl = new FormControl(null, Validators.required);
+    tipoCtrl = new FormControl(null, Validators.required);
+    presionCtrl = new FormControl(null);
     bombeosAgregados: Bombeo[] = [];
 
     precalentamientoUnidades: string[] = ['minutos', 'segundos'];
+
+    private refreshPrensas$ = new Subject<void>();
 
     constructor(
         protected fb: FormBuilder,
         protected router: Router,
         protected route: ActivatedRoute,
         protected abmPiezaService: ABMPiezaService,
-        private snackBar: MatSnackBar,
+        private notificationService: NotificationService,
         public dialog: MatDialog
     ) {
         super(fb, router, route, abmPiezaService, dialog);
-
-        this.filteredPrensas$ = this.prensaCtrl.valueChanges.pipe(
-            startWith(''),
-            switchMap(value => this.prensas$.pipe(
-                map(prensas => this._filterPrensas(value, prensas))
-            ))
-        );
     }
 
     ngOnInit(): void {
-        this.prensas$ = this.abmPiezaService.getPrensas();
-        this.tiposBombeo$ = this.abmPiezaService.getTiposBombeo();
+        const prensasTriggers$ = merge(
+            this.prensaCtrl.valueChanges,
+            this.refreshPrensas$
+        );
 
-        this.moldeo$ = this.abmPiezaService.getMoldeo(this.piezaId);
-        this.moldeo$.subscribe(moldeoData => {
-            this.moldeoForm.patchValue({
-                precalentamientoHabilitado: moldeoData.precalentamientoHabilitado,
-                precalentamientoTiempo: moldeoData.precalentamientoTiempo,
-                precalentamientoUnidad: moldeoData.precalentamientoUnidad,
-                vulcanizacionTiempo: moldeoData.vulcanizacionTiempo,
-                vulcanizacionTemperaturaMinima: moldeoData.vulcanizacionTemperaturaMinima,
-                vulcanizacionTemperaturaMaxima: moldeoData.vulcanizacionTemperaturaMaxima
-            });
+        this.filteredPrensas$ = prensasTriggers$.pipe(
+            startWith(''),
+            debounceTime(300),
+            switchMap(() => {
+                const searchTerm = typeof this.prensaCtrl.value === 'string' ? this.prensaCtrl.value : '';
 
-            if (moldeoData.precalentamientoHabilitado) {
-                this.moldeoForm.get('precalentamientoTiempo').enable();
-                this.moldeoForm.get('precalentamientoUnidad').enable();
-            } else {
-                this.moldeoForm.get('precalentamientoTiempo').disable();
-                this.moldeoForm.get('precalentamientoUnidad').disable();
-            }
+                return this.abmPiezaService.getPrensas().pipe(
+                    map(response => response || []),
+                    map(prensasDesdeApi =>
+                        prensasDesdeApi.filter(prensaApi =>
+                            !this.prensasAgregadas.some(prensaAgregada => prensaAgregada.id === prensaApi.id)
+                        )
+                    ),
+                    catchError(() => of([]))
+                );
+            })
+        );
 
-            this.prensasAgregadas = moldeoData.prensaSeleccionada;
-            this.actualizarFormularioPrensas();
+        if (this.mode === 'view') {
+            this.disableAllControls();
+        }
 
-            this.bombeosAgregados = moldeoData.bombas;
-            this.actualizarFormularioBombeos();
-
-            if (this.mode === 'view') {
-                this.moldeoForm.disable();
-                this.prensaCtrl.disable();
-                this.cantidadCtrl.disable();
-                this.tipoCtrl.disable();
-                this.presionCtrl.disable();
-            }
+        this.moldeoForm.get('precalentamientoHabilitado').valueChanges.subscribe(habilitado => {
+            this.togglePrecalentamientoControls(habilitado);
         });
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.mode && !changes.mode.firstChange) {
-            const mode = changes.mode.currentValue;
+        if (changes.piezaProcesoData && changes.piezaProcesoData.currentValue) {
+            this.patchMoldeoForm(changes.piezaProcesoData.currentValue);
+        }
 
-            if (mode === 'view') {
-                this.moldeoForm.disable();
-                this.prensaCtrl.disable();
-                this.cantidadCtrl.disable();
-                this.tipoCtrl.disable();
-                this.presionCtrl.disable();
+        if (changes.mode) {
+            if (this.mode === 'view') {
+                this.disableAllControls();
             } else {
-                this.moldeoForm.enable();
-                this.moldeoForm.get('precalentamientoTiempo').disable();
-                this.moldeoForm.get('precalentamientoUnidad').disable();
-                this.prensaCtrl.enable();
-                this.cantidadCtrl.enable();
-                this.tipoCtrl.enable();
-                this.presionCtrl.enable();
+                this.enableAllControls();
             }
         }
     }
 
-    togglePrecalentamiento(event: MatSlideToggleChange): void {
-        const habilitado = event.checked;
-        this.moldeoForm.get('precalentamientoHabilitado').setValue(habilitado);
+    private patchMoldeoForm(data: PiezaProceso): void {
+        if (!data) return;
 
+        const precalentamientoHabilitado = !!data.precalentamientoValor && data.precalentamientoValor > 0;
+
+        this.moldeoForm.patchValue({
+            precalentamientoHabilitado: precalentamientoHabilitado,
+            precalentamientoTiempo: data.precalentamientoValor,
+            precalentamientoUnidad: data.precalentamientoUnidad || 'minutos',
+            vulcanizacionTiempo: data.vulcanizacionTiempo,
+            vulcanizacionTemperaturaMinima: data.vulcanizacionTemperaturaMin,
+            vulcanizacionTemperaturaMaxima: data.vulcanizacionTemperaturaMax,
+        });
+
+        this.prensasAgregadas = data.prensas || [];
+        this.actualizarFormularioPrensas();
+
+        this.bombeosAgregados = data.bombeos || [];
+        this.actualizarFormularioBombeos();
+    }
+
+    private disableAllControls(): void {
+        this.moldeoForm.disable();
+        this.prensaCtrl.disable();
+        this.cantidadCtrl.disable();
+        this.tipoCtrl.disable();
+        this.presionCtrl.disable();
+    }
+
+    private enableAllControls(): void {
+        this.moldeoForm.enable();
+        this.togglePrecalentamientoControls(this.moldeoForm.get('precalentamientoHabilitado').value);
+        this.prensaCtrl.enable();
+        this.cantidadCtrl.enable();
+        this.tipoCtrl.enable();
+        this.presionCtrl.enable();
+    }
+
+    togglePrecalentamientoControls(habilitado: boolean): void {
+        if (this.mode === 'view') return;
         if (habilitado) {
             this.moldeoForm.get('precalentamientoTiempo').enable();
             this.moldeoForm.get('precalentamientoUnidad').enable();
@@ -136,73 +156,73 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
         }
     }
 
-    private _filterPrensas(value: string, prensas: Prensa[]): Prensa[] {
-        const filterValue = typeof value === 'string' ? value.toLowerCase() : '';
+    private _filterPrensas(value: any, prensas: Prensa[]): Prensa[] {
+        const filterValue = (typeof value === 'string' ? value : value?.nombre || '').toLowerCase();
         return prensas.filter(prensa => prensa.nombre.toLowerCase().includes(filterValue));
     }
 
-    agregarPrensa(): void {
-        const prensaValue: Prensa = this.prensaCtrl.value;
-        if (prensaValue && !this.prensasAgregadas.find(p => p.id === prensaValue.id)) {
+    agregarPrensa(event: MatAutocompleteSelectedEvent): void {
+        const prensaValue: Prensa = event.option.value;
+
+        if (prensaValue && typeof prensaValue === 'object' && !this.prensasAgregadas.some(p => p.id === prensaValue.id)) {
             this.prensasAgregadas.push(prensaValue);
-            this.prensaCtrl.setValue(null);
             this.actualizarFormularioPrensas();
+            this.moldeoForm.markAsDirty();
         }
+
+        if (this.prensaInput) {
+            this.prensaInput.nativeElement.value = '';
+        }
+        this.prensaCtrl.setValue(null);
     }
 
     quitarPrensa(prensa: Prensa): void {
-        this.prensasAgregadas = this.prensasAgregadas.filter(p => p.id !== prensa.id);
-        this.actualizarFormularioPrensas();
+        const index = this.prensasAgregadas.findIndex(p => p.id === prensa.id);
+        if (index >= 0) {
+            this.prensasAgregadas.splice(index, 1);
+            this.actualizarFormularioPrensas();
+            this.moldeoForm.markAsDirty();
+            this.refreshPrensas$.next();
+        }
     }
 
+
     actualizarFormularioPrensas() {
-        this.moldeoForm.removeControl('prensasSeleccionadas');
-        this.moldeoForm.addControl('prensasSeleccionadas', this.fb.array([]));
         const prensasFormArray = this.moldeoForm.get('prensasSeleccionadas') as FormArray;
-
-        while (prensasFormArray.length !== 0) {
-            prensasFormArray.removeAt(0);
-        }
-
+        prensasFormArray.clear();
         this.prensasAgregadas.forEach(prensa => {
             prensasFormArray.push(this.fb.control(prensa));
         });
     }
 
     displayFnPrensa(prensa: Prensa): string {
-        return prensa && prensa.nombre ? prensa.nombre : '';
+        return '';
     }
 
     agregarBombeo(): void {
         if (this.cantidadCtrl.valid && this.tipoCtrl.valid) {
-            const bombeo: Bombeo = {
+            this.bombeosAgregados.push({
                 cantidad: this.cantidadCtrl.value,
                 tipo: this.tipoCtrl.value,
                 presion: this.presionCtrl.value
-            };
-
-            this.bombeosAgregados.push(bombeo);
-            this.cantidadCtrl.setValue(null);
-            this.tipoCtrl.setValue(null);
-            this.presionCtrl.setValue(null);
+            });
+            this.cantidadCtrl.reset(); this.tipoCtrl.reset(); this.presionCtrl.reset();
             this.actualizarFormularioBombeos();
+            this.moldeoForm.markAsDirty();
         } else {
-            this.openSnackBar(false, 'Por favor, complete la cantidad y el tipo de bombeo.');
+            this.notificationService.showError('Por favor, complete la cantidad y el tipo de bombeo.');
         }
     }
-
 
     quitarBombeo(index: number): void {
         this.bombeosAgregados.splice(index, 1);
         this.actualizarFormularioBombeos();
+        this.moldeoForm.markAsDirty();
     }
 
     actualizarFormularioBombeos() {
         const bombeosFormArray = this.moldeoForm.get('bombas') as FormArray;
-        while (bombeosFormArray.length !== 0) {
-            bombeosFormArray.removeAt(0);
-        }
-
+        bombeosFormArray.clear();
         this.bombeosAgregados.forEach(bombeo => {
             bombeosFormArray.push(this.fb.group({
                 cantidad: [bombeo.cantidad],
@@ -212,44 +232,36 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
         });
     }
 
-    guardarMoldeo(): void {
-        if (this.moldeoForm.valid) {
-            const moldeo: Moldeo = {
-                prensaSeleccionada: this.prensasAgregadas,
-                precalentamientoHabilitado: this.moldeoForm.get('precalentamientoHabilitado').value,
-                precalentamientoTiempo: this.moldeoForm.get('precalentamientoTiempo').value,
-                precalentamientoUnidad: this.moldeoForm.get('precalentamientoUnidad').value,
-                vulcanizacionTiempo: this.moldeoForm.get('vulcanizacionTiempo').value,
-                vulcanizacionTemperaturaMinima: this.moldeoForm.get('vulcanizacionTemperaturaMinima').value,
-                vulcanizacionTemperaturaMaxima: this.moldeoForm.get('vulcanizacionTemperaturaMaxima').value,
-                bombas: this.bombeosAgregados
-            };
-
-            this.abmPiezaService.updateMoldeo(this.piezaId, moldeo).subscribe(() => {
-                this.openSnackBar(true, 'Moldeo guardado (mock).', 'green');
-                this.abmPiezaService.events.next({
-                    mostrarBotonEdicion: true,
-                    botonEdicionTexto: 'Guardar Moldeo',
-                    nombrePieza: ''
-                });
-            });
-        } else {
-            this.openSnackBar(false, 'Por favor, complete todos los campos.');
+    public guardarMoldeo(): void {
+        if (this.moldeoForm.invalid) {
+            this.notificationService.showError('Por favor, complete todos los campos requeridos de Moldeo.');
+            return;
         }
-    }
+        if (!this.piezaId) {
+            this.notificationService.showError('No se ha identificado la pieza para guardar.');
+            return;
+        }
 
-    private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-        const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-        const defaultCss: string = css ? css : 'red';
-        const snackBarMessage = message ? message : defaultMessage;
-        const snackBarCss = css ? css : defaultCss;
-        const snackBarDuration = duration ? duration : 5000;
+        const formValues = this.moldeoForm.getRawValue();
+        const dto = {
+            precalentamientoValor: formValues.precalentamientoHabilitado ? formValues.precalentamientoTiempo : null,
+            precalentamientoUnidad: formValues.precalentamientoHabilitado ? formValues.precalentamientoUnidad : null,
+            prensas: this.prensasAgregadas.map(p => p.id),
+            vulcanizacionTemperaturaMax: formValues.vulcanizacionTemperaturaMaxima,
+            vulcanizacionTemperaturaMin: formValues.vulcanizacionTemperaturaMinima,
+            vulcanizacionTiempo: formValues.vulcanizacionTiempo,
+            bombeos: this.bombeosAgregados.map(b => ({ cantidad: b.cantidad, presion: b.presion, tipo: b.tipo }))
+        };
 
-        this.snackBar.open(snackBarMessage, 'X', {
-            duration: snackBarDuration,
-            panelClass: `${snackBarCss}-snackbar`,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom',
+        this.abmPiezaService.updateMoldeo(this.piezaId, dto).subscribe({
+            next: () => {
+                this.notificationService.showSuccess('Moldeo guardado correctamente.');
+                this.moldeoForm.markAsPristine();
+            },
+            error: (err) => {
+                console.error('Error al guardar Moldeo', err);
+                this.notificationService.showError('Error al guardar los datos de Moldeo.');
+            }
         });
     }
 

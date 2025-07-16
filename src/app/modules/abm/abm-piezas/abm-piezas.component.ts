@@ -46,12 +46,8 @@ export class ABMPiezasComponent implements OnInit, AfterContentChecked, OnDestro
         );
 
         this.suscripcion.add(
-            this._abmPiezasService.events.subscribe(event => {
+            this._abmPiezasService.buttonState$.subscribe(event => {
                 if (event) {
-                    if (typeof event === 'string' && event === 'ejecutarAccion') {
-                        return;
-                    }
-
                     if (typeof event === 'object') {
                         this.mostrarBotonEdicion = event.mostrarBotonEdicion || false;
                         this.botonEdicion = event.botonEdicionTexto || 'Guardar Pieza';
@@ -73,17 +69,16 @@ export class ABMPiezasComponent implements OnInit, AfterContentChecked, OnDestro
         if (this.suscripcion) {
             this.suscripcion.unsubscribe();
         }
+        this._abmPiezasService.resetButtonState();
     }
 
     handleAction(action: string): void {
         if (action === 'close') {
             this.close();
         } else if (action === 'edit') {
-            this._abmPiezasService.events.next({ type: 'ejecutarAccion' });
+            this._abmPiezasService.triggerAction();
         } else if (action === 'create') {
             this.router.navigate(['/procesos-piezas/create']);
-        } else if (action === 'Añadir Esquema') {
-            this._abmPiezasService.events.next({ type: 'ejecutarAccion' });
         }
     }
 
@@ -115,7 +110,11 @@ export class ABMPiezasComponent implements OnInit, AfterContentChecked, OnDestro
         this.piezaTitulo = null;
         this.piezaNombre = '';
         this.mostrarBotonEdicion = false;
-        this._abmPiezasService.events.next(null);
+        this._abmPiezasService.updateButtonState({
+            mostrarBotonEdicion: false,
+            botonEdicionTexto: '',
+            nombrePieza: ''
+        });
     }
 
     private establecerTituloVista(): void {

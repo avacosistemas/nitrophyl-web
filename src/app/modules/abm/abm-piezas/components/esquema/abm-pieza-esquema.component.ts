@@ -1,21 +1,16 @@
-import { Component, OnInit, Inject, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { Esquema } from '../../models/pieza.model';
 import { Observable } from 'rxjs';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatDialog, MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { NotificationService } from 'app/shared/services/notification.service';
+import { MatDialog } from '@angular/material/dialog';
 import { ABMPiezaEsquemaModalComponent } from './modal-form/abm-pieza-esquema-modal.component';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
-import { DomSanitizer, SafeHtml, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
-
-interface DialogData {
-  imageUrl: SafeUrl;
-  showCloseButton?: boolean;
-}
 
 @Component({
   selector: 'app-abm-pieza-esquema',
@@ -23,22 +18,21 @@ interface DialogData {
   styleUrls: ['./abm-pieza-esquema.component.scss']
 })
 export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements OnInit, OnChanges {
-
+  @Input() piezaId: number;
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
-  esquemas$: Observable<Esquema[]>;
   esquemas: Esquema[] = [];
   baseDisplayedColumns: string[] = ['imagen', 'tituloPasos'];
   displayedColumns: string[];
   sinDatos: boolean = false;
-  selectedImage: SafeUrl | null = null;
+  isLoading: boolean = false;
 
   constructor(
     protected fb: FormBuilder,
     protected router: Router,
     protected route: ActivatedRoute,
     protected abmPiezaService: ABMPiezaService,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     public dialog: MatDialog,
     private sanitizer: DomSanitizer
   ) {
@@ -47,80 +41,99 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
 
   ngOnInit(): void {
     this.setDisplayedColumns();
-    this.loadEsquemas();
+    if (this.piezaId) {
+      this.loadEsquemas();
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.mode) {
       this.setDisplayedColumns();
     }
-  }
-
-  setDisplayedColumns(): void {
-    if (this.mode === 'view') {
-      this.displayedColumns = this.baseDisplayedColumns;
-    } else {
-      this.displayedColumns = [...this.baseDisplayedColumns, 'acciones'];
+    if (changes.piezaId && changes.piezaId.currentValue) {
+      this.loadEsquemas();
     }
   }
 
+  setDisplayedColumns(): void {
+    this.displayedColumns = this.mode === 'view'
+      ? this.baseDisplayedColumns
+      : [...this.baseDisplayedColumns, 'acciones'];
+  }
+
   loadEsquemas(): void {
-    this.esquemas$ = this.abmPiezaService.getEsquemas(this.piezaId);
-    this.esquemas$.subscribe(esquemas => {
-      this.esquemas = esquemas.map(esquema => {
-        if (esquema.imagenBase64) {
-          esquema.safeImagenUrl = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${esquema.imagenBase64}`);
-        }
-        return esquema;
-      });
-      this.sinDatos = esquemas.length === 0;
+    this.isLoading = true;
+    const sub = this.abmPiezaService.getEsquemas(this.piezaId).subscribe({
+      next: response => {
+        this.esquemas = (response.data || []).map(esquema => {
+          if (esquema.imagen) {
+            esquema.safeImagenUrl = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${esquema.imagen}`);
+          }
+          return esquema;
+        });
+        this.sinDatos = this.esquemas.length === 0;
+        this.isLoading = false;
+      },
+      error: err => {
+        console.error('Error al cargar esquemas:', err);
+        this.notificationService.showError('No se pudieron cargar los esquemas.');
+        this.isLoading = false;
+      }
     });
+    this.subscriptions.push(sub);
   }
 
   openEsquemaModal(esquema?: Esquema): void {
     const dialogRef = this.dialog.open(ABMPiezaEsquemaModalComponent, {
       width: '600px',
-      data: { esquema: esquema ? { ...esquema } : null }
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.guardarEsquema(result);
+      data: {
+        esquema: esquema ? { ...esquema } : null,
+        idProceso: this.piezaId
       }
     });
-  }
 
-  guardarEsquema(esquema: Esquema): void {
-    this.abmPiezaService.updateEsquema(this.piezaId, esquema).subscribe(() => {
-      this.openSnackBar(true, 'Esquema guardado (mock).', 'green');
-      this.loadEsquemas();
+    const sub = dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadEsquemas();
+      }
     });
+    this.subscriptions.push(sub);
   }
 
   eliminarEsquema(esquema: Esquema): void {
     const mensaje = this.sanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar el esquema <span class="font-bold">${esquema.titulo}</span>?`);
-    this.openConfirmationModal(mensaje, () => {
-      this.abmPiezaService.deleteEsquema(this.piezaId, esquema.id).subscribe(() => {
-        this.openSnackBar(true, 'Esquema eliminado.', 'green');
-        this.loadEsquemas();
-      });
+
+    const sub = this.openConfirmationModal(mensaje).subscribe(confirmed => {
+      if (confirmed) {
+        const deleteSub = this.abmPiezaService.deleteEsquema(esquema.id).subscribe({
+          next: () => {
+            this.notificationService.showSuccess('Esquema eliminado correctamente.');
+            this.loadEsquemas();
+          },
+          error: err => {
+            console.error('Error al eliminar esquema:', err);
+            this.notificationService.showError('Ocurrió un error al eliminar el esquema.');
+          }
+        });
+        this.subscriptions.push(deleteSub);
+      }
     });
+    this.subscriptions.push(sub);
   }
 
-  openConfirmationModal(message: SafeHtml, onConfirm: () => void): void {
+  openConfirmationModal(message: SafeHtml): Observable<boolean> {
     const dialogRef = this.dialog.open(GenericModalComponent, {
       width: '400px',
       data: {
         title: 'Confirmar eliminación',
         message: message,
-        showCloseButton: true,
         showConfirmButton: true,
         confirmButtonText: 'Eliminar',
         cancelButtonText: 'Cancelar',
-        type: 'warning',
-        onConfirm: onConfirm
+        type: 'warning'
       }
     });
+    return dialogRef.afterClosed();
   }
 
   openImageModal(esquema: Esquema): void {
@@ -133,21 +146,6 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
       },
       width: '80%',
       maxWidth: '800px'
-    });
-  }
-
-  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-    const defaultCss: string = css ? css : 'red';
-    const snackBarMessage = message ? message : defaultMessage;
-    const snackBarCss = css ? css : defaultCss;
-    const snackBarDuration = duration ? duration : 5000;
-
-    this.snackBar.open(snackBarMessage, 'X', {
-      duration: snackBarDuration,
-      panelClass: `${snackBarCss}-snackbar`,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
     });
   }
 }

@@ -1,11 +1,12 @@
-import { Component, OnInit, Inject, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, Inject, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ABMPiezaService } from '../../../abm-piezas.service';
-import { TipoInsumo, Insumo, InsumoPieza } from '../../../models/pieza.model';
-import { Observable, of, Subject } from 'rxjs';
-import { switchMap, startWith, map, tap, takeUntil, delay } from 'rxjs/operators';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Insumo, IInsumoTratado, IAdhesivo, ITipoInsumoJerarquico, ITratamiento } from '../../../models/pieza.model';
+import { Observable, of, Subject, BehaviorSubject, combineLatest, merge } from 'rxjs';
+import { switchMap, startWith, map, takeUntil, debounceTime, filter, mapTo, catchError } from 'rxjs/operators';
+import { NotificationService } from 'app/shared/services/notification.service';
+import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 @Component({
   selector: 'app-abm-pieza-insumo-modal-form',
@@ -14,56 +15,71 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
+  @ViewChild('adhesivoInput') adhesivoInput: ElementRef<HTMLInputElement>;
 
   insumoForm: FormGroup;
-  tiposInsumo$: Observable<TipoInsumo[]> = of([]);
-  insumos$: Observable<Insumo[]> = of([]);
-  adhesivos$: Observable<string[]> = of([]);
-  nivelesTipoInsumo: TipoInsumo[][] = [];
-  adhesivoCtrl = new FormControl();
-  adhesivosAgregados: string[] = [];
-  filteredAdhesivos$: Observable<string[]>;
-  private destroy$ = new Subject<void>();
   isEditMode = false;
-  currentInsumo: Insumo = null;
+  isLoading = false;
+
+  private allTiposInsumo: ITipoInsumoJerarquico[] = [];
+  nivelesTipoInsumo: ITipoInsumoJerarquico[][] = [];
+
+  private listaInsumos$ = new BehaviorSubject<Insumo[]>([]);
+  filteredInsumos$: Observable<Insumo[]>;
+
+  filteredTratamientos$: Observable<ITratamiento[]>;
+  filteredAdhesivos$: Observable<IAdhesivo[]>;
+
+  adhesivoCtrl = new FormControl();
+  adhesivosSeleccionados: IAdhesivo[] = [];
+
+  private destroy$ = new Subject<void>();
+  private refreshAdhesivos$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private abmPiezaService: ABMPiezaService,
     public dialogRef: MatDialogRef<ABMPiezaInsumoModalFormComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { insumoPieza?: InsumoPieza },
-    private snackBar: MatSnackBar,
+    @Inject(MAT_DIALOG_DATA) public data: { idPieza: number, insumoTratado?: IInsumoTratado },
+    private notificationService: NotificationService,
     private cdr: ChangeDetectorRef
   ) {
     this.insumoForm = this.fb.group({
       tipos: this.fb.array([]),
-      insumo: [null, Validators.required],
-      medidaValor: [null],
+      insumo: [{ value: null, disabled: true }, Validators.required],
+      tratamiento: [null, Validators.required],
+      adhesivos: [[]],
+      medidaValor: [''],
       medidaObservaciones: [''],
-      tratamiento: [''],
-      adhesivos: this.fb.array([]),
       observaciones: ['']
     });
-
-    this.filteredAdhesivos$ = this.adhesivoCtrl.valueChanges.pipe(
-      startWith(''),
-      switchMap(value => this.adhesivos$.pipe(
-        map(adhesivos => this._filterAdhesivos(value, adhesivos))
-      )),
-      takeUntil(this.destroy$)
-    );
   }
 
   ngOnInit(): void {
-    this.tiposInsumo$ = this.abmPiezaService.getTiposInsumo();
-    this.adhesivos$ = this.abmPiezaService.getAdhesivos();
+    this.isEditMode = !!this.data.insumoTratado;
+    this.setupAutocompletes();
 
-    if (this.data.insumoPieza) {
-      this.isEditMode = true;
-      this.cargarDatosInsumo(this.data.insumoPieza);
-    } else {
-      this.inicializarTiposInsumo();
-    }
+    this.isLoading = true;
+    this.abmPiezaService.getTiposInsumo().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response) => {
+        this.allTiposInsumo = response.data || [];
+        if (this.isEditMode) {
+          this.populateFormForEdit();
+        } else {
+          const nivel1 = this.allTiposInsumo.filter(t => t.padre === null);
+          this.nivelesTipoInsumo = [nivel1];
+          this.tiposFormArray.push(this.fb.control(null, Validators.required));
+          this.isLoading = false;
+        }
+        this.cdr.markForCheck();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.notificationService.showError('Error al cargar los tipos de insumo.');
+        console.error(err);
+        this.cdr.markForCheck();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -71,244 +87,236 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  compareTipoFn(tipo1: TipoInsumo, tipo2: TipoInsumo): boolean {
-    if (!tipo1 || !tipo2) return false;
-    return tipo1.id === tipo2.id;
-  }
+  private populateFormForEdit(): void {
+    const insumoData = this.data.insumoTratado;
 
-  compareInsumoFn(insumo1: Insumo, insumo2: Insumo): boolean {
-    if (!insumo1 || !insumo2) return false;
-    return insumo1.id === insumo2.id;
-  }
+    this.abmPiezaService.getInsumosPorTipo(insumoData.tipo.id).subscribe(res => {
+      this.listaInsumos$.next(res.data.page || []);
+      const insumoObj = (res.data.page || []).find(i => i.id === insumoData.idInsumo);
 
-  private _filterAdhesivos(value: string, adhesivos: string[]): string[] {
-    const filterValue = value?.toLowerCase() || '';
-    return adhesivos.filter(adhesivo => adhesivo.toLowerCase().includes(filterValue));
-  }
-
-  agregarAdhesivo(): void {
-    const adhesivoValue = this.adhesivoCtrl.value;
-    if (adhesivoValue && !this.adhesivosAgregados.includes(adhesivoValue)) {
-      this.adhesivosAgregados.push(adhesivoValue);
-      this.adhesivoCtrl.setValue('');
-      this.actualizarFormularioAdhesivos();
-    }
-  }
-
-  quitarAdhesivo(adhesivo: string): void {
-    this.adhesivosAgregados = this.adhesivosAgregados.filter(a => a !== adhesivo);
-    this.actualizarFormularioAdhesivos();
-  }
-
-  actualizarFormularioAdhesivos() {
-    const adhesivosFormArray = this.insumoForm.get('adhesivos') as FormArray;
-    while (adhesivosFormArray.length !== 0) {
-      adhesivosFormArray.removeAt(0);
-    }
-    this.adhesivosAgregados.forEach(adhesivo => {
-      adhesivosFormArray.push(this.fb.control(adhesivo));
+      this.insumoForm.patchValue({ insumo: insumoObj });
+      this.insumoForm.get('insumo').enable();
+      this.cdr.markForCheck();
     });
+
+    const path = this.buildTipoHierarchyPath(insumoData.tipo);
+    path.forEach((tipo) => {
+      const siblings = this.allTiposInsumo.filter(t => t.padre?.id === tipo.padre?.id);
+      this.nivelesTipoInsumo.push(siblings.length > 0 ? siblings : this.allTiposInsumo.filter(t => t.padre === null));
+      this.tiposFormArray.push(this.fb.control(tipo, Validators.required));
+    });
+
+    const tratamientoObj = { id: insumoData.idTratamiento, nombre: insumoData.tratamiento };
+
+    this.insumoForm.patchValue({
+      tratamiento: tratamientoObj,
+      medidaValor: insumoData.medidaValor,
+      medidaObservaciones: insumoData.medidaObservaciones,
+      observaciones: insumoData.observaciones
+    });
+
+    this.adhesivosSeleccionados = insumoData.adhesivos || [];
+    this.updateAdhesivosFormControl();
+
+    this.insumoForm.get('tipos').disable();
+    this.isLoading = false;
   }
 
-  inicializarTiposInsumo(): void {
-    this.abmPiezaService.getTiposInsumo().pipe(
-      takeUntil(this.destroy$),
-      tap(tipos => {
-        this.nivelesTipoInsumo = [tipos];
-        this.createTiposFormArray();
-        this.cdr.detectChanges();
+  private buildTipoHierarchyPath(tipo: ITipoInsumoJerarquico): ITipoInsumoJerarquico[] {
+    const path: ITipoInsumoJerarquico[] = [];
+    let current = tipo;
+    while (current) {
+      path.unshift(current);
+      current = current.padre;
+    }
+    return path;
+  }
+
+  private setupAutocompletes(): void {
+    this.filteredInsumos$ = combineLatest([
+      this.insumoForm.get('insumo').valueChanges.pipe(startWith('')),
+      this.listaInsumos$
+    ]).pipe(
+      map(([value, insumos]) => {
+        const filterValue = (typeof value === 'string' ? value : value?.nombre || '').toLowerCase();
+        return insumos.filter(insumo => insumo.nombre.toLowerCase().includes(filterValue));
       })
-    ).subscribe();
-  }
+    );
 
-  agregarNivelTipoInsumo(tipo: TipoInsumo, index: number): void {
+    this.filteredTratamientos$ = this.insumoForm.get('tratamiento').valueChanges.pipe(
+      startWith(''),
+      debounceTime(300),
+      switchMap(value => {
+        const searchTerm = typeof value === 'string' ? value : '';
+        return this.abmPiezaService.buscarTratamientos(searchTerm);
+      }),
+      map(response => response.data || [])
+    );
 
-    if (tipo.subniveles && tipo.subniveles.length > 0) {
-      if (this.nivelesTipoInsumo.length <= index + 1) {
-        this.nivelesTipoInsumo.push([]);
-      }
+    const adhesivosTriggers$ = merge(
+      this.adhesivoCtrl.valueChanges,
+      this.refreshAdhesivos$
+    );
 
-      this.nivelesTipoInsumo[index + 1] = tipo.subniveles;
+    this.filteredAdhesivos$ = adhesivosTriggers$.pipe(
+      startWith(''),
+      debounceTime(300),
+      switchMap(() => {
+        const searchTerm = this.adhesivoCtrl.value || '';
 
-      this.ajustarTiposFormArray(index + 2);
-    } else {
-      this.ajustarTiposFormArray(index + 1);
-      this.cargarInsumos(tipo.id);
-    }
-
-    this.cdr.detectChanges();
-  }
-
-  cargarInsumos(tipoId: number): void {
-    this.abmPiezaService.getInsumos(tipoId).pipe(
-      takeUntil(this.destroy$),
-      tap(insumos => {
-        this.insumos$ = of(insumos);
-        this.cdr.detectChanges();
+        return this.abmPiezaService.buscarAdhesivos(searchTerm).pipe(
+          map(response => response.data || []),
+          map(adhesivosDesdeApi =>
+            adhesivosDesdeApi.filter(adhesivoApi =>
+              !this.adhesivosSeleccionados.some(adhesivoSel => adhesivoSel.id === adhesivoApi.id)
+            )
+          ),
+          catchError((error: any): Observable<IAdhesivo[]> => {
+            console.error('Error al buscar adhesivos:', error);
+            return of([]);
+          })
+        );
       })
-    ).subscribe();
-  }
+    );
 
-  ajustarTiposFormArray(length: number): void {
-    const tiposFormArray = this.tiposFormArray;
-
-    while (tiposFormArray.length > length) {
-      tiposFormArray.removeAt(tiposFormArray.length - 1);
-    }
-
-    while (tiposFormArray.length < length) {
-      tiposFormArray.push(this.fb.control(null, Validators.required));
-    }
-  }
-
-  limpiarNivelesSuperiores(index: number): void {
-    this.nivelesTipoInsumo = this.nivelesTipoInsumo.slice(0, index + 1);
-    this.ajustarTiposFormArray(index + 1);
-
-    this.insumoForm.get('insumo').setValue(null);
-    this.insumos$ = of([]);
-
-    this.cdr.detectChanges();
-  }
-
-  createTiposFormArray(): void {
-    const tiposFormArray = this.fb.array([]);
-    for (let i = 0; i < this.nivelesTipoInsumo.length; i++) {
-      tiposFormArray.push(this.fb.control(null, Validators.required));
-    }
-    this.insumoForm.setControl('tipos', tiposFormArray);
-  }
-
-  displayFn(insumo: Insumo): string {
-    return insumo && insumo.nombre ? insumo.nombre : '';
-  }
-
-  displayTipoInsumo(tipo: TipoInsumo): string {
-    return tipo ? tipo.nombre : '';
   }
 
   get tiposFormArray(): FormArray {
-    return this.insumoForm.get("tipos") as FormArray;
+    return this.insumoForm.get('tipos') as FormArray;
   }
 
-  onTipoSeleccionado(tipo: TipoInsumo, index: number): void {
-    if (index < this.nivelesTipoInsumo.length - 1) {
-      this.limpiarNivelesSuperiores(index);
+  onTipoSeleccionado(tipoSeleccionado: ITipoInsumoJerarquico, nivelActual: number): void {
+    this.nivelesTipoInsumo.splice(nivelActual + 1);
+    while (this.tiposFormArray.length > nivelActual + 1) {
+      this.tiposFormArray.removeAt(nivelActual + 1);
     }
 
-    this.agregarNivelTipoInsumo(tipo, index);
+    this.insumoForm.get('insumo').reset();
+    this.insumoForm.get('insumo').disable();
+    this.listaInsumos$.next([]);
+
+    const hijos = this.allTiposInsumo.filter(t => t.padre?.id === tipoSeleccionado.id);
+
+    if (hijos.length > 0) {
+      this.nivelesTipoInsumo.push(hijos);
+      this.tiposFormArray.push(this.fb.control(null, Validators.required));
+    } else {
+      this.isLoading = true;
+      this.abmPiezaService.getInsumosPorTipo(tipoSeleccionado.id)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(res => {
+          this.listaInsumos$.next(res.data.page || []);
+          this.insumoForm.get('insumo').enable();
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        });
+    }
+    this.cdr.markForCheck();
   }
 
-  onCancel(): void {
-    this.dialogRef.close();
+  onTratamientoSelected(tratamiento: ITratamiento): void {
+    this.insumoForm.get('tratamiento').setValue(tratamiento, { emitEvent: false });
+  }
+
+  addAdhesivo(event: MatAutocompleteSelectedEvent): void {
+    const adhesivo = event.option.value as IAdhesivo;
+    if (adhesivo && !this.adhesivosSeleccionados.some(a => a.id === adhesivo.id)) {
+      this.adhesivosSeleccionados.push(adhesivo);
+    }
+    if (this.adhesivoInput) {
+      this.adhesivoInput.nativeElement.value = '';
+    }
+    this.adhesivoCtrl.setValue(null);
+    this.updateAdhesivosFormControl();
+  }
+
+  removeAdhesivo(adhesivo: IAdhesivo): void {
+    const index = this.adhesivosSeleccionados.findIndex(a => a.id === adhesivo.id);
+    if (index >= 0) {
+      this.adhesivosSeleccionados.splice(index, 1);
+      this.updateAdhesivosFormControl();
+
+      this.refreshAdhesivos$.next();
+    }
+  }
+
+  private updateAdhesivosFormControl(): void {
+    const ids = this.adhesivosSeleccionados.map(a => a.id);
+    this.insumoForm.get('adhesivos').setValue(ids);
+    this.cdr.markForCheck();
   }
 
   onSave(): void {
-    if (this.insumoForm.valid) {
-      this.dialogRef.close(this.insumoForm.value);
-    } else {
-      this.openSnackBar(false, 'Por favor, complete todos los campos.', 'red', 5000);
-    }
-  }
-
-  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-    const defaultCss: string = css ? css : 'red';
-    const snackBarMessage = message ? message : defaultMessage;
-    const snackBarCss = css ? css : defaultCss;
-    const snackBarDuration = duration ? duration : 5000;
-
-    this.snackBar.open(snackBarMessage, 'X', {
-      duration: snackBarDuration,
-      panelClass: `${snackBarCss}-snackbar`,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
-  }
-
-  cargarDatosInsumo(insumoPieza: InsumoPieza): void {
-    if (!insumoPieza || !insumoPieza.tipo || !Array.isArray(insumoPieza.tipo)) {
-      console.error('El insumo a editar no tiene tipo definido o no es un array');
+    if (this.insumoForm.invalid) {
+      this.insumoForm.markAllAsTouched();
+      this.notificationService.showError('Por favor, complete todos los campos requeridos.');
       return;
     }
 
-    this.currentInsumo = insumoPieza.nombreInsumo;
+    const insumoSeleccionado = this.insumoForm.get('insumo').value;
+    const tratamientoSeleccionado = this.insumoForm.get('tratamiento').value;
 
-    this.abmPiezaService.getTiposInsumo().pipe(
-      takeUntil(this.destroy$),
-      tap(tiposInsumo => {
-        this.inicializarFormularioConJerarquia(insumoPieza.tipo, insumoPieza, tiposInsumo);
-      })
-    ).subscribe();
-  }
+    if (!insumoSeleccionado || typeof insumoSeleccionado !== 'object' || !tratamientoSeleccionado || typeof tratamientoSeleccionado !== 'object') {
+      this.notificationService.showError('Debe seleccionar un Insumo y un Tratamiento válidos de las listas.');
+      return;
+    }
 
-  inicializarFormularioConJerarquia(jerarquia: TipoInsumo[], insumoPieza: InsumoPieza, tiposInsumoRaiz: TipoInsumo[]): void {
-    this.nivelesTipoInsumo = [tiposInsumoRaiz];
+    this.isLoading = true;
+    const formValue = this.insumoForm.getRawValue();
 
-    for (let i = 0; i < jerarquia.length - 1; i++) {
-      const tipoActual = jerarquia[i];
-      if (tipoActual.subniveles && tipoActual.subniveles.length > 0) {
-        this.nivelesTipoInsumo.push(tipoActual.subniveles);
-      } else {
-        this.nivelesTipoInsumo.push([]);
+    const dto: any = {
+      idPieza: this.data.idPieza,
+      idInsumo: insumoSeleccionado.id,
+      insumo: insumoSeleccionado.nombre,
+      idTratamiento: tratamientoSeleccionado.id,
+      tratamiento: tratamientoSeleccionado.nombre,
+      medidaValor: formValue.medidaValor || null,
+      medidaObservaciones: formValue.medidaObservaciones || null,
+      observaciones: formValue.observaciones || null,
+      adhesivos: this.adhesivosSeleccionados.map(a => ({ id: a.id, nombre: a.nombre }))
+    };
+
+    if (!this.isEditMode) {
+      const tipoFinal = formValue.tipos[formValue.tipos.length - 1];
+      if (!tipoFinal) {
+        this.notificationService.showError('Debe seleccionar un tipo de insumo válido.');
+        this.isLoading = false;
+        return;
       }
+      dto.tipo = {
+        id: tipoFinal.id,
+        nombre: tipoFinal.nombre
+      };
     }
 
-    this.createTiposFormArray();
+    const request$ = this.isEditMode
+      ? this.abmPiezaService.updateInsumoTratado(this.data.insumoTratado.id, dto)
+      : this.abmPiezaService.createInsumoTratado(dto);
 
-    for (let i = 0; i < jerarquia.length; i++) {
-      this.tiposFormArray.at(i).setValue(jerarquia[i]);
-    }
-
-    if (jerarquia.length > 0) {
-      this.cargarInsumos(jerarquia[jerarquia.length - 1].id);
-    }
-
-    this.insumoForm.patchValue({
-      insumo: insumoPieza.nombreInsumo,
-      medidaValor: insumoPieza.medidaValor,
-      medidaObservaciones: insumoPieza.medidaObservaciones,
-      tratamiento: insumoPieza.tratamiento,
-      observaciones: insumoPieza.observaciones,
-    });
-
-    if (insumoPieza.adhesivos && insumoPieza.adhesivos.length > 0) {
-      this.adhesivosAgregados = [...insumoPieza.adhesivos];
-      this.actualizarFormularioAdhesivos();
-    }
-
-    this.cdr.detectChanges();
-  }
-
-  configurarNivelesSegunJerarquia(jerarquia: TipoInsumo[], nivelActual: number): void {
-    if (nivelActual >= jerarquia.length) return;
-
-    const tipoActual = jerarquia[nivelActual];
-
-    this.tiposFormArray.at(nivelActual).setValue(tipoActual);
-
-    if (nivelActual < jerarquia.length - 1) {
-      if (tipoActual.subniveles && tipoActual.subniveles.length > 0) {
-        if (this.nivelesTipoInsumo.length <= nivelActual + 1) {
-          this.nivelesTipoInsumo.push([]);
-        }
-        this.nivelesTipoInsumo[nivelActual + 1] = tipoActual.subniveles;
-
-        this.ajustarTiposFormArray(nivelActual + 2);
-
-        this.configurarNivelesSegunJerarquia(jerarquia, nivelActual + 1);
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.notificationService.showSuccess(`Insumo ${this.isEditMode ? 'actualizado' : 'agregado'} correctamente.`);
+        this.dialogRef.close(true);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        const errorMessage = err.error?.message || err.error?.error || 'Error desconocido';
+        this.notificationService.showError(`Error al guardar: ${errorMessage}`);
+        console.error("Error al guardar insumo:", err);
       }
-    }
-
-    this.cdr.detectChanges();
+    });
   }
 
-  logFormState(): void {
-    console.log('Estado actual del formulario:', {
-      valid: this.insumoForm.valid,
-      value: this.insumoForm.value,
-      tipos: this.tiposFormArray.value,
-      niveles: this.nivelesTipoInsumo
-    });
+  displayFn(item: { nombre: string }): string {
+    return item?.nombre ?? '';
+  }
+
+  compareWithId(o1: any, o2: any): boolean {
+    return o1 && o2 ? o1.id === o2.id : o1 === o2;
+  }
+
+  onCancel(): void {
+    this.dialogRef.close(false);
   }
 }

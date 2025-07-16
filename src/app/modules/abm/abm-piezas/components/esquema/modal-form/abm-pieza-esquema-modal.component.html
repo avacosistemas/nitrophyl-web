@@ -1,8 +1,11 @@
-<div mat-dialog-content class="px-0">
+<div mat-dialog-content class="px-0 relative">
+    <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+        <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
+    </div>
     <form [formGroup]="formEsquema" class=" mat-form-without-wrapper">
         <mat-tab-group>
             <mat-tab label="Datos Generales">
-                <div class="px-4">
+                <div class="p-4">
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Título</mat-label>
                         <input matInput formControlName="titulo" required>
@@ -14,18 +17,19 @@
                         <div
                             class="flex flex-col items-center justify-center relative p-4 py-8 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
                             <div class="flex flex-col items-center justify-center">
-                                <mat-icon class="text-gray-500" svgIcon="heroicons_solid:upload" *ngIf="!selectedFile"
+                                <mat-icon class="text-gray-500" svgIcon="heroicons_solid:upload" *ngIf="!safeImageUrl"
                                     style="font-size: 2rem;"></mat-icon>
-                                <img *ngIf="selectedFile" [src]="safeImageUrl"
+                                <img *ngIf="safeImageUrl" [src]="safeImageUrl"
                                     style="max-width: 100px; max-height: 100px;">
-                                <span class="text-sm text-gray-600" *ngIf="!selectedFile">Seleccionar Archivo</span>
-                                <span class="text-sm text-green-500" *ngIf="selectedFile">{{ selectedFile?.name
+                                <span class="text-sm text-gray-600 mt-2" *ngIf="!safeImageUrl">Seleccionar
+                                    Archivo</span>
+                                <span class="text-sm text-green-500 mt-2" *ngIf="selectedFile">{{ selectedFile?.name
                                     }}</span>
                             </div>
                             <input id="file-upload" type="file" class="sr-only" accept="image/*"
                                 (change)="onFileSelected($event)">
 
-                            <button *ngIf="selectedFile" type="button" mat-icon-button class="absolute top-1 right-2"
+                            <button *ngIf="safeImageUrl" type="button" mat-icon-button class="absolute top-1 right-2"
                                 (click)="removeSelectedFile()">
                                 <mat-icon>cancel</mat-icon>
                             </button>
@@ -35,28 +39,28 @@
             </mat-tab>
 
             <mat-tab label="Pasos">
-                <div class="px-4">
+                <div class="p-4">
                     <ng-container formArrayName="pasos">
-                        <div *ngFor="let pasoControl of pasosFormArray.controls; let i = index">
+                        <div *ngFor="let pasoGroup of pasosFormArray.controls; let i = index" [formGroup]="pasoGroup"
+                            class="flex items-start gap-2">
                             <mat-form-field appearance="outline" class="w-full">
                                 <mat-label>Paso {{ i + 1 }}</mat-label>
-                                <input type="text" matInput [formControl]="pasoControl" required>
-                                <button mat-icon-button matSuffix type="button" (click)="quitarPaso(i)">
-                                    <mat-icon>remove</mat-icon>
-                                </button>
-                                <mat-error *ngIf="pasoControl.hasError('required')">Este paso es
+                                <input type="text" matInput formControlName="descripcion" required>
+                                <mat-error *ngIf="pasoGroup.get('descripcion').hasError('required')">Este paso es
                                     requerido</mat-error>
                             </mat-form-field>
+                            <button mat-icon-button type="button" (click)="quitarPaso(i)" class="mt-3">
+                                <mat-icon>remove_circle_outline</mat-icon>
+                            </button>
                         </div>
                     </ng-container>
 
-                    <div class="flex justify-center">
+                    <div class="flex justify-center mt-2">
                         <button mat-flat-button (click)="agregarPaso()"
                             class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
                             <span class="mat-button-wrapper">
                                 Añadir Paso
                             </span>
-                            <span matripple="" class="mat-ripple mat-button-ripple"></span>
                         </button>
                     </div>
                 </div>
@@ -67,18 +71,16 @@
 
 <div mat-dialog-actions class="justify-end">
     <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
-        <button mat-flat-button (click)="onSave()" [disabled]="formEsquema.invalid"
+        <button mat-flat-button (click)="onSave()" [disabled]="formEsquema.invalid || isLoading"
             class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
             <span class="mat-button-wrapper">
                 Guardar
             </span>
-            <span matripple="" class="mat-ripple mat-button-ripple"></span>
         </button>
 
         <button mat-stroked-button (click)="onCancel()"
             class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
             <span class="mat-button-wrapper"> Cancelar </span>
-            <span matripple="" class="mat-ripple mat-button-ripple"></span>
         </button>
     </div>
 </div>

@@ -1,39 +1,34 @@
 <div>
     <form [formGroup]="moldeoForm" class="mat-form-without-wrapper space-y-4">
         <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-4">
-            <h2 class="text-xl font-semibold mb-2">Prensa</h2>
-            <mat-form-field appearance="outline" class="w-full md:w-1/3">
-                <mat-label>Prensa</mat-label>
-                <input type="text" matInput [formControl]="prensaCtrl" [matAutocomplete]="autoPrensa"
-                    [disabled]="mode === 'view'">
-                <mat-autocomplete #autoPrensa="matAutocomplete" [displayWith]="displayFnPrensa">
+            <h2 class="text-xl font-semibold mb-2">Prensas</h2>
+            <mat-form-field appearance="outline" class="w-full md:w-2/3">
+                <mat-label>Buscar y añadir prensas</mat-label>
+                <mat-chip-list #chipListPrensa aria-label="Selección de prensas">
+                    <mat-chip *ngFor="let prensa of prensasAgregadas" (removed)="quitarPrensa(prensa)"
+                        [removable]="mode !== 'view'">
+                        {{ prensa.nombre }}
+                        <button matChipRemove *ngIf="mode !== 'view'">
+                            <mat-icon>cancel</mat-icon>
+                        </button>
+                    </mat-chip>
+                    <input placeholder="Buscar prensa..." #prensaInput [formControl]="prensaCtrl"
+                        [matAutocomplete]="autoPrensa" [matChipInputFor]="chipListPrensa" [disabled]="mode === 'view'">
+                </mat-chip-list>
+                <mat-autocomplete #autoPrensa="matAutocomplete" (optionSelected)="agregarPrensa($event)"
+                    [displayWith]="displayFnPrensa">
                     <mat-option *ngFor="let prensa of filteredPrensas$ | async" [value]="prensa">
                         {{ prensa.nombre }}
                     </mat-option>
                 </mat-autocomplete>
-                <button mat-icon-button matSuffix type="button" (click)="agregarPrensa()" [disabled]="mode === 'view'">
-                    <mat-icon>add</mat-icon>
-                </button>
             </mat-form-field>
-
-            <div class="flex flex-wrap gap-2">
-                <mat-chip-list aria-label="Prensas">
-                    <mat-chip *ngFor="let prensa of prensasAgregadas" class="bg-gray-200">
-                        {{ prensa.nombre }}
-                        <button matChipRemove [disabled]="mode === 'view'" class="w-auto h-auto leading-none">
-                            <mat-icon>cancel</mat-icon>
-                        </button>
-                    </mat-chip>
-                </mat-chip-list>
-            </div>
         </div>
 
         <div class="flex gap-4 w-full">
             <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-4">
                 <div class="flex items-center mb-2 justify-between">
                     <h2 class="text-xl font-semibold mr-2">Precalentamiento</h2>
-                    <mat-slide-toggle [formControl]="moldeoForm.get('precalentamientoHabilitado')"
-                        [disabled]="mode === 'view'">
+                    <mat-slide-toggle formControlName="precalentamientoHabilitado" [disabled]="mode === 'view'">
                     </mat-slide-toggle>
                 </div>
 
@@ -41,13 +36,12 @@
                     class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Tiempo</mat-label>
-                        <input matInput type="number" formControlName="precalentamientoTiempo"
-                            [disabled]="mode === 'view'">
+                        <input matInput type="number" formControlName="precalentamientoTiempo">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Unidad</mat-label>
-                        <mat-select formControlName="precalentamientoUnidad" [disabled]="mode === 'view'">
+                        <mat-select formControlName="precalentamientoUnidad">
                             <mat-option *ngFor="let unidad of precalentamientoUnidades" [value]="unidad">
                                 {{ unidad }}
                             </mat-option>
@@ -61,28 +55,23 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Tiempo</mat-label>
-                        <input matInput type="number" formControlName="vulcanizacionTiempo" required
-                            [disabled]="mode === 'view'">
-                        <mat-error *ngIf="moldeoForm.get('vulcanizacionTiempo').hasError('required')">El tiempo es
-                            requerido</mat-error>
+                        <input matInput type="number" formControlName="vulcanizacionTiempo" required>
+                        <mat-error
+                            *ngIf="moldeoForm.get('vulcanizacionTiempo').hasError('required')">Requerido</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Temperatura Mínima</mat-label>
-                        <input matInput type="number" formControlName="vulcanizacionTemperaturaMinima" required
-                            [disabled]="mode === 'view'">
-                        <mat-error *ngIf="moldeoForm.get('vulcanizacionTemperaturaMinima').hasError('required')">La
-                            temperatura
-                            mínima es requerida</mat-error>
+                        <input matInput type="number" formControlName="vulcanizacionTemperaturaMinima" required>
+                        <mat-error
+                            *ngIf="moldeoForm.get('vulcanizacionTemperaturaMinima').hasError('required')">Requerido</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Temperatura Máxima</mat-label>
-                        <input matInput type="number" formControlName="vulcanizacionTemperaturaMaxima" required
-                            [disabled]="mode === 'view'">
-                        <mat-error *ngIf="moldeoForm.get('vulcanizacionTemperaturaMaxima').hasError('required')">La
-                            temperatura
-                            máxima es requerida</mat-error>
+                        <input matInput type="number" formControlName="vulcanizacionTemperaturaMaxima" required>
+                        <mat-error
+                            *ngIf="moldeoForm.get('vulcanizacionTemperaturaMaxima').hasError('required')">Requerido</mat-error>
                     </mat-form-field>
                 </div>
             </div>
@@ -94,13 +83,13 @@
             <div class="flex gap-4">
                 <mat-form-field appearance="outline" class="w-full md:w-1/6">
                     <mat-label>Cantidad</mat-label>
-                    <input matInput type="number" [formControl]="cantidadCtrl" [disabled]="mode === 'view'">
+                    <input matInput type="number" [formControl]="cantidadCtrl">
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full md:w-1/6">
                     <mat-label>Tipo</mat-label>
-                    <mat-select [formControl]="tipoCtrl" [disabled]="mode === 'view'">
-                        <mat-option *ngFor="let tipo of tiposBombeo$ | async" [value]="tipo">
+                    <mat-select [formControl]="tipoCtrl">
+                        <mat-option *ngFor="let tipo of tiposBombeo" [value]="tipo">
                             {{ tipo }}
                         </mat-option>
                     </mat-select>
@@ -108,26 +97,26 @@
 
                 <mat-form-field appearance="outline" class="w-full md:w-1/6">
                     <mat-label>Presión</mat-label>
-                    <input matInput type="number" [formControl]="presionCtrl" [disabled]="mode === 'view'">
+                    <input matInput type="number" [formControl]="presionCtrl">
                 </mat-form-field>
 
                 <div class="flex justify-start" *ngIf="mode !== 'view'">
                     <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent mt-2" mat-flat-button
-                        (click)="agregarBombeo()" [disabled]="!bombeoFormCompleto || mode === 'view'">
+                        (click)="agregarBombeo()" [disabled]="!bombeoFormCompleto">
                         <span class="mat-button-wrapper"> Añadir Bombeo </span>
-                        <span matripple="" class="mat-ripple mat-button-ripple"></span>
                     </button>
                 </div>
             </div>
 
             <div class="flex flex-wrap gap-2">
                 <mat-chip-list aria-label="Bombeos">
-                    <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" class="bg-gray-200">
+                    <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" (removed)="quitarBombeo(i)"
+                        [removable]="mode !== 'view'" class="bg-gray-200">
                         {{ bombeo.cantidad }} {{ bombeo.tipo }}
                         <ng-container *ngIf="bombeo.presion">
                             a {{ bombeo.presion }} kg/cm2
                         </ng-container>
-                        <button matChipRemove [disabled]="mode === 'view'" class="w-auto h-auto leading-none">
+                        <button matChipRemove *ngIf="mode !== 'view'">
                             <mat-icon>cancel</mat-icon>
                         </button>
                     </mat-chip>

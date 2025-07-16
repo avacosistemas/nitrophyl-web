@@ -1,14 +1,13 @@
 import { Component, OnInit, Input, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { PiezaDimension } from '../../models/pieza.model';
-import { Observable, Subscription } from 'rxjs';
+import { Observable, Subscription, of } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { MatTableDataSource } from '@angular/material/table';
-import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
@@ -30,7 +29,7 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     dimensionToEdit: PiezaDimension | null = null;
     private subscription: Subscription = new Subscription();
 
-    baseDisplayedColumns: string[] = ['tipoDimension', 'valor', 'observaciones'];
+    baseDisplayedColumns: string[] = ['tipo', 'valor', 'observaciones'];
     displayedColumnsDimensiones: string[];
 
     constructor(
@@ -38,15 +37,14 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         protected router: Router,
         protected route: ActivatedRoute,
         protected abmPiezaService: ABMPiezaService,
-        private snackBar: MatSnackBar,
+        private notificationService: NotificationService,
         public dialog: MatDialog,
-        private matIconRegistry: MatIconRegistry,
         private domSanitizer: DomSanitizer
     ) {
         super(fb, router, route, abmPiezaService, dialog);
 
         this.dimensionForm = this.fb.group({
-            tipoDimension: [null, Validators.required],
+            tipo: [null, Validators.required],
             valor: [null, Validators.required],
             observaciones: [null]
         });
@@ -79,11 +77,9 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     }
 
     setDisplayedColumns(): void {
-        if (this.mode === 'view') {
-            this.displayedColumnsDimensiones = this.baseDisplayedColumns;
-        } else {
-            this.displayedColumnsDimensiones = [...this.baseDisplayedColumns, 'acciones'];
-        }
+        this.displayedColumnsDimensiones = this.mode === 'view'
+            ? this.baseDisplayedColumns
+            : [...this.baseDisplayedColumns, 'acciones'];
     }
 
     loadDimensiones(): void {
@@ -91,14 +87,14 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         this.isLoading = true;
         this.subscription.add(
             this.abmPiezaService.getDimensionesPorPieza(this.piezaId).subscribe({
-                next: (response: any) => {
-                    const dimensiones = response && response.data ? response.data : [];
-                    this.dimensiones.data = dimensiones;
-                    this.sinDatos = dimensiones.length === 0;
+                next: (response) => {
+                    const dimensionesData = response.data || [];
+                    this.dimensiones.data = dimensionesData;
+                    this.sinDatos = dimensionesData.length === 0;
                     this.isLoading = false;
                 },
                 error: (err) => {
-                    this.openSnackBar('Error al cargar las dimensiones.', 'X', 'red-snackbar');
+                    this.notificationService.showError('Error al cargar las dimensiones.');
                     this.isLoading = false;
                     this.sinDatos = true;
                 }
@@ -108,39 +104,38 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
 
     addOrUpdateDimension(): void {
         if (this.dimensionForm.invalid) {
-            this.openSnackBar('Por favor, complete todos los campos requeridos.', 'X', 'red-snackbar');
+            this.notificationService.showError('Por favor, complete todos los campos requeridos.');
             return;
         }
 
         this.isLoading = true;
         const formValue = this.dimensionForm.value;
+        const dto = { ...formValue, idPieza: this.piezaId };
 
         if (this.editMode && this.dimensionToEdit) {
-            const dto = { ...formValue, idPieza: this.piezaId, id: this.dimensionToEdit.id };
             this.subscription.add(
                 this.abmPiezaService.actualizarDimensionDePieza(this.dimensionToEdit.id, dto).subscribe({
                     next: () => {
-                        this.openSnackBar('Dimensión actualizada correctamente.', 'X', 'green-snackbar');
+                        this.notificationService.showSuccess('Dimensión actualizada correctamente.');
                         this.cancelEdit();
                         this.loadDimensiones();
                     },
                     error: (err) => {
-                        this.openSnackBar('Error al actualizar la dimensión.', 'X', 'red-snackbar');
+                        this.notificationService.showError('Error al actualizar la dimensión.');
                         this.isLoading = false;
                     }
                 })
             );
         } else {
-            const dto = { ...formValue, idPieza: this.piezaId };
             this.subscription.add(
                 this.abmPiezaService.agregarDimensionAPieza(dto).subscribe({
                     next: () => {
-                        this.openSnackBar('Dimensión agregada correctamente.', 'X', 'green-snackbar');
+                        this.notificationService.showSuccess('Dimensión agregada correctamente.');
                         this.dimensionForm.reset();
                         this.loadDimensiones();
                     },
                     error: (err) => {
-                        this.openSnackBar('Error al agregar la dimensión.', 'X', 'red-snackbar');
+                        this.notificationService.showError('Error al agregar la dimensión.');
                         this.isLoading = false;
                     }
                 })
@@ -149,45 +144,48 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     }
 
     eliminarDimension(row: PiezaDimension): void {
-        const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar la dimensión <span class="font-bold">${row.tipoDimension}</span>?`);
-        this.openConfirmationModal(mensaje, () => {
-            this.isLoading = true;
-            this.subscription.add(
-                this.abmPiezaService.eliminarDimensionDePieza(row.id).subscribe({
-                    next: () => {
-                        this.openSnackBar('Dimensión eliminada correctamente.', 'X', 'green-snackbar');
-                        this.loadDimensiones();
-                    },
-                    error: (err) => {
-                        this.openSnackBar('Error al eliminar la dimensión.', 'X', 'red-snackbar');
-                        this.isLoading = false;
-                    }
-                })
-            );
+        const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar la dimensión <span class="font-bold">${row.tipo}</span>?`);
+
+        const sub = this.openConfirmationModal(mensaje).subscribe(confirmed => {
+            if (confirmed) {
+                this.isLoading = true;
+                this.subscription.add(
+                    this.abmPiezaService.eliminarDimensionDePieza(row.id).subscribe({
+                        next: () => {
+                            this.notificationService.showSuccess('Dimensión eliminada correctamente.');
+                            this.loadDimensiones();
+                        },
+                        error: (err) => {
+                            this.notificationService.showError('Error al eliminar la dimensión.');
+                            this.isLoading = false;
+                        }
+                    })
+                );
+            }
         });
+        this.subscription.add(sub);
     }
 
-    openConfirmationModal(message: SafeHtml, onConfirm: () => void): void {
-        this.dialog.open(GenericModalComponent, {
+    openConfirmationModal(message: SafeHtml): Observable<boolean> {
+        const dialogRef = this.dialog.open(GenericModalComponent, {
             width: '400px',
             data: {
                 title: 'Confirmar eliminación',
                 message: message,
-                showCloseButton: true,
                 showConfirmButton: true,
                 confirmButtonText: 'Eliminar',
                 cancelButtonText: 'Cancelar',
-                type: 'warning',
-                onConfirm: onConfirm
+                type: 'warning'
             }
         });
+        return dialogRef.afterClosed();
     }
 
     startEdit(dimension: PiezaDimension): void {
         this.editMode = true;
         this.dimensionToEdit = { ...dimension };
         this.dimensionForm.setValue({
-            tipoDimension: dimension.tipoDimension,
+            tipo: dimension.tipo,
             valor: dimension.valor,
             observaciones: dimension.observaciones || null
         });
@@ -197,15 +195,6 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         this.editMode = false;
         this.dimensionToEdit = null;
         this.dimensionForm.reset();
-    }
-
-    openSnackBar(message: string, action: string, className: string, duration: number = 5000) {
-        this.snackBar.open(message, action, {
-            duration: duration,
-            panelClass: className,
-            horizontalPosition: 'center',
-            verticalPosition: 'bottom',
-        });
     }
 
     get buttonText(): string {

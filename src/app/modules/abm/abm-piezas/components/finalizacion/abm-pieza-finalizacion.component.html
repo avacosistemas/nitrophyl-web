@@ -1,24 +1,28 @@
-<div>
+<div class="relative">
+  <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+    <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
+  </div>
+
   <form [formGroup]="form" (ngSubmit)="guardar()" class="mat-form-without-wrapper">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <mat-form-field appearance="outline" class="w-full">
         <mat-label>Refilado</mat-label>
-        <textarea matInput formControlName="refilado" rows="3" [disabled]="mode === 'view'"></textarea>
+        <textarea matInput formControlName="refilado" rows="3" [readonly]="mode === 'view'"></textarea>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-full">
         <mat-label>Identificación</mat-label>
-        <textarea matInput formControlName="identificacion" rows="3" [disabled]="mode === 'view'"></textarea>
+        <textarea matInput formControlName="identificacion" rows="3" [readonly]="mode === 'view'"></textarea>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="w-full">
         <mat-label>Embalaje</mat-label>
-        <textarea matInput formControlName="embalaje" rows="3" [disabled]="mode === 'view'"></textarea>
+        <textarea matInput formControlName="embalaje" rows="3" [readonly]="mode === 'view'"></textarea>
       </mat-form-field>
     </div>
 
     <div
-      class="flex flex-col items-center justify-center relative border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
+      class="flex flex-col items-center justify-center relative border-2 border-dashed border-gray-400 rounded-lg bg-gray-50 mt-4">
       <div class="flex flex-col items-center justify-center w-full">
         <div *ngIf="safeImageUrl"
           class="flex flex-col gap-1 items-center justify-center ng-star-inserted px-4 py-8 w-full">
@@ -32,7 +36,7 @@
             <mat-icon class="text-gray-500" svgIcon="heroicons_solid:upload" *ngIf="!selectedFile && !safeImageUrl"
               style="font-size: 2rem;"></mat-icon>
             <span class="cursor-pointer text-sm text-gray-600" *ngIf="!selectedFile && !safeImageUrl">
-              Seleccionar Archivo
+              Seleccionar Imagen
             </span>
             <input id="file-upload" type="file" class="sr-only" accept="image/*" (change)="onFileSelected($event)">
           </label>
