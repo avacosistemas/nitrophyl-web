@@ -178,6 +178,46 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'insumos',
+        data: { permission: 'MENU_INSUMOS' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-insumos/abm-insumos.module').then(
+            (m: any) => m.ABMInsumosModule
+          ),
+      },
+      {
+        path: 'insumo-tipo',
+        data: { permission: 'MENU_INSUMO_TIPO' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-insumo-tipo/abm-insumo-tipo.module').then(
+            (m: any) => m.ABMInsumoTipoModule
+          ),
+      },
+      {
+        path: 'adhesivos',
+        data: { permission: 'MENU_ADHESIVOS' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-adhesivos/abm-adhesivos.module').then(
+            (m: any) => m.ABMAdhesivosModule
+          ),
+      },
+      {
+        path: 'tratamientos',
+        data: { permission: 'MENU_TRATAMIENTOS' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-tratamiento/abm-tratamiento.module').then(
+            (m: any) => m.ABMTratamientosModule
+          ),
+      },
+      {
+        path: 'prensas',
+        data: { permission: 'MENU_PRENSAS' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-prensa/abm-prensa.module').then(
+            (m: any) => m.ABMPrensasModule
+          ),
+      },
+      {
         path: 'piezas',
         loadChildren: () =>
           import('app/modules/parts/parts.module').then(

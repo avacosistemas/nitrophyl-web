@@ -1,0 +1,19 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <app-header [title]="title" [breadcrumbs]="[
+        { title: 'Producción',  route: [], condition: true },
+        { title: 'Insumos', route: ['/insumos/grid'], condition: true }
+      ]" [buttons]="[
+      {
+        type: 'flat',
+        label: 'Crear Insumo',
+        condition: true,
+        isDisabled: false,
+        action: 'create'
+      }
+    ]" (buttonAction)="handleAction($event)">
+  </app-header>
+
+  <div class="flex-auto overflow-y-auto content-scroll">
+    <router-outlet (activate)="onChildActivate($event)"></router-outlet>
+  </div>
+</div>

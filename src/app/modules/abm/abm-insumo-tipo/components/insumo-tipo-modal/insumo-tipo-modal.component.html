@@ -1,0 +1,41 @@
+<h1 mat-dialog-title>{{ title }}</h1>
+
+<div mat-dialog-content>
+    <form [formGroup]="form" class="mat-form-without-wrapper flex flex-col gap-4">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Nombre del Tipo de Insumo</mat-label>
+            <input matInput formControlName="nombre" required>
+            <mat-error *ngIf="form.get('nombre').hasError('required')">
+                El nombre es requerido.
+            </mat-error>
+        </mat-form-field>
+
+        <mat-slide-toggle formControlName="tienePadre" class="mb-2">
+            Asignar Padre (Opcional)
+        </mat-slide-toggle>
+
+        <mat-form-field appearance="outline" class="w-full" *ngIf="form.get('tienePadre').value">
+            <mat-label>Tipo de Insumo Padre</mat-label>
+            <input type="text" placeholder="Buscar padre..." aria-label="Tipo de Insumo Padre" matInput
+                formControlName="padre" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let option of filteredPadres$ | async" [value]="option">
+                    {{option.nombre}}
+                </mat-option>
+                <mat-option *ngIf="(filteredPadres$ | async)?.length === 0" disabled>
+                    No se encontraron coincidencias.
+                </mat-option>
+            </mat-autocomplete>
+        </mat-form-field>
+
+    </form>
+</div>
+
+<div mat-dialog-actions class="flex justify-end gap-2 pt-0">
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+        [disabled]="form.invalid || isLoading" (click)="onSave()">
+        <span *ngIf="!isLoading">Guardar</span>
+        <mat-progress-spinner *ngIf="isLoading" diameter="24" mode="indeterminate"></mat-progress-spinner>
+    </button>
+</div>
