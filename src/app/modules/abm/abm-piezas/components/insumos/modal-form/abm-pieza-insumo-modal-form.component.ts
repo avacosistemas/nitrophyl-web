@@ -4,7 +4,7 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ABMPiezaService } from '../../../abm-piezas.service';
 import { Insumo, IInsumoTratado, IAdhesivo, ITipoInsumoJerarquico, ITratamiento } from '../../../models/pieza.model';
 import { Observable, of, Subject, BehaviorSubject, combineLatest, merge } from 'rxjs';
-import { switchMap, startWith, map, takeUntil, debounceTime, filter, mapTo, catchError } from 'rxjs/operators';
+import { switchMap, startWith, map, takeUntil, debounceTime, filter, catchError } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
@@ -16,6 +16,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 })
 export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
   @ViewChild('adhesivoInput') adhesivoInput: ElementRef<HTMLInputElement>;
+  @ViewChild('tratamientoInput') tratamientoInput: ElementRef<HTMLInputElement>;
 
   insumoForm: FormGroup;
   isEditMode = false;
@@ -26,15 +27,18 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
 
   private listaInsumos$ = new BehaviorSubject<Insumo[]>([]);
   filteredInsumos$: Observable<Insumo[]>;
-
   filteredTratamientos$: Observable<ITratamiento[]>;
   filteredAdhesivos$: Observable<IAdhesivo[]>;
+
+  tratamientoCtrl = new FormControl();
+  tratamientosSeleccionados: ITratamiento[] = [];
 
   adhesivoCtrl = new FormControl();
   adhesivosSeleccionados: IAdhesivo[] = [];
 
   private destroy$ = new Subject<void>();
   private refreshAdhesivos$ = new Subject<void>();
+  private refreshTratamientos$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -47,7 +51,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     this.insumoForm = this.fb.group({
       tipos: this.fb.array([]),
       insumo: [{ value: null, disabled: true }, Validators.required],
-      tratamiento: [null, Validators.required],
+      tratamientos: [[], [Validators.required, Validators.minLength(1)]],
       adhesivos: [[]],
       medidaValor: [''],
       medidaObservaciones: [''],
@@ -89,15 +93,8 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
 
   private populateFormForEdit(): void {
     const insumoData = this.data.insumoTratado;
-
-    this.abmPiezaService.getInsumosPorTipo(insumoData.tipo.id).subscribe(res => {
-      this.listaInsumos$.next(res.data.page || []);
-      const insumoObj = (res.data.page || []).find(i => i.id === insumoData.idInsumo);
-
-      this.insumoForm.patchValue({ insumo: insumoObj });
-      this.insumoForm.get('insumo').enable();
-      this.cdr.markForCheck();
-    });
+    this.tratamientosSeleccionados = insumoData.tratamientos || [];
+    this.adhesivosSeleccionados = insumoData.adhesivos || [];
 
     const path = this.buildTipoHierarchyPath(insumoData.tipo);
     path.forEach((tipo) => {
@@ -106,20 +103,25 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       this.tiposFormArray.push(this.fb.control(tipo, Validators.required));
     });
 
-    const tratamientoObj = { id: insumoData.idTratamiento, nombre: insumoData.tratamiento };
-
-    this.insumoForm.patchValue({
-      tratamiento: tratamientoObj,
-      medidaValor: insumoData.medidaValor,
-      medidaObservaciones: insumoData.medidaObservaciones,
-      observaciones: insumoData.observaciones
-    });
-
-    this.adhesivosSeleccionados = insumoData.adhesivos || [];
-    this.updateAdhesivosFormControl();
-
     this.insumoForm.get('tipos').disable();
-    this.isLoading = false;
+
+    this.abmPiezaService.getInsumosPorTipo(insumoData.tipo.id).pipe(takeUntil(this.destroy$)).subscribe(res => {
+      this.listaInsumos$.next(res.data.page || []);
+      const insumoObj = (res.data.page || []).find(i => i.id === insumoData.idInsumo);
+
+      this.insumoForm.patchValue({
+        insumo: insumoObj,
+        medidaValor: insumoData.medidaValor,
+        medidaObservaciones: insumoData.medidaObservaciones,
+        observaciones: insumoData.observaciones
+      });
+
+      this.updateTratamientosFormControl();
+      this.updateAdhesivosFormControl();
+      this.insumoForm.get('insumo').enable();
+      this.isLoading = false;
+      this.cdr.markForCheck();
+    });
   }
 
   private buildTipoHierarchyPath(tipo: ITipoInsumoJerarquico): ITipoInsumoJerarquico[] {
@@ -143,14 +145,25 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       })
     );
 
-    this.filteredTratamientos$ = this.insumoForm.get('tratamiento').valueChanges.pipe(
+    const tratamientosTriggers$ = merge(
+      this.tratamientoCtrl.valueChanges,
+      this.refreshTratamientos$
+    );
+    this.filteredTratamientos$ = tratamientosTriggers$.pipe(
       startWith(''),
       debounceTime(300),
-      switchMap(value => {
-        const searchTerm = typeof value === 'string' ? value : '';
-        return this.abmPiezaService.buscarTratamientos(searchTerm);
-      }),
-      map(response => response.data || [])
+      switchMap(() => {
+        const searchTerm = this.tratamientoCtrl.value || '';
+        return this.abmPiezaService.buscarTratamientos(searchTerm).pipe(
+          map(response => response.data || []),
+          map(tratamientosDesdeApi =>
+            tratamientosDesdeApi.filter(tratamientoApi =>
+              !this.tratamientosSeleccionados.some(tratamientoSel => tratamientoSel.id === tratamientoApi.id)
+            )
+          ),
+          catchError(() => of([]))
+        );
+      })
     );
 
     const adhesivosTriggers$ = merge(
@@ -163,7 +176,6 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       debounceTime(300),
       switchMap(() => {
         const searchTerm = this.adhesivoCtrl.value || '';
-
         return this.abmPiezaService.buscarAdhesivos(searchTerm).pipe(
           map(response => response.data || []),
           map(adhesivosDesdeApi =>
@@ -171,14 +183,10 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
               !this.adhesivosSeleccionados.some(adhesivoSel => adhesivoSel.id === adhesivoApi.id)
             )
           ),
-          catchError((error: any): Observable<IAdhesivo[]> => {
-            console.error('Error al buscar adhesivos:', error);
-            return of([]);
-          })
+          catchError(() => of([]))
         );
       })
     );
-
   }
 
   get tiposFormArray(): FormArray {
@@ -190,13 +198,10 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     while (this.tiposFormArray.length > nivelActual + 1) {
       this.tiposFormArray.removeAt(nivelActual + 1);
     }
-
     this.insumoForm.get('insumo').reset();
     this.insumoForm.get('insumo').disable();
     this.listaInsumos$.next([]);
-
     const hijos = this.allTiposInsumo.filter(t => t.padre?.id === tipoSeleccionado.id);
-
     if (hijos.length > 0) {
       this.nivelesTipoInsumo.push(hijos);
       this.tiposFormArray.push(this.fb.control(null, Validators.required));
@@ -214,8 +219,31 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  onTratamientoSelected(tratamiento: ITratamiento): void {
-    this.insumoForm.get('tratamiento').setValue(tratamiento, { emitEvent: false });
+  addTratamiento(event: MatAutocompleteSelectedEvent): void {
+    const tratamiento = event.option.value as ITratamiento;
+    if (tratamiento && !this.tratamientosSeleccionados.some(t => t.id === tratamiento.id)) {
+      this.tratamientosSeleccionados.push(tratamiento);
+    }
+    if (this.tratamientoInput) {
+      this.tratamientoInput.nativeElement.value = '';
+    }
+    this.tratamientoCtrl.setValue(null);
+    this.updateTratamientosFormControl();
+  }
+
+  removeTratamiento(tratamiento: ITratamiento): void {
+    const index = this.tratamientosSeleccionados.findIndex(t => t.id === tratamiento.id);
+    if (index >= 0) {
+      this.tratamientosSeleccionados.splice(index, 1);
+      this.updateTratamientosFormControl();
+      this.refreshTratamientos$.next();
+    }
+  }
+
+  private updateTratamientosFormControl(): void {
+    const ids = this.tratamientosSeleccionados.map(t => t.id);
+    this.insumoForm.get('tratamientos').setValue(ids);
+    this.cdr.markForCheck();
   }
 
   addAdhesivo(event: MatAutocompleteSelectedEvent): void {
@@ -235,7 +263,6 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     if (index >= 0) {
       this.adhesivosSeleccionados.splice(index, 1);
       this.updateAdhesivosFormControl();
-
       this.refreshAdhesivos$.next();
     }
   }
@@ -254,10 +281,9 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     }
 
     const insumoSeleccionado = this.insumoForm.get('insumo').value;
-    const tratamientoSeleccionado = this.insumoForm.get('tratamiento').value;
 
-    if (!insumoSeleccionado || typeof insumoSeleccionado !== 'object' || !tratamientoSeleccionado || typeof tratamientoSeleccionado !== 'object') {
-      this.notificationService.showError('Debe seleccionar un Insumo y un Tratamiento válidos de las listas.');
+    if (!insumoSeleccionado || typeof insumoSeleccionado !== 'object') {
+      this.notificationService.showError('Debe seleccionar un Insumo válido de la lista.');
       return;
     }
 
@@ -268,8 +294,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       idPieza: this.data.idPieza,
       idInsumo: insumoSeleccionado.id,
       insumo: insumoSeleccionado.nombre,
-      idTratamiento: tratamientoSeleccionado.id,
-      tratamiento: tratamientoSeleccionado.nombre,
+      tratamientos: this.tratamientosSeleccionados.map(t => ({ id: t.id, nombre: t.nombre })),
       medidaValor: formValue.medidaValor || null,
       medidaObservaciones: formValue.medidaObservaciones || null,
       observaciones: formValue.observaciones || null,

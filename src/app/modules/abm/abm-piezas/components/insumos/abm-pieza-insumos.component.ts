@@ -2,7 +2,7 @@ import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/cor
 import { FormBuilder } from '@angular/forms';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from '../../abm-piezas.service';
-import { IInsumoTratado, ITipoInsumoJerarquico, IAdhesivo } from '../../models/pieza.model';
+import { IInsumoTratado, ITipoInsumoJerarquico, IAdhesivo, ITratamiento } from '../../models/pieza.model';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -129,6 +129,11 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   displayAdhesivos(adhesivos: IAdhesivo[]): string {
     if (!adhesivos || adhesivos.length === 0) return '-';
     return adhesivos.map(a => a.nombre).join(', ');
+  }
+
+  displayTratamientos(tratamientos: ITratamiento[]): string {
+    if (!tratamientos || tratamientos.length === 0) return '-';
+    return tratamientos.map(t => t.nombre).join(', ');
   }
 
   openConfirmationModal(message: SafeHtml): Observable<boolean> {
