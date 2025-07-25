@@ -47,7 +47,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     this.insumoForm = this.fb.group({
       tipos: this.fb.array([]),
       insumo: [{ value: null, disabled: true }, Validators.required],
-      tratamiento: [null, Validators.required],
+      tratamiento: [null],
       adhesivos: [[]],
       medidaValor: [''],
       medidaObservaciones: [''],
@@ -256,8 +256,8 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     const insumoSeleccionado = this.insumoForm.get('insumo').value;
     const tratamientoSeleccionado = this.insumoForm.get('tratamiento').value;
 
-    if (!insumoSeleccionado || typeof insumoSeleccionado !== 'object' || !tratamientoSeleccionado || typeof tratamientoSeleccionado !== 'object') {
-      this.notificationService.showError('Debe seleccionar un Insumo y un Tratamiento válidos de las listas.');
+    if (!insumoSeleccionado || typeof insumoSeleccionado !== 'object') {
+      this.notificationService.showError('Debe seleccionar un Insumo');
       return;
     }
 
@@ -268,8 +268,8 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       idPieza: this.data.idPieza,
       idInsumo: insumoSeleccionado.id,
       insumo: insumoSeleccionado.nombre,
-      idTratamiento: tratamientoSeleccionado.id,
-      tratamiento: tratamientoSeleccionado.nombre,
+      idTratamiento: tratamientoSeleccionado?.id,
+      tratamiento: tratamientoSeleccionado?.nombre,
       medidaValor: formValue.medidaValor || null,
       medidaObservaciones: formValue.medidaObservaciones || null,
       observaciones: formValue.observaciones || null,

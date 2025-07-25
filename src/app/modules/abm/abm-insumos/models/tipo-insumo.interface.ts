@@ -6,6 +6,7 @@ export interface ITipoInsumo {
     fechaCreacion?: number;
     usuarioActualizacion?: string;
     fechaActualizacion?: number;
+    codigo: number;
 }
 
 export interface ITipoInsumoApiResponse {

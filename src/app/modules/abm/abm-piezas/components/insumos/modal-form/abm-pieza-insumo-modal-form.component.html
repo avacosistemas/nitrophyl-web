@@ -40,7 +40,7 @@
 
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>Tratamiento</mat-label>
-              <input type="text" matInput formControlName="tratamiento" [matAutocomplete]="autoTratamiento" required>
+              <input type="text" matInput formControlName="tratamiento" [matAutocomplete]="autoTratamiento">
               <mat-autocomplete #autoTratamiento="matAutocomplete" [displayWith]="displayFn"
                 (optionSelected)="onTratamientoSelected($event.option.value)">
                 <mat-option *ngFor="let t of filteredTratamientos$ | async" [value]="t">

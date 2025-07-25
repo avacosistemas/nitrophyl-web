@@ -6,12 +6,13 @@ import { environment } from 'environments/environment';
 import { IInsumoApiResponse, IInsumo, IInsumoSingleApiResponse } from './models/insumo.interface';
 import { ITipoInsumo, ITipoInsumoApiResponse } from './models/tipo-insumo.interface';
 
+
 @Injectable({
     providedIn: 'root'
 })
 export class AbmInsumosService {
     private readonly apiUrl = `${environment.server}insumo`;
-    private readonly tipoInsumoApiUrl = `${environment.server}tipoInsumo`;
+    private readonly tipoInsumoApiUrl = `${environment.server}tipoInsumo/soloHijos`;
 
     constructor(private http: HttpClient) { }
 
@@ -42,7 +43,10 @@ export class AbmInsumosService {
 
     getTiposInsumo(): Observable<ITipoInsumo[]> {
         return this.http.get<ITipoInsumoApiResponse>(this.tipoInsumoApiUrl).pipe(
-            map(response => response.data),
+            map(response => response.data.map(t => ({
+                ...t,
+                codigo: Number(t.codigo)
+            }))),
             catchError((error: HttpErrorResponse) => {
                 console.error('Error al cargar tipos de insumo:', error);
                 return throwError(() => new Error('No se pudieron cargar los tipos de insumo.'));

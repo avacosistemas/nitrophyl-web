@@ -17,7 +17,7 @@ import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.c
 export class InsumosListComponent implements OnInit, OnDestroy {
     isLoading = true;
     dataSource = new MatTableDataSource<IInsumo>([]);
-    displayedColumns: string[] = ['nombre', 'tipoNombre', 'acciones'];
+    displayedColumns: string[] = ['tipoNombre', 'nombre', 'acciones'];
 
     private subscriptions = new Subscription();
 

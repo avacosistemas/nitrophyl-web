@@ -62,7 +62,7 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
             if (this.mode === 'edit' && this.data.insumo) {
                 this.form.patchValue({ nombre: this.data.insumo.nombre });
                 if (this.data.insumo.idTipo) {
-                    const tipoSeleccionado = this.allTiposInsumo.find(t => t.id === this.data.insumo.idTipo);
+                    const tipoSeleccionado = this.allTiposInsumo.find(t => t.codigo === this.data.insumo.idTipo);
                     if (tipoSeleccionado) {
                         this.form.get('tipoInsumo').setValue(tipoSeleccionado);
                     }
@@ -103,8 +103,8 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
         };
 
         const tipoSeleccionado: ITipoInsumo = formValue.tipoInsumo;
-        if (tipoSeleccionado && tipoSeleccionado.id) {
-            dto.idTipo = tipoSeleccionado.id;
+        if (tipoSeleccionado && tipoSeleccionado.codigo) {
+            dto.idTipo = tipoSeleccionado.codigo;
             dto.tipoNombre = tipoSeleccionado.nombre;
         } else {
             dto.idTipo = null;
