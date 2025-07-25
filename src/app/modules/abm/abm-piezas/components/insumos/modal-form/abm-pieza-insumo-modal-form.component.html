@@ -39,15 +39,27 @@
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="w-full">
-              <mat-label>Tratamiento</mat-label>
-              <input type="text" matInput formControlName="tratamiento" [matAutocomplete]="autoTratamiento">
-              <mat-autocomplete #autoTratamiento="matAutocomplete" [displayWith]="displayFn"
-                (optionSelected)="onTratamientoSelected($event.option.value)">
+              <mat-label>Tratamientos</mat-label>
+              <mat-chip-list #chipListTratamiento aria-label="Selección de tratamientos">
+                <mat-chip *ngFor="let tratamiento of tratamientosSeleccionados"
+                  (removed)="removeTratamiento(tratamiento)">
+                  {{tratamiento.nombre}}
+                  <button matChipRemove>
+                    <mat-icon>cancel</mat-icon>
+                  </button>
+                </mat-chip>
+                <input placeholder="Buscar y añadir tratamientos..." #tratamientoInput [formControl]="tratamientoCtrl"
+                  [matAutocomplete]="autoTratamiento" [matChipInputFor]="chipListTratamiento">
+              </mat-chip-list>
+              <mat-autocomplete #autoTratamiento="matAutocomplete" (optionSelected)="addTratamiento($event)">
                 <mat-option *ngFor="let t of filteredTratamientos$ | async" [value]="t">
                   {{ t.nombre }}
                 </mat-option>
               </mat-autocomplete>
-              <mat-error>Tratamiento requerido</mat-error>
+              <mat-error
+                *ngIf="insumoForm.get('tratamientos').hasError('required') || insumoForm.get('tratamientos').hasError('minLength')">
+                Se requiere al menos un tratamiento.
+              </mat-error>
             </mat-form-field>
 
             <div class="grid grid-cols-2 gap-4">

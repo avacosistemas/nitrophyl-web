@@ -173,9 +173,8 @@ export interface IInsumoTratado {
     tipo: ITipoInsumoJerarquico;
     medidaValor: string;
     medidaObservaciones: string;
-    tratamiento: string;
-    idTratamiento: number;
-    observaciones: string;
+    observaciones: string | null;
+    tratamientos: ITratamiento[];
     adhesivos: IAdhesivo[];
 }
 
