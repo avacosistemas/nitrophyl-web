@@ -22,6 +22,11 @@ export interface Pieza {
     puedeGenerarRevision: boolean;
 }
 
+export interface Espesor {
+    min: number;
+    max: number;
+}
+
 export interface PiezaProceso {
     id: number;
     denominacion: string;
@@ -31,8 +36,7 @@ export interface PiezaProceso {
     durezaMinima: number;
     durezaMaxima: number;
     unidadDureza: 'SHORE_A' | 'SHORE_D';
-    espesorMinimo: number | null;
-    espesorMaximo: number | null;
+    espesores: Espesor[];
     pesoCrudo: number | null;
     observacionesPesoCrudo: string | null;
     revision: number;
@@ -56,13 +60,14 @@ export interface PiezaCreateDTO {
     denominacion: string;
     durezaMaxima: number;
     durezaMinima: number;
-    espesorMaximo: number | null;
-    espesorMinimo: number | null;
+    espesores: Espesor[];
     idCliente: number;
     idFormula: number;
     idMolde: number;
     idTipoPieza: number;
     nombrePiezaCliente?: string;
+    cotizacionCliente?: number;
+    observacionesCotizacionCliente?: string;
     observacionesMolde?: string;
     observacionesPesoCrudo?: string;
     pesoCrudo: number | null;
@@ -82,8 +87,7 @@ export interface PiezaUpdateDTO {
     durezaMinima: number;
     durezaMaxima: number;
     unidadDureza: string;
-    espesorMinimo: number | null;
-    espesorMaximo: number | null;
+    espesores: Espesor[];
     pesoCrudo: number | null;
     observacionesPesoCrudo: string | null;
     observacionesRevision: string | null;
@@ -93,8 +97,12 @@ export interface PiezaCliente {
     id: number;
     idCliente: number;
     idPieza: number;
+    codigoCliente: string;
     nombreCliente: string;
     nombrePiezaPersonalizado: string;
+    cotizacion?: number;
+    fechaCotizacion?: string;
+    observacionesCotizacion?: string;
 }
 
 export interface PiezaDimension {

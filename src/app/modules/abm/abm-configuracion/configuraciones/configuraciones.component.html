@@ -58,7 +58,7 @@
                             <mat-form-field appearance="outline" class="w-1/3 ">
                                 <mat-label>Cliente</mat-label>
                                 <input type="text" #campoInput formControlName="cliente"
-                                    [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'"
+                                    [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Buscar cliente por código o nombre...'"
                                     matInput [matAutocomplete]="clienteAuto">
 
                                 <button mat-icon-button matSuffix *ngIf="form.controls['cliente'].value !== null"
@@ -68,9 +68,8 @@
 
                                 <mat-autocomplete #clienteAuto="matAutocomplete" [displayWith]="displayClienteFn"
                                     autoActiveFirstOption>
-                                    <mat-option *ngIf="!form.controls['cliente'].value" [value]="0">Todos</mat-option>
                                     <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                                        {{ cliente.nombre }}
+                                        {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
                                     </mat-option>
                                 </mat-autocomplete>
                             </mat-form-field>
@@ -108,14 +107,14 @@
                                 class="mat-focus-indicator mat-stroked-button mat-button-base mr-2" (click)="limpiar()">
                                 <span class="mat-button-wrapper"> Limpiar </span>
                                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                                
+
                             </button>
                             <button mat-flat-button=""
                                 class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
                                 (click)="search()">
                                 <span class="mat-button-wrapper"> Buscar </span>
                                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                                
+
                             </button>
                         </div>
                     </form>
@@ -159,7 +158,7 @@
                         'Si' : 'No' }} </td>
                 </ng-container>
                 <ng-container matColumnDef="enviarGrafico">
-                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Enviar grafico  </th>
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="text-center"> Enviar grafico </th>
                     <td mat-cell *matCellDef="let element" class="text-center"> {{ element.enviarGrafico === true ?
                         'Si' : 'No' }}
                     </td>

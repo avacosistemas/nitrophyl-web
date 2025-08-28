@@ -7,7 +7,15 @@
                 </div>
                 <form [formGroup]="clienteForm">
                     <div class="row flex gap-3 justify-around">
-                        <mat-form-field appearance="outline" class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/4">
+                            <mat-label>Código</mat-label>
+                            <input
+                                id="codigo"
+                                matInput
+                                [formControlName]="'codigo'"
+                                placeholder="Código">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="w-1/4">
                             <mat-label>Nombre</mat-label>
                             <input
                                 id="nombre"
@@ -18,7 +26,7 @@
                                     El nombre es requerido
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field appearance="outline" class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/4">
                             <mat-label>Razón Social</mat-label>
                             <input
                                 id="razonSocial"
@@ -29,7 +37,7 @@
                                     La razón social es requerida
                                 </mat-error>
                         </mat-form-field>
-                        <mat-form-field appearance="outline" class="w-1/3">
+                        <mat-form-field appearance="outline" class="w-1/4">
                             <mat-label>Mail</mat-label>
                             <input
                                 id="email"

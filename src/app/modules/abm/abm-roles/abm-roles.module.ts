@@ -9,9 +9,14 @@ import { ABMRolesRol } from './rol/abm-roles-rol.component';
 
 const abmRolesRoutes: Route[] = [
     {
-        path     : '',
+        path: '',
         component: ABMRolesComponent,
         children: [
+            {
+                path: '',
+                redirectTo: 'grid',
+                pathMatch: 'full'
+            },
             { path: 'grid', component: ABMRolesGrillaComponent },
             { path: 'create', component: ABMCrearRol },
             { path: 'role/:id', component: ABMRolesRol }
@@ -26,12 +31,11 @@ const abmRolesRoutes: Route[] = [
         ABMRolesRol,
         ABMCrearRol
     ],
-    imports     : [
+    imports: [
         RouterModule.forChild(abmRolesRoutes),
         ABMSharedModule,
         HeaderSharedModule
     ]
 })
-export class ABMRolesModule
-{
+export class ABMRolesModule {
 }

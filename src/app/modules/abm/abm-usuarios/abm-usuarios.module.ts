@@ -16,6 +16,11 @@ const abmUsuariosRoutes: Route[] = [
         component: ABMUsuariosComponent,
         children: [
             {
+                path: '',
+                redirectTo: 'grid',
+                pathMatch: 'full'
+            },
+            {
                 path: 'user/:id',
                 component: ABMUsuariosUserComponent,
             },

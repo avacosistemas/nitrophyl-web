@@ -1,11 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, catchError, Observable, throwError, map } from 'rxjs';
-
-// * Environment.
 import { environment } from 'environments/environment';
-
-// * Interfaces.
 import {
   ILot,
   ILotResponse,
@@ -142,16 +138,17 @@ export class LotService {
     return this.http.get<ILotResponseAutocomplete>(url);
   }
 
-  getInformeCalidad(idCliente: number, idLote: string): Observable<any> {
+  getInformeCalidad(idCliente: number, idLote: string, observaciones: string = ''): Observable<any> {
     const params = new HttpParams()
       .set('idCliente', idCliente)
-      .set('idLote', idLote);
+      .set('idLote', idLote)
+      .set('observaciones', observaciones);
 
     const url = `${this._apiUrl}loteReporte`;
 
     return this.http.get<any>(url, { params }).pipe(
       catchError((error) => {
-        console.error('Error al enviar el informe', error);
+        console.error('Error al obtener el informe', error);
         return throwError(error);
       })
     );

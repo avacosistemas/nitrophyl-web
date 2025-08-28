@@ -18,6 +18,11 @@ const abmConfiguracionRoutes: Route[] = [
         path: '',
         component: ABMConfiguracionComponent,
         children: [
+            {
+                path: '',
+                redirectTo: 'grid',
+                pathMatch: 'full'
+            },
             { path: 'grid', component: ConfiguracionesComponent },
             { path: 'create', component: ConfiguracionComponent },
             { path: 'view/:id', component: ConfiguracionComponent },

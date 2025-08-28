@@ -23,7 +23,7 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
 
     prensasDisponibles$: Observable<Prensa[]>;
 
-    tiposBombeo: string[] = ['AUTOMATICO', 'ESCALONADO'];
+    tiposBombeo: string[] = ['AUTOMATICO', 'ESCALONADO', 'A FONDO'];
 
     moldeoForm = this.fb.group({
         precalentamientoHabilitado: [false],

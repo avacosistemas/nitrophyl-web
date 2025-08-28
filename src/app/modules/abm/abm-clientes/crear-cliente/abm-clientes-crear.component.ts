@@ -1,14 +1,13 @@
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { Cliente } from 'app/shared/models/cliente.model';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { Subscription } from 'rxjs';
 import { ABMClientesService } from '../abm-clientes.service';
+import { NotificationService } from 'app/shared/services/notification.service';
 
 @Component({
     selector: 'abm-clientes-crear',
@@ -23,13 +22,11 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
     empresa = [
         { nombre: 'NITROPHYL' },
         { nombre: 'ELASINT' }
-      ];
-    ingresosBrutos = [
-        {id: 1, name: 'Régimen General'},
-        {id: 2, name: 'Régimen Simplificado'}
     ];
-
-
+    ingresosBrutos = [
+        { id: 1, name: 'Régimen General' },
+        { id: 2, name: 'Régimen Simplificado' }
+    ];
 
     constructor(
         private clientesService: ClientesService,
@@ -37,9 +34,10 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         private ABMClientesService: ABMClientesService,
         public dialog: MatDialog,
         private router: Router,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService,
     ) {
         this.clienteForm = this.formBuilder.group({
+            codigo: [null],
             razonSocial: [null, [Validators.required]],
             email: [null, [Validators.required]],
             cuit: [null, [Validators.required]],
@@ -49,11 +47,11 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             provincia: [null, [Validators.required]],
             empresa: [null, [Validators.required]],
             webSite: [null],
-            nombre:  [null, [Validators.required]],
+            nombre: [null, [Validators.required]],
             observacionesCobranzas: [null],
             observacionesEntrega: [null],
- 			observacionesFacturacion: [null],
-			telefono:  [null, [Validators.required]]
+            observacionesFacturacion: [null],
+            telefono: [null, [Validators.required]]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
             (data: any) => {
@@ -73,7 +71,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         this.empresa = [
             { nombre: 'NITROPHYL' },
             { nombre: 'ELASINT' }
-          ];
+        ];
     }
 
     ngAfterViewInit() {
@@ -90,7 +88,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
 
     create() {
         this.clienteForm.markAllAsTouched();
-        if(!this.clienteForm.valid) {
+        if (!this.clienteForm.valid) {
             return;
         };
         let model: Cliente = {
@@ -98,16 +96,16 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             id: 0
         };
         this.clientesService.createCliente(model).subscribe(d => {
-            if(d.status == 'OK') {
-                this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
+            if (d.status == 'OK') {
+                this.notificationService.showSuccess('Cambios realizados.');
                 this.router.navigateByUrl(`/clientes/grid`);
             } else {
-                this.openSnackBar('No se puedieron realizar los cambios', 'X', 'red-snackbar');
+                this.notificationService.showError('No se puedieron realizar los cambios.');
             }
         },
-        err => {
-            this.openSnackBar('No se puedieron realizar los cambios', 'X', 'red-snackbar');
-        })
+            err => {
+                this.notificationService.showError('No se puedieron realizar los cambios.');
+            })
     }
 
     close() {
@@ -125,11 +123,4 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             });
         }
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-        this.snackBar.open(message, action, {
-            duration: 5000,
-            panelClass: className
-        });
-    };
 }

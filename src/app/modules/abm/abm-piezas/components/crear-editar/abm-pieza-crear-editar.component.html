@@ -69,22 +69,32 @@
                     <mat-form-field appearance="outline" class="form-field w-full ">
                         <mat-label>Cliente</mat-label>
                         <input type="text" matInput formControlName="idCliente" required #clienteInput
-                            [matAutocomplete]="autoCliente">
+                            placeholder="Buscar cliente por nombre o código..." [matAutocomplete]="autoCliente">
                         <button mat-icon-button matSuffix *ngIf="piezaForm.get('idCliente')?.value && mode !== 'view'"
                             (click)="piezaForm.get('idCliente').setValue(null); $event.stopPropagation()">
                             <mat-icon>close</mat-icon>
                         </button>
                         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayCliente">
                             <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                                {{ cliente.nombre }}
+                                {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
                             </mat-option>
                         </mat-autocomplete>
                         <mat-error *ngIf="piezaForm.get('idCliente').hasError('required')">El cliente es
                             requerido</mat-error>
                     </mat-form-field>
                     <mat-form-field appearance="outline" class="form-field w-full ">
-                        <mat-label>Nombre Pieza Personalizado</mat-label>
+                        <mat-label>Código de Cliente</mat-label>
                         <input matInput formControlName="nombrePiezaCliente">
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="form-field w-full ">
+                        <mat-label>Cotización</mat-label>
+                        <input matInput type="number" formControlName="cotizacionCliente">
+                        <mat-error *ngIf="piezaForm.get('cotizacionCliente').hasError('pattern')">Debe ser un valor
+                            numérico.</mat-error>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="form-field w-full ">
+                        <mat-label>Observaciones de cotización</mat-label>
+                        <textarea matInput formControlName="observacionesCotizacionCliente"></textarea>
                     </mat-form-field>
                 </div>
             </div>
@@ -134,15 +144,50 @@
                                 requerido</mat-error>
                         </mat-form-field>
                     </div>
-                    <div class="flex gap-4">
-                        <mat-form-field appearance="outline" class="form-field w-full">
-                            <mat-label>Espesor Plancha Mínimo (mm)</mat-label>
-                            <input matInput type="number" formControlName="espesorMinimo">
-                        </mat-form-field>
-                        <mat-form-field appearance="outline" class="form-field w-full">
-                            <mat-label>Espesor Plancha Máximo (mm)</mat-label>
-                            <input matInput type="number" formControlName="espesorMaximo">
-                        </mat-form-field>
+                    <div class="border-y py-4 my-2">
+                        <span class="text-lg font-semibold tracking-tight leading-6">Espesores de Plancha</span>
+                        <div *ngIf="mode !== 'view'" class="flex items-start gap-4 mt-2" [formGroup]="espesorForm">
+                            <mat-form-field appearance="outline" class="flex-1">
+                                <mat-label>Mínimo (mm)</mat-label>
+                                <input matInput type="number" formControlName="min">
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="flex-1">
+                                <mat-label>Máximo (mm)</mat-label>
+                                <input matInput type="number" formControlName="max">
+                            </mat-form-field>
+                            <button mat-flat-button color="accent" type="button" (click)="agregarEspesor()"
+                                [disabled]="espesorForm.invalid" class="mt-2">
+                                Agregar
+                            </button>
+                        </div>
+
+                        <div class="mt-4" *ngIf="espesoresDataSource.data.length > 0">
+                            <table mat-table [dataSource]="espesoresDataSource" class="w-full">
+                                <ng-container matColumnDef="min">
+                                    <th mat-header-cell *matHeaderCellDef> Mínimo (mm) </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.min}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="max">
+                                    <th mat-header-cell *matHeaderCellDef> Máximo (mm) </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.max}} </td>
+                                </ng-container>
+                                <ng-container matColumnDef="acciones">
+                                    <th mat-header-cell *matHeaderCellDef></th>
+                                    <td mat-cell *matCellDef="let element; let i = index;" class="text-right">
+                                        <button mat-icon-button *ngIf="mode !== 'view'" (click)="eliminarEspesor(i)">
+                                            <mat-icon svgIcon="heroicons_solid:trash"></mat-icon>
+                                        </button>
+                                    </td>
+                                </ng-container>
+
+                                <tr mat-header-row *matHeaderRowDef="displayedColumnsEspesores"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumnsEspesores;"></tr>
+                            </table>
+                        </div>
+                        <div *ngIf="espesoresDataSource.data.length === 0"
+                            class="text-gray-500 text-center p-4 border rounded-md mt-4">
+                            No se han agregado rangos de espesor.
+                        </div>
                     </div>
                     <div class="flex gap-4">
                         <mat-form-field appearance="outline" class="form-field w-full ">

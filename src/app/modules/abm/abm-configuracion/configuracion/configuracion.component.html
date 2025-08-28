@@ -55,9 +55,9 @@
         <mat-form-field appearance="outline" class="w-full ">
           <mat-label>Cliente</mat-label>
           <input type="text" required #campoInput formControlName="cliente"
-            [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Seleccione un cliente'" matInput
+            [placeholder]="clientesFail ? 'No se han podido cargar los clientes.' :  'Buscar cliente por código o nombre...'" matInput
             [matAutocomplete]="clienteAuto">
-          <mat-error class="mb-1" *ngIf="form.get('machine').hasError('required')">
+          <mat-error class="mb-1" *ngIf="form.get('cliente').hasError('required')">
             El cliente es requerido.
           </mat-error>
 
@@ -70,7 +70,7 @@
           <mat-autocomplete #clienteAuto="matAutocomplete" [displayWith]="displayClienteFn" autoActiveFirstOption>
             <mat-option *ngIf="!form.controls['cliente'].value" [value]="0">Todos</mat-option>
             <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-              {{ cliente.nombre }}
+              {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>

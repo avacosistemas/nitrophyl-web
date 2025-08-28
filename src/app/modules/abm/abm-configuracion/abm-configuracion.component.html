@@ -3,7 +3,7 @@
     [title]="title === 'Test' ? 'Pruebas ' + testObj.nombre : title"
     [subtitle]="title === 'Test' ? testObj.material + ' - ' + testObj.norma + ' - ' + testObj.fecha + ' - V ' + testObj.version : ''"
     [breadcrumbs]="[
-        { title: 'ABM', route: ['/configuracion/grid'], condition: true },
+        { title: 'Informes', route: ['/configuracion/grid'], condition: true },
         { title: 'Configuración', route: ['/configuracion/grid'], condition: true },
         { title: 'Consultar', route: [], condition: title === 'Consultar Configuraciones' },
         { title: 'Crear', route: [], condition: title === 'Crear Configuración' || title === 'Editar Configuración' },

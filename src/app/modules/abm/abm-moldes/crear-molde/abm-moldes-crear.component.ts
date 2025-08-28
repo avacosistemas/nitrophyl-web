@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { Molde } from 'app/shared/models/molde.model';
 import { ClientesService } from 'app/shared/services/clientes.service';
@@ -19,6 +20,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   suscripcion: Subscription;
   moldeForm: FormGroup;
   public clients$: any = [];
+  public tiposPieza$: { id: number; nombre: string }[] = [];
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -28,15 +30,17 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     private _formBuilder: FormBuilder,
     private ABMoldesService: ABMMoldeService,
     private _clients: ClientesService,
-    private snackBar: MatSnackBar
+    private _abmPiezaService: ABMPiezaService,
+    private notificationService: NotificationService,
   ) {
     this.moldeForm = this._formBuilder.group({
       code: [null, [Validators.required, Validators.maxLength(30)]],
-      status: ['ACTIVO', [Validators.required]],
+      estado: ['ACTIVO', [Validators.required]],
       name: [null, [Validators.required, Validators.maxLength(100)]],
       client: [null, Validators.required],
       observations: [null],
       location: [null],
+      piezaTipos: this._formBuilder.array([])
     });
     this.suscripcion = this.ABMoldesService.events.subscribe((data: any) => {
       if (data == 1) {
@@ -51,8 +55,21 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     this._clients.getClientes().subscribe({
       next: (res) => (this.clients$ = res.data),
       error: (err) => console.error(err),
-      complete: () => {},
+      complete: () => { },
     });
+
+    this._abmPiezaService.getPiezaTipo().subscribe({
+      next: (tipos) => {
+        this.tiposPieza$ = tipos;
+        this.addTiposPiezaCheckboxes();
+      },
+      error: (err) => console.error(err)
+    });
+  }
+
+  private addTiposPiezaCheckboxes(): void {
+    const piezaTiposFormArray = this.moldeForm.get('piezaTipos') as FormArray;
+    this.tiposPieza$.forEach(() => piezaTiposFormArray.push(new FormControl(false)));
   }
 
   ngOnDestroy(): void {
@@ -90,9 +107,13 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       return element.id === this.moldeForm.controls.client.value;
     });
 
+    const selectedTiposPieza = this.moldeForm.value.piezaTipos
+      .map((checked, i) => checked ? { id: this.tiposPieza$[i].id } : null)
+      .filter(v => v !== null);
+
     let model: Molde = {
       codigo: this.moldeForm.controls.code.value,
-      estado: this.moldeForm.controls.status.value,
+      estado: this.moldeForm.controls.estado.value,
       nombre: this.moldeForm.controls.name.value,
       observaciones: this.moldeForm.controls.observations.value,
       ubicacion: this.moldeForm.controls.location.value,
@@ -100,31 +121,17 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       clienteDuenio: client ? client.nombre : null,
       propio: client ? false : true,
       id: 0,
+      piezaTipos: selectedTiposPieza
     };
 
     this.moldesService.postMolde(model).subscribe((res) => {
       if (res.status == 'OK') {
         this.moldesService.setMode('Edit');
-        this.router.navigate([`/moldes/molde/${res.data.id}`]);
-        this.openSnackBar('Molde creado con exito', 'X', 'green-snackbar');
+        this.router.navigate([`/moldes/molde/editar/${res.data.id}`]);
+        this.notificationService.showSuccess('Molde creado con exito.');
       } else {
-        this.openSnackBar(
-          'No se puedieron realizar los cambios',
-          'X',
-          'red-snackbar'
-        );
+        this.notificationService.showError('No se puedieron realizar los cambios.');
       }
-    });
-  }
-
-  private openSnackBar(
-    message: string,
-    action: string,
-    className: string
-  ): void {
-    this.snackBar.open(message, action, {
-      duration: 5000,
-      panelClass: className,
     });
   }
 }

@@ -139,8 +139,7 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       this.clientes$ = clientesResponse.data;
       this.filteredClientes$ = this.form.controls['cliente'].valueChanges.pipe(
         startWith(''),
-        map(value => typeof value === 'string' ? value : value?.nombre),
-        map(name => name ? this._filterClientes(name) : this.clientes$ || [])
+        map(value => this._filterClientes(value))
       );
     });
     this.loadData();
@@ -165,17 +164,17 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   }
 
   public displayFormulaFn(formula: IFormula): string {
-    if (typeof formula === 'number' && formula === 0) {return 'Todos';}
+    if (typeof formula === 'number' && formula === 0) { return 'Todos'; }
     return formula ? `${formula.nombre} V${formula.version} (${formula.norma})` : '';
   }
 
   public displayMachineFn(machine: IMachine): string {
-    if (typeof machine === 'number' && machine === 0) {return 'Todos';}
+    if (typeof machine === 'number' && machine === 0) { return 'Todos'; }
     return machine && machine.nombre ? machine.nombre : '';
   }
 
   public displayClienteFn(cliente?: Cliente): string {
-    if (typeof cliente === 'number' && cliente === 0) {return 'Todos';}
+    if (typeof cliente === 'number' && cliente === 0) { return 'Todos'; }
     return cliente && cliente.nombre ? cliente.nombre : '';
   }
 
@@ -197,8 +196,7 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     const filteredFormulas = this.formulasBackUp$.filter(
       (formula: any) => formula.nombre === name
     );
-    if (filteredFormulas.length > 0)
-      {return Math.max(...filteredFormulas.map(formula => formula.version));}
+    if (filteredFormulas.length > 0) { return Math.max(...filteredFormulas.map(formula => formula.version)); }
 
     return 0;
   }
@@ -359,9 +357,17 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     ) || [];
   }
 
-  private _filterClientes(name: string): Cliente[] {
-    return this.clientes$?.filter(cliente =>
-      cliente.nombre.toLowerCase().includes(name.toLowerCase())
-    ) || [];
+  private _filterClientes(value: string | Cliente): Cliente[] {
+    const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+    if (!this.clientes$) {
+      return [];
+    }
+    if (!filterValue) {
+      return this.clientes$;
+    }
+    return this.clientes$.filter(cliente =>
+      cliente.nombre.toLowerCase().includes(filterValue) ||
+      (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
+    );
   }
 }

@@ -4,7 +4,7 @@
 
       <mat-form-field appearance="outline" class="w-[500px]">
         <mat-label>Cliente</mat-label>
-        <input type="text" placeholder="Buscar cliente..." aria-label="Cliente" matInput
+        <input type="text" placeholder="Buscar cliente por nombre o código..." aria-label="Cliente" matInput
           [formControl]="clientFilterControl" [matAutocomplete]="autoCliente" #clientInput>
         <button mat-icon-button matSuffix *ngIf="clientFilterControl.value"
           (click)="clearClientInput(); $event.stopPropagation()" [disabled]="isSending">
@@ -13,11 +13,11 @@
         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="_displayClientName"
           (optionSelected)="onClientSelected($event)">
           <mat-option *ngFor="let client of filteredClients | async" [value]="client">
-            {{ client.nombre }}
+            {{ client.codigo ? client.codigo + ' - ' : '' }}{{ client.nombre }}
           </mat-option>
         </mat-autocomplete>
       </mat-form-field>
-    
+
       <mat-form-field appearance="outline" class="w-[500px]">
         <mat-label>Lote</mat-label>
         <input matInput placeholder="Buscar lote..." [formControl]="lotFilterControl" [matAutocomplete]="autoLote"
@@ -51,6 +51,12 @@
           <input matInput [value]="selectedLotDetails.material" disabled>
         </mat-form-field>
       </div>
+
+      <mat-form-field appearance="outline" class="w-[500px]">
+        <mat-label>Observaciones dentro del Informe</mat-label>
+        <textarea matInput formControlName="observaciones" rows="4"></textarea>
+      </mat-form-field>
+
     </form>
 
     <div *ngIf="showErrorAlert"

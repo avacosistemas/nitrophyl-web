@@ -16,7 +16,6 @@ import {
 // * Services.
 import { FormulasService } from 'app/shared/services/formulas.service';
 import { MaterialsService } from 'app/shared/services/materials.service';
-import { TestService } from 'app/shared/services/test.service';
 import { ConfigTestService } from 'app/shared/services/config-test.service';
 import { MachinesService } from 'app/shared/services/machines.service';
 
@@ -44,6 +43,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { FormulaTestModalComponent } from '../formula-test-modal/formula-test-modal.component';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
 @Component({
   selector: 'app-formula',
@@ -64,7 +64,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public revision$: any;
   public machines$: any;
   public machinesForm$: any[] = [];
-  public displayedColumnsMachines: string[] = ['name', 'vigente', 'fecha', 'fechaHasta', 'revision'];
+
+  public displayedColumnsMachines: string[] = ['name', 'vigente', 'fecha', 'fechaHasta', 'revision', 'actions'];
 
   public component: string = 'Mode';
 
@@ -236,6 +237,35 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       error: (error) => {
         console.error('Error al marcar la revisión:', error);
       },
+    });
+  }
+
+  public incorporarRevision(machine: any): void {
+    const dialogRef = this.dialog.open(GenericModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmar Acción',
+        message: `¿Está seguro que desea agregar la máquina <strong>${machine.maquina}</strong> a la revisión actual?`,
+        type: 'warning',
+        showConfirmButton: true,
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this._configTest.setearVigente(machine.id).subscribe({
+          next: () => {
+            this.openSnackBar(true, 'Máquina incorporada a la revisión vigente exitosamente.');
+            this.getMachines();
+          },
+          error: (err) => {
+            console.error('Error al setear la máquina como vigente:', err);
+            this.openSnackBar(false, 'Error al incorporar la máquina a la revisión.');
+          }
+        });
+      }
     });
   }
 

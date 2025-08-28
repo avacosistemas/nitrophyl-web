@@ -14,6 +14,11 @@ const abmPerfilesRoutes: Route[] = [
         component: ABMPerfilesComponent,
         children: [
             {
+                path: '',
+                redirectTo: 'grid',
+                pathMatch: 'full'
+            },
+            {
                 path: 'profile/:id', component: ABMPerfilesPerfil
             },
             {

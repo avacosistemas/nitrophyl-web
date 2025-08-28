@@ -16,6 +16,11 @@ const routes: Route[] = [
     path: '',
     component: ABMMachineComponent,
     children: [
+      {
+        path: '',
+        redirectTo: 'grid',
+        pathMatch: 'full'
+      },
       { path: 'grid', component: MachinesComponent },
       { path: 'create', component: MachineComponent },
       { path: 'view/:id', component: MachineComponent },
@@ -27,9 +32,9 @@ const routes: Route[] = [
 
 @NgModule({
   declarations: [
-      ABMMachineComponent,
-      MachinesComponent,
-      MachineComponent,
+    ABMMachineComponent,
+    MachinesComponent,
+    MachineComponent,
   ],
   imports: [
     RouterModule.forChild(routes),
@@ -39,4 +44,4 @@ const routes: Route[] = [
     HeaderSharedModule
   ],
 })
-export class ABMMachineModule {}
+export class ABMMachineModule { }

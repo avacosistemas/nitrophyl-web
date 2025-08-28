@@ -4,6 +4,11 @@ import { Molde } from "app/shared/models/molde.model";
 import { MoldesService } from "app/shared/services/moldes.service";
 import { Router } from "@angular/router";
 import { PageEvent } from "@angular/material/paginator";
+import { ABMPiezaService } from "app/modules/abm/abm-piezas/abm-piezas.service";
+import { ClientesService } from "app/shared/services/clientes.service";
+import { Cliente } from "app/shared/models/cliente.model";
+import { Observable, of } from "rxjs";
+import { map, startWith } from "rxjs/operators";
 
 @Component({
   selector: 'abm-moldes-grilla',
@@ -12,11 +17,14 @@ import { PageEvent } from "@angular/material/paginator";
 export class ABMMoldesGrillaComponent implements OnInit {
   component = "Grilla";
   moldes: Array<Molde> = [];
-  displayedColumns: string[] = ['code', 'name', 'status', 'ubicacion', 'alto', 'ancho', 'profundidad', 'diametro', 'acciones'];
+  displayedColumns: string[] = ['statusIcon', 'code', 'name', 'ubicacion', 'alto', 'ancho', 'profundidad', 'diametro', 'acciones'];
   showSuccess: boolean = false;
   showError: boolean = false;
   panelOpenState: boolean = false;
   searchForm: FormGroup;
+  tiposPieza: { id: number; nombre: string }[] = [];
+  clientes: Cliente[] = [];
+  filteredClientes$: Observable<Cliente[]>;
 
   totalReg: number = 0;
   pageSize: number = 50;
@@ -24,6 +32,8 @@ export class ABMMoldesGrillaComponent implements OnInit {
 
   constructor(
     private moldesService: MoldesService,
+    private abmPiezaService: ABMPiezaService,
+    private clientesService: ClientesService,
     private formBuilder: FormBuilder,
     private router: Router
   ) {
@@ -31,6 +41,8 @@ export class ABMMoldesGrillaComponent implements OnInit {
       code: [null],
       name: [null],
       status: [null],
+      tiposPieza: [null],
+      idCliente: [null],
       altomin: [null],
       altomax: [null],
       anchomin: [null],
@@ -44,6 +56,8 @@ export class ABMMoldesGrillaComponent implements OnInit {
 
   ngOnInit(): void {
     this.inicializar();
+    this.cargarTiposPieza();
+    this.cargarClientes();
   }
 
   ngAfterViewInit() {
@@ -70,26 +84,59 @@ export class ABMMoldesGrillaComponent implements OnInit {
     this.cargarMoldes();
   }
 
+  cargarTiposPieza(): void {
+      this.abmPiezaService.getPiezaTipo().subscribe(data => {
+          this.tiposPieza = data;
+      });
+  }
+
+  cargarClientes(): void {
+      this.clientesService.getClientes().subscribe(response => {
+          this.clientes = response.data || [];
+          this.setupClienteFilter();
+      });
+  }
+
+  setupClienteFilter(): void {
+      this.filteredClientes$ = this.searchForm.get('idCliente').valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterClientes(value))
+      );
+  }
+
+  private _filterClientes(value: string | Cliente): Cliente[] {
+    const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+    if (!filterValue) {
+        return this.clientes;
+    }
+    return this.clientes.filter(cliente =>
+        cliente.nombre.toLowerCase().includes(filterValue) ||
+        (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
+    );
+  }
+
   cargarMoldes() {
+    const formValues = this.searchForm.value;
     const params = {
       first: (this.pageIndex * this.pageSize) + 1,
       rows: this.pageSize,
-      codigo: this.searchForm.value.code,
-      nombre: this.searchForm.value.name,
-      estado: this.searchForm.value.status,
-      altomin: this.searchForm.value.altomin,
-      altomax: this.searchForm.value.altomax,
-      anchomin: this.searchForm.value.anchomin,
-      anchomax: this.searchForm.value.anchomax,
-      profumin: this.searchForm.value.profumin,
-      profumax: this.searchForm.value.profumax,
-      diametromin: this.searchForm.value.diametromin,
-      diametromax: this.searchForm.value.diametromax,
+      codigo: formValues.code,
+      nombre: formValues.name,
+      estado: formValues.status,
+      idTipoPieza: formValues.tiposPieza ? formValues.tiposPieza.join(',') : null,
+      idCliente: formValues.idCliente ? formValues.idCliente.id : null,
+      altomin: formValues.altomin,
+      altomax: formValues.altomax,
+      anchomin: formValues.anchomin,
+      anchomax: formValues.anchomax,
+      profumin: formValues.profumin,
+      profumax: formValues.profumax,
+      diametromin: formValues.diametromin,
+      diametromax: formValues.diametromax,
     };
 
-
     Object.keys(params).forEach(key => {
-      if (params[key] === null || params[key] === undefined) {
+      if (params[key] === null || params[key] === undefined || params[key] === '') {
         delete params[key];
       }
     });
@@ -100,7 +147,6 @@ export class ABMMoldesGrillaComponent implements OnInit {
   }
 
   handlePageEvent(e: PageEvent) {
-
     this.pageSize = e.pageSize;
     this.pageIndex = e.pageIndex;
     this.cargarMoldes();
@@ -115,5 +161,13 @@ export class ABMMoldesGrillaComponent implements OnInit {
     this.searchForm.reset();
     this.pageIndex = 0;
     this.cargarMoldes();
+  }
+
+  displayCliente(cliente: Cliente): string {
+    return cliente && cliente.nombre ? cliente.nombre : '';
+  }
+
+  clearClienteInput(): void {
+      this.searchForm.get('idCliente').setValue(null);
   }
 }

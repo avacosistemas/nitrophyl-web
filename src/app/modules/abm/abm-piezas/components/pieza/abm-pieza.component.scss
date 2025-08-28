@@ -1,1 +1,7 @@
 @import '../../styles/_classes.scss';
+
+:host ::ng-deep .mat-tab-disabled .mat-tab-label-content {
+    color: rgba(0, 0, 0, 0.38);
+    opacity: 0.6;
+    cursor: not-allowed;
+}

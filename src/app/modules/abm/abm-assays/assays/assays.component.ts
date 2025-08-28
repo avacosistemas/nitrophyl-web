@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, Subscription } from 'rxjs';
 
 // * Services.
 import { AssayService } from 'app/shared/services/assay.service';
@@ -42,6 +42,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public machineName: string = '';
 
+  private openModalSubscription: Subscription;
   private machine: number;
   private lot: number;
   private selectedAssayId: number;
@@ -63,7 +64,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.assayService.openModal.subscribe(modalData => {
+    this.openModalSubscription = this.assayService.openModal.subscribe(modalData => {
       if (modalData.mode === 'create') {
         this.machine = modalData.machineId;
         this.machineName = modalData.machineName;
@@ -91,6 +92,9 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
+    if (this.openModalSubscription) {
+      this.openModalSubscription.unsubscribe();
+    }
   }
 
   public edit(assay: IAssay): void {

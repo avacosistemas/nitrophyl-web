@@ -12,6 +12,8 @@ export interface Molde {
   ancho?: number;
   profundidad?: number;
   diametro?: number;
+  estadoRegistro?: string;
+  piezaTipos?: { id: number, nombre: string }[];
 }
 
 export interface ResponseMolde {

@@ -4,9 +4,9 @@ import {
   FormControl,
   FormGroup,
   Validators,
+  FormArray
 } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { DialogCustomComponent } from 'app/modules/prompts/dialog-custom/dialog-custom.component';
@@ -19,18 +19,25 @@ import {
   Plano,
 } from 'app/shared/models/molde.model';
 import { MoldesService } from 'app/shared/services/moldes.service';
-import { Subscription, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, take } from 'rxjs/operators';
+import { Subscription, Subject, Observable, forkJoin } from 'rxjs';
+import { debounceTime, distinctUntilChanged, take, startWith, map } from 'rxjs/operators';
 import { ABMMoldeService } from '../abm-moldes.service';
 import * as FileSaver from 'file-saver';
 import { ABMMoldesModalComponent } from '../modal/abm-moldes-modal.component';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { Observacion } from 'app/shared/models/observacion.model';
-import { AuthService } from 'app/core/auth/auth.service';
 import { ModalFotoComponent } from '../modal-foto/modal-foto.component';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { MatTableDataSource } from '@angular/material/table';
 import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
+import { NotificationService } from 'app/shared/services/notification.service';
+import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
+
+interface Cliente {
+  id: number;
+  nombre: string;
+  codigo?: string;
+}
 
 @Component({
   selector: 'abm-moldes-molde',
@@ -88,8 +95,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   filesTestFoto;
   bocaGridForm: FormGroup = new FormGroup({});
 
+  tiposPieza: { id: number; nombre: string }[] = [];
+
   public clientForm: FormGroup;
-  public clients$: Array<any> = [];
+  public clients$: Cliente[] = [];
+  public filteredClients$: Observable<Cliente[]>;
+  public filteredClientsForAdding$: Observable<Cliente[]>;
   public clients: Array<any> = [];
   public displayedColumnsClients: string[] = [
     'idCliente',
@@ -110,10 +121,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     private router: Router,
     private _molds: MoldesService,
     private _clients: ClientesService,
+    private _abmPiezaService: ABMPiezaService,
     private _formBuilder: FormBuilder,
     private ABMoldesService: ABMMoldeService,
-    private snackBar: MatSnackBar,
-    private _authService: AuthService
+    private notificationService: NotificationService,
   ) {
     this.moldeForm = this._formBuilder.group({
       codigo: [null, [Validators.required, Validators.maxLength(30)]],
@@ -122,6 +133,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       observaciones: [null],
       ubicacion: [null],
       client: [null, [Validators.required]],
+      piezaTipos: this._formBuilder.array([])
     });
     this.bocaForm = this._formBuilder.group({
       boca: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
@@ -149,6 +161,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.mode = this.activatedRoute.snapshot.data['mode'];
+    this.currentId = this.activatedRoute.snapshot.params['id'];
     this.inicializar();
 
     let mostrarBoton = false;
@@ -226,9 +239,40 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       top.scrollIntoView();
       top = null;
     }
-    this._clients
-      .getClientes()
-      .subscribe((res: any) => (this.clients$ = res.data));
+    this._clients.getClientes().subscribe((res: any) => {
+      this.clients$ = [{ id: -1, nombre: 'Nitrophyl', codigo: 'N/A' }, ...res.data];
+
+      this.filteredClients$ = this.moldeForm.get('client').valueChanges.pipe(
+        startWith(''),
+        map(value => this._filterClients(value, this.clients$))
+      );
+
+      this.filteredClientsForAdding$ = this.clientForm.get('client').valueChanges.pipe(
+        startWith(''),
+        map(value => this._filterClients(value, this.clients$.filter(c => c.id !== -1)))
+      );
+
+      if (this.currentId) {
+        this._molds.getMoldeById(this.currentId).subscribe(moldeRes => {
+          this.loadMoldeData(moldeRes.data);
+        });
+      }
+    });
+  }
+
+  private _filterClients(value: string | Cliente, source: Cliente[]): Cliente[] {
+    const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+    if (!filterValue) {
+      return source;
+    }
+    return source.filter(client =>
+      client.nombre.toLowerCase().includes(filterValue) ||
+      (client.codigo && client.codigo.toLowerCase().includes(filterValue))
+    );
+  }
+
+  displayClient(client: Cliente): string {
+    return client ? client.nombre : '';
   }
 
   allowTabChange: boolean = true;
@@ -385,34 +429,19 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
   editMolde() {
     if (this.moldeForm.invalid) {
-
-      if (this.moldeForm.get('codigo').hasError('required')) {
-        this.openSnackBar('El código es requerido.', 'X', 'red-snackbar');
-      } else if (this.moldeForm.get('codigo').hasError('maxlength')) {
-        this.openSnackBar('El código no puede tener más de 30 caracteres.', 'X', 'red-snackbar');
-      } else if (this.moldeForm.get('estado').hasError('required')) {
-        this.openSnackBar('El estado es requerido.', 'X', 'red-snackbar');
-      } else if (this.moldeForm.get('nombre').hasError('required')) {
-        this.openSnackBar('El nombre es requerido.', 'X', 'red-snackbar');
-      } else if (this.moldeForm.get('nombre').hasError('maxlength')) {
-        this.openSnackBar('El nombre no puede tener más de 100 caracteres.', 'X', 'red-snackbar');
-      } else if (this.moldeForm.get('client').hasError('required')) {
-        this.openSnackBar('El propietario es requerido.', 'X', 'red-snackbar');
-      } else {
-        this.openSnackBar('Por favor, corrija los errores en el formulario.', 'X', 'red-snackbar');
-      }
+      this.notificationService.showError('Por favor, corrija los errores en el formulario.');
       return;
     }
-
-    if (!this.moldeForm.controls || !this.moldeForm.controls.client) {
-      console.error("Error: moldeForm.controls or moldeForm.controls.client is undefined!");
-      this.openSnackBar('Error al guardar el molde. Recargue la página e intente nuevamente.', 'X', 'red-snackbar');
+    const clientValue = this.moldeForm.get('client').value;
+    if (!clientValue || typeof clientValue === 'string') {
+      this.notificationService.showError('Por favor, seleccione un propietario válido.');
       return;
     }
+    const client: Cliente = clientValue;
 
-    let client: any = this.clients$.find((element: any) => {
-      return element.id === this.moldeForm.controls.client.value;
-    });
+    const selectedTiposPieza = this.moldeForm.value.piezaTipos
+      .map((checked, i) => checked ? { id: this.tiposPieza[i].id } : null)
+      .filter(v => v !== null);
 
     let model: Molde = {
       codigo: this.moldeForm.controls.codigo.value,
@@ -420,39 +449,44 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       nombre: this.moldeForm.controls.nombre.value,
       observaciones: this.moldeForm.controls.observaciones.value,
       ubicacion: this.moldeForm.controls.ubicacion.value,
-      idClienteDuenio: client ? client.id : null,
-      clienteDuenio: client ? client.nombre : null,
-      propio: client ? false : true,
+      idClienteDuenio: client.id !== -1 ? client.id : null,
+      clienteDuenio: client.id !== -1 ? client.nombre : null,
+      propio: client.id === -1,
       id: this.currentId,
+      piezaTipos: selectedTiposPieza
     };
 
     this._molds.updateMolde(this.currentId, model).subscribe((res) => {
       if (res.status == 'OK') {
         this.moldeForm.markAsPristine();
-        this.openSnackBar('Cambios realizados', 'X', 'green-snackbar');
+        this.notificationService.showSuccess('ICambios realizados.');
       } else {
-        this.openSnackBar(
-          'No se pudieron realizar los cambios',
-          'X',
-          'red-snackbar'
-        );
+        this.notificationService.showError('No se pudieron realizar los cambios.');
       }
     });
   }
 
   inicializar() {
-    this.currentId = this.activatedRoute.snapshot.params['id'];
-    this._molds.getMoldeById(this.currentId).subscribe((d) => {
-      this.moldeForm.patchValue({
-        codigo: d.data.codigo,
-        estado: d.data.estado,
-        nombre: d.data.nombre,
-        observaciones: d.data.observaciones,
-        ubicacion: d.data.ubicacion,
-        client: d.data.idClienteDuenio === null ? -1 : d.data.idClienteDuenio,
-      });
-      this.ABMoldesService.events.next({ nombreMolde: d.data.nombre });
+    forkJoin({
+      molde: this._molds.getMoldeById(this.currentId),
+      tiposPieza: this._abmPiezaService.getPiezaTipo(),
+      clientes: this._clients.getClientes()
+    }).subscribe(({ molde, tiposPieza, clientes }) => {
+      this.tiposPieza = tiposPieza;
+      this.clients$ = [{ id: -1, nombre: 'Nitrophyl', codigo: 'N/A' }, ...clientes.data];
+
+      this.filteredClients$ = this.moldeForm.get('client').valueChanges.pipe(
+        startWith(''),
+        map(value => this._filterClients(value, this.clients$))
+      );
+      this.filteredClientsForAdding$ = this.clientForm.get('client').valueChanges.pipe(
+        startWith(''),
+        map(value => this._filterClients(value, this.clients$.filter(c => c.id !== -1)))
+      );
+
+      this.loadMoldeData(molde.data);
     });
+
     this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
       this.bocas = d.data;
       if (this.bocas.length > 0) {
@@ -467,40 +501,52 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         }
       }
     });
-    this._molds.getMoldeDimensiones(this.currentId).subscribe((d) => {
-      this.dimensiones = d.data;
-    });
-    this._molds.getPlanos(this.currentId).subscribe((d) => {
-      this.planos.data = d.data;
-    });
-    this._molds.getFotos(this.currentId).subscribe((response) => {
-      this.fotos.data = response.data;
-    });
-
-    this._molds
-      .getClients(this.currentId)
-      .subscribe((res: any) => (this.clients = res.data));
-
+    this._molds.getMoldeDimensiones(this.currentId).subscribe((d) => { this.dimensiones = d.data; });
+    this._molds.getPlanos(this.currentId).subscribe((d) => { this.planos.data = d.data; });
+    this._molds.getFotos(this.currentId).subscribe((response) => { this.fotos.data = response.data; });
+    this._molds.getClients(this.currentId).subscribe((res: any) => (this.clients = res.data));
     this.getObservaciones();
-
     this.ABMoldesService.viewEvents.next('Guardar Molde');
   }
 
+  loadMoldeData(data: Molde): void {
+    if (!data) return;
+    const propietarioId = data.idClienteDuenio === null ? -1 : data.idClienteDuenio;
+    const propietarioObj = this.clients$.find(c => c.id === propietarioId);
+    this.moldeForm.patchValue({
+      codigo: data.codigo,
+      estado: data.estado,
+      nombre: data.nombre,
+      observaciones: data.observaciones,
+      ubicacion: data.ubicacion,
+      client: propietarioObj,
+    });
+    const piezaTiposFormArray = this.moldeForm.get('piezaTipos') as FormArray;
+    this.tiposPieza.forEach(tipo => {
+      const isSelected = data.piezaTipos?.some(pt => pt.id === tipo.id);
+      piezaTiposFormArray.push(new FormControl(isSelected));
+    });
+    if (this.mode === 'View') {
+      this.moldeForm.disable();
+    }
+    this.ABMoldesService.events.next({ nombreMolde: data.nombre });
+  }
+
+
   public addClient(): void {
-    if (!this.moldeForm.get('client').value) return;
-    let selectedClient = this.clients$.find(
-      (client: any) => client.id === this.moldeForm.get('client').value
-    );
+    if (this.clientForm.invalid) return;
+
+    let selectedClient = this.clientForm.get('client').value;
+    if (!selectedClient || typeof selectedClient === 'string') {
+      this.notificationService.showError('Por favor seleccione un cliente válido.');
+      return;
+    }
 
     let exists = this.clients.some(
       (client: any) => client.idCliente === selectedClient.id
     );
     if (exists) {
-      this.openSnackBar(
-        'El cliente ya esta asociado al molde.',
-        'X',
-        'red-snackbar'
-      );
+      this.notificationService.showError('El cliente ya esta asociado al molde.');
     } else {
       this.clients.push({
         idCliente: selectedClient.id,
@@ -509,19 +555,17 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.clients.sort((a, b) => a.idCliente - b.idCliente);
       this.clients = [...this.clients];
       this.pristineClient = false;
-
+      this.clientForm.reset();
       this.updateClientsOnBackend();
     }
   }
 
   public deleteClient(row: any): void {
-    let i = this.clients.findIndex((client: any) => client.id === row.id);
+    let i = this.clients.findIndex((client: any) => client.idCliente === row.idCliente);
     if (i >= 0) {
       this.clients.splice(i, 1);
       this.clients = [...this.clients];
       this.pristineClient = false;
-
-
       this.updateClientsOnBackend();
     }
   }
@@ -534,24 +578,14 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this._molds.putClient(this.currentId, body).subscribe({
       next: (res: any) => {
         if (res.status == 'OK') {
-          this.moldeForm.get('client').setValue(null);
-          this.moldeForm.get('client').markAsUntouched();
           this.pristineClient = true;
-          this.openSnackBar(
-            'Lista de clientes actualizada. ',
-            'X',
-            'green-snackbar'
-          );
+          this.notificationService.showSuccess('Lista de clientes actualizada.');
         } else {
-          this.openSnackBar(
-            'No se pudieron guardar los cambios. ',
-            'X',
-            'red-snackbar'
-          );
+          this.notificationService.showError('No se pudieron guardar los cambios.');
         }
       },
       error: (err: any) => {
-        this.openSnackBar(`Se ha producido un error. `, 'X', 'red-snackbar');
+        this.notificationService.showError('Se ha producido un error.');
         console.error(
           `abm-moldes-molde.component.ts => private updateClientsOnBackend(): `,
           err
@@ -603,13 +637,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     });
   }
 
-  openSnackBar(message: string, action: string, className: string) {
-    this.snackBar.open(message, action, {
-      duration: 5000,
-      panelClass: className,
-    });
-  }
-
   addObservacion() {
     if (this.observacionForm.invalid) {
       return;
@@ -624,12 +651,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
     this._molds.postObservacion(newObservacion).subscribe({
       next: (response) => {
-        this.openSnackBar('Observación agregada correctamente', 'X', 'green-snackbar');
+        this.notificationService.showSuccess('Observación agregada correctamente.');
         this.observacionForm.reset();
         this.getObservaciones();
       },
       error: (error) => {
-        this.openSnackBar('Error al agregar la observación', 'X', 'red-snackbar');
+        this.notificationService.showError('Error al agregar la observación');
         console.error('Error al agregar la observación:', error);
       },
     });
@@ -647,7 +674,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
-        this.openSnackBar('Error al obtener las observaciones', 'X', 'red-snackbar');
+        this.notificationService.showError('Error al obtener las observaciones.');
         console.error('Error al obtener las observaciones:', error);
       },
     });
@@ -660,7 +687,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
         if (!base64Image) {
           console.error('No se recibió un string Base64 válido del backend.');
-          this.snackBar.open('Error al obtener la imagen', 'Cerrar', { duration: 3000 });
+          this.notificationService.showError('Error al obtener la imagen.');
           return;
         }
 
@@ -684,7 +711,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error al descargar la foto:', error);
-        this.snackBar.open('Error al obtener la imagen', 'Cerrar', { duration: 3000 });
+        this.notificationService.showError('Error al obtener la imagen.');
       }
     });
   }
@@ -752,7 +779,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
         if (!base64Content) {
           console.error('No se recibió un string Base64 válido del backend.');
-          this.snackBar.open('Error al obtener el plano', 'Cerrar', { duration: 3000 });
+          this.notificationService.showError('Error al obtener el plano.');
           return;
         }
 
@@ -770,7 +797,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       },
       error: (error) => {
         console.error('Error al descargar el plano:', error);
-        this.snackBar.open('Error al obtener el plano', 'Cerrar', { duration: 3000 });
+        this.notificationService.showError('Error al obtener el plano.');
       }
     });
   }
@@ -779,13 +806,13 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     if (this.dimensionForm.invalid) {
 
       if (this.dimensionForm.get('dimension').hasError('required')) {
-        this.openSnackBar('El tipo de dimensión es obligatorio.', 'X', 'red-snackbar');
+        this.notificationService.showError('El tipo de dimensión es obligatorio.');
       } else if (this.dimensionForm.get('valor').hasError('required')) {
-        this.openSnackBar('El valor de la dimensión es obligatorio.', 'X', 'red-snackbar');
+        this.notificationService.showError('El valor de la dimensión es obligatorio.');
       } else if (this.dimensionForm.get('valor').hasError('pattern')) {
-        this.openSnackBar('El valor de la dimensión debe contener solo números.', 'X', 'red-snackbar');
+        this.notificationService.showError('El valor de la dimensión debe contener solo números.');
       } else {
-        this.openSnackBar('Por favor, corrija los errores en el formulario.', 'X', 'red-snackbar');
+        this.notificationService.showError('Por favor, corrija los errores en el formulario.');
       }
       return;
     }
@@ -800,11 +827,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     );
 
     if (dimensionExists) {
-      this.openSnackBar(
-        'Ya existe una dimensión con este tipo.',
-        'X',
-        'red-snackbar'
-      );
+      this.notificationService.showError('Ya existe una dimensión con este tipo.');
       return;
     }
 
@@ -813,16 +836,16 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
       next: (response) => {
         if (response.status === 'OK') {
-          this.openSnackBar('Dimensión agregada correctamente', 'X', 'green-snackbar');
+          this.notificationService.showSuccess('Dimensión agregada correctamente.');
           this.dimensionForm.reset();
           this.pristineDimensiones = false;
           this.getDimensiones();
         } else {
-          this.openSnackBar('Error al agregar la dimensión', 'X', 'red-snackbar');
+          this.notificationService.showError('Error al agregar la dimensión.');
         }
       },
       error: (error) => {
-        this.openSnackBar('Error al agregar la dimensión', 'X', 'red-snackbar');
+        this.notificationService.showError('Error al agregar la dimensión.');
         console.error('Error al agregar la dimensión:', error);
       },
     });
@@ -844,15 +867,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
           next: (response) => {
             if (response.status === 'OK') {
-              this.openSnackBar('Dimensión eliminada correctamente', 'X', 'green-snackbar');
+              this.notificationService.showSuccess('Dimensión eliminada correctamente.');
               this.getDimensiones();
               this.pristineDimensiones = false;
             } else {
-              this.openSnackBar('Error al eliminar la dimensión', 'X', 'red-snackbar');
+              this.notificationService.showError('Error al eliminar la dimensión.');
             }
           },
           error: (error) => {
-            this.openSnackBar('Error al eliminar la dimensión', 'X', 'red-snackbar');
+            this.notificationService.showError('Error al eliminar la dimensión.');
             console.error('Error al eliminar la dimensión:', error);
           },
         });
@@ -876,15 +899,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
         next: (response) => {
           if (response.status === 'OK') {
-            this.openSnackBar('Dimensión actualizada correctamente', 'X', 'green-snackbar');
+            this.notificationService.showSuccess('Dimensión actualizada correctamente.');
             this.pristineDimensiones = false;
             this.getDimensiones();
           } else {
-            this.openSnackBar('Error al actualizar la dimensión', 'X', 'red-snackbar');
+            this.notificationService.showError('Error al actualizar la dimensión.');
           }
         },
         error: (error) => {
-          this.openSnackBar('Error al actualizar la dimensión', 'X', 'red-snackbar');
+          this.notificationService.showError('Error al actualizar la dimensión.');
           console.error('Error al actualizar la dimensión:', error);
         },
       });
@@ -901,15 +924,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     if (this.bocaForm.invalid) {
 
       if (this.bocaForm.get('boca').hasError('required')) {
-        this.openSnackBar('El número de boca es obligatorio.', 'X', 'red-snackbar');
+        this.notificationService.showError('El número de boca es obligatorio.')
       } else if (this.bocaForm.get('boca').hasError('pattern')) {
-        this.openSnackBar('El número de boca debe contener solo números.', 'X', 'red-snackbar');
+        this.notificationService.showError('El número de boca debe contener solo números.');
       } else if (this.bocaForm.get('estado').hasError('required')) {
-        this.openSnackBar('El estado es obligatorio.', 'X', 'red-snackbar');
+        this.notificationService.showError('El estado es obligatorio.');
       } else if (this.bocaForm.get('descripcion').hasError('maxlength')) {
-        this.openSnackBar('La descripción no puede tener más de 100 caracteres.', 'X', 'red-snackbar');
+        this.notificationService.showError('La descripción no puede tener más de 100 caracteres.');
       } else {
-        this.openSnackBar('Por favor, corrija los errores en el formulario.', 'X', 'red-snackbar');
+        this.notificationService.showError('Por favor, corrija los errores en el formulario.');
       }
       return;
     }
@@ -924,7 +947,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     };
 
     if (this.bocas.some(b => b.nroBoca === newBoca.nroBoca)) {
-      this.openSnackBar('Ya existe una boca con ese número.', 'X', 'red-snackbar');
+      this.notificationService.showError('Ya existe una boca con ese número.');
       return;
     }
 
@@ -933,16 +956,16 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
       next: (response) => {
         if (response.status === 'OK') {
-          this.openSnackBar('Boca agregada correctamente', 'X', 'green-snackbar');
+          this.notificationService.showSuccess('Boca agregada correctamente.');
           this.bocaForm.reset();
           this.pristineBocas = false;
           this.getBocas();
         } else {
-          this.openSnackBar('Error al agregar la boca', 'X', 'red-snackbar');
+          this.notificationService.showError('Error al agregar la boca.');
         }
       },
       error: (error) => {
-        this.openSnackBar('Error al agregar la boca', 'X', 'red-snackbar');
+        this.notificationService.showError('Error al agregar la boca.');
         console.error('Error al agregar la boca:', error);
       },
     });
@@ -961,15 +984,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
           next: (response) => {
             if (response.status === 'OK') {
-              this.openSnackBar('Boca eliminada correctamente', 'X', 'green-snackbar');
+              this.notificationService.showSuccess('Boca eliminada correctamente.');
               this.getBocas();
               this.pristineBocas = false;
             } else {
-              this.openSnackBar('Error al eliminar la boca', 'X', 'red-snackbar');
+              this.notificationService.showError('Error al eliminar la boca.');
             }
           },
           error: (error) => {
-            this.openSnackBar('Error al eliminar la boca', 'X', 'red-snackbar');
+            this.notificationService.showError('Error al eliminar la boca.');
             console.error('Error al eliminar la boca:', error);
           },
         });
@@ -999,15 +1022,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
         next: (response) => {
           if (response.status === 'OK') {
-            this.openSnackBar('Descripcion actualizada correctamente', 'X', 'green-snackbar');
+            this.notificationService.showSuccess('Descripcion actualizada correctamente.');
             this.getBocas();
             this.pristineBocas = false;
           } else {
-            this.openSnackBar('Error al actualizar la descripcion', 'X', 'red-snackbar');
+            this.notificationService.showError('Error al actualizar la descripcion.');
           }
         },
         error: (error) => {
-          this.openSnackBar('Error al actualizar la descripcion', 'X', 'red-snackbar');
+          this.notificationService.showError('Error al actualizar la descripcion.');
           console.error('Error al actualizar la descripcion:', error);
         },
       });
@@ -1023,15 +1046,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
         next: (response) => {
           if (response.status === 'OK') {
-            this.openSnackBar('Estado actualizado correctamente', 'X', 'green-snackbar');
+            this.notificationService.showSuccess('Estado actualizado correctamente.');
             this.getBocas();
             this.pristineBocas = false;
           } else {
-            this.openSnackBar('Error al actualizar el estado', 'X', 'red-snackbar');
+            this.notificationService.showError('Error al actualizar el estado.');
           }
         },
         error: (error) => {
-          this.openSnackBar('Error al actualizar el estado', 'X', 'red-snackbar');
+          this.notificationService.showError('Error al actualizar el estado.');
           console.error('Error al actualizar el estado:', error);
         },
       });

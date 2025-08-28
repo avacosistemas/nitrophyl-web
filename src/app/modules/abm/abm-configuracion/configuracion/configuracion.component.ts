@@ -1,7 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChildren, QueryList } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { NotificationService } from 'app/shared/services/notification.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
 import { Cliente, ResponseClientes } from 'app/shared/models/cliente.model';
@@ -49,7 +49,7 @@ export class ConfiguracionComponent implements OnInit {
 
   constructor(
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
+    private notificationService: NotificationService,
     private configuracionService: ConfiguracionService,
     private formulaService: FormulasService,
     private activeRoute: ActivatedRoute,
@@ -132,8 +132,7 @@ export class ConfiguracionComponent implements OnInit {
       this.clientes$ = clientesResponse.data;
       this.filteredClientes$ = this.form.controls['cliente'].valueChanges.pipe(
         startWith(''),
-        map(value => typeof value === 'string' ? value : value?.nombre),
-        map(name => name ? this._filterClientes(name) : this.clientes$ || [])
+        map(value => this._filterClientes(value))
       );
     });
 
@@ -324,12 +323,12 @@ export class ConfiguracionComponent implements OnInit {
     this.configuracionService.post(body).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
-          this.openSnackBar(true);
+          this.notificationService.showSuccess('Cambios realizados.');
           this.router.navigate(['/configuracion/grid']);
         }
       },
       error: (err) => {
-        this.openSnackBar(false);
+        this.notificationService.showError('No se pudieron realizar los cambios.');
         console.error(error, err);
       },
       complete: () => { },
@@ -359,29 +358,16 @@ export class ConfiguracionComponent implements OnInit {
     this.configuracionService.put(body).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
-          this.openSnackBar(true);
+          this.notificationService.showSuccess('Cambios realizados.');
           this.configuracionService.setMode('Edit');
           this.router.navigate(['/configuracion/grid']);
         }
       },
       error: (err) => {
-        this.openSnackBar(false);
+        this.notificationService.showError('No se pudieron realizar los cambios.');
         console.error(error, err);
       },
       complete: () => { },
-    });
-  }
-
-  private openSnackBar(option: boolean, message?: string, css?: string, duration?: number): void {
-    const defaultMessage: string = option ? 'Cambios realizados.' : 'No se pudieron realizar los cambios.';
-    const defaultCss: string = option ? 'green' : 'red';
-    const snackBarMessage = message ? message : defaultMessage;
-    const snackBarCss = css ? css : defaultCss;
-    const snackBarDuration = duration ? duration : 5000;
-
-    this.snackBar.open(snackBarMessage, 'X', {
-      duration: snackBarDuration,
-      panelClass: `${snackBarCss}-snackbar`,
     });
   }
 
@@ -397,10 +383,18 @@ export class ConfiguracionComponent implements OnInit {
     ) || [];
   }
 
-  private _filterClientes(name: string): Cliente[] {
-    return this.clientes$?.filter(cliente =>
-      cliente.nombre.toLowerCase().includes(name.toLowerCase())
-    ) || [];
+  private _filterClientes(value: string | Cliente): Cliente[] {
+    const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+    if (!this.clientes$) {
+      return [];
+    }
+    if (!filterValue) {
+      return this.clientes$;
+    }
+    return this.clientes$.filter(cliente =>
+      cliente.nombre.toLowerCase().includes(filterValue) ||
+      (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
+    );
   }
 
   private loadData(): void {
@@ -467,7 +461,7 @@ export class ConfiguracionComponent implements OnInit {
           }
         }
       } else {
-        this.openSnackBar(false, 'Configuración no encontrada.');
+        this.notificationService.showError('Configuración no encontrada.');
         this.router.navigate(['/configuracion/grid']);
       }
     });

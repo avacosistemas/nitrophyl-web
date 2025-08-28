@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { EventEmitter,  } from '@angular/core';
+import { EventEmitter, } from '@angular/core';
 import { Observable } from 'rxjs';
 
 // * Environment.
@@ -52,5 +52,9 @@ export class ConfigTestService {
 
   public put(body: any): Observable<any> {
     return this.http.put<any>(`${this._url}`, body);
+  }
+
+  public setearVigente(idConfiguracionPrueba: number): Observable<any> {
+    return this.http.get<any>(`${this._url}/setearVigente/${idConfiguracionPrueba}`);
   }
 }

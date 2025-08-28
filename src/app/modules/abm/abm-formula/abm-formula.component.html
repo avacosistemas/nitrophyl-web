@@ -3,7 +3,7 @@
     [title]="title === 'Test' ? 'Pruebas ' + testObj.nombre : title"
     [subtitle]="title === 'Test' ? testObj.material + ' - ' + testObj.norma + ' - ' + testObj.fecha + ' - V ' + testObj.version : ''"
     [breadcrumbs]="[
-        { title: 'ABM',  route: ['/formulas/grid'], condition: true },
+        { title: 'Laboratorio',  route: ['/formulas/grid'], condition: true },
         { title: 'Formulas', route: ['/formulas/grid'], condition: true },
         { title: testObj.nombre,  route: [], condition: title === 'Test' },
         { title: 'Crear',  route: [], condition: title === 'Crear Fórmula' }

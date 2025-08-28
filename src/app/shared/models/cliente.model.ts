@@ -1,5 +1,6 @@
 export interface Cliente {
     id: number;
+    codigo?: string;
     nombre: string;
     razonSocial: string;
     email: string;
@@ -12,8 +13,8 @@ export interface Cliente {
     webSite: string;
     observacionesCobranzas: string;
     observacionesEntrega: string;
-	observacionesFacturacion: string;
-	telefono: string;
+    observacionesFacturacion: string;
+    telefono: string;
     contacto?: any;
 }
 

@@ -61,20 +61,20 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   }
 
   loadInsumosPieza(): void {
-    if (!this.piezaId) return;
-    this.isLoading = true;
-    this.abmPiezaService.getInsumosTratadosPorPieza(this.piezaId).subscribe({
-      next: (response) => {
-        this.insumosPieza.data = response.data || [];
-        this.sinDatos = (response.data || []).length === 0;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error("Error al cargar insumos tratados:", err);
-        this.notificationService.showError("Error al cargar los insumos.");
-        this.isLoading = false;
-      }
-    });
+    // if (!this.piezaId) return;
+    // this.isLoading = true;
+    // this.abmPiezaService.getInsumosTratadosPorPieza(this.piezaId).subscribe({
+    //   next: (response) => {
+    //     this.insumosPieza.data = response.data || [];
+    //     this.sinDatos = (response.data || []).length === 0;
+    //     this.isLoading = false;
+    //   },
+    //   error: (err) => {
+    //     console.error("Error al cargar insumos tratados:", err);
+    //     this.notificationService.showError("Error al cargar los insumos.");
+    //     this.isLoading = false;
+    //   }
+    // });
   }
 
   openAddInsumoModal(insumoTratado?: IInsumoTratado): void {

@@ -13,9 +13,14 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 
 const abmUsuariosRoutes: Route[] = [
     {
-        path     : '',
+        path: '',
         component: ABMMoldesComponent,
         children: [
+            {
+                path: '',
+                redirectTo: 'grid',
+                pathMatch: 'full'
+            },
             { path: 'grid', component: ABMMoldesGrillaComponent },
             { path: 'create', component: ABMMoldesCrear },
             { path: 'molde/ver/:id', component: ABMMoldesMolde, data: { mode: 'View' } },
@@ -34,7 +39,7 @@ const abmUsuariosRoutes: Route[] = [
         ABMMoldesIngresosEgresosComponent,
         ABMMoldesModalComponent
     ],
-    imports     : [
+    imports: [
         RouterModule.forChild(abmUsuariosRoutes),
         ABMSharedModule,
         HeaderSharedModule,
@@ -42,6 +47,5 @@ const abmUsuariosRoutes: Route[] = [
         MatPaginatorModule,
     ]
 })
-export class ABMMoldesModule
-{
+export class ABMMoldesModule {
 }

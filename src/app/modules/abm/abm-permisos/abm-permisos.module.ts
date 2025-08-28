@@ -16,6 +16,11 @@ const abmPermisosRoutes: Route[] = [
         component: ABMPermisosComponent,
         children: [
             {
+                path: '',
+                redirectTo: 'grid',
+                pathMatch: 'full'
+            },
+            {
                 path: 'permission/:id',
                 component: ABMPermisosPermiso
             },

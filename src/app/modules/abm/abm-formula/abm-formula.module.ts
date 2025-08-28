@@ -26,6 +26,11 @@ const routes: Route[] = [
     path: '',
     component: ABMFormulaComponent,
     children: [
+      {
+        path: '',
+        redirectTo: 'grid',
+        pathMatch: 'full'
+      },
       { path: 'grid', component: FormulasComponent },
       { path: 'create', component: FormulaComponent },
       { path: 'view/:id', component: FormulaComponent },

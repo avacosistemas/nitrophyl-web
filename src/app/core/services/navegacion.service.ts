@@ -31,7 +31,7 @@ export class NavegacionService {
         },
         {
           id: 'configuracion',
-          link: '/configuracion/grid',
+          link: '/configuracion',
           title: 'Configuración Calidad',
           permissionCode: 'MENU_CONF_INFORME_CALIDAD',
           type: 'basic',
@@ -48,7 +48,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_outline:calculator',
           id: 'maquinas',
-          link: '/maquinas/grid',
+          link: '/maquinas',
           title: 'Máquinas',
           permissionCode: 'MENU_LABORATORIO_MAQUINAS',
           type: 'basic',
@@ -56,7 +56,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_outline:beaker',
           id: 'formulas',
-          link: '/formulas/grid',
+          link: '/formulas',
           title: 'Fórmulas',
           permissionCode: 'MENU_LABORATORIO_FORMULAS',
           type: 'basic',
@@ -89,9 +89,17 @@ export class NavegacionService {
         {
           icon: 'heroicons_solid:identification',
           id: 'clientes',
-          link: '/clientes/grid',
+          link: '/clientes',
           title: 'Clientes',
           permissionCode: 'MENU_ADMINISTRACION_CLIENTES',
+          type: 'basic',
+        },
+          {
+          icon: 'heroicons_solid:currency-dollar',
+          id: 'cotizaciones',
+          link: '/cotizaciones',
+          title: 'Cotizaciones y Precios',
+          permissionCode: 'MENU_ADMINISTRACION_COTIZACION',
           type: 'basic',
         },
       ],
@@ -106,7 +114,7 @@ export class NavegacionService {
         {
           icon: 'mat_solid:app_registration',
           id: 'moldes',
-          link: '/moldes/grid',
+          link: '/moldes',
           title: 'Moldes',
           permissionCode: 'MENU_PRODUCCION_MOLDES',
           type: 'basic',
@@ -179,7 +187,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_outline:users',
           id: 'usuarios',
-          link: '/usuarios/grid',
+          link: '/usuarios',
           title: 'Usuarios',
           permissionCode: 'MENU_SEGURIDAD_USUARIOS',
           type: 'basic',
@@ -187,7 +195,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_outline:flag',
           id: 'roles',
-          link: '/roles/grid',
+          link: '/roles',
           title: 'Roles',
           permissionCode: 'MENU_SEGURIDAD_ROLES',
           type: 'basic',
@@ -195,7 +203,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_outline:key',
           id: 'permisos',
-          link: '/permisos/grid',
+          link: '/permisos',
           title: 'Permisos',
           type: 'basic',
           permissionCode: 'MENU_SEGURIDAD_PERMISOS',
@@ -203,7 +211,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_outline:view-grid',
           id: 'perfiles',
-          link: '/perfiles/grid',
+          link: '/perfiles',
           title: 'Perfiles',
           type: 'basic',
           permissionCode: 'MENU_SEGURIDAD_PERFILES',

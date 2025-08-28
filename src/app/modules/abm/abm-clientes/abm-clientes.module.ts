@@ -25,6 +25,11 @@ const abmUsuariosRoutes: Route[] = [
     component: ABMClientesComponent,
     children: [
       {
+        path: '',
+        redirectTo: 'grid',
+        pathMatch: 'full'
+      },
+      {
         path: 'grid',
         component: ABMClientesGrillaComponent,
         data: { permission: 'MENU_ADMINISTRACION_CLIENTES' },

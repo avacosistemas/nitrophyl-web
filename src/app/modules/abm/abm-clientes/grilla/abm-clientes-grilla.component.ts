@@ -7,10 +7,10 @@ import {
 } from '@angular/animations';
 import { AfterViewInit, Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Cliente } from 'app/shared/models/cliente.model';
 import { ClientesService } from 'app/shared/services/clientes.service';
+import { NotificationService } from 'app/shared/services/notification.service';
 
 @Component({
   selector: 'abm-clientes-grilla',
@@ -31,7 +31,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   component = 'Grilla';
   clienteForm: FormGroup;
   dataSource;
-  columnsToDisplay = ['razonSocial', 'nombre', 'mail', 'cuit'];
+  columnsToDisplay = ['codigo', 'razonSocial', 'nombre', 'mail', 'cuit'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: Cliente | null;
   provincias = [];
@@ -49,10 +49,11 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
     private clientesService: ClientesService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService,
   ) {
     this.clienteForm = this.formBuilder.group({
       id: [null],
+      codigo: [null],
       razonSocial: [null, [Validators.required]],
       email: [null, [Validators.required]],
       cuit: [null, [Validators.required]],
@@ -98,21 +99,13 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
     this.clientesService.updateCliente(model.id, model).subscribe(
       (d) => {
         if (d.status === 'OK') {
-          this._openSnackBar('Cambios realizados', 'X', 'green-snackbar');
+          this.notificationService.showSuccess('Cambios realizados.');
         } else {
-          this._openSnackBar(
-            'No se puedieron realizar los cambios',
-            'X',
-            'red-snackbar'
-          );
+          this.notificationService.showError('No se puedieron realizar los cambios.');
         }
       },
       (err) => {
-        this._openSnackBar(
-          'No se puedieron realizar los cambios',
-          'X',
-          'red-snackbar'
-        );
+        this.notificationService.showError('No se puedieron realizar los cambios.');
       }
     );
   }
@@ -124,6 +117,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   public expandRow(element): void {
     this.clienteForm.patchValue({
       id: element.id,
+      codigo: element.codigo,
       nombre: element.nombre,
       razonSocial: element.razonSocial,
       email: element.email,
@@ -148,17 +142,6 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
     });
     this.clientesService.getProvincias().subscribe((d) => {
       this.provincias = d.data;
-    });
-  }
-
-  private _openSnackBar(
-    message: string,
-    action: string,
-    className: string
-  ): void {
-    this.snackBar.open(message, action, {
-      duration: 5000,
-      panelClass: className,
     });
   }
 }

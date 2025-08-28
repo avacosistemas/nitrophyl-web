@@ -1,0 +1,47 @@
+<h1 mat-dialog-title>Agregar Cotización</h1>
+<div mat-dialog-content class="relative">
+    <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center">
+        <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+    <form [formGroup]="form">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Pieza</mat-label>
+            <input type="text" placeholder="Buscar pieza por nombre o código..." matInput formControlName="pieza" 
+                [matAutocomplete]="autoPieza" required>
+            <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
+                    {{ pieza.codigo }} - {{ pieza.denominacion }}
+                </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="form.get('pieza').hasError('required')">La pieza es requerida.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Cliente</mat-label>
+            <input type="text" placeholder="Buscar cliente por nombre o código..." matInput formControlName="cliente"
+                [matAutocomplete]="autoCliente" required>
+            <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+                    {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="form.get('cliente').hasError('required')">El cliente es requerido.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Precio</mat-label>
+            <input matInput type="number" formControlName="valor" required>
+             <mat-error *ngIf="form.get('valor').hasError('required')">El precio es requerido.</mat-error>
+             <mat-error *ngIf="form.get('valor').hasError('pattern')">Debe ser un valor numérico.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput formControlName="observaciones" rows="3"></textarea>
+        </mat-form-field>
+    </form>
+</div>
+<div mat-dialog-actions class="flex justify-end gap-2">
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button type="button" [disabled]="isLoading" (click)="onSave()">Guardar</button>
+</div>

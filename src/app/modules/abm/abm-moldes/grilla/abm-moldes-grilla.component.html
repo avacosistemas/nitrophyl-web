@@ -1,7 +1,5 @@
 <div class="flex flex-col flex-auto min-w-0" id="top">
-    <!-- Main -->
     <div class="flex-auto p-6 sm:p-10">
-        <!-- CONTENT GOES HERE -->
         <div>
             <mat-accordion>
                 <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
@@ -31,7 +29,32 @@
                                 </mat-select>
                             </mat-form-field>
                         </div>
-                        <div class="row flex gap-3 justify-between w-full">
+                        <div class="row flex gap-3 justify-start items-center">
+                            
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label>Cliente</mat-label>
+                                <input type="text" matInput formControlName="idCliente"
+                                    placeholder="Buscar cliente por nombre o código..." [matAutocomplete]="autoCliente">
+                                <button mat-icon-button matSuffix *ngIf="searchForm.get('idCliente')?.value"
+                                    (click)="clearClienteInput(); $event.stopPropagation()">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                                <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayCliente">
+                                    <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+                                        {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                                    </mat-option>
+                                </mat-autocomplete>
+                            </mat-form-field>
+                            <mat-form-field appearance="outline" class="w-1/3">
+                                <mat-label>Tipo de Pieza</mat-label>
+                                <mat-select formControlName="tiposPieza" multiple>
+                                    <mat-option *ngFor="let tipo of tiposPieza" [value]="tipo.id">
+                                        {{ tipo.nombre}}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                        <div class="row flex gap-3 justify-between w-full mt-2">
                             <div class="flex flex-col gap-1 w-[23%]">
                                 <span class="text-base font-extrabold">Alto</span>
                                 <div class="flex gap-2">
@@ -109,6 +132,19 @@
                 </mat-expansion-panel>
             </mat-accordion>
             <table mat-table [dataSource]="moldes" class="border-2 rounded-2xl mt-5 w-full">
+                <ng-container matColumnDef="statusIcon">
+                    <th mat-header-cell *matHeaderCellDef class="w-16"></th>
+                    <td mat-cell *matCellDef="let element" class="w-16 text-center">
+                        <div [ngSwitch]="element.estado">
+                            <mat-icon *ngSwitchCase="'ACTIVO'" style="color: green;"
+                                matTooltip="Activo">check_circle</mat-icon>
+                            <mat-icon *ngSwitchCase="'REPARACION'" style="color: orange;"
+                                matTooltip="En Reparación">build</mat-icon>
+                            <mat-icon *ngSwitchCase="'INACTIVO'" style="color: red;"
+                                matTooltip="Inactivo">cancel</mat-icon>
+                        </div>
+                    </td>
+                </ng-container>
                 <ng-container matColumnDef="code">
                     <th mat-header-cell *matHeaderCellDef class="w-22 text-center"> Código </th>
                     <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.codigo}} </td>
@@ -116,10 +152,6 @@
                 <ng-container matColumnDef="name">
                     <th mat-header-cell *matHeaderCellDef> Nombre </th>
                     <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
-                </ng-container>
-                <ng-container matColumnDef="status">
-                    <th mat-header-cell *matHeaderCellDef class="text-center"> Estado </th>
-                    <td mat-cell *matCellDef="let element" class="text-center"> {{element.estado}} </td>
                 </ng-container>
                 <ng-container matColumnDef="ubicacion">
                     <th mat-header-cell *matHeaderCellDef> Ubicación </th>
@@ -150,17 +182,37 @@
                 <ng-container matColumnDef="acciones">
                     <th mat-header-cell *matHeaderCellDef></th>
                     <td mat-cell *matCellDef="let row" class="text-right w-32">
-                        <button>
-                            <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"
-                                (click)="goToEdit(row.id)"></mat-icon>
+                        <button mat-icon-button matTooltip="Editar" class="p-1 w-auto h-auto"
+                            (click)="goToEdit(row.id)">
+                            <mat-icon svgIcon="heroicons_solid:pencil-alt"></mat-icon>
                         </button>
-                        <button>
-                            <mat-icon svgIcon="heroicons_solid:eye" matTooltip="Ver"
-                                (click)="goToView(row.id)"></mat-icon>
+                        <button mat-icon-button matTooltip="Ver" class="p-1 w-auto h-auto" (click)="goToView(row.id)">
+                            <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
                         </button>
-                        <button>
-                            <mat-icon svgIcon="heroicons_solid:switch-vertical" matTooltip="Ingresos / Egresos"
-                                (click)="goToIngresosEgresos(row.id)"></mat-icon>
+                        <button mat-icon-button matTooltip="Ingresos / Egresos" class="p-1 w-auto h-auto"
+                            (click)="goToIngresosEgresos(row.id)">
+                            <ng-container *ngIf="row.estadoRegistro === 'egreso'; else ingresoIcon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.6 11" fill="currentColor" fit=""
+                                    height="100%" width="100%" preserveAspectRatio="xMidYMid meet" class="w-6"
+                                    focusable="false">
+                                    <path fill="#617187"
+                                        d="M2.5,7C2.5,8,4,8,4,7V2.8l1,1c0.7,0.7,1.7-0.4,1.1-1.1L3.8,0.5C3.5,0.2,3,0.2,2.8,0.5L0.5,2.7 c-0.7,0.7,0.4,1.7,1.1,1.1l1-1V7z" />
+                                    <path fill="#66C681"
+                                        d="M10,4c0-1-1.5-1-1.5,0v4.2l-1-1C6.9,6.5,5.8,7.6,6.5,8.3l2.2,2.3c0.3,0.3,0.8,0.3,1.1,0l2.3-2.3 c0.7-0.7-0.4-1.7-1.1-1.1l-1,1V4z" />
+                                    <path d="M10,4" />
+                                </svg>
+                            </ng-container>
+                            <ng-template #ingresoIcon>
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.6 11" fill="currentColor" fit=""
+                                    height="100%" width="100%" preserveAspectRatio="xMidYMid meet" class="w-6"
+                                    focusable="false">
+                                    <path fill="#617187"
+                                        d="M2.5,7C2.5,8,4,8,4,7V2.8l1,1c0.7,0.7,1.7-0.4,1.1-1.1L3.8,0.5C3.5,0.2,3,0.2,2.8,0.5L0.5,2.7 c-0.7,0.7,0.4,1.7,1.1,1.1l1-1V7z" />
+                                    <path fill="#617187"
+                                        d="M10,4c0-1-1.5-1-1.5,0v4.2l-1-1C6.9,6.5,5.8,7.6,6.5,8.3l2.2,2.3c0.3,0.3,0.8,0.3,1.1,0l2.3-2.3 c0.7-0.7-0.4-1.7-1.1-1.1l-1,1V4z" />
+                                    <path d="M10,4" />
+                                </svg>
+                            </ng-template>
                         </button>
                     </td>
                 </ng-container>

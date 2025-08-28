@@ -4,6 +4,10 @@
     <!-- CONTENT GOES HERE -->
     <div>
       <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="border-2 rounded-2xl w-full">
+        <ng-container matColumnDef="codigo">
+          <th mat-header-cell *matHeaderCellDef class="pr-2">Código</th>
+          <td mat-cell *matCellDef="let element" class="pr-2">{{ element.codigo }}</td>
+        </ng-container>
         <ng-container matColumnDef="razonSocial">
           <th mat-header-cell *matHeaderCellDef>Razón Social</th>
           <td mat-cell *matCellDef="let element">{{ element.razonSocial }}</td>
@@ -47,20 +51,27 @@
                       Guardar cambios</button>&nbsp;
                   </div>
 
-                  <div class="row flex gap-3 justify-around">
+                  <div class="row flex gap-3 justify-around items-center">
                     <div>
                       <p class="mb-2">Habilitado</p>
                       <mat-slide-toggle formControlName="activo"></mat-slide-toggle>
                     </div>
 
-                    <mat-form-field appearance="outline" class="w-1/3">
+                    <mat-form-field appearance="outline" class="flex-1">
+                      <mat-label>Código</mat-label>
+                      <input id="codigo" matInput [formControlName]="'codigo'" placeholder="Código" />
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="flex-1">
                       <mat-label>Nombre</mat-label>
                       <input id="nombre" matInput [formControlName]="'nombre'" placeholder="Nombre" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('nombre').hasError('required')">
                         El nombre es requerido
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="w-1/3">
+                  </div>
+                  <div class="row flex gap-3 justify-around">
+                    <mat-form-field appearance="outline" class="w-1/2">
                       <mat-label>Razón Social</mat-label>
                       <input id="razonSocial" matInput [formControlName]="'razonSocial'" placeholder="Razón Social" />
                       <mat-error class="mb-1" *ngIf="
@@ -69,7 +80,7 @@
                         La razón social es requerida
                       </mat-error>
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="w-1/3">
+                    <mat-form-field appearance="outline" class="w-1/2">
                       <mat-label>Mail</mat-label>
                       <input id="email" matInput [formControlName]="'email'" placeholder="Mail" />
                       <mat-error class="mb-1" *ngIf="clienteForm.get('email').hasError('required')">

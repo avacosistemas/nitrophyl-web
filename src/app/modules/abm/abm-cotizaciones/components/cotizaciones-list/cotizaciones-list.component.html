@@ -1,0 +1,93 @@
+<div class="flex flex-col flex-auto min-w-0 p-6 sm:p-10">
+    <mat-accordion>
+        <mat-expansion-panel>
+            <mat-expansion-panel-header class="h-12">
+                <mat-panel-title>
+                    <span class="text-xl font-extrabold tracking-tight">Búsqueda</span>
+                </mat-panel-title>
+            </mat-expansion-panel-header>
+
+            <form [formGroup]="searchForm" class="mt-2">
+                <div class="flex flex-col md:flex-row gap-4">
+                    <mat-form-field appearance="outline" class="flex-1">
+                        <mat-label>Cliente</mat-label>
+                        <input type="text" placeholder="Buscar cliente por nombre o código..." 
+                            matInput formControlName="cliente" [matAutocomplete]="autoCliente"
+                            #clienteInput>
+                        <button mat-icon-button matSuffix *ngIf="searchForm.get('cliente')?.value"
+                            (click)="clearClienteInput(); $event.stopPropagation()">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                        <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayCliente">
+                            <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+                                {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" class="flex-1">
+                        <mat-label>Pieza</mat-label>
+                        <input type="text" placeholder="Buscar pieza por nombre o código..." 
+                            matInput formControlName="pieza" [matAutocomplete]="autoPieza" #piezaInput>
+                        <button mat-icon-button matSuffix *ngIf="searchForm.get('pieza')?.value"
+                            (click)="clearPiezaInput(); $event.stopPropagation()">
+                            <mat-icon>close</mat-icon>
+                        </button>
+                        <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
+                            <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
+                                {{ pieza.codigo }} - {{ pieza.denominacion }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-2">
+                    <button mat-stroked-button (click)="limpiarFiltros()">Limpiar</button>
+                    <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
+                        type="button" (click)="search()">Buscar</button>
+                </div>
+            </form>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+    <div class="relative mt-5">
+        <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center">
+            <mat-progress-spinner color="primary" mode="indeterminate"></mat-progress-spinner>
+        </div>
+        <table mat-table [dataSource]="dataSource" matSort class="border-2 rounded-2xl w-full">
+            <ng-container matColumnDef="pieza">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="pieza">Pieza</th>
+                <td mat-cell *matCellDef="let element">{{ element.pieza }}</td>
+            </ng-container>
+            <ng-container matColumnDef="material">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="material">Material</th>
+                <td mat-cell *matCellDef="let element">{{ element.formula }}</td>
+            </ng-container>
+            <ng-container matColumnDef="cliente">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="cliente">Cliente</th>
+                <td mat-cell *matCellDef="let element">{{ element.cliente }}</td>
+            </ng-container>
+            <ng-container matColumnDef="valor">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="valor">Precio</th>
+                <td mat-cell *matCellDef="let element">{{ element.valor | currency }}</td>
+            </ng-container>
+            <ng-container matColumnDef="fecha">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="fecha">Fecha Precio</th>
+                <td mat-cell *matCellDef="let element">{{ element.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="observaciones">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header="observaciones">Observaciones</th>
+                <td mat-cell *matCellDef="let element">{{ element.observaciones }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr *matNoDataRow>
+                <td class="mat-cell text-center py-4" [attr.colspan]="displayedColumns.length">
+                    No se encontraron cotizaciones.
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <mat-paginator [length]="totalReg" [pageSizeOptions]="[15, 30, 50, 100]" showFirstLastButtons></mat-paginator>
+</div>

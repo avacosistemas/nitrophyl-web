@@ -54,21 +54,21 @@
                 <h2 class="text-xl font-semibold mb-2">Vulcanización</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Tiempo</mat-label>
+                        <mat-label>Tiempo (min)</mat-label>
                         <input matInput type="number" formControlName="vulcanizacionTiempo" required>
                         <mat-error
                             *ngIf="moldeoForm.get('vulcanizacionTiempo').hasError('required')">Requerido</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Temperatura Mínima</mat-label>
+                        <mat-label>Temperatura Mínima (ºC)</mat-label>
                         <input matInput type="number" formControlName="vulcanizacionTemperaturaMinima" required>
                         <mat-error
                             *ngIf="moldeoForm.get('vulcanizacionTemperaturaMinima').hasError('required')">Requerido</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Temperatura Máxima</mat-label>
+                        <mat-label>Temperatura Máxima (ºC)</mat-label>
                         <input matInput type="number" formControlName="vulcanizacionTemperaturaMaxima" required>
                         <mat-error
                             *ngIf="moldeoForm.get('vulcanizacionTemperaturaMaxima').hasError('required')">Requerido</mat-error>
@@ -96,7 +96,7 @@
                 </mat-form-field>
 
                 <mat-form-field appearance="outline" class="w-full md:w-1/6">
-                    <mat-label>Presión</mat-label>
+                    <mat-label>Presión (kg/cm2)</mat-label>
                     <input matInput type="number" [formControl]="presionCtrl">
                 </mat-form-field>
 

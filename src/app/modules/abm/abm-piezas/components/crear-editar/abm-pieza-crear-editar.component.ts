@@ -6,11 +6,11 @@ import {
     OnChanges,
     SimpleChanges
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormGroupDirective } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { Pieza, PiezaProceso, PiezaCreateDTO, PiezaUpdateDTO, Molde } from '../../models/pieza.model';
+import { PiezaProceso, PiezaCreateDTO, PiezaUpdateDTO, Molde, Espesor } from '../../models/pieza.model';
 import { Observable, of, combineLatest, forkJoin, throwError } from 'rxjs';
 import { map, startWith, catchError, debounceTime, switchMap, filter } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
@@ -20,11 +20,12 @@ import { FormulasService } from 'app/shared/services/formulas.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { RevisionInicialInputComponent } from './revision-inicial-input.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { MatTableDataSource } from '@angular/material/table';
 
 interface ForkJoinResults {
     tiposPieza: { id: number; nombre: string; }[];
     formulasResponse: { data: { id: number; nombre: string; }[] };
-    clientesResponse: { data: { id: number; nombre: string; }[] };
+    clientesResponse: { data: { id: number; nombre: string; codigo?: string; }[] };
     pieza: PiezaProceso | null;
 }
 
@@ -38,16 +39,19 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
     piezaForm: FormGroup;
+    espesorForm: FormGroup;
+    espesoresDataSource = new MatTableDataSource<Espesor>([]);
+    displayedColumnsEspesores: string[] = ['min', 'max', 'acciones'];
 
     pieceNames$: Observable<string[]>;
     tiposPieza$: Observable<{ id: number; nombre: string }[]>;
     formulas$: Observable<{ id: number; nombre: string; }[]>;
-    clientes$: Observable<{ id: number; nombre: string; }[]>;
+    clientes$: Observable<{ id: number; nombre: string; codigo?: string; }[]>;
 
     filteredPieceNames$: Observable<string[]>;
     filteredTiposPieza$: Observable<{ id: number; nombre: string; }[]>;
     filteredFormulas$: Observable<{ id: number; nombre: string; }[]>;
-    filteredClientes$: Observable<{ id: number; nombre: string; }[]>;
+    filteredClientes$: Observable<{ id: number; nombre: string; codigo?: string; }[]>;
     filteredMoldes$: Observable<Molde[]>;
 
     clasificacionOptions: { value: string; label: string }[] = [
@@ -85,14 +89,14 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             durezaMinima: [{ value: null, disabled: false }, Validators.required],
             durezaMaxima: [{ value: null, disabled: false }, Validators.required],
             unidadDureza: [{ value: 'SHORE_A', disabled: false }],
-            espesorMinimo: [{ value: null, disabled: false }],
-            espesorMaximo: [{ value: null, disabled: false }],
             pesoCrudo: [{ value: null, disabled: false }],
             observacionesPesoCrudo: [{ value: null, disabled: false }],
             idMolde: [{ value: null, disabled: false }],
             observacionesMolde: [{ value: null, disabled: false }],
             idCliente: [{ value: null, disabled: false }],
             nombrePiezaCliente: [{ value: null, disabled: false }],
+            cotizacionCliente: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')],
+            observacionesCotizacionCliente: [{ value: null, disabled: true }],
             revision: [{ value: null, disabled: true }],
             fechaRevision: [{ value: null, disabled: true }],
             observacionesRevision: [{ value: null, disabled: false }],
@@ -103,6 +107,21 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 planoClasificacion: [null],
                 planoObservaciones: [null],
             }),
+        });
+
+        this.piezaForm.get('cotizacionCliente').valueChanges.subscribe(value => {
+            const obsControl = this.piezaForm.get('observacionesCotizacionCliente');
+            if (value) {
+                obsControl.enable();
+            } else {
+                obsControl.disable();
+                obsControl.reset();
+            }
+        });
+
+        this.espesorForm = this.fb.group({
+            min: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
+            max: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]]
         });
     }
 
@@ -201,7 +220,26 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
                 this.filteredTiposPieza$ = this.setupAutocomplete('idTipoPieza', this.tiposPieza$);
                 this.filteredFormulas$ = this.setupAutocomplete('idFormula', this.formulas$);
-                this.filteredClientes$ = this.setupAutocomplete('idCliente', this.clientes$);
+
+                this.filteredClientes$ = combineLatest([
+                    this.piezaForm.get('idCliente').valueChanges.pipe(
+                        startWith(''),
+                        map(value => typeof value === 'string' ? value : value?.nombre || '')
+                    ),
+                    this.clientes$
+                ]).pipe(
+                    map(([filterValue, clientes]) => {
+                        const lowerFilterValue = (filterValue || '').toLowerCase();
+                        if (!lowerFilterValue) {
+                            return clientes;
+                        }
+                        return clientes.filter(cliente =>
+                            cliente.nombre.toLowerCase().includes(lowerFilterValue) ||
+                            (cliente.codigo && cliente.codigo.toLowerCase().includes(lowerFilterValue))
+                        );
+                    }),
+                    catchError(() => of([]))
+                );
 
                 return typedResults;
             }),
@@ -231,8 +269,6 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             durezaMinima: pieza.durezaMinima,
             durezaMaxima: pieza.durezaMaxima,
             unidadDureza: pieza.unidadDureza,
-            espesorMinimo: pieza.espesorMinimo,
-            espesorMaximo: pieza.espesorMaximo,
             pesoCrudo: pieza.pesoCrudo,
             observacionesPesoCrudo: pieza.observacionesPesoCrudo,
             revision: pieza.revision,
@@ -240,8 +276,37 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             observacionesRevision: pieza.observacionesRevision,
         });
 
+        this.espesoresDataSource.data = pieza.espesores || [];
+
         this.abmPiezaService.events.next({ nombrePieza: pieza.denominacion });
         this.updateFormState();
+    }
+
+    agregarEspesor(): void {
+        if (this.espesorForm.invalid) {
+            this.notificationService.showError('Ambos valores de espesor son requeridos.');
+            return;
+        }
+
+        const min = this.espesorForm.get('min').value;
+        const max = this.espesorForm.get('max').value;
+
+        if (min > max) {
+            this.notificationService.showError('El espesor mínimo no puede ser mayor al máximo.');
+            return;
+        }
+
+        const currentData = this.espesoresDataSource.data;
+        this.espesoresDataSource.data = [...currentData, { min, max }];
+        this.espesorForm.reset();
+        this.piezaForm.markAsDirty();
+    }
+
+    eliminarEspesor(index: number): void {
+        const currentData = this.espesoresDataSource.data;
+        currentData.splice(index, 1);
+        this.espesoresDataSource.data = [...currentData];
+        this.piezaForm.markAsDirty();
     }
 
     guardarPieza(): void {
@@ -266,13 +331,14 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 denominacion: formValues.nombre,
                 durezaMaxima: formValues.durezaMaxima,
                 durezaMinima: formValues.durezaMinima,
-                espesorMaximo: formValues.espesorMaximo,
-                espesorMinimo: formValues.espesorMinimo,
+                espesores: this.espesoresDataSource.data,
                 idCliente: formValues.idCliente?.id,
                 idFormula: formValues.idFormula?.id,
                 idMolde: formValues.idMolde?.id,
                 idTipoPieza: formValues.idTipoPieza?.id,
                 nombrePiezaCliente: formValues.nombrePiezaCliente,
+                cotizacionCliente: formValues.cotizacionCliente,
+                observacionesCotizacionCliente: formValues.observacionesCotizacionCliente,
                 observacionesMolde: formValues.observacionesMolde,
                 observacionesPesoCrudo: formValues.observacionesPesoCrudo,
                 pesoCrudo: formValues.pesoCrudo,
@@ -313,8 +379,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         const dto: Partial<PiezaUpdateDTO> = {
             durezaMinima: formValues.durezaMinima,
             durezaMaxima: formValues.durezaMaxima,
-            espesorMinimo: formValues.espesorMinimo,
-            espesorMaximo: formValues.espesorMaximo,
+            espesores: this.espesoresDataSource.data,
             pesoCrudo: formValues.pesoCrudo,
             observacionesPesoCrudo: formValues.observacionesPesoCrudo,
             observacionesRevision: formValues.observacionesRevision,
@@ -385,7 +450,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     displayFn(item: any): string { return item?.nombre ?? ''; }
     displayMolde(molde?: { id: number, nombre: string }): string { return molde?.nombre ?? ''; }
-    displayCliente(cliente?: { id: number, nombre: string }): string { return cliente?.nombre ?? ''; }
+    displayCliente(cliente?: { id: number, nombre: string, codigo?: string }): string { return cliente?.nombre ?? ''; }
     displayFormula(formula?: { id: number, nombre: string }): string { return formula?.nombre ?? ''; }
 
     generarNuevaRevision(): void {

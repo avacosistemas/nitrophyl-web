@@ -1,61 +1,87 @@
 <div class="flex flex-col w-full" id="top">
   <mat-tab-group class="mt-2 col-span-12 grid-rows-1" (selectedTabChange)="tabChange($event)">
     <mat-tab label="Datos del Molde">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <form [formGroup]="moldeForm">
+      <form [formGroup]="moldeForm">
+        <div class="flex w-full gap-4">
+          <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
 
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label> Código </mat-label>
-            <input type="text" placeholder="Código " matInput formControlName="codigo" required maxlength="30">
-            <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
-              El código es requerido
-            </mat-error>
-            <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
-              Máximo 30 caracteres
-            </mat-error>
-          </mat-form-field>
+            <div>
+              <div>
+                <h1 class="text-2xl font-semibold mb-2">Molde</h1>
+              </div>
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label> Código </mat-label>
+                <input type="text" placeholder="Código " matInput formControlName="codigo" required maxlength="30">
+                <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
+                  El código es requerido
+                </mat-error>
+                <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
+                  Máximo 30 caracteres
+                </mat-error>
+              </mat-form-field>
 
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Estado </mat-label>
-            <mat-select formControlName="estado" placeholder="Estado">
-              <mat-option [value]='"ACTIVO"'>Activo</mat-option>
-              <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
-              <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
-            </mat-select>
-          </mat-form-field>
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Estado </mat-label>
+                <mat-select formControlName="estado" placeholder="Estado">
+                  <mat-option [value]='"ACTIVO"'>Activo</mat-option>
+                  <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
+                  <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
+                </mat-select>
+              </mat-form-field>
 
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label> Nombre </mat-label>
-            <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Nombre">
-            <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
-              El nombre es requerido
-            </mat-error>
-            <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('maxlength')">
-              Máximo 100 caracteres
-            </mat-error>
-          </mat-form-field>
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label> Nombre </mat-label>
+                <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Nombre">
+                <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
+                  El nombre es requerido
+                </mat-error>
+                <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('maxlength')">
+                  Máximo 100 caracteres
+                </mat-error>
+              </mat-form-field>
 
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label> Propietario </mat-label>
-            <mat-select formControlName="client" placeholder="Propietario">
-              <mat-option [value]="-1"> Nitrophyl </mat-option>
-              <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
-            </mat-select>
-            <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
-              El propietario es requerido
-            </mat-error>
-          </mat-form-field>
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Observaciones </mat-label>
-            <input id="observations" matInput [formControlName]="'observaciones'" placeholder="Observaciones">
-          </mat-form-field>
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Ubicación </mat-label>
-            <input id="location" matInput [formControlName]="'ubicacion'" placeholder="Ubicación">
-          </mat-form-field>
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label> Propietario </mat-label>
+                <input type="text" placeholder="Buscar por código o nombre" matInput formControlName="client"
+                  [matAutocomplete]="autoPropietario">
+                <mat-autocomplete #autoPropietario="matAutocomplete" [displayWith]="displayClient">
+                  <mat-option *ngFor="let client of filteredClients$ | async" [value]="client">
+                    {{ client.id === -1 ? client.nombre : (client.codigo ? client.codigo + ' - ' : '') + client.nombre
+                    }}
+                  </mat-option>
+                </mat-autocomplete>
+                <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
+                  El propietario es requerido
+                </mat-error>
+              </mat-form-field>
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Observaciones </mat-label>
+                <input id="observations" matInput [formControlName]="'observaciones'" placeholder="Observaciones">
+              </mat-form-field>
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Ubicación </mat-label>
+                <input id="location" matInput [formControlName]="'ubicacion'" placeholder="Ubicación">
+              </mat-form-field>
+            </div>
+          </div>
 
-        </form>
-      </div>
+          <div class="border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
+            <div>
+              <h1 class="text-2xl font-semibold mb-2">Tipos de Pieza</h1>
+            </div>
+            <div class="flex flex-wrap gap-3 w-fill" formArrayName="piezaTipos">
+              <div *ngFor="let tipo of tiposPieza; let i = index">
+                <mat-checkbox [formControlName]="i">
+                  {{ tipo.nombre }}
+                </mat-checkbox>
+              </div>
+              <div *ngIf="!tiposPieza || tiposPieza.length === 0" class="text-gray-500">
+                No hay tipos de pieza para seleccionar.
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
     </mat-tab>
     <mat-tab label="Bocas">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
@@ -266,23 +292,27 @@
     </mat-tab>
     <mat-tab label="Clientes">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-        <mat-accordion *ngIf="mode === 'Edit'">
-          <div class="flex justify-center gap-2 w-full" *ngIf="mode === 'Edit'">
-            <mat-form-field class="min-w-[25%]" appearance="outline" [formGroup]="moldeForm">
-              <mat-label>Cliente </mat-label>
-              <mat-select placeholder="Seleccione un cliente" formControlName="client">
-                <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
-              </mat-select>
+        <div *ngIf="mode === 'Edit'">
+          <div class="flex justify-center gap-2 w-full" [formGroup]="clientForm">
+            <mat-form-field class="w-1/3" appearance="outline">
+              <mat-label>Cliente</mat-label>
+              <input type="text" placeholder="Buscar por código o nombre" matInput formControlName="client"
+                [matAutocomplete]="autoClienteAgregar">
+              <mat-autocomplete #autoClienteAgregar="matAutocomplete" [displayWith]="displayClient">
+                <mat-option *ngFor="let client of filteredClientsForAdding$ | async" [value]="client">
+                  {{ client.codigo ? client.codigo + ' - ' : '' }}{{ client.nombre }}
+                </mat-option>
+              </mat-autocomplete>
             </mat-form-field>
             <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
-              mat-flat-button (click)="addClient()" [disabled]="moldeForm.get('client').value === -1">
+              mat-flat-button (click)="addClient()" [disabled]="clientForm.invalid">
               <span class="mat-button-wrapper"> Agregar </span>
               <span matripple="" class="mat-ripple mat-button-ripple"></span>
             </button>
           </div>
-        </mat-accordion>
+        </div>
 
-        <table mat-table [dataSource]="clients" class="border-2 rounded-2xl w-full">
+        <table mat-table [dataSource]="clients" class="border-2 rounded-2xl w-full mt-4">
           <ng-container matColumnDef="idCliente">
             <th mat-header-cell *matHeaderCellDef> ID </th>
             <td mat-cell *matCellDef="let element">{{ element.idCliente }} </td>
@@ -294,8 +324,8 @@
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let row" class="text-right">
-              <button *ngIf="mode === 'Edit'">
-                <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar" (click)="deleteClient(row)"></mat-icon>
+              <button *ngIf="mode === 'Edit'" (click)="deleteClient(row)">
+                <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar"></mat-icon>
               </button>
             </td>
           </ng-container>
@@ -325,7 +355,7 @@
             </ng-container>
             <ng-container matColumnDef="fecha">
               <th mat-header-cell *matHeaderCellDef> Fecha </th>
-			  <td mat-cell *matCellDef="let element"> {{element.fechaCreacion | date: 'dd/MM/yyyy HH:mm'}} </td>
+              <td mat-cell *matCellDef="let element"> {{element.fechaCreacion | date: 'dd/MM/yyyy HH:mm'}} </td>
             </ng-container>
             <ng-container matColumnDef="usuario">
               <th mat-header-cell *matHeaderCellDef> Usuario </th>

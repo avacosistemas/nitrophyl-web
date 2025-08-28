@@ -39,8 +39,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   totalReg: number = 0;
   isLoading = true;
 
-  formulas$: Observable<IFormula[]>;
-  materials$: Observable<any[]>;
+  tiposPieza: { id: number; nombre: string }[] = [];
   formulasFail: boolean = false;
   materialsFail: boolean = false;
 
@@ -66,6 +65,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       nombre: [null],
       idFormula: [null],
       idMaterial: [null],
+      tiposPieza: [null],
       soloVigentes: [true]
     });
   }
@@ -134,10 +134,15 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       idMaterial: typeof formValues.idMaterial === 'object' ? formValues.idMaterial?.id : formValues.idMaterial,
     };
 
+    if (formValues.tiposPieza && formValues.tiposPieza.length > 0) {
+        params.idTipoPieza = formValues.tiposPieza.join(',');
+    }
+
     Object.keys(params).forEach(key => {
-      if (params[key] === null || params[key] === undefined || params[key] === '') {
-        delete params[key];
-      }
+        const value = params[key];
+        if (value === null || value === undefined || value === '') {
+            delete params[key];
+        }
     });
 
     return params;
@@ -258,10 +263,18 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
           return of({ data: [] } as IFormulasResponse);
         })
       ),
+      tiposPieza: this.abmPiezaService.getPiezaTipo().pipe(
+          catchError((err: any) => {
+              console.error(errorMsg, 'Error en getPiezaTipo', err);
+              this.notificationService.showError('No se pudieron cargar los tipos de pieza.');
+              return of([]);
+          })
+      )
     }).pipe(takeUntil(this._destroying$))
-      .subscribe(({ materials, formulas }) => {
+      .subscribe(({ materials, formulas, tiposPieza }) => {
         this.allMaterials = Array.isArray(materials.data) ? materials.data : [materials.data];
         this.allFormulas = Array.isArray(formulas.data) ? formulas.data : [formulas.data];
+        this.tiposPieza = Array.isArray(tiposPieza) ? tiposPieza : [];
         this.setupFilters();
       });
   }

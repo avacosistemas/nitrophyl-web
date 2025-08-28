@@ -240,6 +240,14 @@ export const appRoutes: Route[] = [
             (m: any) => m.ABMClientesModule
           ),
       },
+       {
+        path: 'cotizaciones',
+        data: { permission: 'MENU_ADMINISTRACION_COTIZACION' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-cotizaciones/cotizaciones.module').then(
+            (m: any) => m.CotizacionesModule
+          ),
+      },
       {
         path: 'formulas',
         loadChildren: () =>

@@ -13,12 +13,12 @@
                     <form [formGroup]="searchForm" class="mt-2">
                         <div class="row flex gap-3 justify-around">
 
-                            <mat-form-field appearance="outline" class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/4">
                                 <mat-label> Código / Denominación </mat-label>
                                 <input matInput formControlName="nombre" placeholder="Código o Denominación">
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/4">
                                 <mat-label>Fórmula</mat-label>
                                 <input type="text" matInput formControlName="idFormula" [matAutocomplete]="autoFormula"
                                     placeholder="Fórmula" #formulaInput>
@@ -33,7 +33,7 @@
                                 </mat-autocomplete>
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/3">
+                            <mat-form-field appearance="outline" class="w-1/4">
                                 <mat-label>Material</mat-label>
                                 <input type="text" matInput formControlName="idMaterial"
                                     [matAutocomplete]="autoMaterial" placeholder="Material" #materialInput>
@@ -48,9 +48,18 @@
                                 </mat-autocomplete>
                             </mat-form-field>
 
+                            <mat-form-field appearance="outline" class="w-1/4">
+                                <mat-label>Tipo de Pieza</mat-label>
+                                <mat-select formControlName="tiposPieza" multiple>
+                                    <mat-option *ngFor="let tipo of tiposPieza" [value]="tipo.id">{{ tipo.nombre
+                                        }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
                         </div>
 
-                        <mat-checkbox formControlName="soloVigentes">Solo Vigentes</mat-checkbox>
+                        <div class="row flex gap-3 items-center">
+                            <mat-checkbox formControlName="soloVigentes">Solo Vigentes</mat-checkbox>
+                        </div>
 
                         <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
                             <button mat-flat-button (click)="search()"
