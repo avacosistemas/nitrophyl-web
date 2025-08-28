@@ -51,7 +51,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     this.insumoForm = this.fb.group({
       tipos: this.fb.array([]),
       insumo: [{ value: null, disabled: true }, Validators.required],
-      tratamientos: [[], [Validators.required, Validators.minLength(1)]],
+      tratamientos: [[], []],
       adhesivos: [[]],
       medidaValor: [''],
       medidaObservaciones: [''],
