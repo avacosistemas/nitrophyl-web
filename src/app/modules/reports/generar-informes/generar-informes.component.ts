@@ -56,7 +56,7 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     this.informesForm = this.fb.group({
       selectedClient: [null, Validators.required],
       selectedLote: [null, Validators.required],
-      observaciones: [''],
+      observacionesInforme: [''],
     });
 
     this.filteredLots = this.lotFilterControl.valueChanges.pipe(
@@ -138,10 +138,10 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
 
   openConfirmSendEmailDialog(idCliente: number, idLote: string, email: string): void {
     this.isSending = true;
-    const observaciones = this.informesForm.get('observaciones').value;
+    const observacionesInforme = this.informesForm.get('observacionesInforme').value;
     const dialogRef = this.dialog.open(ConfirmSendEmailDialogComponent, {
       width: '600px',
-      data: { idCliente: idCliente, idLote: idLote, email: email, observaciones: observaciones }
+      data: { idCliente: idCliente, idLote: idLote, email: email, observacionesInforme: observacionesInforme }
     });
 
     dialogRef.beforeClosed().subscribe(() => {
@@ -202,10 +202,10 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   onVistaPreviaInforme(): void {
     if (this.informesForm.valid) {
       const { idCliente, idLote } = this.getSelectedValues();
-      const observaciones = this.informesForm.get('observaciones').value;
+      const observacionesInforme = this.informesForm.get('observacionesInforme').value;
 
       if (idCliente && idLote) {
-        this.lotService.getInformeCalidad(idCliente, idLote, observaciones).subscribe({
+        this.lotService.getInformeCalidad(idCliente, idLote, observacionesInforme).subscribe({
           next: (response) => {
             if (response && response.data && response.data.archivo && response.data.nombre) {
               const archivoBase64 = response.data.archivo;

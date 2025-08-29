@@ -138,11 +138,11 @@ export class LotService {
     return this.http.get<ILotResponseAutocomplete>(url);
   }
 
-  getInformeCalidad(idCliente: number, idLote: string, observaciones: string = ''): Observable<any> {
+  getInformeCalidad(idCliente: number, idLote: string, observacionesInforme: string = ''): Observable<any> {
     const params = new HttpParams()
       .set('idCliente', idCliente)
       .set('idLote', idLote)
-      .set('observaciones', observaciones);
+      .set('observacionesInforme', observacionesInforme);
 
     const url = `${this._apiUrl}loteReporte`;
 
