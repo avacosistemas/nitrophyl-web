@@ -17,7 +17,9 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
 
     constructor(
         public dialogRef: MatDialogRef<ConfirmSendEmailDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: { idCliente: number; idLote: string; email: string },
+        @Inject(MAT_DIALOG_DATA) public data: {
+            observacionesInforme: string; idCliente: number; idLote: string; email: string
+        },
         private lotService: LotService,
         private snackBar: MatSnackBar,
         private formBuilder: FormBuilder,
@@ -70,22 +72,23 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
         const idLote = this.data.idLote;
         const nombreArchivo = this.graphicForm.get('nombreArchivo').value;
         const observaciones = this.graphicForm.get('observaciones').value;
+        const observacionesInforme = this.data.observacionesInforme;
         let base64Content: string | null = null;
 
         if (this.selectedFile) {
             const reader = new FileReader();
             reader.onload = () => {
                 base64Content = (reader.result as string).split(',')[1];
-                this.sendEmail(idCliente, idLote, base64Content, nombreArchivo, observaciones);
+                this.sendEmail(idCliente, idLote, base64Content, nombreArchivo, observaciones, observacionesInforme);
             };
             reader.readAsDataURL(this.selectedFile);
         } else {
-            this.sendEmail(idCliente, idLote, base64Content, nombreArchivo, observaciones);
+            this.sendEmail(idCliente, idLote, base64Content, nombreArchivo, observaciones, observacionesInforme);
         }
     }
 
-    sendEmail(idCliente: number, idLote: string, archivo: string | null, nombreArchivo: string, observaciones: string): void {
-        this.lotService.enviarInformePorCorreo(idCliente, idLote, archivo, nombreArchivo, observaciones).subscribe({
+    sendEmail(idCliente: number, idLote: string, archivo: string | null, nombreArchivo: string, observaciones: string, observacionesInforme: string): void {
+        this.lotService.enviarInformePorCorreo(idCliente, idLote, archivo, nombreArchivo, observaciones, observacionesInforme).subscribe({
             next: (response: any) => {
                 if (response && response.status === 'ERROR') {
                     this.openSnackBar(false, response.message || 'Error al enviar el informe');

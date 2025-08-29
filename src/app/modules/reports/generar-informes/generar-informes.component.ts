@@ -136,9 +136,8 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   onSubmit(): void {
   }
 
-  openConfirmSendEmailDialog(idCliente: number, idLote: string, email: string): void {
+  openConfirmSendEmailDialog(idCliente: number, idLote: string, email: string, observacionesInforme: string): void {
     this.isSending = true;
-    const observacionesInforme = this.informesForm.get('observacionesInforme').value;
     const dialogRef = this.dialog.open(ConfirmSendEmailDialogComponent, {
       width: '600px',
       data: { idCliente: idCliente, idLote: idLote, email: email, observacionesInforme: observacionesInforme }
@@ -164,13 +163,14 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   onEnviarInforme(): void {
     if (this.informesForm.valid) {
       const { idCliente, idLote } = this.getSelectedValues();
+      const observacionesInforme = this.informesForm.get('observacionesInforme').value;
 
       if (idCliente && idLote) {
         this.clientsService.getCorreoInforme(idCliente).subscribe({
           next: (response) => {
             if (response && response.data) {
               const correo = response.data;
-              this.openConfirmSendEmailDialog(idCliente, idLote, correo);
+              this.openConfirmSendEmailDialog(idCliente, idLote, correo, observacionesInforme);
             } else {
               this.errorMessage = 'Error: No se pudo obtener el correo electrónico del cliente';
               this.showErrorAlert = true;
