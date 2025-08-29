@@ -12,7 +12,7 @@ export interface Molde {
   ancho?: number;
   profundidad?: number;
   diametro?: number;
-  estadoRegistro?: string;
+  ultimoRegistro?: string;
   piezaTipos?: { id: number, nombre: string }[];
 }
 

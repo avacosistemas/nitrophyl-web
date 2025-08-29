@@ -239,25 +239,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       top.scrollIntoView();
       top = null;
     }
-    this._clients.getClientes().subscribe((res: any) => {
-      this.clients$ = [{ id: -1, nombre: 'Nitrophyl', codigo: 'N/A' }, ...res.data];
-
-      this.filteredClients$ = this.moldeForm.get('client').valueChanges.pipe(
-        startWith(''),
-        map(value => this._filterClients(value, this.clients$))
-      );
-
-      this.filteredClientsForAdding$ = this.clientForm.get('client').valueChanges.pipe(
-        startWith(''),
-        map(value => this._filterClients(value, this.clients$.filter(c => c.id !== -1)))
-      );
-
-      if (this.currentId) {
-        this._molds.getMoldeById(this.currentId).subscribe(moldeRes => {
-          this.loadMoldeData(moldeRes.data);
-        });
-      }
-    });
   }
 
   private _filterClients(value: string | Cliente, source: Cliente[]): Cliente[] {
@@ -471,20 +452,27 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       molde: this._molds.getMoldeById(this.currentId),
       tiposPieza: this._abmPiezaService.getPiezaTipo(),
       clientes: this._clients.getClientes()
-    }).subscribe(({ molde, tiposPieza, clientes }) => {
-      this.tiposPieza = tiposPieza;
-      this.clients$ = [{ id: -1, nombre: 'Nitrophyl', codigo: 'N/A' }, ...clientes.data];
+    }).subscribe({
+      next: ({ molde, tiposPieza, clientes }) => {
+        this.tiposPieza = tiposPieza;
 
-      this.filteredClients$ = this.moldeForm.get('client').valueChanges.pipe(
-        startWith(''),
-        map(value => this._filterClients(value, this.clients$))
-      );
-      this.filteredClientsForAdding$ = this.clientForm.get('client').valueChanges.pipe(
-        startWith(''),
-        map(value => this._filterClients(value, this.clients$.filter(c => c.id !== -1)))
-      );
+        this.clients$ = [{ id: -1, nombre: 'Nitrophyl', codigo: 'N/A' }, ...clientes.data];
 
-      this.loadMoldeData(molde.data);
+        this.filteredClients$ = this.moldeForm.get('client').valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterClients(value, this.clients$))
+        );
+        this.filteredClientsForAdding$ = this.clientForm.get('client').valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterClients(value, this.clients$.filter(c => c.id !== -1)))
+        );
+
+        this.loadMoldeData(molde.data);
+      },
+      error: (err) => {
+        console.error('Error al inicializar los datos del molde:', err);
+        this.notificationService.showError('No se pudieron cargar los datos iniciales del molde.');
+      }
     });
 
     this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
@@ -506,13 +494,16 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this._molds.getFotos(this.currentId).subscribe((response) => { this.fotos.data = response.data; });
     this._molds.getClients(this.currentId).subscribe((res: any) => (this.clients = res.data));
     this.getObservaciones();
+
     this.ABMoldesService.viewEvents.next('Guardar Molde');
   }
 
   loadMoldeData(data: Molde): void {
     if (!data) return;
+
     const propietarioId = data.idClienteDuenio === null ? -1 : data.idClienteDuenio;
     const propietarioObj = this.clients$.find(c => c.id === propietarioId);
+
     this.moldeForm.patchValue({
       codigo: data.codigo,
       estado: data.estado,
@@ -521,17 +512,22 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       ubicacion: data.ubicacion,
       client: propietarioObj,
     });
+
     const piezaTiposFormArray = this.moldeForm.get('piezaTipos') as FormArray;
+
+    piezaTiposFormArray.clear();
+
     this.tiposPieza.forEach(tipo => {
       const isSelected = data.piezaTipos?.some(pt => pt.id === tipo.id);
       piezaTiposFormArray.push(new FormControl(isSelected));
     });
+
     if (this.mode === 'View') {
       this.moldeForm.disable();
     }
+
     this.ABMoldesService.events.next({ nombreMolde: data.nombre });
   }
-
 
   public addClient(): void {
     if (this.clientForm.invalid) return;

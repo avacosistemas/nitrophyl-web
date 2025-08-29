@@ -191,7 +191,7 @@
                         </button>
                         <button mat-icon-button matTooltip="Ingresos / Egresos" class="p-1 w-auto h-auto"
                             (click)="goToIngresosEgresos(row.id)">
-                            <ng-container *ngIf="row.estadoRegistro === 'egreso'; else ingresoIcon">
+                            <ng-container *ngIf="row.ultimoRegistro === 'INGRESO'; else ingresoIcon">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12.6 11" fill="currentColor" fit=""
                                     height="100%" width="100%" preserveAspectRatio="xMidYMid meet" class="w-6"
                                     focusable="false">
