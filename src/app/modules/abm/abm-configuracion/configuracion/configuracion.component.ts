@@ -95,61 +95,122 @@ export class ConfiguracionComponent implements OnInit {
   ngOnInit(): void {
     this.mode = this.configuracionService.getMode();
     this.setupForm();
-    this.formulaService.get().pipe(
-      map((res: IFormulasResponse | IFormulaResponse) =>
-        Array.isArray(res.data) ? res.data : [res.data]
-      )
-    ).subscribe((formulas: IFormula[]) => {
-      this.formulas = formulas;
-      this.formulasBackUp$ = formulas;
-      this.formulas$ = this.form.controls['formula'].valueChanges.pipe(
-        startWith(''),
-        map(value => typeof value === 'string' ? value : value?.nombre),
-        map(name => name ? this._filterFormulas(name) : this.formulas.slice())
-      );
-    });
-    this.machinesService.get().pipe(
-      catchError((err: any) => {
-        console.error('Error fetching machines', err);
-        this.machinesFail = true;
-        return of([]);
-      })
-    ).subscribe((machinesResponse: IMachineResponse) => {
-      this.machines$ = machinesResponse.data;
-      this.filteredMachines$ = this.form.controls['machine'].valueChanges.pipe(
-        startWith(''),
-        map(value => typeof value === 'string' ? value : value?.nombre),
-        map(name => name ? this._filterMachines(name) : this.machines$ || [])
-      );
-    });
-    this.clientesService.getClientes().pipe(
-      catchError((err: any) => {
-        console.error('Error fetching clientes', err);
-        this.clientesFail = true;
-        return of({ data: [] } as ResponseClientes);
-      })
-    ).subscribe((clientesResponse: ResponseClientes) => {
-      this.clientes$ = clientesResponse.data;
-      this.filteredClientes$ = this.form.controls['cliente'].valueChanges.pipe(
-        startWith(''),
-        map(value => this._filterClientes(value))
-      );
-    });
 
-    switch (this.mode) {
-      case 'Create':
-        break;
-      case 'View':
-        this.loadData();
-        break;
-      case 'Edit':
-        this.loadData();
-        break;
-      case 'Test':
-        break;
-      default:
-        break;
+    const sources: { [key: string]: Observable<any> } = {
+      formulas: this.formulaService.get().pipe(
+        map((res: IFormulasResponse | IFormulaResponse) => Array.isArray(res.data) ? res.data : [res.data]),
+        catchError(err => {
+          console.error('Error fetching formulas', err);
+          return of([]);
+        })
+      ),
+      machines: this.machinesService.get().pipe(
+        map(response => response.data),
+        catchError(err => {
+          console.error('Error fetching machines', err);
+          this.machinesFail = true;
+          return of([]);
+        })
+      ),
+      clientes: this.clientesService.getClientes().pipe(
+        map(response => response.data),
+        catchError(err => {
+          console.error('Error fetching clientes', err);
+          this.clientesFail = true;
+          return of([]);
+        })
+      )
+    };
+
+    if (this.mode === 'Edit' || this.mode === 'View') {
+      sources.configuracion = this.configuracionService.get({ id: this.id }).pipe(
+        map(response => {
+          if (response?.data && 'page' in response.data && Array.isArray((response.data as any).page)) {
+            return (response.data as any).page.find(t => t.id === this.id);
+          }
+          return response?.data;
+        }),
+        catchError(err => {
+          console.error('Error fetching configuracion', err);
+          this.notificationService.showError('Configuración no encontrada.');
+          this.router.navigate(['/configuracion/grid']);
+          return of(null);
+        })
+      );
     }
+
+    forkJoin(sources).subscribe({
+      next: (results) => {
+        this.formulas = results.formulas;
+        this.formulasBackUp$ = results.formulas;
+        this.machines$ = results.machines;
+        this.clientes$ = results.clientes;
+
+        this.formulas$ = this.form.controls['formula'].valueChanges.pipe(
+          startWith(''),
+          map(value => typeof value === 'string' ? value : value?.nombre),
+          map(name => name ? this._filterFormulas(name) : this.formulas.slice())
+        );
+        this.filteredMachines$ = this.form.controls['machine'].valueChanges.pipe(
+          startWith(''),
+          map(value => typeof value === 'string' ? value : value?.nombre),
+          map(name => name ? this._filterMachines(name) : this.machines$ || [])
+        );
+        this.filteredClientes$ = this.form.controls['cliente'].valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterClientes(value))
+        );
+
+        const configuracion = results.configuracion;
+        if (configuracion) {
+          this.configuracion$ = configuracion;
+
+          const clienteSeleccionado = configuracion.idCliente === null ? 0 : this.clientes$.find(f => f.id === configuracion.idCliente);
+          const formulaSeleccionada = this.formulas.find(f => f.id === configuracion.idFormula);
+
+          const maquinaSeleccionada: IMachine | number | undefined = configuracion.idMaquina === null
+            ? 0
+            : this.machines$.find(f => f.id === configuracion.idMaquina);
+
+          this.form.patchValue({
+            cliente: clienteSeleccionado,
+            formula: formulaSeleccionada,
+            machine: maquinaSeleccionada,
+            mostrarParametros: configuracion.mostrarParametros,
+            mostrarObservacionesParametro: configuracion.mostrarObservacionesParametro,
+            mostrarResultados: configuracion.mostrarResultados,
+            mostrarCondiciones: configuracion.mostrarCondiciones,
+            enviarGrafico: configuracion.enviarGrafico
+          });
+
+          this.selectedMachineName = maquinaSeleccionada === 0 ? 'Todos' : (maquinaSeleccionada as IMachine)?.nombre;
+
+          if (maquinaSeleccionada && typeof maquinaSeleccionada === 'object') {
+            this.testService.getTest(maquinaSeleccionada.id).subscribe((response) => {
+              this.tests = response.data.map((test: ITest) => ({
+                ...test,
+                selected: configuracion.idsPruebas.includes(test.id),
+                disabled: this.mode === 'View'
+              }));
+            });
+          } else {
+            this.tests = [];
+          }
+
+          if (this.mode === 'View') {
+            this.form.disable();
+          }
+
+        } else if (this.mode === 'Edit' || this.mode === 'View') {
+          this.notificationService.showError('La configuración solicitada no se pudo cargar.');
+          this.router.navigate(['/configuracion/grid']);
+        }
+      },
+      error: (err) => {
+        console.error("Error crítico en forkJoin al cargar datos iniciales", err);
+        this.notificationService.showError('Ocurrió un error al cargar los datos de la página.');
+      }
+    });
   }
 
   onMachineSelectionChange(machineId: number | { id: number; nombre: string } | null): void {
@@ -395,76 +456,6 @@ export class ConfiguracionComponent implements OnInit {
       cliente.nombre.toLowerCase().includes(filterValue) ||
       (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
     );
-  }
-
-  private loadData(): void {
-    const error: string = 'ConfiguracionComponent => loadData: ';
-
-    forkJoin([
-      this.configuracionService.get({ id: this.id }).pipe(
-        catchError((err: any) => {
-          console.error(error, 'Error en configuración', err);
-          return of(null);
-        })
-      ),
-    ]).subscribe(([configuraciones]: any) => {
-      const configuracion = Array.isArray(configuraciones?.data?.page)
-        ? configuraciones.data.page.find(t => t.id === this.id)
-        : configuraciones?.data;
-
-      if (configuracion) {
-        const clienteSeleccionado = configuracion.idCliente === null ? 0 :
-          this.clientes$.find(f => f.id === configuracion.idCliente);
-        this.form.controls.cliente.setValue(clienteSeleccionado);
-
-        const formulaSeleccionada = this.formulas.find(f => f.id === configuracion.idFormula);
-        this.form.controls.formula.setValue(formulaSeleccionada);
-
-        const maquinaSeleccionada = configuracion.idMaquina === null ? 0 :
-          this.machines$.find(f => f.id === configuracion.idMaquina);
-        this.form.controls.machine.setValue(maquinaSeleccionada);
-
-        this.selectedMachineName = maquinaSeleccionada === 0 ? 'Todos' : maquinaSeleccionada?.nombre;
-
-        this.form.controls.mostrarCondiciones.setValue(configuracion.mostrarCondiciones);
-        this.form.controls.mostrarObservacionesParametro.setValue(configuracion.mostrarObservacionesParametro);
-        this.form.controls.mostrarResultados.setValue(configuracion.mostrarResultados);
-        this.form.controls.mostrarParametros.setValue(configuracion.mostrarParametros);
-        this.form.controls.enviarGrafico.setValue(configuracion.enviarGrafico)
-
-        this.configuracion$ = configuracion;
-
-        if (this.mode === 'View') {
-          this.form.disable();
-
-          if (maquinaSeleccionada === 0) {
-            this.tests = [];
-          } else {
-            this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
-              this.tests = response.data.map((test: ITest) => ({
-                ...test,
-                selected: configuracion.idsPruebas.includes(test.id),
-                disabled: true
-              }));
-            });
-          }
-        } else {
-          if (maquinaSeleccionada === 0) {
-            this.tests = [];
-          } else {
-            this.testService.getTest(configuracion.idMaquina).subscribe((response) => {
-              this.tests = response.data.map((test: ITest) => ({
-                ...test,
-                selected: configuracion.idsPruebas.includes(test.id)
-              }));
-            });
-          }
-        }
-      } else {
-        this.notificationService.showError('Configuración no encontrada.');
-        this.router.navigate(['/configuracion/grid']);
-      }
-    });
   }
 
   private subscription(): void {

@@ -10,6 +10,7 @@ import { ABMMoldesModalComponent } from './modal/abm-moldes-modal.component';
 import { ABMMoldesMolde } from './molde/abm-moldes-molde.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { TextareaModalComponent } from './textarea-modal/textarea-modal.component';
 
 const abmUsuariosRoutes: Route[] = [
     {
@@ -37,14 +38,15 @@ const abmUsuariosRoutes: Route[] = [
         ABMMoldesMolde,
         ABMMoldesCrear,
         ABMMoldesIngresosEgresosComponent,
-        ABMMoldesModalComponent
+        ABMMoldesModalComponent,
+        TextareaModalComponent
     ],
     imports: [
         RouterModule.forChild(abmUsuariosRoutes),
         ABMSharedModule,
         HeaderSharedModule,
         ReactiveFormsModule,
-        MatPaginatorModule,
+        MatPaginatorModule
     ]
 })
 export class ABMMoldesModule {

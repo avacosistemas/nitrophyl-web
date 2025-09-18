@@ -16,8 +16,8 @@
                                 <input id="code" matInput [formControlName]="'code'" placeholder="Código">
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-1/3">
-                                <mat-label> Nombre </mat-label>
-                                <input id="name" matInput [formControlName]="'name'" placeholder="Nombre">
+                                <mat-label> Descripción </mat-label>
+                                <input id="name" matInput [formControlName]="'name'" placeholder="Descripción">
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-1/3">
                                 <mat-label> Estado </mat-label>
@@ -133,8 +133,8 @@
             </mat-accordion>
             <table mat-table [dataSource]="moldes" class="border-2 rounded-2xl mt-5 w-full">
                 <ng-container matColumnDef="statusIcon">
-                    <th mat-header-cell *matHeaderCellDef class="w-16"></th>
-                    <td mat-cell *matCellDef="let element" class="w-16 text-center">
+                    <th mat-header-cell *matHeaderCellDef class="w-10"></th>
+                    <td mat-cell *matCellDef="let element" class="w-10 text-center">
                         <div [ngSwitch]="element.estado">
                             <mat-icon *ngSwitchCase="'ACTIVO'" style="color: green;"
                                 matTooltip="Activo">check_circle</mat-icon>
@@ -146,11 +146,11 @@
                     </td>
                 </ng-container>
                 <ng-container matColumnDef="code">
-                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"> Código </th>
-                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.codigo}} </td>
+                    <th mat-header-cell *matHeaderCellDef class="w-[135px] text-left px-1"> Código </th>
+                    <td mat-cell *matCellDef="let element" class="w-[135px] text-left px-1"> {{element.codigo}} </td>
                 </ng-container>
                 <ng-container matColumnDef="name">
-                    <th mat-header-cell *matHeaderCellDef> Nombre </th>
+                    <th mat-header-cell *matHeaderCellDef> Descripción </th>
                     <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
                 </ng-container>
                 <ng-container matColumnDef="ubicacion">
@@ -158,25 +158,25 @@
                     <td mat-cell *matCellDef="let element"> {{element.ubicacion}} </td>
                 </ng-container>
                 <ng-container matColumnDef="alto">
-                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center text-center"><mat-icon
+                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center text-center"><mat-icon
                             svgIcon="height"></mat-icon>
                     </th>
-                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.alto}} </td>
+                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.alto}} </td>
                 </ng-container>
                 <ng-container matColumnDef="ancho">
-                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon svgIcon="height"
+                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center"><mat-icon svgIcon="height"
                             style="transform: rotate(90deg);"></mat-icon></th>
-                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.ancho}} </td>
+                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.ancho}} </td>
                 </ng-container>
                 <ng-container matColumnDef="profundidad">
-                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon
+                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center"><mat-icon
                             style="transform: scale(0.7);" svgIcon="open_in_full"></mat-icon></th>
-                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.profundidad}} </td>
+                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.profundidad}} </td>
                 </ng-container>
                 <ng-container matColumnDef="diametro">
-                    <th mat-header-cell *matHeaderCellDef class="w-22 text-center"><mat-icon [svgIcon]="'hide_source'"
+                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center"><mat-icon [svgIcon]="'hide_source'"
                             style=" transform: scale(0.7)  rotate(90deg);"></mat-icon></th>
-                    <td mat-cell *matCellDef="let element" class="w-22 text-center"> {{element.diametro}} </td>
+                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.diametro}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="acciones">

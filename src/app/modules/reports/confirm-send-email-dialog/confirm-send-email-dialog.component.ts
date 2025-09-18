@@ -36,7 +36,6 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
     private buildForm(): void {
         this.graphicForm = this.formBuilder.group({
             archivo: [null],
-            nombreArchivo: [''],
             observaciones: ['']
         });
     }
@@ -46,8 +45,6 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
 
         if (file && file.type === 'application/pdf') {
             this.selectedFile = file;
-            const fileNameWithoutExtension = file.name.replace(/\.pdf$/i, '');
-            this.graphicForm.patchValue({ nombreArchivo: fileNameWithoutExtension });
             this.graphicForm.updateValueAndValidity();
             this.cdRef.detectChanges();
         } else {
@@ -70,7 +67,6 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
 
         const idCliente = this.data.idCliente;
         const idLote = this.data.idLote;
-        const nombreArchivo = this.graphicForm.get('nombreArchivo').value;
         const observaciones = this.graphicForm.get('observaciones').value;
         const observacionesInforme = this.data.observacionesInforme;
         let base64Content: string | null = null;
@@ -79,16 +75,16 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
             const reader = new FileReader();
             reader.onload = () => {
                 base64Content = (reader.result as string).split(',')[1];
-                this.sendEmail(idCliente, idLote, base64Content, nombreArchivo, observaciones, observacionesInforme);
+                this.sendEmail(idCliente, idLote, base64Content, observaciones, observacionesInforme);
             };
             reader.readAsDataURL(this.selectedFile);
         } else {
-            this.sendEmail(idCliente, idLote, base64Content, nombreArchivo, observaciones, observacionesInforme);
+            this.sendEmail(idCliente, idLote, base64Content, observaciones, observacionesInforme);
         }
     }
 
-    sendEmail(idCliente: number, idLote: string, archivo: string | null, nombreArchivo: string, observaciones: string, observacionesInforme: string): void {
-        this.lotService.enviarInformePorCorreo(idCliente, idLote, archivo, nombreArchivo, observaciones, observacionesInforme).subscribe({
+    sendEmail(idCliente: number, idLote: string, archivo: string | null, observaciones: string, observacionesInforme: string): void {
+        this.lotService.enviarInformePorCorreo(idCliente, idLote, archivo, observaciones, observacionesInforme).subscribe({
             next: (response: any) => {
                 if (response && response.status === 'ERROR') {
                     this.openSnackBar(false, response.message || 'Error al enviar el informe');
@@ -107,7 +103,6 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
     removeSelectedFile(): void {
         this.selectedFile = null;
         this.graphicForm.patchValue({
-            nombreArchivo: '',
             archivo: null
         });
 

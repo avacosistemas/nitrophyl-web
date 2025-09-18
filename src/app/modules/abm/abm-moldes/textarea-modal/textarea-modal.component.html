@@ -1,0 +1,15 @@
+<div [formGroup]="form" class="w-full">
+    <mat-form-field class="w-full" appearance="outline">
+        <mat-label>Observación</mat-label>
+        <textarea matInput
+                  formControlName="observation"
+                  rows="4"
+                  cdkTextareaAutosize
+                  #autosize="cdkTextareaAutosize"
+                  cdkAutosizeMinRows="3"
+                  cdkAutosizeMaxRows="5"></textarea>
+        <mat-error *ngIf="form.get('observation').hasError('required')">
+            La observación es requerida.
+        </mat-error>
+    </mat-form-field>
+</div>

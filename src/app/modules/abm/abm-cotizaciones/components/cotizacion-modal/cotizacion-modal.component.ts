@@ -46,6 +46,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
             pieza: [null, Validators.required],
             cliente: [null, Validators.required],
             valor: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
+            fecha: [new Date(), Validators.required],
             observaciones: ['']
         });
     }
@@ -141,10 +142,14 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const formValue = this.form.getRawValue();
 
+            const fechaSeleccionada: Date = formValue.fecha;
+         const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
+
         const dto: ICotizacionCreateDTO = {
             idCliente: formValue.cliente.id,
             idPieza: formValue.pieza.id,
             valor: formValue.valor,
+            fecha: fechaFormateada,
             observaciones: formValue.observaciones
         };
 

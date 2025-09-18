@@ -11,9 +11,8 @@
                 <div class="flex flex-col md:flex-row gap-4">
                     <mat-form-field appearance="outline" class="flex-1">
                         <mat-label>Cliente</mat-label>
-                        <input type="text" placeholder="Buscar cliente por nombre o código..." 
-                            matInput formControlName="cliente" [matAutocomplete]="autoCliente"
-                            #clienteInput>
+                        <input type="text" placeholder="Buscar cliente por nombre o código..." matInput
+                            formControlName="cliente" [matAutocomplete]="autoCliente" #clienteInput>
                         <button mat-icon-button matSuffix *ngIf="searchForm.get('cliente')?.value"
                             (click)="clearClienteInput(); $event.stopPropagation()">
                             <mat-icon>close</mat-icon>
@@ -26,8 +25,8 @@
                     </mat-form-field>
                     <mat-form-field appearance="outline" class="flex-1">
                         <mat-label>Pieza</mat-label>
-                        <input type="text" placeholder="Buscar pieza por nombre o código..." 
-                            matInput formControlName="pieza" [matAutocomplete]="autoPieza" #piezaInput>
+                        <input type="text" placeholder="Buscar pieza por nombre o código..." matInput
+                            formControlName="pieza" [matAutocomplete]="autoPieza" #piezaInput>
                         <button mat-icon-button matSuffix *ngIf="searchForm.get('pieza')?.value"
                             (click)="clearPiezaInput(); $event.stopPropagation()">
                             <mat-icon>close</mat-icon>
@@ -40,10 +39,15 @@
                     </mat-form-field>
                 </div>
 
-                <div class="flex justify-end gap-2 mt-2">
-                    <button mat-stroked-button (click)="limpiarFiltros()">Limpiar</button>
-                    <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
-                        type="button" (click)="search()">Buscar</button>
+                <div class="w-full flex justify-between">
+                    <mat-checkbox formControlName="soloVigentes">
+                        Solo Vigentes
+                    </mat-checkbox>
+                    <div class="flex justify-end gap-2">
+                        <button mat-stroked-button (click)="limpiarFiltros()">Limpiar</button>
+                        <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
+                            type="button" (click)="search()">Buscar</button>
+                    </div>
                 </div>
             </form>
         </mat-expansion-panel>

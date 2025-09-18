@@ -12,7 +12,8 @@ import { map, startWith } from "rxjs/operators";
 
 @Component({
   selector: 'abm-moldes-grilla',
-  templateUrl: './abm-moldes-grilla.component.html'
+  templateUrl: './abm-moldes-grilla.component.html',
+  styleUrls: ['./abm-moldes-grilla.component.scss']
 })
 export class ABMMoldesGrillaComponent implements OnInit {
   component = "Grilla";
@@ -85,33 +86,33 @@ export class ABMMoldesGrillaComponent implements OnInit {
   }
 
   cargarTiposPieza(): void {
-      this.abmPiezaService.getPiezaTipo().subscribe(data => {
-          this.tiposPieza = data;
-      });
+    this.abmPiezaService.getPiezaTipo().subscribe(data => {
+      this.tiposPieza = data;
+    });
   }
 
   cargarClientes(): void {
-      this.clientesService.getClientes().subscribe(response => {
-          this.clientes = response.data || [];
-          this.setupClienteFilter();
-      });
+    this.clientesService.getClientes().subscribe(response => {
+      this.clientes = response.data || [];
+      this.setupClienteFilter();
+    });
   }
 
   setupClienteFilter(): void {
-      this.filteredClientes$ = this.searchForm.get('idCliente').valueChanges.pipe(
-          startWith(''),
-          map(value => this._filterClientes(value))
-      );
+    this.filteredClientes$ = this.searchForm.get('idCliente').valueChanges.pipe(
+      startWith(''),
+      map(value => this._filterClientes(value))
+    );
   }
 
   private _filterClientes(value: string | Cliente): Cliente[] {
     const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
     if (!filterValue) {
-        return this.clientes;
+      return this.clientes;
     }
     return this.clientes.filter(cliente =>
-        cliente.nombre.toLowerCase().includes(filterValue) ||
-        (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
+      cliente.nombre.toLowerCase().includes(filterValue) ||
+      (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
     );
   }
 
@@ -168,6 +169,6 @@ export class ABMMoldesGrillaComponent implements OnInit {
   }
 
   clearClienteInput(): void {
-      this.searchForm.get('idCliente').setValue(null);
+    this.searchForm.get('idCliente').setValue(null);
   }
 }

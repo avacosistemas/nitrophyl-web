@@ -4,36 +4,48 @@
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     </div>
     <form [formGroup]="form">
-        <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Pieza</mat-label>
-            <input type="text" placeholder="Buscar pieza por nombre o código..." matInput formControlName="pieza" 
-                [matAutocomplete]="autoPieza" required>
-            <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
-                <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
-                    {{ pieza.codigo }} - {{ pieza.denominacion }}
-                </mat-option>
-            </mat-autocomplete>
-            <mat-error *ngIf="form.get('pieza').hasError('required')">La pieza es requerida.</mat-error>
-        </mat-form-field>
+        <div class="flex w-full gap-4">
+            <mat-form-field appearance="outline" class="w-1/2">
+                <mat-label>Pieza</mat-label>
+                <input type="text" placeholder="Buscar pieza por nombre o código..." matInput formControlName="pieza"
+                    [matAutocomplete]="autoPieza" required>
+                <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
+                    <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
+                        {{ pieza.codigo }} - {{ pieza.denominacion }}
+                    </mat-option>
+                </mat-autocomplete>
+                <mat-error *ngIf="form.get('pieza').hasError('required')">La pieza es requerida.</mat-error>
+            </mat-form-field>
 
-        <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Cliente</mat-label>
-            <input type="text" placeholder="Buscar cliente por nombre o código..." matInput formControlName="cliente"
-                [matAutocomplete]="autoCliente" required>
-            <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
-                <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                    {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
-                </mat-option>
-            </mat-autocomplete>
-            <mat-error *ngIf="form.get('cliente').hasError('required')">El cliente es requerido.</mat-error>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="w-1/2">
+                <mat-label>Cliente</mat-label>
+                <input type="text" placeholder="Buscar cliente por nombre o código..." matInput
+                    formControlName="cliente" [matAutocomplete]="autoCliente" required>
+                <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
+                    <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+                        {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                    </mat-option>
+                </mat-autocomplete>
+                <mat-error *ngIf="form.get('cliente').hasError('required')">El cliente es requerido.</mat-error>
+            </mat-form-field>
+        </div>
 
-        <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Precio</mat-label>
-            <input matInput type="number" formControlName="valor" required>
-             <mat-error *ngIf="form.get('valor').hasError('required')">El precio es requerido.</mat-error>
-             <mat-error *ngIf="form.get('valor').hasError('pattern')">Debe ser un valor numérico.</mat-error>
-        </mat-form-field>
+        <div class="flex w-full gap-4">
+            <mat-form-field appearance="outline" class="w-1/2">
+                <mat-label>Precio</mat-label>
+                <input matInput type="number" formControlName="valor" required>
+                <mat-error *ngIf="form.get('valor').hasError('required')">El precio es requerido.</mat-error>
+                <mat-error *ngIf="form.get('valor').hasError('pattern')">Debe ser un valor numérico.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-1/2">
+                <mat-label>Fecha de Cotización</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fecha" required readonly>
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                <mat-error *ngIf="form.get('fecha').hasError('required')">La fecha es requerida.</mat-error>
+            </mat-form-field>
+        </div>
 
         <mat-form-field appearance="outline" class="w-full">
             <mat-label>Observaciones</mat-label>
@@ -43,5 +55,6 @@
 </div>
 <div mat-dialog-actions class="flex justify-end gap-2">
     <button mat-stroked-button (click)="onCancel()">Cancelar</button>
-    <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button type="button" [disabled]="isLoading" (click)="onSave()">Guardar</button>
+    <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button type="button"
+        [disabled]="isLoading" (click)="onSave()">Guardar</button>
 </div>

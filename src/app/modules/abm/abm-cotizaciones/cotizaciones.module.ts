@@ -21,9 +21,11 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatCheckboxModule } from "@angular/material/checkbox";
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { CurrencyPipe } from '@angular/common';
-
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 
@@ -55,6 +57,9 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
         MatTooltipModule,
         MatExpansionModule,
         MatAutocompleteModule,
+        MatCheckboxModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
     ],
     providers: [
         CurrencyPipe

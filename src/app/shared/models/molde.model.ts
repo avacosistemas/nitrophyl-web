@@ -14,6 +14,7 @@ export interface Molde {
   diametro?: number;
   ultimoRegistro?: string;
   piezaTipos?: { id: number, nombre: string }[];
+  observacionesEstado?: string;
 }
 
 export interface ResponseMolde {
@@ -28,6 +29,7 @@ export interface Boca {
   estado: string;
   nroBoca: number;
   descripcion: string;
+  observacionesEstado?: string;
 }
 
 export interface ResponseBoca {

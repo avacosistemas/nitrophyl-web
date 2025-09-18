@@ -32,6 +32,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { TextareaModalComponent } from '../textarea-modal/textarea-modal.component';
 
 interface Cliente {
   id: number;
@@ -103,7 +105,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   public filteredClientsForAdding$: Observable<Cliente[]>;
   public clients: Array<any> = [];
   public displayedColumnsClients: string[] = [
-    'idCliente',
     'nombre',
     'acciones',
   ];
@@ -114,6 +115,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   private descriptionChanges = new Subject<Boca>();
 
   private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
+  private initialMolde: Molde;
+  private pristineBocasData: Boca[] = [];
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -437,10 +440,39 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       piezaTipos: selectedTiposPieza
     };
 
+    const newState = this.moldeForm.get('estado').value;
+    if (this.initialMolde && newState !== this.initialMolde.estado) {
+      const dialogRef = this.dialog.open(GenericModalComponent, {
+        data: {
+          title: 'Cambio de Estado del Molde',
+          message: `Está modificando el estado del Molde de <b>${this.initialMolde.estado}</b> a <b>${newState}</b>, por favor indique una observación.`,
+          type: 'warning',
+          icon: 'exclamation',
+          showConfirmButton: true,
+          confirmButtonText: 'Guardar',
+          cancelButtonText: 'Cancelar',
+          customComponent: TextareaModalComponent
+        },
+        width: '500px'
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          model.observacionesEstado = result;
+          this.callUpdateMoldeApi(model);
+        }
+      });
+    } else {
+      this.callUpdateMoldeApi(model);
+    }
+  }
+
+  private callUpdateMoldeApi(model: Molde): void {
     this._molds.updateMolde(this.currentId, model).subscribe((res) => {
       if (res.status == 'OK') {
         this.moldeForm.markAsPristine();
-        this.notificationService.showSuccess('ICambios realizados.');
+        this.notificationService.showSuccess('Cambios realizados.');
+        this.initialMolde = JSON.parse(JSON.stringify(model));
       } else {
         this.notificationService.showError('No se pudieron realizar los cambios.');
       }
@@ -477,6 +509,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
     this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
       this.bocas = d.data;
+      this.pristineBocasData = JSON.parse(JSON.stringify(d.data));
       if (this.bocas.length > 0) {
         this.bocas.forEach((b) => {
           this.bocaGridForm.addControl(
@@ -500,7 +533,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
   loadMoldeData(data: Molde): void {
     if (!data) return;
-
+    this.initialMolde = JSON.parse(JSON.stringify(data));
     const propietarioId = data.idClienteDuenio === null ? -1 : data.idClienteDuenio;
     const propietarioObj = this.clients$.find(c => c.id === propietarioId);
 
@@ -1035,31 +1068,68 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
   updateBocaState(bocaToUpdate: Boca): void {
     const bocaIndex = this.bocas.findIndex(boca => boca.nroBoca === bocaToUpdate.nroBoca);
-    if (bocaIndex !== -1) {
-      this.bocas[bocaIndex] = { ...this.bocas[bocaIndex], estado: bocaToUpdate.estado };
-      const updatedBocas = [...this.bocas];
+    if (bocaIndex === -1) { return; }
 
-      this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
-        next: (response) => {
-          if (response.status === 'OK') {
-            this.notificationService.showSuccess('Estado actualizado correctamente.');
-            this.getBocas();
-            this.pristineBocas = false;
-          } else {
-            this.notificationService.showError('Error al actualizar el estado.');
-          }
-        },
-        error: (error) => {
-          this.notificationService.showError('Error al actualizar el estado.');
-          console.error('Error al actualizar el estado:', error);
-        },
-      });
+    const originalBoca = this.pristineBocasData.find(b => b.nroBoca === bocaToUpdate.nroBoca);
+    const hasStateChanged = originalBoca && originalBoca.estado !== bocaToUpdate.estado;
+
+    const performUpdate = (observacion?: string) => {
+        const bocaWithObservation = { ...this.bocas[bocaIndex], estado: bocaToUpdate.estado };
+        if (observacion) {
+            bocaWithObservation.observacionesEstado = observacion;
+        }
+        this.bocas[bocaIndex] = bocaWithObservation;
+        const updatedBocas = [...this.bocas];
+
+        this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
+            next: (response) => {
+                if (response.status === 'OK') {
+                    this.notificationService.showSuccess('Estado actualizado correctamente.');
+                    this.getBocas();
+                    this.pristineBocas = false;
+                } else {
+                    this.notificationService.showError('Error al actualizar el estado.');
+                }
+            },
+            error: (error) => {
+                this.notificationService.showError('Error al actualizar el estado.');
+                console.error('Error al actualizar el estado:', error);
+            },
+        });
+    };
+
+    if (hasStateChanged) {
+        const dialogRef = this.dialog.open(GenericModalComponent, {
+            data: {
+                title: 'Cambio de Estado de Boca',
+                message: `Está modificando el estado de la Boca N°${originalBoca.nroBoca} de <b>${originalBoca.estado}</b> a <b>${bocaToUpdate.estado}</b>, por favor indique una observación.`,
+                type: 'warning',
+                icon: 'exclamation',
+                showConfirmButton: true,
+                confirmButtonText: 'Guardar',
+                cancelButtonText: 'Cancelar',
+                customComponent: TextareaModalComponent
+            },
+            width: '500px'
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                performUpdate(result);
+            } else {
+                this.bocas[bocaIndex] = { ...originalBoca };
+                this.bocas = [...this.bocas];
+            }
+        });
+    } else {
+        performUpdate();
     }
   }
 
   getBocas(): void {
     this._molds.getMoldeBocas(this.currentId).subscribe((d) => {
       this.bocas = d.data;
+      this.pristineBocasData = JSON.parse(JSON.stringify(d.data));
       this.bocas.forEach((b) => {
         if (!this.bocaGridForm.contains(`control-${b.nroBoca}-${b.descripcion}`)) {
           this.bocaGridForm.addControl(

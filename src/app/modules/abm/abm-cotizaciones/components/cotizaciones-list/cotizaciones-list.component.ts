@@ -48,7 +48,8 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
-            pieza: [null]
+            pieza: [null],
+            soloVigentes: [true]
         });
     }
 
@@ -143,6 +144,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
             idx: this.sort.active || 'fecha',
             idCliente: formValues.cliente?.id,
             idPieza: formValues.pieza?.id,
+            soloVigentes: formValues.soloVigentes
         };
         return params;
     }
@@ -153,7 +155,11 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
     }
 
     limpiarFiltros(): void {
-        this.searchForm.reset();
+        this.searchForm.reset({
+            cliente: null,
+            pieza: null,
+            soloVigentes: true
+        });
         this.search();
     }
 

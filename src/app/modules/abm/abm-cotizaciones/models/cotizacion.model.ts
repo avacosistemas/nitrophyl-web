@@ -20,5 +20,6 @@ export interface ICotizacionCreateDTO {
     idCliente: number;
     idPieza: number;
     valor: number;
+    fecha: string;
     observaciones: string;
 }
