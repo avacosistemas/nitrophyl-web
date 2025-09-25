@@ -25,6 +25,7 @@
                                     <mat-option value="ACTIVO">Activo</mat-option>
                                     <mat-option value="INACTIVO">Inactivo</mat-option>
                                     <mat-option value="REPARACION">En Reparación</mat-option>
+                                    <mat-option value="EN_FABRICACION">En Fabricación</mat-option>
                                     <mat-option value="">Todos</mat-option>
                                 </mat-select>
                             </mat-form-field>
@@ -142,6 +143,8 @@
                                 matTooltip="En Reparación">build</mat-icon>
                             <mat-icon *ngSwitchCase="'INACTIVO'" style="color: red;"
                                 matTooltip="Inactivo">cancel</mat-icon>
+                            <mat-icon *ngSwitchCase="'EN_FABRICACION'" style="color: gray;"
+                                matTooltip="En Fabricación">factory</mat-icon>
                         </div>
                     </td>
                 </ng-container>

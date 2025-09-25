@@ -26,14 +26,15 @@
                   <mat-option [value]='"ACTIVO"'>Activo</mat-option>
                   <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
                   <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
+                  <mat-option [value]='"EN_FABRICACION"'>En Fabricación</mat-option>
                 </mat-select>
               </mat-form-field>
 
               <mat-form-field class="w-full" appearance="outline">
-                <mat-label> Nombre </mat-label>
-                <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Nombre">
+                <mat-label> Descripción </mat-label>
+                <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Descripción">
                 <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
-                  El nombre es requerido
+                  La descripción es requerida
                 </mat-error>
                 <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('maxlength')">
                   Máximo 100 caracteres
@@ -127,7 +128,6 @@
                     (selectionChange)="onStateChange(element, $event.value)">
                     <mat-option value="ACTIVO">Activa</mat-option>
                     <mat-option value="INACTIVO">Inactiva</mat-option>
-                    <mat-option value="REPARACION">En Reparación</mat-option>
                   </mat-select>
                 </mat-form-field>
               </td>

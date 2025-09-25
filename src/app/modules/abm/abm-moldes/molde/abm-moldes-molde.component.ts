@@ -86,7 +86,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   fotos: MatTableDataSource<Fotos> = new MatTableDataSource<Fotos>([]);
   bocas: Array<Boca> = [];
   dimensiones: Array<Dimension> = [];
-  estados = ['ACTIVO', 'INACTIVO', 'REPARACION'];
+  estados = ['ACTIVO', 'INACTIVO', 'REPARACION', 'EN_FABRICACION'];
   dimensionesSelect = ['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO'];
   currentTab: number = 0;
   pristineBocas: boolean = true;
