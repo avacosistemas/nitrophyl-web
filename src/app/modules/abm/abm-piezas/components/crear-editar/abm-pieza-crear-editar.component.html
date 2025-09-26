@@ -37,7 +37,7 @@
                         <mat-form-field appearance="outline" class="form-field w-full ">
                             <mat-label>Molde</mat-label>
                             <input type="text" matInput formControlName="idMolde" required #moldeInput
-                                [matAutocomplete]="autoMolde">
+                                [matAutocomplete]="autoMolde" [disabled]="!piezaForm.get('idTipoPieza').value">
                             <button mat-icon-button matSuffix
                                 *ngIf="piezaForm.get('idMolde')?.value && mode !== 'view' && !piezaForm.get('idMolde').disabled"
                                 (click)="piezaForm.get('idMolde').setValue(null); $event.stopPropagation()">

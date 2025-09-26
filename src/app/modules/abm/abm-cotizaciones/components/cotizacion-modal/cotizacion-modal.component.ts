@@ -10,6 +10,7 @@ import { CotizacionesService } from '../../cotizaciones.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
 import { ICotizacionCreateDTO } from '../../models/cotizacion.model';
+import * as moment from 'moment';
 
 interface Cliente {
     id: number;
@@ -97,7 +98,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
                 if (typeof value === 'object' && value !== null) {
                     return of([]);
                 }
-                return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50 }).pipe(
+                return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50, soloVigentes: true }).pipe(
                     map(res => res.data.page),
                     catchError(() => of([]))
                 );
@@ -142,14 +143,14 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const formValue = this.form.getRawValue();
 
-            const fechaSeleccionada: Date = formValue.fecha;
-         const fechaFormateada = fechaSeleccionada.toISOString().split('T')[0];
+        const fechaSeleccionada = formValue.fecha;
+        const fechaParaAPI = fechaSeleccionada.format('DD/MM/YYYY');
 
         const dto: ICotizacionCreateDTO = {
             idCliente: formValue.cliente.id,
             idPieza: formValue.pieza.id,
             valor: formValue.valor,
-            fecha: fechaFormateada,
+            fecha: fechaParaAPI,
             observaciones: formValue.observaciones
         };
 

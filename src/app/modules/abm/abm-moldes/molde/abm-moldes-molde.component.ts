@@ -110,10 +110,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   ];
   public pristineClient: boolean = true;
 
-  private bocaChanges = new Subject<Boca>();
-  private stateChanges = new Subject<Boca>();
   private descriptionChanges = new Subject<Boca>();
-
   private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
   private initialMolde: Molde;
   private pristineBocasData: Boca[] = [];
@@ -194,24 +191,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         this.updateDimensionValue(dimension, newValue);
       });
 
-    this.bocaChanges
-      .pipe(
-        debounceTime(500),
-        distinctUntilChanged((a, b) => a.nroBoca === b.nroBoca && a.descripcion === b.descripcion)
-      )
-      .subscribe(boca => {
-        this.updateBocaDescription(boca);
-      });
-
-    this.stateChanges
-      .pipe(
-        debounceTime(500),
-        distinctUntilChanged((a, b) => a.nroBoca === b.nroBoca && a.estado === b.estado)
-      )
-      .subscribe(boca => {
-        this.updateBocaState(boca);
-      });
-
     this.descriptionChanges
       .pipe(
         debounceTime(500),
@@ -225,8 +204,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.suscripcion.unsubscribe();
     this.dimensionValueChanges.unsubscribe();
-    this.bocaChanges.unsubscribe();
-    this.stateChanges.unsubscribe();
     this.descriptionChanges.unsubscribe();
     if (this.planos) {
       this.planos.data = [];
@@ -777,29 +754,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     });
   }
 
-  public downloadPlano(plano: Plano): void {
-    this._molds.downloadPlano(plano.id).subscribe((response: any) => {
-
-      const byteCharacters = atob(response.data.archivo);
-      const byteArrays = [];
-
-      for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-        const slice = byteCharacters.slice(offset, offset + 512);
-        const byteNumbers = new Array(slice.length);
-
-        for (let i = 0; i < slice.length; i++) {
-          byteNumbers[i] = slice.charCodeAt(i);
-        }
-
-        const byteArray = new Uint8Array(byteNumbers);
-        byteArrays.push(byteArray);
-      }
-
-      const blob = new Blob(byteArrays, { type: 'application/pdf' });
-      FileSaver.saveAs(blob, plano.nombreArchivo);
-    });
-  }
-
   public openPlano(plano: Plano): void {
 
     this._molds.downloadPlano(plano.id).subscribe({
@@ -833,7 +787,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
   addDimension(): void {
     if (this.dimensionForm.invalid) {
-
       if (this.dimensionForm.get('dimension').hasError('required')) {
         this.notificationService.showError('El tipo de dimensión es obligatorio.');
       } else if (this.dimensionForm.get('valor').hasError('required')) {
@@ -867,7 +820,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         if (response.status === 'OK') {
           this.notificationService.showSuccess('Dimensión agregada correctamente.');
           this.dimensionForm.reset();
-          this.pristineDimensiones = false;
+          this.pristineDimensiones = true;
           this.getDimensiones();
         } else {
           this.notificationService.showError('Error al agregar la dimensión.');
@@ -898,7 +851,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
             if (response.status === 'OK') {
               this.notificationService.showSuccess('Dimensión eliminada correctamente.');
               this.getDimensiones();
-              this.pristineDimensiones = false;
+              this.pristineDimensiones = true;
             } else {
               this.notificationService.showError('Error al eliminar la dimensión.');
             }
@@ -929,7 +882,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         next: (response) => {
           if (response.status === 'OK') {
             this.notificationService.showSuccess('Dimensión actualizada correctamente.');
-            this.pristineDimensiones = false;
+            this.pristineDimensiones = true;
             this.getDimensiones();
           } else {
             this.notificationService.showError('Error al actualizar la dimensión.');
@@ -1030,9 +983,59 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   onStateChange(boca: Boca, newState: string): void {
-    boca.estado = newState;
-    this.stateChanges.next(boca);
-    this.pristineBocas = false;
+    const bocaIndex = this.bocas.findIndex(b => b.nroBoca === boca.nroBoca);
+    if (bocaIndex === -1) { return; }
+
+    const originalBoca = this.pristineBocasData.find(b => b.nroBoca === boca.nroBoca);
+
+    if (!originalBoca || originalBoca.estado === newState) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(GenericModalComponent, {
+      data: {
+        title: 'Cambio de Estado de Boca',
+        message: `Está modificando el estado de la Boca N°${originalBoca.nroBoca} de <b>${originalBoca.estado}</b> a <b>${newState}</b>, por favor indique una observación.`,
+        type: 'warning',
+        icon: 'exclamation',
+        showConfirmButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        customComponent: TextareaModalComponent
+      },
+      width: '500px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const bocaWithObservation = { ...boca, estado: newState, observacionesEstado: result };
+        this.bocas[bocaIndex] = bocaWithObservation;
+        const updatedBocas = [...this.bocas];
+
+        this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
+          next: (response) => {
+            if (response.status === 'OK') {
+              this.notificationService.showSuccess('Estado actualizado correctamente.');
+              this.getBocas();
+              this.pristineBocas = false;
+            } else {
+              this.notificationService.showError('Error al actualizar el estado.');
+              this.bocas[bocaIndex] = { ...originalBoca };
+              this.bocas = [...this.bocas];
+            }
+          },
+          error: (error) => {
+            this.notificationService.showError('Error al actualizar el estado.');
+            console.error('Error al actualizar el estado:', error);
+            this.bocas[bocaIndex] = { ...originalBoca };
+            this.bocas = [...this.bocas];
+          },
+        });
+      } else {
+        this.bocas[bocaIndex] = { ...originalBoca };
+        this.bocas = [...this.bocas];
+      }
+    });
   }
 
   onDescriptionInput(boca: Boca, newDescription: string): void {
@@ -1063,66 +1066,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
           console.error('Error al actualizar la descripcion:', error);
         },
       });
-    }
-  }
-
-  updateBocaState(bocaToUpdate: Boca): void {
-    const bocaIndex = this.bocas.findIndex(boca => boca.nroBoca === bocaToUpdate.nroBoca);
-    if (bocaIndex === -1) { return; }
-
-    const originalBoca = this.pristineBocasData.find(b => b.nroBoca === bocaToUpdate.nroBoca);
-    const hasStateChanged = originalBoca && originalBoca.estado !== bocaToUpdate.estado;
-
-    const performUpdate = (observacion?: string) => {
-        const bocaWithObservation = { ...this.bocas[bocaIndex], estado: bocaToUpdate.estado };
-        if (observacion) {
-            bocaWithObservation.observacionesEstado = observacion;
-        }
-        this.bocas[bocaIndex] = bocaWithObservation;
-        const updatedBocas = [...this.bocas];
-
-        this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
-            next: (response) => {
-                if (response.status === 'OK') {
-                    this.notificationService.showSuccess('Estado actualizado correctamente.');
-                    this.getBocas();
-                    this.pristineBocas = false;
-                } else {
-                    this.notificationService.showError('Error al actualizar el estado.');
-                }
-            },
-            error: (error) => {
-                this.notificationService.showError('Error al actualizar el estado.');
-                console.error('Error al actualizar el estado:', error);
-            },
-        });
-    };
-
-    if (hasStateChanged) {
-        const dialogRef = this.dialog.open(GenericModalComponent, {
-            data: {
-                title: 'Cambio de Estado de Boca',
-                message: `Está modificando el estado de la Boca N°${originalBoca.nroBoca} de <b>${originalBoca.estado}</b> a <b>${bocaToUpdate.estado}</b>, por favor indique una observación.`,
-                type: 'warning',
-                icon: 'exclamation',
-                showConfirmButton: true,
-                confirmButtonText: 'Guardar',
-                cancelButtonText: 'Cancelar',
-                customComponent: TextareaModalComponent
-            },
-            width: '500px'
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                performUpdate(result);
-            } else {
-                this.bocas[bocaIndex] = { ...originalBoca };
-                this.bocas = [...this.bocas];
-            }
-        });
-    } else {
-        performUpdate();
     }
   }
 

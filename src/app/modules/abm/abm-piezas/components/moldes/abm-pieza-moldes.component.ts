@@ -10,7 +10,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { startWith, map, debounceTime, switchMap, catchError, filter } from 'rxjs/operators';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
-import { Molde, IPiezaMolde } from '../../models/pieza.model';
+import { Molde, IPiezaMolde, PiezaProceso } from '../../models/pieza.model';
 
 @Component({
   selector: 'app-abm-pieza-moldes',
@@ -20,6 +20,7 @@ import { Molde, IPiezaMolde } from '../../models/pieza.model';
 export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements OnInit, OnDestroy, OnChanges {
   @Input() piezaId: number;
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @Input() piezaProcesoData: PiezaProceso | null = null;
 
   moldesAsociados = new MatTableDataSource<IPiezaMolde>([]);
   sinDatos: boolean = false;
@@ -32,6 +33,8 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
   moldeForm: FormGroup;
 
   private subscription: Subscription = new Subscription();
+  private idTipoPieza: number | null = null;
+  private allTiposPieza: { id: number; nombre: string; }[] = [];
 
   constructor(
     protected fb: FormBuilder,
@@ -55,13 +58,25 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
       this.loadMoldesAsociados();
     }
 
+    this.subscription.add(
+      this.abmPiezaService.getPiezaTipo().subscribe(tipos => {
+        this.allTiposPieza = tipos;
+        if (this.piezaProcesoData && this.piezaProcesoData.tipo) {
+          const tipo = this.allTiposPieza.find(t => t.nombre === this.piezaProcesoData.tipo);
+          this.idTipoPieza = tipo ? tipo.id : null;
+        }
+      })
+    );
+
     this.filteredMoldes$ = this.moldeForm.get('molde').valueChanges.pipe(
       startWith(''),
       debounceTime(300),
       switchMap(value => {
         const searchTerm = typeof value === 'string' ? value : '';
-
-        return this.abmPiezaService.getMoldesCombo(searchTerm).pipe(
+        if (!this.idTipoPieza) {
+          return of([]);
+        }
+        return this.abmPiezaService.getMoldesCombo(searchTerm, this.idTipoPieza).pipe(
           map(response => response.data || []),
           catchError(() => of([]))
         );
@@ -80,6 +95,12 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
     }
     if (changes.piezaId && changes.piezaId.currentValue) {
       this.loadMoldesAsociados();
+    }
+    if (changes.piezaProcesoData && changes.piezaProcesoData.currentValue) {
+      if (this.allTiposPieza.length > 0) {
+        const tipo = this.allTiposPieza.find(t => t.nombre === changes.piezaProcesoData.currentValue.tipo);
+        this.idTipoPieza = tipo ? tipo.id : null;
+      }
     }
   }
 

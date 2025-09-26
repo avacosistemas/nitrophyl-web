@@ -12,7 +12,7 @@ import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { PiezaProceso, PiezaCreateDTO, PiezaUpdateDTO, Molde, Espesor } from '../../models/pieza.model';
 import { Observable, of, combineLatest, forkJoin, throwError } from 'rxjs';
-import { map, startWith, catchError, debounceTime, switchMap, filter } from 'rxjs/operators';
+import { map, startWith, catchError, debounceTime, switchMap, filter, takeUntil } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
@@ -91,7 +91,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             unidadDureza: [{ value: 'SHORE_A', disabled: false }],
             pesoCrudo: [{ value: null, disabled: false }],
             observacionesPesoCrudo: [{ value: null, disabled: false }],
-            idMolde: [{ value: null, disabled: false }],
+            idMolde: [{ value: null, disabled: true }],
             observacionesMolde: [{ value: null, disabled: false }],
             idCliente: [{ value: null, disabled: false }],
             nombrePiezaCliente: [{ value: null, disabled: false }],
@@ -134,13 +134,28 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             startWith(''),
             filter(value => typeof value === 'string'),
             debounceTime(300),
-            switchMap(value => {
-                return this.abmPiezaService.getMoldesCombo(value).pipe(
+            switchMap(searchString => {
+                const tipoPieza = this.piezaForm.get('idTipoPieza').value;
+                const idTipoPieza = tipoPieza ? tipoPieza.id : null;
+                if (!idTipoPieza) {
+                    return of([]);
+                }
+                return this.abmPiezaService.getMoldesCombo(searchString, idTipoPieza).pipe(
                     map(response => response.data || []),
                     catchError(() => of([]))
                 );
             })
         );
+
+        this.subscriptions.push(this.piezaForm.get('idTipoPieza').valueChanges.subscribe(tipo => {
+            const moldeControl = this.piezaForm.get('idMolde');
+            if (tipo && tipo.id) {
+                moldeControl.enable();
+            } else {
+                moldeControl.disable();
+                moldeControl.reset();
+            }
+        }));
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -162,6 +177,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.piezaForm.disable();
         } else if (this.mode === 'create') {
             this.piezaForm.enable();
+            this.piezaForm.get('idMolde').disable();
             this.piezaForm.get('revision').disable();
             this.piezaForm.get('fechaRevision').disable();
         } else if (this.mode === 'edit') {
@@ -505,6 +521,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
         return combineLatest([
             this.piezaForm.get(formControlName).valueChanges.pipe(
                 startWith(''),
+                debounceTime(300),
                 map(value => typeof value === 'string' ? value : value?.nombre || '')
             ),
             data$

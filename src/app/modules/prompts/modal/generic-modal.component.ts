@@ -42,19 +42,26 @@ export class GenericModalComponent implements AfterViewInit {
 
     ngAfterViewInit() {
         if (this.data.customComponent) {
-            const factory = this.componentFactoryResolver.resolveComponentFactory(this.data.customComponent);
-            const componentRef = this.customComponentContainer.createComponent(factory);
-            this.customComponentInstance = componentRef.instance as CustomModalComponentWithValue;
+            setTimeout(() => {
+                const factory = this.componentFactoryResolver.resolveComponentFactory(this.data.customComponent);
+                const componentRef = this.customComponentContainer.createComponent(factory);
+                this.customComponentInstance = componentRef.instance as CustomModalComponentWithValue;
 
-            if (this.data.componentData) {
-                Object.assign(this.customComponentInstance, this.data.componentData);
-            }
+                if (this.data.componentData) {
+                    Object.assign(this.customComponentInstance, this.data.componentData);
+                }
+            });
         }
     }
 
     onConfirm(): void {
         if (this.customComponentInstance && typeof this.customComponentInstance.getValue === 'function') {
             const result = this.customComponentInstance.getValue();
+
+            if (result === null) {
+                return;
+            }
+
             this.dialogRef.close(result);
         } else {
             this.dialogRef.close(true);

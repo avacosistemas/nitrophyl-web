@@ -8,19 +8,21 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class TextareaModalComponent implements OnInit {
     form: FormGroup;
 
-    constructor(private fb: FormBuilder) { }
-
-    ngOnInit(): void {
+    constructor(private fb: FormBuilder) {
         this.form = this.fb.group({
             observation: ['', Validators.required]
         });
     }
 
+    ngOnInit(): void {
+        //
+    }
+
     public getValue(): string | null {
-        if (this.form.valid) {
-            return this.form.get('observation').value;
+        if (this.form.invalid) {
+            this.form.markAllAsTouched();
+            return null;
         }
-        this.form.markAllAsTouched();
-        return null;
+        return this.form.get('observation').value;
     }
 }

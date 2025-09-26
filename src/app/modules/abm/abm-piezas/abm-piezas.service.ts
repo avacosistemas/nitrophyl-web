@@ -81,8 +81,11 @@ export class ABMPiezaService {
         );
     }
 
-    getMoldesCombo(nombreMolde: string): Observable<ApiResponse<Molde[]>> {
-        const params = new HttpParams().set('nombre', nombreMolde);
+    getMoldesCombo(nombreMolde: string, idTipoPieza?: number): Observable<ApiResponse<Molde[]>> {
+        let params = new HttpParams().set('nombre', nombreMolde);
+        if (idTipoPieza) {
+            params = params.set('idTipoPieza', idTipoPieza.toString());
+        }
         return this.http.get<ApiResponse<{ nombre: string, codigo: string }[]>>(`${this.API_MOLDE_URL}/combo`, { params }).pipe(
             map(response => ({
                 ...response,

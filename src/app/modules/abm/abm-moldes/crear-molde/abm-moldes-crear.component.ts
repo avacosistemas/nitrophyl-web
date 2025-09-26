@@ -10,6 +10,7 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { MoldesService } from 'app/shared/services/moldes.service';
 import { Subscription } from 'rxjs';
 import { ABMMoldeService } from '../abm-moldes.service';
+import { HttpErrorResponse } from '@angular/common/http'; 
 
 @Component({
   selector: 'abm-moldes-crear',
@@ -53,9 +54,10 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this._clients.getClientes().subscribe({
-      next: (res) => (this.clients$ = res.data),
+      next: (res) => {
+        this.clients$ = [{ id: -1, nombre: 'Nitrophyl' }, ...res.data];
+      },
       error: (err) => console.error(err),
-      complete: () => { },
     });
 
     this._abmPiezaService.getPiezaTipo().subscribe({
@@ -101,11 +103,15 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   }
 
   public create(): void {
-    if (this.moldeForm.invalid) return;
+    this.moldeForm.markAllAsTouched();
 
-    let client: any = this.clients$.find((element: any) => {
-      return element.id === this.moldeForm.controls.client.value;
-    });
+    if (this.moldeForm.invalid) {
+      this.notificationService.showError('Por favor, complete todos los campos requeridos.');
+      return;
+    }
+
+    const selectedClientId = this.moldeForm.controls.client.value;
+    let client: any = this.clients$.find((element: any) => element.id === selectedClientId);
 
     const selectedTiposPieza = this.moldeForm.value.piezaTipos
       .map((checked, i) => checked ? { id: this.tiposPieza$[i].id } : null)
@@ -117,20 +123,30 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       nombre: this.moldeForm.controls.name.value,
       observaciones: this.moldeForm.controls.observations.value,
       ubicacion: this.moldeForm.controls.location.value,
-      idClienteDuenio: client ? client.id : null,
+      idClienteDuenio: client?.id !== -1 ? client.id : null,
       clienteDuenio: client ? client.nombre : null,
-      propio: client ? false : true,
+      propio: client?.id === -1,
       id: 0,
       piezaTipos: selectedTiposPieza
     };
 
-    this.moldesService.postMolde(model).subscribe((res) => {
-      if (res.status == 'OK') {
-        this.moldesService.setMode('Edit');
-        this.router.navigate([`/moldes/molde/editar/${res.data.id}`]);
-        this.notificationService.showSuccess('Molde creado con exito.');
-      } else {
-        this.notificationService.showError('No se puedieron realizar los cambios.');
+    this.moldesService.postMolde(model).subscribe({
+      next: (res) => {
+        if (res.status == 'OK') {
+          this.moldesService.setMode('Edit');
+          this.router.navigate([`/moldes/molde/editar/${res.data.id}`]);
+          this.notificationService.showSuccess('Molde creado con éxito.');
+        } else {
+          this.notificationService.showError(res.message || 'No se pudieron realizar los cambios.');
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        if (error.error && error.error.status === 'ERROR' && error.error.error === 'ErrorValidationException') {
+          this.notificationService.showError(error.error.data);
+        } else {
+          this.notificationService.showError('Ocurrió un error inesperado. Por favor, intente nuevamente.');
+        }
+        console.error(error);
       }
     });
   }

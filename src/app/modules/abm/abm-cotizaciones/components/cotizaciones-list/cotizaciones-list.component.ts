@@ -127,7 +127,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
                 if (typeof value === 'object' && value !== null) {
                     return of([]);
                 }
-                return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50 }).pipe(
+                return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50, soloVigentes: true }).pipe(
                     map(res => res.data.page),
                     catchError(() => of([]))
                 );
