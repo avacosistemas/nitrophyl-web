@@ -33,7 +33,7 @@
                         </button>
                         <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
                             <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
-                                {{ pieza.codigo }} - {{ pieza.denominacion }}
+                                {{ pieza.codigo }} - {{ pieza.denominacion }} - (Rev. {{ pieza.revision }})
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>

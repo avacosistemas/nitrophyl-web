@@ -24,6 +24,11 @@
                         <mat-label>Tipo</mat-label>
                         <input type="text" matInput placeholder="Tipo" #tipoInput formControlName="idTipoPieza"
                             [matAutocomplete]="autoTipo">
+                        <button mat-icon-button matSuffix
+                            *ngIf="piezaForm.get('idTipoPieza')?.value && mode !== 'view' && !piezaForm.get('idTipoPieza').disabled"
+                            (click)="piezaForm.get('idTipoPieza').setValue(null); $event.stopPropagation()">
+                            <mat-icon>close</mat-icon>
+                        </button>
                         <mat-autocomplete #autoTipo="matAutocomplete" [displayWith]="displayFn">
                             <mat-option *ngFor="let tipo of filteredTiposPieza$ | async" [value]="tipo">
                                 {{ tipo.nombre }}

@@ -143,7 +143,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const formValue = this.form.getRawValue();
 
-        const fechaSeleccionada = formValue.fecha;
+        const fechaSeleccionada = moment(formValue.fecha);
         const fechaParaAPI = fechaSeleccionada.format('DD/MM/YYYY');
 
         const dto: ICotizacionCreateDTO = {
@@ -162,7 +162,8 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 this.isLoading = false;
-                this._notificationService.showError('Ocurrió un error al guardar la cotización.');
+                const errorMessage = err?.error?.message || 'Ocurrió un error al guardar la cotización.';
+                this._notificationService.showError(errorMessage);
                 console.error(err);
             }
         });
