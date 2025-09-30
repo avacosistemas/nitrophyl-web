@@ -21,6 +21,20 @@ import { MatSortModule } from '@angular/material/sort';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 import { MaterialModule } from 'app/material.module';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MAT_DATE_LOCALE, MAT_DATE_FORMATS } from '@angular/material/core';
+import { MomentDateAdapter, MAT_MOMENT_DATE_ADAPTER_OPTIONS } from '@angular/material-moment-adapter';
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY', 
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 registerLocaleData(localeEs);
 
@@ -65,10 +79,17 @@ const resultadosRoutes: Route[] = [
     PromptsModule,
     MaterialModule,
     MatTooltipModule,
+    MatDatepickerModule
   ],
   providers: [
     DatePipe,
-    { provide: LOCALE_ID, useValue: 'es' }
+    { provide: LOCALE_ID, useValue: 'es' },
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
+    {
+      provide: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE, MAT_MOMENT_DATE_ADAPTER_OPTIONS],
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ]
 })
 export class ResultadosModule { }
