@@ -92,4 +92,5 @@ const resultadosRoutes: Route[] = [
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ]
 })
+
 export class ResultadosModule { }
