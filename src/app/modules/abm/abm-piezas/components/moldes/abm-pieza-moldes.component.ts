@@ -2,13 +2,13 @@ import { Component, OnInit, Input, OnDestroy, OnChanges, SimpleChanges } from '@
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from '../../abm-piezas.service';
-import { Observable, Subscription, of } from 'rxjs';
+import { Observable, Subscription, of, BehaviorSubject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { startWith, map, debounceTime, switchMap, catchError, filter } from 'rxjs/operators';
+import { startWith, map, debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { Molde, IPiezaMolde, PiezaProceso } from '../../models/pieza.model';
 
@@ -33,7 +33,7 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
   moldeForm: FormGroup;
 
   private subscription: Subscription = new Subscription();
-  private idTipoPieza: number | null = null;
+  private idTipoPieza$ = new BehaviorSubject<number | null>(null);
   private allTiposPieza: { id: number; nombre: string; }[] = [];
 
   constructor(
@@ -63,22 +63,27 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
         this.allTiposPieza = tipos;
         if (this.piezaProcesoData && this.piezaProcesoData.tipo) {
           const tipo = this.allTiposPieza.find(t => t.nombre === this.piezaProcesoData.tipo);
-          this.idTipoPieza = tipo ? tipo.id : null;
+          this.idTipoPieza$.next(tipo ? tipo.id : null);
         }
       })
     );
 
-    this.filteredMoldes$ = this.moldeForm.get('molde').valueChanges.pipe(
-      startWith(''),
-      debounceTime(300),
-      switchMap(value => {
-        const searchTerm = typeof value === 'string' ? value : '';
-        if (!this.idTipoPieza) {
+    this.filteredMoldes$ = this.idTipoPieza$.pipe(
+      switchMap(idTipoPieza => {
+        if (!idTipoPieza) {
           return of([]);
         }
-        return this.abmPiezaService.getMoldesCombo(searchTerm, this.idTipoPieza).pipe(
-          map(response => response.data || []),
-          catchError(() => of([]))
+
+        return this.moldeForm.get('molde').valueChanges.pipe(
+          startWith(''),
+          debounceTime(300),
+          switchMap(value => {
+            const searchTerm = typeof value === 'string' ? value : '';
+            return this.abmPiezaService.getMoldesCombo(searchTerm, idTipoPieza).pipe(
+              map(response => response.data || []),
+              catchError(() => of([]))
+            );
+          })
         );
       })
     );
@@ -99,15 +104,16 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
     if (changes.piezaProcesoData && changes.piezaProcesoData.currentValue) {
       if (this.allTiposPieza.length > 0) {
         const tipo = this.allTiposPieza.find(t => t.nombre === changes.piezaProcesoData.currentValue.tipo);
-        this.idTipoPieza = tipo ? tipo.id : null;
+        this.idTipoPieza$.next(tipo ? tipo.id : null);
       }
     }
   }
 
   ngOnDestroy(): void {
+    super.ngOnDestroy(); 
     this.subscription.unsubscribe();
   }
-
+  
   setDisplayedColumns(): void {
     this.displayedColumnsMoldes = this.mode === 'view'
       ? this.baseDisplayedColumns

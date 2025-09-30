@@ -130,32 +130,33 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.loadAllData();
         }
 
-        this.filteredMoldes$ = this.piezaForm.get('idMolde').valueChanges.pipe(
-            startWith(''),
-            filter(value => typeof value === 'string'),
-            debounceTime(300),
-            switchMap(searchString => {
-                const tipoPieza = this.piezaForm.get('idTipoPieza').value;
+        this.filteredMoldes$ = this.piezaForm.get('idTipoPieza').valueChanges.pipe(
+            startWith(this.piezaForm.get('idTipoPieza').value),
+            switchMap(tipoPieza => {
+                const moldeControl = this.piezaForm.get('idMolde');
                 const idTipoPieza = tipoPieza ? tipoPieza.id : null;
+
                 if (!idTipoPieza) {
+                    moldeControl.reset();
+                    moldeControl.disable();
                     return of([]);
                 }
-                return this.abmPiezaService.getMoldesCombo(searchString, idTipoPieza).pipe(
-                    map(response => response.data || []),
-                    catchError(() => of([]))
+
+                moldeControl.enable();
+
+                return moldeControl.valueChanges.pipe(
+                    startWith(''),
+                    filter(value => typeof value === 'string'),
+                    debounceTime(300),
+                    switchMap(searchString => {
+                        return this.abmPiezaService.getMoldesCombo(searchString, idTipoPieza).pipe(
+                            map(response => response.data || []),
+                            catchError(() => of([]))
+                        );
+                    })
                 );
             })
         );
-
-        this.subscriptions.push(this.piezaForm.get('idTipoPieza').valueChanges.subscribe(tipo => {
-            const moldeControl = this.piezaForm.get('idMolde');
-            if (tipo && tipo.id) {
-                moldeControl.enable();
-            } else {
-                moldeControl.disable();
-                moldeControl.reset();
-            }
-        }));
     }
 
     ngOnChanges(changes: SimpleChanges): void {
