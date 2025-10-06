@@ -258,8 +258,8 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     this.lotService.getInformeLote(selectedLot.id)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
-        if (response && response.data && response.data.body && response.data.body.data) {
-          this.selectedLotDetails = response.data.body.data;
+        if (response && response.data) {
+          this.selectedLotDetails = response.data;
         } else {
           this.selectedLotDetails = null;
         }

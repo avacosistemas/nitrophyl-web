@@ -39,6 +39,7 @@ export interface IInformeLoteData {
   estado: string;
   revision: number;
   material: string;
+  hasGrafico: boolean;
 }
 
 export interface IInformeLoteBody {
@@ -55,5 +56,5 @@ export interface IInformeLoteResponseData {
 
 export interface IInformeLoteResponse {
   status: string;
-  data: IInformeLoteResponseData;
+  data: IInformeLoteData;
 }
