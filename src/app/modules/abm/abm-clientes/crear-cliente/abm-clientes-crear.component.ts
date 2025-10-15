@@ -37,7 +37,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         private notificationService: NotificationService,
     ) {
         this.clienteForm = this.formBuilder.group({
-            codigo: [null],
+            //codigo: [null],
             razonSocial: [null, [Validators.required]],
             email: [null, [Validators.required]],
             cuit: [null, [Validators.required]],

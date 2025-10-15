@@ -107,6 +107,12 @@ export class LotService {
     return this.http.put<ILotResponse>(`${this._url}/aprobar/${id}`, body);
   }
 
+  public hasEnsayos(
+    id: number
+  ): Observable<IResponse<Boolean>> {
+    return this.http.get<IResponse<Boolean>>(`${this._url}/hasEnsayos/${id}`);
+  }
+
   public reject(id: number, observaciones: string, fecha: string): Observable<ILotResponse> {
     return this.http.put<ILotResponse>(`${this._url}/rechazar/${id}`, {
       observaciones, fecha

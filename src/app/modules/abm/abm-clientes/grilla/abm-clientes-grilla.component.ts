@@ -31,7 +31,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   component = 'Grilla';
   clienteForm: FormGroup;
   dataSource;
-  columnsToDisplay = ['codigo', 'razonSocial', 'nombre', 'mail', 'cuit'];
+  columnsToDisplay = ['razonSocial', 'nombre', 'mail', 'cuit'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'expand'];
   expandedElement: Cliente | null;
   provincias = [];
@@ -53,7 +53,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   ) {
     this.clienteForm = this.formBuilder.group({
       id: [null],
-      codigo: [null],
+      // codigo: [null],
       razonSocial: [null, [Validators.required]],
       email: [null, [Validators.required]],
       cuit: [null, [Validators.required]],
@@ -117,7 +117,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   public expandRow(element): void {
     this.clienteForm.patchValue({
       id: element.id,
-      codigo: element.codigo,
+      // codigo: element.codigo,
       nombre: element.nombre,
       razonSocial: element.razonSocial,
       email: element.email,

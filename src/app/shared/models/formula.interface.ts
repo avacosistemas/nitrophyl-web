@@ -10,6 +10,14 @@ export interface IFormula {
   fecha?: string;
   norma?: string;
   observaciones?: string;
+  rpdto?: IRpdto | null;
+}
+
+export interface IRpdto {
+  id?: number | null;
+  revision?: number;
+  fecha?: string;
+  fechaHasta?: string;
 }
 
 export interface IConfiguracionPruebaParametro

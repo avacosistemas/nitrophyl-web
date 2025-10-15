@@ -10,6 +10,7 @@ import {
 import { ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { map, Observable, of, startWith, Subscription } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 // * Services.
 import { AssayService } from 'app/shared/services/assay.service';
@@ -692,51 +693,51 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private _dialog(lote: ILot, set: string): void {
+ private async _dialog(lote: ILot, set: string): Promise<void> {
+  try {
+    // Esperamos la respuesta de hasEnsayos
+    const res = await firstValueFrom(this.lotService.hasEnsayos(lote.id));
+    const hasEnsayos: Boolean = res.data;
+
+    if (!hasEnsayos) {
+      this.openSnackBar(false, 'No se pueden aprobar/rechazar lotes sin ensayos.');
+      return; // No abrimos el modal
+    }
+
+    // Abrimos el modal si tiene ensayos
     const dialogRef = this.dialog.open(LotDialogComponent, {
       width: 'fit-content',
-      data: { set: set },
+      data: { set: set }
     });
 
-    dialogRef
-      .afterClosed()
-      .subscribe((result: {
-        status: string;
-        observation: string;
-        fecha: string;
-      }) => {
-        if (result) {
-          if (
-            result.status === 'APROBADO' ||
-            result.status === 'APROBADO_OBSERVADO'
-          ) {
-            if (this.validarFechas(result.fecha, lote.fecha)) {
-              this._approve(lote.id, {
-                estado: result.status,
-                observaciones: result.observation,
-                fecha: result.fecha,
-              });
-              this.openSnackBar(true, null);
-            } else {
-              this.openSnackBar(
-                false,
-                'La fecha de aprobación no puede ser anterior a la de creación del lote.'
-              );
-            }
-          }
-          if (result.status === 'RECHAZADO') {
-            if (this.validarFechas(result.fecha, lote.fecha)) {
-              this._reject(lote.id, result.observation, result.fecha);
-            } else {
-              this.openSnackBar(
-                false,
-                'La fecha de rechazo no puede ser anterior a la de creación del lote.'
-              );
-            }
-          }
-        }
-      });
+    const result = await firstValueFrom(dialogRef.afterClosed());
+
+    if (!result) return;
+
+    const { status, observation, fecha } = result;
+
+    if ((status === 'APROBADO' || status === 'APROBADO_OBSERVADO') && this.validarFechas(fecha, lote.fecha)) {
+      await firstValueFrom(this.lotService.approve(lote.id, {
+        estado: status,
+        observaciones: observation,
+        fecha: fecha
+      }));
+      this.openSnackBar(true);
+      this.search();
+    } else if (status === 'RECHAZADO' && this.validarFechas(fecha, lote.fecha)) {
+      await firstValueFrom(this.lotService.reject(lote.id, observation, fecha));
+      this.openSnackBar(true);
+      this.search();
+    } else {
+      this.openSnackBar(false, 'La fecha seleccionada no puede ser anterior a la fecha de creación del lote.');
+    }
+
+  } catch (err) {
+    console.error('Error en _dialog:', err);
+    this.openSnackBar(false, 'No se pudieron realizar los cambios.');
   }
+}
+
 
   private createFormulaValidator(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {

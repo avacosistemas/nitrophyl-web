@@ -194,7 +194,8 @@ export class LotModalComponent implements OnInit {
     }
 
     displayFn(formula: IFormula | null): string {
-        return formula ? `${formula.nombre} V${formula.version} (${formula.norma})` : '';
+    if (!formula) return '';
+    return `${formula.nombre} ${formula.rpdto?.id == null ? '(Sin Revisión)' : '- Rev' + formula.rpdto.revision}`;
     }
 
     private _filter(value: string): IFormula[] {
@@ -209,11 +210,20 @@ export class LotModalComponent implements OnInit {
 
     private createFormulaValidator(): any {
         return (control: FormControl): { [key: string]: any } | null => {
-            const valid =
-                typeof control.value === 'object' &&
-                control.value &&
-                control.value.id;
-            return valid ? null : { invalidFormula: true };
+            const formula = control.value;
+
+            // Si no hay fórmula seleccionada o es inválida
+            if (typeof formula !== 'object' || !formula?.id) {
+                return { invalidFormula: true };
+            }
+
+            // Si la fórmula no tiene revisión (rpdto.id == null)
+            if (!formula.rpdto || formula.rpdto.id == null) {
+                return { noRevision: true };
+            }
+
+            // Si todo está bien
+            return null;
         };
     }
 
