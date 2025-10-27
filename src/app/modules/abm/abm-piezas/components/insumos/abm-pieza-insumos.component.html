@@ -13,12 +13,14 @@
             <td mat-cell *matCellDef="let element">{{ flattenTipoHierarchy(element.tipo) }}</td>
         </ng-container>
 
-        <ng-container matColumnDef="medida">
-            <th mat-header-cell *matHeaderCellDef>Medida</th>
-            <td mat-cell *matCellDef="let element">
-                {{ element.medidaValor }}
-                <span *ngIf="element.medidaObservaciones">({{ element.medidaObservaciones }})</span>
-            </td>
+        <ng-container matColumnDef="unidades">
+            <th mat-header-cell *matHeaderCellDef>Unidades</th>
+            <td mat-cell *matCellDef="let element">{{ element.unidades || '-' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="medidaDetallada">
+            <th mat-header-cell *matHeaderCellDef>Medida Detallada</th>
+            <td mat-cell *matCellDef="let element">{{ formatMedidaDetallada(element) }}</td>
         </ng-container>
 
         <ng-container matColumnDef="tratamiento">

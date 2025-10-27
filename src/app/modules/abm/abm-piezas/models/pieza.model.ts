@@ -179,17 +179,21 @@ export interface IInsumoTratado {
     insumo: string;
     idInsumo: number;
     tipo: ITipoInsumoJerarquico;
-    medidaValor: string;
-    medidaObservaciones: string;
     observaciones: string | null;
     tratamientos: ITratamiento[];
     adhesivos: IAdhesivo[];
+    unidades?: number;
+    unidadMedida?: 'DIAMETRO' | 'SUPERFICIE' | 'LONGITUD' | null;
+    medida1?: number;
+    medida2?: number;
+    unidadMedidaLongitud?: 'MM' | 'CM' | 'M' | null;
 }
 
 export interface ITipoInsumoJerarquico {
     id: number;
     nombre: string;
     padre: ITipoInsumoJerarquico | null;
+    tipoStock?: 'ROLLOM2DIAM' | 'UNIDAD' | 'GRAMOSUNIDAD' | 'UNIDADXMETRO';
     usuarioCreacion?: string;
     fechaCreacion?: number;
     usuarioActualizacion?: string;

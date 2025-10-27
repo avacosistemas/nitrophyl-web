@@ -1,6 +1,9 @@
 <h1 mat-dialog-title>{{ isEditMode ? 'Editar' : 'Añadir' }} Insumo</h1>
 <div mat-dialog-content class="relative">
-  <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center">
+  <div
+    *ngIf="isLoading"
+    class="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center"
+  >
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
   </div>
 
@@ -8,19 +11,37 @@
     <mat-tab-group animationDuration="0ms">
       <mat-tab label="Datos del Insumo">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
           <div class="col-span-1">
             <ng-container formArrayName="tipos">
               <div *ngFor="let nivel of nivelesTipoInsumo; let i = index">
-                <mat-form-field appearance="outline" class="w-full" *ngIf="tiposFormArray.controls[i]">
+                <mat-form-field
+                  appearance="outline"
+                  class="w-full"
+                  *ngIf="tiposFormArray.controls[i]"
+                >
                   <mat-label>Tipo Nivel {{ i + 1 }}</mat-label>
-                  <mat-select [formControl]="tiposFormArray.controls[i]"
-                    (selectionChange)="onTipoSeleccionado($event.value, i)" required [compareWith]="compareWithId">
+                  <mat-select
+                    [formControl]="tiposFormArray.controls[i]"
+                    (selectionChange)="onTipoSeleccionado($event.value, i)"
+                    required
+                    [compareWith]="compareWithId"
+                  >
                     <mat-option *ngFor="let tipo of nivel" [value]="tipo">
                       {{ tipo.nombre }}
                     </mat-option>
                   </mat-select>
-                  <mat-error *ngIf="tiposFormArray.controls[i].hasError('required')">Requerido</mat-error>
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    *ngIf="tiposFormArray.controls[i].value && i > 0"
+                    (click)="clearTipo(i); $event.stopPropagation()"
+                  >
+                    <mat-icon>close</mat-icon>
+                  </button>
+                  <mat-error
+                    *ngIf="tiposFormArray.controls[i].hasError('required')"
+                    >Requerido</mat-error
+                  >
                 </mat-form-field>
               </div>
             </ng-container>
@@ -29,64 +50,216 @@
           <div class="col-span-1 md:col-span-2">
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>Insumo</mat-label>
-              <input type="text" matInput formControlName="insumo" [matAutocomplete]="autoInsumo" required>
-              <mat-autocomplete #autoInsumo="matAutocomplete" [displayWith]="displayFn">
-                <mat-option *ngFor="let ins of filteredInsumos$ | async" [value]="ins">
+              <input
+                type="text"
+                matInput
+                formControlName="insumo"
+                [matAutocomplete]="autoInsumo"
+                required
+                #insumoInput="matAutocompleteTrigger"
+              />
+              <button
+                mat-icon-button
+                matSuffix
+                *ngIf="insumoForm.get('insumo').value"
+                (click)="clearInsumoSelection(); $event.stopPropagation()"
+              >
+                <mat-icon>close</mat-icon>
+              </button>
+              <button
+                mat-icon-button
+                matSuffix
+                *ngIf="!insumoForm.get('insumo').value"
+                (click)="insumoInput.openPanel()"
+              >
+                <mat-icon>arrow_drop_down</mat-icon>
+              </button>
+              <mat-autocomplete
+                #autoInsumo="matAutocomplete"
+                [displayWith]="displayFn"
+              >
+                <mat-option
+                  *ngFor="let ins of filteredInsumos$ | async"
+                  [value]="ins"
+                >
                   {{ ins.nombre }}
                 </mat-option>
               </mat-autocomplete>
-              <mat-error *ngIf="insumoForm.get('insumo').hasError('required')">Insumo requerido</mat-error>
+              <mat-error *ngIf="insumoForm.get('insumo').hasError('required')"
+                >Insumo requerido</mat-error
+              >
             </mat-form-field>
+
+            <ng-container *ngIf="selectedTipoStock === 'ROLLOM2DIAM'">
+              <mat-form-field appearance="outline" class="w-full"
+                ><mat-label>Cantidad (unidades)</mat-label
+                ><input
+                  matInput
+                  type="number"
+                  formControlName="unidades"
+                  required
+              /></mat-form-field>
+              <mat-form-field appearance="outline" class="w-full"
+                ><mat-label>Tipo de Medida</mat-label
+                ><mat-select formControlName="unidadMedida" required
+                  ><mat-option value="DIAMETRO">Diámetro</mat-option
+                  ><mat-option value="SUPERFICIE">Superficie</mat-option
+                  ><mat-option value="LONGITUD"
+                    >Longitud</mat-option
+                  ></mat-select
+                ></mat-form-field
+              >
+              <div
+                *ngIf="insumoForm.get('unidadMedida').value === 'DIAMETRO' || insumoForm.get('unidadMedida').value === 'LONGITUD'"
+              >
+                <mat-form-field appearance="outline" class="w-1/2 pr-2"
+                  ><mat-label>Medida</mat-label
+                  ><input
+                    matInput
+                    type="number"
+                    formControlName="medida1"
+                    required /></mat-form-field
+                ><mat-form-field appearance="outline" class="w-1/2"
+                  ><mat-label>Unidad</mat-label
+                  ><mat-select formControlName="unidadMedidaLongitud" required
+                    ><mat-option
+                      *ngFor="let u of unidadesLongitud"
+                      [value]="u"
+                      >{{u}}</mat-option
+                    ></mat-select
+                  ></mat-form-field
+                >
+              </div>
+              <div
+                *ngIf="insumoForm.get('unidadMedida').value === 'SUPERFICIE'"
+                class="flex gap-2"
+              >
+                <mat-form-field appearance="outline" class="w-1/4"
+                  ><mat-label>Alto</mat-label
+                  ><input
+                    matInput
+                    type="number"
+                    formControlName="medida1"
+                    required /></mat-form-field
+                ><mat-form-field appearance="outline" class="w-1/4"
+                  ><mat-label>Ancho</mat-label
+                  ><input
+                    matInput
+                    type="number"
+                    formControlName="medida2"
+                    required /></mat-form-field
+                ><mat-form-field appearance="outline" class="w-full"
+                  ><mat-label>Unidad</mat-label
+                  ><mat-select formControlName="unidadMedidaLongitud" required
+                    ><mat-option
+                      *ngFor="let u of unidadesLongitud"
+                      [value]="u"
+                      >{{u}}</mat-option
+                    ></mat-select
+                  ></mat-form-field
+                >
+              </div>
+            </ng-container>
+
+            <ng-container
+              *ngIf="selectedTipoStock === 'UNIDAD' || selectedTipoStock === 'GRAMOSUNIDAD'"
+            >
+              <mat-form-field appearance="outline" class="w-full"
+                ><mat-label>Cantidad (unidades)</mat-label
+                ><input
+                  matInput
+                  type="number"
+                  formControlName="unidades"
+                  required
+              /></mat-form-field>
+            </ng-container>
+
+            <ng-container *ngIf="selectedTipoStock === 'UNIDADXMETRO'">
+              <mat-form-field appearance="outline" class="w-full"
+                ><mat-label>Cantidad (unidades)</mat-label
+                ><input
+                  matInput
+                  type="number"
+                  formControlName="unidades"
+                  required
+              /></mat-form-field>
+              <div class="flex gap-2">
+                <mat-form-field appearance="outline" class="w-1/2"
+                  ><mat-label>Medida</mat-label
+                  ><input
+                    matInput
+                    type="number"
+                    formControlName="medida1"
+                    required /></mat-form-field
+                ><mat-form-field appearance="outline" class="w-1/2"
+                  ><mat-label>Unidad</mat-label
+                  ><mat-select formControlName="unidadMedidaLongitud" required
+                    ><mat-option
+                      *ngFor="let u of unidadesLongitud"
+                      [value]="u"
+                      >{{u}}</mat-option
+                    ></mat-select
+                  ></mat-form-field
+                >
+              </div>
+            </ng-container>
 
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>Tratamientos</mat-label>
-              <mat-chip-list #chipListTratamiento aria-label="Selección de tratamientos">
-                <mat-chip *ngFor="let tratamiento of tratamientosSeleccionados"
-                  (removed)="removeTratamiento(tratamiento)">
-                  {{tratamiento.nombre}}
-                  <button matChipRemove>
-                    <mat-icon>cancel</mat-icon>
-                  </button>
+              <mat-chip-list #chipListTratamiento>
+                <mat-chip
+                  *ngFor="let t of tratamientosSeleccionados"
+                  (removed)="removeTratamiento(t)"
+                >
+                  {{t.nombre}}
+                  <button matChipRemove><mat-icon>cancel</mat-icon></button>
                 </mat-chip>
-                <input placeholder="Buscar y añadir tratamientos..." #tratamientoInput [formControl]="tratamientoCtrl"
-                  [matAutocomplete]="autoTratamiento" [matChipInputFor]="chipListTratamiento">
+                <input
+                  placeholder="Buscar..."
+                  #tratamientoInput
+                  [formControl]="tratamientoCtrl"
+                  [matAutocomplete]="autoTratamiento"
+                  [matChipInputFor]="chipListTratamiento"
+                />
               </mat-chip-list>
-              <mat-autocomplete #autoTratamiento="matAutocomplete" (optionSelected)="addTratamiento($event)">
-                <mat-option *ngFor="let t of filteredTratamientos$ | async" [value]="t">
+              <mat-autocomplete
+                #autoTratamiento="matAutocomplete"
+                (optionSelected)="addTratamiento($event)"
+              >
+                <mat-option
+                  *ngFor="let t of filteredTratamientos$ | async"
+                  [value]="t"
+                >
                   {{ t.nombre }}
                 </mat-option>
               </mat-autocomplete>
-              <mat-error
-                *ngIf="insumoForm.get('tratamientos').hasError('required') || insumoForm.get('tratamientos').hasError('minLength')">
-                Se requiere al menos un tratamiento.
-              </mat-error>
             </mat-form-field>
-
-            <div class="grid grid-cols-2 gap-4">
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Medida (Valor)</mat-label>
-                <input matInput formControlName="medidaValor">
-              </mat-form-field>
-              <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Medida (Obs.)</mat-label>
-                <input matInput formControlName="medidaObservaciones">
-              </mat-form-field>
-            </div>
 
             <mat-form-field appearance="outline" class="w-full">
               <mat-label>Adhesivos</mat-label>
-              <mat-chip-list #chipList aria-label="Selección de adhesivos">
-                <mat-chip *ngFor="let adhesivo of adhesivosSeleccionados" (removed)="removeAdhesivo(adhesivo)">
-                  {{adhesivo.nombre}}
-                  <button matChipRemove>
-                    <mat-icon>cancel</mat-icon>
-                  </button>
+              <mat-chip-list #chipListAdhesivo>
+                <mat-chip
+                  *ngFor="let a of adhesivosSeleccionados"
+                  (removed)="removeAdhesivo(a)"
+                >
+                  {{a.nombre}}
+                  <button matChipRemove><mat-icon>cancel</mat-icon></button>
                 </mat-chip>
-                <input placeholder="Buscar y añadir..." #adhesivoInput [formControl]="adhesivoCtrl"
-                  [matAutocomplete]="autoAdhesivo" [matChipInputFor]="chipList">
-              </mat-chip-list>
-              <mat-autocomplete #autoAdhesivo="matAutocomplete" (optionSelected)="addAdhesivo($event)">
-                <mat-option *ngFor="let a of filteredAdhesivos$ | async" [value]="a">
+                <input
+                  placeholder="Buscar..."
+                  #adhesivoInput
+                  [formControl]="adhesivoCtrl"
+                  [matAutocomplete]="autoAdhesivo"
+                  [matChipInputFor]="chipListAdhesivo"
+                /> </mat-chip-list
+              ><mat-autocomplete
+                #autoAdhesivo="matAutocomplete"
+                (optionSelected)="addAdhesivo($event)"
+              >
+                <mat-option
+                  *ngFor="let a of filteredAdhesivos$ | async"
+                  [value]="a"
+                >
                   {{ a.nombre }}
                 </mat-option>
               </mat-autocomplete>
@@ -98,7 +271,11 @@
         <div class="p-4">
           <mat-form-field appearance="outline" class="w-full">
             <mat-label>Observaciones Generales</mat-label>
-            <textarea matInput formControlName="observaciones" rows="8"></textarea>
+            <textarea
+              matInput
+              formControlName="observaciones"
+              rows="8"
+            ></textarea>
           </mat-form-field>
         </div>
       </mat-tab>
@@ -107,8 +284,13 @@
 </div>
 <div mat-dialog-actions class="justify-end">
   <button mat-stroked-button (click)="onCancel()">Cancelar</button>
-  <button mat-flat-button color="primary" class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-    (click)="onSave()" [disabled]="insumoForm.invalid || isLoading">
+  <button
+    mat-flat-button
+    color="primary"
+    class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+    (click)="onSave()"
+    [disabled]="insumoForm.invalid || isLoading"
+  >
     Guardar
   </button>
 </div>

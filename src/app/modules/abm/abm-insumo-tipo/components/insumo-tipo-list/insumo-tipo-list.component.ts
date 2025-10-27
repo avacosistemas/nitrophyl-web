@@ -22,7 +22,7 @@ export class InsumoTipoListComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription();
 
     private readonly tipoStockLabels: Map<string, string> = new Map([
-        ['M2DIAM', 'M²/ROLLO'],
+        ['ROLLOM2DIAM', 'M²'],
         ['UNIDAD', 'Unidades'],
         ['GRAMOSUNIDAD', 'Unidades Por peso'],
         ['UNIDADXMETRO', 'Unidades Por Metro']

@@ -28,7 +28,7 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription();
 
     public tiposStock = [
-        { label: 'M²/ROLLO', value: 'M2DIAM' },
+        { label: 'M²', value: 'ROLLOM2DIAM' },
         { label: 'Unidades', value: 'UNIDAD' },
         { label: 'Unidades Por peso', value: 'GRAMOSUNIDAD' },
         { label: 'Unidades Por Metro', value: 'UNIDADXMETRO' }

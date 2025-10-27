@@ -24,8 +24,8 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   insumosPieza = new MatTableDataSource<IInsumoTratado>([]);
   sinDatos: boolean = false;
   isLoading: boolean = false;
-
-  displayedColumns: string[] = ['nombreInsumo', 'tipo', 'medida', 'tratamiento', 'adhesivos', 'observaciones'];
+  
+  displayedColumns: string[];
 
   constructor(
     protected fb: FormBuilder,
@@ -56,25 +56,42 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   }
 
   setDisplayedColumns(): void {
-    const baseCols = ['nombreInsumo', 'tipo', 'medida', 'tratamiento', 'adhesivos', 'observaciones'];
+    const baseCols = ['nombreInsumo', 'tipo', 'unidades', 'medidaDetallada', 'tratamiento', 'adhesivos', 'observaciones'];
     this.displayedColumns = this.mode === 'view' ? baseCols : [...baseCols, 'acciones'];
   }
 
   loadInsumosPieza(): void {
-    // if (!this.piezaId) return;
-    // this.isLoading = true;
-    // this.abmPiezaService.getInsumosTratadosPorPieza(this.piezaId).subscribe({
-    //   next: (response) => {
-    //     this.insumosPieza.data = response.data || [];
-    //     this.sinDatos = (response.data || []).length === 0;
-    //     this.isLoading = false;
-    //   },
-    //   error: (err) => {
-    //     console.error("Error al cargar insumos tratados:", err);
-    //     this.notificationService.showError("Error al cargar los insumos.");
-    //     this.isLoading = false;
-    //   }
-    // });
+    if (!this.piezaId) return;
+    this.isLoading = true;
+    this.abmPiezaService.getInsumosTratadosPorPieza(this.piezaId).subscribe({
+      next: (response) => {
+        this.insumosPieza.data = response.data || [];
+        this.sinDatos = (response.data || []).length === 0;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error("Error al cargar insumos tratados:", err);
+        this.notificationService.showError("Error al cargar los insumos.");
+        this.isLoading = false;
+      }
+    });
+  }
+
+  formatMedidaDetallada(element: IInsumoTratado): string {
+    if (!element.unidadMedida) return '-';
+
+    const unidadLongitud = element.unidadMedidaLongitud ? ` ${element.unidadMedidaLongitud}` : '';
+    
+    switch (element.unidadMedida) {
+        case 'DIAMETRO':
+            return `Diámetro: ${element.medida1}${unidadLongitud}`;
+        case 'LONGITUD':
+            return `Longitud: ${element.medida1}${unidadLongitud}`;
+        case 'SUPERFICIE':
+            return `Superficie: ${element.medida1} x ${element.medida2}${unidadLongitud}`;
+        default:
+            return '-';
+    }
   }
 
   openAddInsumoModal(insumoTratado?: IInsumoTratado): void {
