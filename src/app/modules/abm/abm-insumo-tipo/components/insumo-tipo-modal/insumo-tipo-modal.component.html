@@ -13,11 +13,27 @@
         <mat-slide-toggle formControlName="tienePadre" class="mb-2">
             Asignar Padre (Opcional)
         </mat-slide-toggle>
+        
+        <mat-form-field appearance="outline" class="w-full" *ngIf="!form.get('tienePadre').value">
+            <mat-label>Tipo de Stock</mat-label>
+            <mat-select formControlName="tipoStock" required>
+                <mat-option *ngFor="let tipo of tiposStock" [value]="tipo.value">
+                    {{ tipo.label }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('tipoStock').hasError('required')">
+                El tipo de stock es requerido para un tipo de insumo padre.
+            </mat-error>
+        </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-full" *ngIf="form.get('tienePadre').value">
             <mat-label>Tipo de Insumo Padre</mat-label>
             <input type="text" placeholder="Buscar padre..." aria-label="Tipo de Insumo Padre" matInput
                 formControlName="padre" [matAutocomplete]="auto">
+            <button mat-icon-button matSuffix *ngIf="form.get('padre').value"
+                    (click)="clearPadreSelection(); $event.stopPropagation()">
+                <mat-icon>close</mat-icon>
+            </button>
             <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
                 <mat-option *ngFor="let option of filteredPadres$ | async" [value]="option">
                     {{option.nombre}}

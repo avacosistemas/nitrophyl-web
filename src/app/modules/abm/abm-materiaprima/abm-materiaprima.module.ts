@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import { AbmInsumoTipoRoutingModule } from './abm-insumo-tipo-routing.module';
+import { AbmMateriaPrimaRoutingModule } from './abm-materiaprima-routing.module';
 
-import { ABMInsumoTipoComponent } from './abm-insumo-tipo.component';
-import { InsumoTipoListComponent } from './components/insumo-tipo-list/insumo-tipo-list.component';
-import { InsumoTipoModalComponent } from './components/insumo-tipo-modal/insumo-tipo-modal.component';
+import { ABMMateriaPrimaComponent } from './abm-materiaprima.component';
+import { MateriaPrimaListComponent } from './components/materia-prima-list/materia-prima-list.component';
+import { MateriaPrimaModalComponent } from './components/materia-prima-modal/materia-prima-modal.component';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -19,7 +19,6 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
@@ -28,13 +27,13 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 
 @NgModule({
     declarations: [
-        ABMInsumoTipoComponent,
-        InsumoTipoListComponent,
-        InsumoTipoModalComponent
+        ABMMateriaPrimaComponent,
+        MateriaPrimaListComponent,
+        MateriaPrimaModalComponent
     ],
     imports: [
         CommonModule,
-        AbmInsumoTipoRoutingModule,
+        AbmMateriaPrimaRoutingModule,
         HttpClientModule,
         ReactiveFormsModule,
         FormsModule,
@@ -52,8 +51,7 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
         MatProgressSpinnerModule,
         MatTooltipModule,
         MatSlideToggleModule,
-        MatAutocompleteModule,
         MatSelectModule,
     ]
 })
-export class ABMInsumoTipoModule { }
+export class ABMMateriaPrimaModule { }

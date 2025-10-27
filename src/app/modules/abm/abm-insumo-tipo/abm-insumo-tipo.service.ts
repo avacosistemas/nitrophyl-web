@@ -14,7 +14,7 @@ export class AbmInsumoTipoService {
     constructor(private http: HttpClient) { }
 
     getInsumoTipos(): Observable<IInsumoTipo[]> {
-        return this.http.get<IInsumoTipoApiResponse>(this.apiUrl + '/soloHijos').pipe(
+        return this.http.get<IInsumoTipoApiResponse>(this.apiUrl).pipe(
             map(response => response.data || []),
             catchError(this.handleError)
         );

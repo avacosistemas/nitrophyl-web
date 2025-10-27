@@ -5,6 +5,7 @@ import { catchError, map } from 'rxjs/operators';
 import { environment } from 'environments/environment';
 import { IInsumoApiResponse, IInsumo, IInsumoSingleApiResponse } from './models/insumo.interface';
 import { ITipoInsumo, ITipoInsumoApiResponse } from './models/tipo-insumo.interface';
+import { IMateriaPrima, IMateriaPrimaApiResponse } from './models/materia-prima.interface';
 
 
 @Injectable({
@@ -13,6 +14,7 @@ import { ITipoInsumo, ITipoInsumoApiResponse } from './models/tipo-insumo.interf
 export class AbmInsumosService {
     private readonly apiUrl = `${environment.server}insumo`;
     private readonly tipoInsumoApiUrl = `${environment.server}tipoInsumo/soloHijos`;
+    private readonly materiaPrimaApiUrl = `${environment.server}materiaPrima`;
 
     constructor(private http: HttpClient) { }
 
@@ -50,6 +52,17 @@ export class AbmInsumosService {
             catchError((error: HttpErrorResponse) => {
                 console.error('Error al cargar tipos de insumo:', error);
                 return throwError(() => new Error('No se pudieron cargar los tipos de insumo.'));
+            })
+        );
+    }
+
+    getMateriasPrimas(): Observable<IMateriaPrima[]> {
+        const params = new HttpParams().set('rows', '9999');
+        return this.http.get<IMateriaPrimaApiResponse>(this.materiaPrimaApiUrl, { params }).pipe(
+            map(response => response.data.page || []),
+            catchError((error: HttpErrorResponse) => {
+                console.error('Error al cargar materias primas:', error);
+                return throwError(() => new Error('No se pudieron cargar las materias primas.'));
             })
         );
     }

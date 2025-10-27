@@ -5,64 +5,52 @@ import { NotificationService } from 'app/shared/services/notification.service';
 import { Subscription } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
 
-import { AbmInsumoTipoService } from '../../abm-insumo-tipo.service';
-import { IInsumoTipo, IErrorResponse } from '../../models/insumo-tipo.interface';
-import { InsumoTipoModalComponent } from '../insumo-tipo-modal/insumo-tipo-modal.component';
+import { AbmMateriaPrimaService } from '../../abm-materiaprima.service';
+import { IMateriaPrima, IErrorResponse } from '../../models/materia-prima.interface';
+import { MateriaPrimaModalComponent } from '../materia-prima-modal/materia-prima-modal.component';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
 @Component({
-    selector: 'app-insumo-tipo-list',
-    templateUrl: './insumo-tipo-list.component.html',
+    selector: 'app-materia-prima-list',
+    templateUrl: './materia-prima-list.component.html',
 })
-export class InsumoTipoListComponent implements OnInit, OnDestroy {
+export class MateriaPrimaListComponent implements OnInit, OnDestroy {
     isLoading = true;
-    dataSource = new MatTableDataSource<IInsumoTipo>([]);
-    displayedColumns: string[] = ['nombre', 'padre', 'tipoStock', 'acciones'];
+    dataSource = new MatTableDataSource<IMateriaPrima>([]);
+    displayedColumns: string[] = ['nombre', 'cantidadStock', 'unidadMedidaStock', 'acciones'];
 
     private subscriptions = new Subscription();
 
-    private readonly tipoStockLabels: Map<string, string> = new Map([
-        ['M2DIAM', 'M²/ROLLO'],
-        ['UNIDAD', 'Unidades'],
-        ['GRAMOSUNIDAD', 'Unidades Por peso'],
-        ['UNIDADXMETRO', 'Unidades Por Metro']
-    ]);
-
     constructor(
-        private abmInsumoTipoService: AbmInsumoTipoService,
+        private abmMateriaPrimaService: AbmMateriaPrimaService,
         public dialog: MatDialog,
         private notificationService: NotificationService,
         private sanitizer: DomSanitizer
     ) {
-        this.dataSource.filterPredicate = (data: IInsumoTipo, filter: string): boolean => {
-            const tipoStockLabel = this.getTipoStockLabel(data.tipoStock);
-            const dataStr = `${data.nombre} ${data.padre?.nombre || ''} ${tipoStockLabel}`.toLowerCase();
+        this.dataSource.filterPredicate = (data: IMateriaPrima, filter: string): boolean => {
+            const dataStr = `${data.nombre} ${data.cantidadStock} ${data.unidadMedidaStock || ''}`.toLowerCase();
             return dataStr.includes(filter);
         };
     }
 
     ngOnInit(): void {
-        this.loadInsumoTipos();
+        this.loadMateriasPrimas();
     }
 
     ngOnDestroy(): void {
         this.subscriptions.unsubscribe();
     }
 
-    public getTipoStockLabel(value: string): string {
-        return this.tipoStockLabels.get(value) || '';
-    }
-
-    loadInsumoTipos(): void {
+    loadMateriasPrimas(): void {
         this.isLoading = true;
-        const sub = this.abmInsumoTipoService.getInsumoTipos().subscribe({
+        const sub = this.abmMateriaPrimaService.getMateriasPrimas().subscribe({
             next: (response) => {
-                this.dataSource.data = response;
+                this.dataSource.data = response.data.page;
                 this.isLoading = false;
             },
             error: (err) => {
-                console.error('Error al cargar tipos de insumos:', err);
-                this.notificationService.showError('No se pudieron cargar los tipos de insumos.');
+                console.error('Error al cargar materias primas:', err);
+                this.notificationService.showError('No se pudieron cargar las materias primas.');
                 this.isLoading = false;
             }
         });
@@ -74,24 +62,24 @@ export class InsumoTipoListComponent implements OnInit, OnDestroy {
         this.dataSource.filter = filterValue.trim().toLowerCase();
     }
 
-    openEditModal(insumoTipo: IInsumoTipo): void {
-        const dialogRef = this.dialog.open(InsumoTipoModalComponent, {
+    openEditModal(materiaPrima: IMateriaPrima): void {
+        const dialogRef = this.dialog.open(MateriaPrimaModalComponent, {
             width: '600px',
             disableClose: true,
-            data: { mode: 'edit', insumoTipo }
+            data: { mode: 'edit', materiaPrima }
         });
 
         const sub = dialogRef.afterClosed().subscribe(result => {
             if (result === true) {
-                this.loadInsumoTipos();
+                this.loadMateriasPrimas();
             }
         });
         this.subscriptions.add(sub);
     }
 
-    openDeleteDialog(insumoTipo: IInsumoTipo): void {
+    openDeleteDialog(materiaPrima: IMateriaPrima): void {
         const message = this.sanitizer.bypassSecurityTrustHtml(
-            `¿Estás seguro que deseas eliminar el tipo de insumo <strong>"${insumoTipo.nombre}"</strong>?`
+            `¿Estás seguro que deseas eliminar la materia prima <strong>"${materiaPrima.nombre}"</strong>?`
         );
 
         const dialogRef = this.dialog.open(GenericModalComponent, {
@@ -108,22 +96,22 @@ export class InsumoTipoListComponent implements OnInit, OnDestroy {
 
         const sub = dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                this.deleteInsumoTipo(insumoTipo.id);
+                this.deleteMateriaPrima(materiaPrima.id);
             }
         });
         this.subscriptions.add(sub);
     }
 
-    private deleteInsumoTipo(id: number): void {
-        const sub = this.abmInsumoTipoService.deleteInsumoTipo(id).subscribe({
+    private deleteMateriaPrima(id: number): void {
+        const sub = this.abmMateriaPrimaService.deleteMateriaPrima(id).subscribe({
             next: () => {
-                this.notificationService.showSuccess('Tipo de insumo eliminado correctamente.');
-                this.loadInsumoTipos();
+                this.notificationService.showSuccess('Materia prima eliminada correctamente.');
+                this.loadMateriasPrimas();
             },
             error: (err) => {
                 if (err.status === 409) {
                     const errorData: IErrorResponse = err.error;
-                    this.notificationService.showError(errorData.data || 'El elemento está en uso y no puede ser eliminado.');
+                    this.notificationService.showError(errorData.data);
                 } else {
                     console.error('Error al eliminar:', err);
                     this.notificationService.showError('Ocurrió un error al intentar eliminar el elemento.');

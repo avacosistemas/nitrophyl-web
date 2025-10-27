@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
 
 import { AbmInsumosService } from '../../abm-insumos.service';
@@ -17,9 +17,10 @@ import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.c
 export class InsumosListComponent implements OnInit, OnDestroy {
     isLoading = true;
     dataSource = new MatTableDataSource<IInsumo>([]);
-    displayedColumns: string[] = ['tipoNombre', 'nombre', 'acciones'];
+    displayedColumns: string[] = ['tipoNombre', 'nombre', 'materiaPrimaNombre', 'cantidadMateriaPrima', 'acciones'];
 
     private subscriptions = new Subscription();
+    private materiaPrimaUnidades = new Map<number, string>();
 
     constructor(
         private abmInsumosService: AbmInsumosService,
@@ -28,7 +29,7 @@ export class InsumosListComponent implements OnInit, OnDestroy {
         private sanitizer: DomSanitizer
     ) {
         this.dataSource.filterPredicate = (data: IInsumo, filter: string): boolean => {
-            const dataStr = `${data.nombre} ${data.tipoNombre || ''}`.toLowerCase();
+            const dataStr = `${data.nombre} ${data.tipoNombre || ''} ${data.materiaPrimaNombre || ''} ${data.cantidadMateriaPrima || ''}`.toLowerCase();
             return dataStr.includes(filter);
         };
     }
@@ -43,18 +44,33 @@ export class InsumosListComponent implements OnInit, OnDestroy {
 
     loadInsumos(): void {
         this.isLoading = true;
-        const sub = this.abmInsumosService.getInsumos().subscribe({
-            next: (response) => {
-                this.dataSource.data = response.data.page;
+        const sub = forkJoin({
+            insumoResponse: this.abmInsumosService.getInsumos(),
+            materiasPrimas: this.abmInsumosService.getMateriasPrimas()
+        }).subscribe({
+            next: ({ insumoResponse, materiasPrimas }) => {
+                this.materiaPrimaUnidades.clear();
+                materiasPrimas.forEach(mp => this.materiaPrimaUnidades.set(mp.id, mp.unidadMedidaStock));
+
+                this.dataSource.data = insumoResponse.data.page;
                 this.isLoading = false;
             },
             error: (err) => {
-                console.error('Error al cargar insumos:', err);
-                this.notificationService.showError('No se pudieron cargar los insumos.');
+                console.error('Error al cargar datos:', err);
+                this.notificationService.showError('No se pudieron cargar los datos de insumos.');
                 this.isLoading = false;
             }
         });
         this.subscriptions.add(sub);
+    }
+
+    formatCantidad(insumo: IInsumo): string {
+        if (!insumo.cantidadMateriaPrima || !insumo.idMateriaPrima) {
+            return '';
+        }
+
+        const unidad = this.materiaPrimaUnidades.get(insumo.idMateriaPrima) || '';
+        return `${insumo.cantidadMateriaPrima} ${unidad}`;
     }
 
     applyFilter(event: Event): void {

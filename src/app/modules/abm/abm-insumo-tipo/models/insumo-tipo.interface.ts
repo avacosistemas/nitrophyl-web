@@ -2,6 +2,7 @@ export interface IInsumoTipo {
     id: number;
     nombre: string;
     padre?: IInsumoTipo;
+    tipoStock?: string;
     usuarioCreacion?: string;
     fechaCreacion?: number;
     usuarioActualizacion?: string;
@@ -24,6 +25,7 @@ export interface IInsumoTipoDto {
     padre?: {
         id: number;
     };
+    tipoStock?: string;
 }
 
 export interface IErrorResponse {

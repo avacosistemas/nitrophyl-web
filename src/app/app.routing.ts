@@ -217,11 +217,20 @@ export const appRoutes: Route[] = [
             (m: any) => m.ABMPrensasModule
           ),
       },
-      {
-        path: 'piezas',
+            {
+        path: 'prensas',
+        data: { permission: 'MENU_PRENSAS' },
         loadChildren: () =>
-          import('app/modules/parts/parts.module').then(
-            (m: any) => m.PartsModule
+          import('app/modules/abm/abm-prensa/abm-prensa.module').then(
+            (m: any) => m.ABMPrensasModule
+          ),
+      },
+      {
+        path: 'materias-primas',
+        data: { permission: 'MENU_MATERIA_PRIMA' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-materiaprima/abm-materiaprima.module').then(
+            (m: any) => m.ABMMateriaPrimaModule
           ),
       },
       {

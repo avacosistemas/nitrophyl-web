@@ -1,28 +1,25 @@
-export interface IInsumo {
+export interface IMateriaPrima {
   id: number;
   nombre: string;
-  idTipo?: number;
-  tipoNombre?: string;
-  idMateriaPrima?: number;
-  materiaPrimaNombre?: string;
-  cantidadMateriaPrima?: number;
+  cantidadStock: number;
+  unidadMedidaStock: 'G' | 'KG';
   usuarioCreacion?: string;
   fechaCreacion?: number;
   usuarioActualizacion?: string;
   fechaActualizacion?: number;
 }
 
-export interface IInsumoApiResponse {
+export interface IMateriaPrimaApiResponse {
   status: string;
   data: {
-    page: IInsumo[];
+    page: IMateriaPrima[];
     totalReg: number;
   };
 }
 
-export interface IInsumoSingleApiResponse {
+export interface IMateriaPrimaSingleApiResponse {
   status: string;
-  data: IInsumo;
+  data: IMateriaPrima;
 }
 
 export interface IErrorResponse {

@@ -9,11 +9,16 @@
                 El nombre es requerido.
             </mat-error>
         </mat-form-field>
+
         <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Tipo de Insumo (Opcional)</mat-label>
+            <mat-label>Tipo de Insumo</mat-label>
             <input type="text" placeholder="Buscar tipo de insumo..." aria-label="Tipo de Insumo" matInput
-                formControlName="tipoInsumo" [matAutocomplete]="auto">
-            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+                formControlName="tipoInsumo" [matAutocomplete]="autoTipo" required>
+            <button mat-icon-button matSuffix *ngIf="form.get('tipoInsumo').value"
+                    (click)="clearTipoInsumoSelection(); $event.stopPropagation()">
+                <mat-icon>close</mat-icon>
+            </button>
+            <mat-autocomplete #autoTipo="matAutocomplete" [displayWith]="displayTipoInsumoFn">
                 <mat-option *ngFor="let option of filteredTiposInsumo$ | async" [value]="option">
                     {{option.nombre}}
                 </mat-option>
@@ -21,7 +26,44 @@
                     No se encontraron tipos de insumo.
                 </mat-option>
             </mat-autocomplete>
+            <mat-error *ngIf="form.get('tipoInsumo').hasError('required')">
+                El tipo de insumo es requerido.
+            </mat-error>
         </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Materia Prima (Opcional)</mat-label>
+            <input type="text" placeholder="Buscar materia prima..." aria-label="Materia Prima" matInput
+                formControlName="materiaPrima" [matAutocomplete]="autoMateria">
+            <button mat-icon-button matSuffix *ngIf="form.get('materiaPrima').value"
+                    (click)="clearMateriaPrimaSelection(); $event.stopPropagation()">
+                <mat-icon>close</mat-icon>
+            </button>
+            <mat-autocomplete #autoMateria="matAutocomplete" [displayWith]="displayMateriaPrimaFn">
+                <mat-option *ngFor="let option of filteredMateriasPrimas$ | async" [value]="option">
+                    {{option.nombre}}
+                </mat-option>
+                <mat-option *ngIf="(filteredMateriasPrimas$ | async)?.length === 0" disabled>
+                    No se encontraron materias primas.
+                </mat-option>
+            </mat-autocomplete>
+        </mat-form-field>
+
+        <div *ngIf="form.get('materiaPrima').value" class="flex items-center gap-2">
+            <mat-form-field appearance="outline" class="flex-auto">
+                <mat-label>Cantidad</mat-label>
+                <input matInput type="number" formControlName="cantidadMateriaPrima" required>
+                <mat-error *ngIf="form.get('cantidadMateriaPrima').hasError('required')">
+                    La cantidad es requerida.
+                </mat-error>
+                 <mat-error *ngIf="form.get('cantidadMateriaPrima').hasError('min')">
+                    Debe ser mayor a 0.
+                </mat-error>
+            </mat-form-field>
+            <span class="text-gray-500 font-medium pb-5" *ngIf="selectedMateriaPrima">
+                {{ selectedMateriaPrima.unidadMedidaStock }}
+            </span>
+        </div>
 
     </form>
 </div>

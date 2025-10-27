@@ -21,10 +21,18 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
     mode: 'create' | 'edit';
     title: string;
     isLoading = false;
+    private currentId: number;
 
     allPadresPosibles: IInsumoTipo[] = [];
     filteredPadres$: Observable<IInsumoTipo[]>;
     private subscriptions = new Subscription();
+
+    public tiposStock = [
+        { label: 'M²/ROLLO', value: 'M2DIAM' },
+        { label: 'Unidades', value: 'UNIDAD' },
+        { label: 'Unidades Por peso', value: 'GRAMOSUNIDAD' },
+        { label: 'Unidades Por Metro', value: 'UNIDADXMETRO' }
+    ];
 
     constructor(
         public dialogRef: MatDialogRef<InsumoTipoModalComponent>,
@@ -35,18 +43,16 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
     ) {
         this.mode = this.data.mode;
         this.title = this.mode === 'create' ? 'Crear Tipo de Insumo' : 'Editar Tipo de Insumo';
+
+        if (this.mode === 'edit' && this.data.insumoTipo) {
+            this.currentId = this.data.insumoTipo.id;
+        }
     }
 
     ngOnInit(): void {
         this.initForm();
         this.loadPadresPosibles();
-
-        const sub = this.form.get('tienePadre').valueChanges.subscribe(hasParent => {
-            if (!hasParent) {
-                this.form.get('padre').setValue(null);
-            }
-        });
-        this.subscriptions.add(sub);
+        this.setupDynamicValidators();
     }
 
     ngOnDestroy(): void {
@@ -57,14 +63,33 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
         this.form = this.fb.group({
             nombre: ['', [Validators.required, Validators.maxLength(100)]],
             tienePadre: [false],
-            padre: [null]
+            padre: [null],
+            tipoStock: [null, [Validators.required]]
         });
     }
 
-    private loadPadresPosibles(): void {
+    private setupDynamicValidators(): void {
+        const tienePadreControl = this.form.get('tienePadre');
+        const tipoStockControl = this.form.get('tipoStock');
+        const padreControl = this.form.get('padre');
+
+        const sub = tienePadreControl.valueChanges.subscribe(hasParent => {
+            if (hasParent) {
+                tipoStockControl.setValue(null);
+                tipoStockControl.clearValidators();
+            } else {
+                padreControl.setValue(null);
+                tipoStockControl.setValidators([Validators.required]);
+            }
+            tipoStockControl.updateValueAndValidity();
+        });
+        this.subscriptions.add(sub);
+    }
+
+     private loadPadresPosibles(): void {
         const sub = this.abmInsumoTipoService.getInsumoTipos().subscribe(tipos => {
             if (this.mode === 'edit') {
-                this.allPadresPosibles = tipos.filter(t => t.id !== this.data.insumoTipo.id);
+                this.allPadresPosibles = tipos.filter(t => t.id !== this.currentId);
             } else {
                 this.allPadresPosibles = tipos;
             }
@@ -76,7 +101,10 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
 
     private patchForm(): void {
         if (this.mode === 'edit' && this.data.insumoTipo) {
-            this.form.patchValue({ nombre: this.data.insumoTipo.nombre });
+            this.form.patchValue({
+                nombre: this.data.insumoTipo.nombre,
+                tipoStock: this.data.insumoTipo.tipoStock
+            });
             if (this.data.insumoTipo.padre) {
                 const padreSeleccionado = this.allPadresPosibles.find(p => p.id === this.data.insumoTipo.padre.id);
                 if (padreSeleccionado) {
@@ -100,6 +128,10 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
         return this.allPadresPosibles.filter(tipo => tipo.nombre.toLowerCase().includes(filterValue));
     }
 
+    public clearPadreSelection(): void {
+        this.form.get('padre').setValue(null);
+    }
+
     displayFn(tipo: IInsumoTipo): string {
         return tipo && tipo.nombre ? tipo.nombre : '';
     }
@@ -117,16 +149,20 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
             nombre: formValue.nombre,
         };
 
-        const padreSeleccionado: IInsumoTipo = formValue.padre;
-        if (formValue.tienePadre && padreSeleccionado && padreSeleccionado.id) {
-            dto.padre = { id: padreSeleccionado.id };
+        if (formValue.tienePadre) {
+            const padreSeleccionado: IInsumoTipo = formValue.padre;
+            if (padreSeleccionado && padreSeleccionado.id) {
+                dto.padre = { id: padreSeleccionado.id };
+            }
+        } else {
+            dto.tipoStock = formValue.tipoStock;
         }
 
         const request$ = this.mode === 'create'
             ? this.abmInsumoTipoService.createInsumoTipo(dto)
-            : this.abmInsumoTipoService.updateInsumoTipo(this.data.insumoTipo.id, dto);
+            : this.abmInsumoTipoService.updateInsumoTipo(this.currentId, dto);
 
-        request$.subscribe({
+        const sub = request$.subscribe({
             next: () => {
                 this.isLoading = false;
                 this.notificationService.showSuccess(`Tipo de insumo ${this.mode === 'create' ? 'creado' : 'actualizado'} correctamente.`);
@@ -138,6 +174,7 @@ export class InsumoTipoModalComponent implements OnInit, OnDestroy {
                 this.notificationService.showError('Ocurrió un error al guardar los cambios.');
             }
         });
+        this.subscriptions.add(sub);
     }
 
     onCancel(): void {

@@ -94,7 +94,7 @@ export class NavegacionService {
           permissionCode: 'MENU_ADMINISTRACION_CLIENTES',
           type: 'basic',
         },
-          {
+        {
           icon: 'heroicons_solid:currency-dollar',
           id: 'cotizaciones',
           link: '/cotizaciones',
@@ -173,6 +173,14 @@ export class NavegacionService {
           link: '/prensas/grid',
           title: 'Prensas',
           permissionCode: 'MENU_PRENSAS',
+          type: 'basic',
+        },
+        {
+          icon: 'heroicons_outline:cube',
+          id: 'materias-primas',
+          link: '/materias-primas/grid',
+          title: 'Materias Primas',
+          permissionCode: 'MENU_MATERIA_PRIMA',
           type: 'basic',
         },
       ],

@@ -1,6 +1,6 @@
 <div class="p-6 sm:p-10 w-full">
     <mat-form-field appearance="outline" class="w-full bg-white sm:w-1/2 md:w-1/3 pt-4 px-4 rounded-lg border-2">
-        <mat-label>Buscar por nombre o tipo</mat-label>
+        <mat-label>Buscar por nombre</mat-label>
         <input matInput (keyup)="applyFilter($event)" placeholder="Ingresar busqueda...">
         <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
@@ -12,24 +12,19 @@
     <div class="relative w-full mt-5" [class.hidden]="isLoading">
         <table mat-table [dataSource]="dataSource" class="border-2 rounded-2xl w-full">
 
-            <ng-container matColumnDef="tipoNombre">
-                <th mat-header-cell *matHeaderCellDef> Tipo </th>
-                <td mat-cell *matCellDef="let element"> {{element.tipoNombre}} </td>
-            </ng-container>
-           
             <ng-container matColumnDef="nombre">
-                <th mat-header-cell *matHeaderCellDef> Insumo </th>
+                <th mat-header-cell *matHeaderCellDef> Nombre </th>
                 <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="materiaPrimaNombre">
-                <th mat-header-cell *matHeaderCellDef> Materia Prima </th>
-                <td mat-cell *matCellDef="let element"> {{element.materiaPrimaNombre}} </td>
+            <ng-container matColumnDef="cantidadStock">
+                <th mat-header-cell *matHeaderCellDef> Cantidad </th>
+                <td mat-cell *matCellDef="let element"> {{element.cantidadStock}} </td>
             </ng-container>
 
-            <ng-container matColumnDef="cantidadMateriaPrima">
-                <th mat-header-cell *matHeaderCellDef> Cantidad </th>
-                <td mat-cell *matCellDef="let element"> {{ formatCantidad(element) }} </td>
+            <ng-container matColumnDef="unidadMedidaStock">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element"> {{element.unidadMedidaStock}} </td>
             </ng-container>
 
             <ng-container matColumnDef="acciones">
@@ -49,11 +44,11 @@
 
             <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell" [attr.colspan]="displayedColumns.length" class="text-center">
-                    <ng-container *ngIf="dataSource.data.length > 0 && dataSource.filteredData.length === 0">
+                    <ng-container *ngIf="dataSource.data.length > 0">
                         No se encontraron datos que coincidan con el filtro "{{dataSource.filter}}"
                     </ng-container>
                     <ng-container *ngIf="!isLoading && dataSource.data.length === 0">
-                        No hay insumos creados.
+                        No hay materias primas creadas.
                     </ng-container>
                 </td>
             </tr>
