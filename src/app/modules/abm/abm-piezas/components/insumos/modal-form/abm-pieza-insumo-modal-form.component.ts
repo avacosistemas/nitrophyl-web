@@ -126,25 +126,25 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
   }
 
   clearTipo(levelToClear: number): void {
-    this.tiposFormArray.at(levelToClear).reset();
-    this.nivelesTipoInsumo.splice(levelToClear);
-    while (this.tiposFormArray.length > levelToClear) {
-      this.tiposFormArray.removeAt(levelToClear);
+    this.tiposFormArray.at(levelToClear).reset(null, { emitEvent: false });
+    this.nivelesTipoInsumo.splice(levelToClear + 1);
+    while (this.tiposFormArray.length > levelToClear + 1) {
+      this.tiposFormArray.removeAt(levelToClear + 1);
     }
 
     const parentLevel = levelToClear - 1;
     const parentTipo = this.tiposFormArray.at(parentLevel).value as ITipoInsumoJerarquico;
-    this.selectedTipoStock = parentTipo.tipoStock || null;
 
+    this.selectedTipoStock = parentTipo.tipoStock || null;
     this.updateValidatorsByStockType(true);
     this.loadInsumosForTipo(parentTipo.id);
-
     this.cdr.markForCheck();
   }
 
   private loadInsumosForTipo(idTipo: number): void {
     this.isLoading = true;
     this.insumoForm.get('insumo').disable();
+    this.insumoForm.get('insumo').reset();
     this.abmPiezaService.getInsumosPorTipo(idTipo)
       .pipe(takeUntil(this.destroy$))
       .subscribe(res => {
