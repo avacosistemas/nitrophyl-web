@@ -24,7 +24,7 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   insumosPieza = new MatTableDataSource<IInsumoTratado>([]);
   sinDatos: boolean = false;
   isLoading: boolean = false;
-  
+
   displayedColumns: string[];
 
   constructor(
@@ -78,19 +78,21 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   }
 
   formatMedidaDetallada(element: IInsumoTratado): string {
+    const unidadLongitud = element.unidadMedidaLongitud ? ` ${element.unidadMedidaLongitud}` : '';
+
+    if (element.tipo?.tipoStock === 'UNIDADXMETRO' && element.medida1 != null) {
+      return `${element.medida1}${unidadLongitud}`;
+    }
+
     if (!element.unidadMedida) return '-';
 
-    const unidadLongitud = element.unidadMedidaLongitud ? ` ${element.unidadMedidaLongitud}` : '';
-    
     switch (element.unidadMedida) {
-        case 'DIAMETRO':
-            return `Diámetro: ${element.medida1}${unidadLongitud}`;
-        case 'LONGITUD':
-            return `Longitud: ${element.medida1}${unidadLongitud}`;
-        case 'SUPERFICIE':
-            return `Superficie: ${element.medida1} x ${element.medida2}${unidadLongitud}`;
-        default:
-            return '-';
+      case 'DIAMETRO':
+        return `Diámetro: ${element.medida1}${unidadLongitud}`;
+      case 'SUPERFICIE':
+        return `Superficie: ${element.medida1} x ${element.medida2}${unidadLongitud}`;
+      default:
+        return '-';
     }
   }
 

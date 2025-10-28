@@ -183,7 +183,7 @@ export interface IInsumoTratado {
     tratamientos: ITratamiento[];
     adhesivos: IAdhesivo[];
     unidades?: number;
-    unidadMedida?: 'DIAMETRO' | 'SUPERFICIE' | 'LONGITUD' | null;
+    unidadMedida?: 'DIAMETRO' | 'SUPERFICIE' | null;
     medida1?: number;
     medida2?: number;
     unidadMedidaLongitud?: 'MM' | 'CM' | 'M' | null;

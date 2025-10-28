@@ -104,13 +104,11 @@
                 ><mat-select formControlName="unidadMedida" required
                   ><mat-option value="DIAMETRO">Diámetro</mat-option
                   ><mat-option value="SUPERFICIE">Superficie</mat-option
-                  ><mat-option value="LONGITUD"
-                    >Longitud</mat-option
                   ></mat-select
                 ></mat-form-field
               >
               <div
-                *ngIf="insumoForm.get('unidadMedida').value === 'DIAMETRO' || insumoForm.get('unidadMedida').value === 'LONGITUD'"
+                *ngIf="insumoForm.get('unidadMedida').value === 'DIAMETRO'"
               >
                 <mat-form-field appearance="outline" class="w-1/2 pr-2"
                   ><mat-label>Medida</mat-label

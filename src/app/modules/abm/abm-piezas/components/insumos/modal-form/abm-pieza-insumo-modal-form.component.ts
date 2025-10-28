@@ -182,7 +182,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
         this.insumoForm.get('unidades').setValidators(positiveNumberRequired);
         this.insumoForm.get('unidadMedida').setValidators(Validators.required);
         const tipoMedida = this.insumoForm.get('unidadMedida').value;
-        if (tipoMedida === 'DIAMETRO' || tipoMedida === 'LONGITUD') {
+        if (tipoMedida === 'DIAMETRO') {
           this.insumoForm.get('medida1').setValidators(positiveNumberRequired);
           this.insumoForm.get('unidadMedidaLongitud').setValidators(Validators.required);
         } else if (tipoMedida === 'SUPERFICIE') {
