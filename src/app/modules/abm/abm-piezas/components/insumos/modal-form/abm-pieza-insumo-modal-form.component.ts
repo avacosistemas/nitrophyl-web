@@ -119,7 +119,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     const hijos = this.allTiposInsumo.filter(t => t.padre?.id === tipoSeleccionado.id);
     if (hijos.length > 0) {
       this.nivelesTipoInsumo.push(hijos);
-      this.tiposFormArray.push(this.fb.control(null, Validators.required));
+      this.tiposFormArray.push(this.fb.control(null));
     }
 
     this.cdr.markForCheck();

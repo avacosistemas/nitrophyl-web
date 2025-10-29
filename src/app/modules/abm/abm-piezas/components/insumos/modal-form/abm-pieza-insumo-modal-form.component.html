@@ -23,7 +23,7 @@
                   <mat-select
                     [formControl]="tiposFormArray.controls[i]"
                     (selectionChange)="onTipoSeleccionado($event.value, i)"
-                    required
+                    [required]="i === 0"
                     [compareWith]="compareWithId"
                   >
                     <mat-option *ngFor="let tipo of nivel" [value]="tipo">
