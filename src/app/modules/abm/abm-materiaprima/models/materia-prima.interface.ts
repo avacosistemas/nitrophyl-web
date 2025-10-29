@@ -26,3 +26,34 @@ export interface IErrorResponse {
   status: string;
   data: string;
 }
+
+export type TipoMovimientoStock = 'STOCK_INICIAL' | 'INGRESO' | 'DESPERDICIO' | 'RECUENTO_ANUAL';
+
+export interface IMateriaPrimaStockHistorial {
+  id?: number;
+  cantidad: number;
+  tipo: TipoMovimientoStock;
+  unidadMedida: 'G' | 'KG';
+  fecha: string;
+  idMateriaPrima?: number;
+  materiaPrimaNombre?: string;
+  usuarioCreacion?: string;
+  fechaCreacion?: number;
+  usuarioActualizacion?: string;
+  fechaActualizacion?: number;
+}
+
+export interface IMateriaPrimaStockHistorialApiResponse {
+    status: string;
+    data: {
+        page: IMateriaPrimaStockHistorial[];
+        totalReg: number;
+    };
+}
+
+export interface ICreateMateriaPrimaStock {
+    cantidad: number;
+    fecha: string;
+    idMateriaPrima: number;
+    tipo: TipoMovimientoStock;
+}

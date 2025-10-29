@@ -8,6 +8,8 @@ import { AbmInsumosRoutingModule } from './abm-insumos-routing.module';
 import { ABMInsumosComponent } from './abm-insumos.component';
 import { InsumosListComponent } from './components/insumos-list/insumos-list.component';
 import { InsumoModalComponent } from './components/insumo-modal/insumo-modal.component';
+import { InsumoStockComponent } from './components/insumo-stock/insumo-stock.component';
+import { InsumoStockModalComponent } from './components/insumo-stock-modal/insumo-stock-modal.component';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -20,16 +22,21 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { CoreSharedModule } from 'app/core/shared/shared.module';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
-
 
 @NgModule({
     declarations: [
         ABMInsumosComponent,
         InsumosListComponent,
-        InsumoModalComponent
+        InsumoModalComponent,
+        InsumoStockComponent,
+        InsumoStockModalComponent
     ],
     imports: [
         CommonModule,
@@ -52,6 +59,10 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
         MatTooltipModule,
         MatSlideToggleModule,
         MatAutocompleteModule,
+        MatSelectModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        CoreSharedModule
     ]
 })
 export class ABMInsumosModule { }

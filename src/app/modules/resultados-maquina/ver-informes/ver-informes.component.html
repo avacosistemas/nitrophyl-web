@@ -10,9 +10,8 @@
           </mat-panel-title>
         </mat-expansion-panel-header>
 
-        <form [formGroup]="form" class="" (keydown.enter)="onEnter($event)">
+        <form [formGroup]="form" class="flex flex-col gap-2" (keydown.enter)="onEnter($event)">
           <div class="flex gap-3 justify-around">
-
             <mat-form-field appearance="outline" class="w-[calc(100%/5-12px*4/5)] ">
               <mat-label>Fecha Desde</mat-label>
               <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde" />

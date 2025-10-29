@@ -1,43 +1,37 @@
 <ng-container *ngIf="data.set === 'APPROVE'; else reject">
-    <form [formGroup]="form">
-        <h1 class="text-2xl font-semibold py-4">
+    <form [formGroup]="form" class="flex flex-col gap-2">
+        <h1 class="text-2xl font-semibold">
             ¿Cuál es el estado del lote?
         </h1>
 
-        <div class="py-4">
-            <mat-radio-group formControlName="status" class="w-full flex justify-evenly items-center">
-                <mat-radio-button value="APROBADO">
-                    <mat-icon [style.color]="'green'">check_circle</mat-icon>
-                </mat-radio-button>
-                <mat-radio-button value="APROBADO_OBSERVADO">
-                    <mat-icon [style.color]="'yellow'">error</mat-icon>
-                </mat-radio-button>
-            </mat-radio-group>
-        </div>
+        <mat-radio-group formControlName="status" class="w-full flex justify-evenly items-center py-3">
+            <mat-radio-button value="APROBADO">
+                <mat-icon [style.color]="'green'" class="items-center flex">check_circle</mat-icon>
+            </mat-radio-button>
+            <mat-radio-button value="APROBADO_OBSERVADO">
+                <mat-icon [style.color]="'yellow'"  class="items-center flex">error</mat-icon>
+            </mat-radio-button>
+        </mat-radio-group>
 
-        <div class="py-1">
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Fecha Aprobación</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Aprobacion">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-                <mat-hint>DD/MM/YYYY</mat-hint>
-                <mat-error>Fecha Aprobacion requerida</mat-error>
-            </mat-form-field>
-        </div>
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Fecha Aprobación</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Aprobacion">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-hint>DD/MM/YYYY</mat-hint>
+            <mat-error>Fecha Aprobacion requerida</mat-error>
+        </mat-form-field>
 
-        <div class="py-1">
-            <mat-form-field class="w-full" appearance="outline">
-                <mat-label> Observaciones </mat-label>
-                <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
-            </mat-form-field>
-        </div>
+        <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Observaciones </mat-label>
+            <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
+        </mat-form-field>
 
         <div class="flex justify-center items-center">
             <mat-error *ngIf="submitted && form.controls.status.invalid">Resultado requerido</mat-error>
         </div>
 
-        <div class="flex w-full py-4 row gap-3 justify-end items-center">
+        <div class="flex w-full row gap-3 justify-end items-center">
             <button mat-stroked-button mat-dialog-close class="mat-focus-indicator mat-stroked-button mat-button-base">
                 <span class="mat-button-wrapper"> Cerrar </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>
@@ -52,28 +46,24 @@
     </form>
 </ng-container>
 <ng-template #reject>
-    <form [formGroup]="form">
-        <h1 class="text-2xl font-semibold py-4">¿Rechazar?</h1>
+    <form [formGroup]="form" class="flex flex-col gap-2">
+        <h1 class="text-2xl font-semibold">¿Rechazar?</h1>
 
-        <div class="py-1">
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label> Fecha Rechazo </mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Rechazo">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-                <mat-hint>DD/MM/YYYY</mat-hint>
-                <mat-error>Fecha Rechazo requerida</mat-error>
-            </mat-form-field>
-        </div>
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label> Fecha Rechazo </mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="fecha" placeholder="Fecha Rechazo">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-hint>DD/MM/YYYY</mat-hint>
+            <mat-error>Fecha Rechazo requerida</mat-error>
+        </mat-form-field>
 
-        <div class="py-1">
-            <mat-form-field class="w-full" appearance="outline">
-                <mat-label> Observaciones </mat-label>
-                <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
-            </mat-form-field>
-        </div>
+        <mat-form-field class="w-full" appearance="outline">
+            <mat-label> Observaciones </mat-label>
+            <textarea matInput formControlName="observation" placeholder="Observaciones" maxlength="255"></textarea>
+        </mat-form-field>
 
-        <div class="flex w-full py-4 row gap-3 justify-end items-center">
+        <div class="flex w-full row gap-3 justify-end items-center">
             <button mat-stroked-button mat-dialog-close class="mat-focus-indicator mat-stroked-button mat-button-base">
                 <span class="mat-button-wrapper"> Cerrar </span>
                 <span matripple="" class="mat-ripple mat-button-ripple"></span>

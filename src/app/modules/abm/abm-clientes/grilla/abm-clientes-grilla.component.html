@@ -41,7 +41,7 @@
                 element === expandedElement ? 'expanded' : 'collapsed'
               ">
               <div class="example-element-description">
-                <form [formGroup]="clienteForm">
+                <form [formGroup]="clienteForm" class="flex flex-col gap-2">
                   <div class="flex w-full justify-end mb-2" *ngIf="'LISTADO_CLIENTE_MODIFY' | hasPermission">
                     <button mat-flat-button type="button" color="primary" class="self-center"
                       (click)="verContacto(element)">

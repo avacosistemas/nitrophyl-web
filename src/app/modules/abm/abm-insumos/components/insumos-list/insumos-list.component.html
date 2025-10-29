@@ -1,6 +1,6 @@
 <div class="p-6 sm:p-10 w-full">
-    <mat-form-field appearance="outline" class="w-full bg-white sm:w-1/2 md:w-1/3 pt-4 px-4 rounded-lg border-2">
-        <mat-label>Buscar por nombre o tipo</mat-label>
+    <mat-form-field appearance="outline" class="w-full bg-white sm:w-1/2 md:w-1/3 p-4 rounded-lg border-2">
+        <mat-label>Buscar por tipo</mat-label>
         <input matInput (keyup)="applyFilter($event)" placeholder="Ingresar busqueda...">
         <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
@@ -16,7 +16,7 @@
                 <th mat-header-cell *matHeaderCellDef> Tipo </th>
                 <td mat-cell *matCellDef="let element"> {{element.tipoNombre}} </td>
             </ng-container>
-           
+
             <ng-container matColumnDef="nombre">
                 <th mat-header-cell *matHeaderCellDef> Insumo </th>
                 <td mat-cell *matCellDef="let element"> {{element.nombre}} </td>
@@ -35,7 +35,8 @@
             <ng-container matColumnDef="acciones">
                 <th mat-header-cell *matHeaderCellDef class="text-right"></th>
                 <td mat-cell *matCellDef="let element" class="text-right">
-                    <div class="flex justify-end cursor-pointer gap-1 py-4">
+                    <div class="flex justify-end cursor-pointer gap-2 py-4">
+                        <mat-icon *ngIf="'INSUMOS_STOCK_READ' | hasPermission" (click)="goToStock(element)" matTooltip="Stock">inventory_2</mat-icon>
                         <mat-icon (click)="openEditModal(element)" svgIcon="heroicons_solid:pencil-alt"
                             matTooltip="Editar"></mat-icon>
                         <mat-icon (click)="openDeleteDialog(element)" svgIcon="heroicons_solid:trash"

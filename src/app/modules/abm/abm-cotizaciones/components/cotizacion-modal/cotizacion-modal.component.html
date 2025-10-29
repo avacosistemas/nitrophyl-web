@@ -3,8 +3,8 @@
     <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center">
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     </div>
-    <form [formGroup]="form">
-        <div class="flex w-full gap-4">
+    <form [formGroup]="form" class="flex flex-col gap-2">
+        <div class="flex w-full gap-3">
             <mat-form-field appearance="outline" class="w-1/2">
                 <mat-label>Pieza</mat-label>
                 <input type="text" placeholder="Buscar pieza por nombre o código..." matInput formControlName="pieza"
@@ -30,7 +30,7 @@
             </mat-form-field>
         </div>
 
-        <div class="flex w-full gap-4">
+        <div class="flex w-full gap-3">
             <mat-form-field appearance="outline" class="w-1/2">
                 <mat-label>Precio</mat-label>
                 <input matInput type="number" formControlName="valor" required>

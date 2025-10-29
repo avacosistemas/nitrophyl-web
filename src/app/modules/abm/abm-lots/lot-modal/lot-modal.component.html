@@ -20,7 +20,7 @@
     </div>
   </div>
 
-  <form [formGroup]="form">
+  <form [formGroup]="form" class="flex flex-col gap-2">
     <mat-form-field class="w-full" appearance="outline">
       <mat-label> Lote </mat-label>
       <input type="text" placeholder="Ingrese el lote (LNNNN) " matInput formControlName="lot" required minlength="5"

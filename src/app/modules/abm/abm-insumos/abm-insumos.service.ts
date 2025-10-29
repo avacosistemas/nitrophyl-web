@@ -3,7 +3,7 @@ import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http'
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from 'environments/environment';
-import { IInsumoApiResponse, IInsumo, IInsumoSingleApiResponse } from './models/insumo.interface';
+import { IInsumoApiResponse, IInsumo, IInsumoSingleApiResponse, IInsumoStockHistorialApiResponse, ICreateInsumoStock } from './models/insumo.interface';
 import { ITipoInsumo, ITipoInsumoApiResponse } from './models/tipo-insumo.interface';
 import { IMateriaPrima, IMateriaPrimaApiResponse } from './models/materia-prima.interface';
 
@@ -15,6 +15,7 @@ export class AbmInsumosService {
     private readonly apiUrl = `${environment.server}insumo`;
     private readonly tipoInsumoApiUrl = `${environment.server}tipoInsumo/soloHijos`;
     private readonly materiaPrimaApiUrl = `${environment.server}materiaPrima`;
+    private readonly apiStockUrl = `${environment.server}insumoStockHistorial`;
 
     constructor(private http: HttpClient) { }
 
@@ -65,5 +66,14 @@ export class AbmInsumosService {
                 return throwError(() => new Error('No se pudieron cargar las materias primas.'));
             })
         );
+    }
+
+    getInsumoStockHistorial(idInsumo: number): Observable<IInsumoStockHistorialApiResponse> {
+        const params = new HttpParams().set('sort', 'fecha,desc');
+        return this.http.get<IInsumoStockHistorialApiResponse>(`${this.apiStockUrl}/${idInsumo}`, { params });
+    }
+
+    createInsumoStock(dto: ICreateInsumoStock): Observable<any> {
+        return this.http.post(this.apiStockUrl, dto);
     }
 }

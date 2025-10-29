@@ -6,7 +6,7 @@
                     <h1 class="text-2xl font-semibold mb-2">Perfil</h1>
                 </div>
                 <form
-                    class="mt-8"
+                    class="flex flex-col gap-2"
                     [formGroup]="createPerfilForm">
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label> Nombre </mat-label>
@@ -41,7 +41,7 @@
                     <h1 class="text-2xl font-semibold mb-2">Permisos Asociados</h1>
                 </div>
                 <div class="grid grid-cols-5 gap-4">
-                    <div class="col-span-2">
+                    <div class="col-span-2 flex flex-col gap-2">
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Permisos Disponibles</mat-label>
                             <input matInput (keyup)="onKeyDisponibles($event.target.value)" [(ngModel)]="inputDisponibles">
@@ -79,7 +79,7 @@
                         <button mat-raised-button (click)="add()" [disabled]="selection.selected.length === 0" class="justify-self-center">Agregar</button>
                         <button mat-raised-button (click)="remove()" [disabled]="selectionIncluidos.selected.length === 0" class="justify-self-center">Quitar</button>
                     </div>
-                    <div class="col-span-2">
+                    <div class="col-span-2 flex flex-col gap-2">
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Permisos Incluidos</mat-label>
                             <input matInput (keyup)="onKeyIncluidos($event.target.value)" [(ngModel)]="inputIncluidos">

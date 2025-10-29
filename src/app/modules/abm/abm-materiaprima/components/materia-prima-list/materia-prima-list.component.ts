@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { Subscription } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 import { AbmMateriaPrimaService } from '../../abm-materiaprima.service';
 import { IMateriaPrima, IErrorResponse } from '../../models/materia-prima.interface';
@@ -25,7 +26,8 @@ export class MateriaPrimaListComponent implements OnInit, OnDestroy {
         private abmMateriaPrimaService: AbmMateriaPrimaService,
         public dialog: MatDialog,
         private notificationService: NotificationService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private router: Router
     ) {
         this.dataSource.filterPredicate = (data: IMateriaPrima, filter: string): boolean => {
             const dataStr = `${data.nombre} ${data.cantidadStock} ${data.unidadMedidaStock || ''}`.toLowerCase();
@@ -60,6 +62,10 @@ export class MateriaPrimaListComponent implements OnInit, OnDestroy {
     applyFilter(event: Event): void {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSource.filter = filterValue.trim().toLowerCase();
+    }
+
+    goToStock(materiaPrima: IMateriaPrima): void {
+        this.router.navigate(['/materias-primas/stock', materiaPrima.id], { state: { materiaPrima } });
     }
 
     openEditModal(materiaPrima: IMateriaPrima): void {

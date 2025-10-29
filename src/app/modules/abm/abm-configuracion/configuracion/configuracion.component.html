@@ -1,11 +1,11 @@
-<div class="flex flex-col w-full max-w-1/2" id="top" *ngIf="mode === 'Edit' || mode === 'Create' || mode === 'View'">
-  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8">
+<div class="flex flex-col w-full max-w-1/2 p-6 sm:p-10" id="top" *ngIf="mode === 'Edit' || mode === 'Create' || mode === 'View'">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
 
     <div>
       <h1 class="text-2xl font-semibold mb-2"> Configuración </h1>
     </div>
 
-    <form [formGroup]="form" class="mt-2">
+    <form [formGroup]="form" class="flex flex-col gap-2">
       <div class="row flex flex-col gap-1 justify-around">
         <mat-form-field appearance="outline" class="w-full ">
           <mat-label>Fórmula</mat-label>
@@ -107,8 +107,8 @@
   </div>
 </div>
 
-<div class="flex flex-col w-full" id="top" *ngIf="tests?.length">
-  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8">
+<div class="flex flex-col w-full p-6 sm:p-10" id="top" *ngIf="tests?.length">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
     <div>
       <h1 class="text-2xl mb-2">
         <span class="font-semibold">Pruebas de la máquina:</span> {{ selectedMachineName }}

@@ -10,7 +10,7 @@
                         </mat-panel-title>
                     </mat-expansion-panel-header>
 
-                    <form [formGroup]="searchForm" class="mt-2">
+                    <form [formGroup]="searchForm" class="flex flex-col gap-2">
                         <div class="row flex gap-3 justify-around">
 
                             <mat-form-field appearance="outline" class="w-1/4">
@@ -57,22 +57,24 @@
                             </mat-form-field>
                         </div>
 
-                        <div class="row flex gap-3 items-center">
-                            <mat-checkbox formControlName="soloVigentes">Solo Vigentes</mat-checkbox>
-                        </div>
+                        <div class="w-full justify-between flex">
+                            <div class="row flex gap-3 items-center">
+                                <mat-checkbox formControlName="soloVigentes">Solo Vigentes</mat-checkbox>
+                            </div>
 
-                        <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
-                            <button mat-flat-button (click)="search()"
-                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
-                                <span class="mat-button-wrapper">
-                                    Buscar
-                                </span>
-                            </button>
+                            <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
+                                <button mat-flat-button (click)="search()"
+                                    class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
+                                    <span class="mat-button-wrapper">
+                                        Buscar
+                                    </span>
+                                </button>
 
-                            <button mat-stroked-button (click)="limpiarFiltros()"
-                                class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
-                                <span class="mat-button-wrapper"> Limpiar </span>
-                            </button>
+                                <button mat-stroked-button (click)="limpiarFiltros()"
+                                    class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
+                                    <span class="mat-button-wrapper"> Limpiar </span>
+                                </button>
+                            </div>
                         </div>
                     </form>
 

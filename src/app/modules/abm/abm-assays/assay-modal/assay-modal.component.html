@@ -15,8 +15,8 @@
             </button>
         </div>
     </div>
-    <div class="modal-content-wrapper">
-        <form [formGroup]="form" class="" *ngIf="(mode === 'create' || mode === 'edit') && form">
+    <div class="modal-content-wrapper p-0">
+        <form [formGroup]="form" class="flex flex-col gap-2" *ngIf="(mode === 'create' || mode === 'edit') && form">
 
             <mat-form-field appearance="outline" class="w-full ">
                 <mat-label>Fecha</mat-label>

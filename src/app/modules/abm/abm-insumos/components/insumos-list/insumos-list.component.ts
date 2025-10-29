@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { Subscription, forkJoin } from 'rxjs';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 import { AbmInsumosService } from '../../abm-insumos.service';
 import { IInsumo, IErrorResponse } from '../../models/insumo.interface';
@@ -26,7 +27,8 @@ export class InsumosListComponent implements OnInit, OnDestroy {
         private abmInsumosService: AbmInsumosService,
         public dialog: MatDialog,
         private notificationService: NotificationService,
-        private sanitizer: DomSanitizer
+        private sanitizer: DomSanitizer,
+        private router: Router
     ) {
         this.dataSource.filterPredicate = (data: IInsumo, filter: string): boolean => {
             const dataStr = `${data.nombre} ${data.tipoNombre || ''} ${data.materiaPrimaNombre || ''} ${data.cantidadMateriaPrima || ''}`.toLowerCase();
@@ -76,6 +78,11 @@ export class InsumosListComponent implements OnInit, OnDestroy {
     applyFilter(event: Event): void {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSource.filter = filterValue.trim().toLowerCase();
+    }
+    
+    goToStock(insumo: IInsumo): void {
+        const unidadMedida = this.materiaPrimaUnidades.get(insumo.idMateriaPrima);
+        this.router.navigate(['/insumos/stock', insumo.id], { state: { insumo, unidadMedida } });
     }
 
     openEditModal(insumo: IInsumo): void {

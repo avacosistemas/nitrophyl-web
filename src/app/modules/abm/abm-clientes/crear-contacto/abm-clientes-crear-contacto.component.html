@@ -1,67 +1,50 @@
-<div class="flex flex-col w-full" id="top">
-    <mat-tab-group class="mt-2 col-span-12 grid-rows-1">
-        <mat-tab label="Datos del Contacto">
-            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
-                <div>
-                    <h1 class="text-2xl font-semibold mb-2">Contacto</h1>
-                </div>
-                <form
-                    class="mt-8"
-                    [formGroup]="contactoFrom">
-                    <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Nombre</mat-label>
-                        <mat-icon matPrefix svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
-                        <input
-                          id="nombre"
-                          matInput
-                          [formControlName]="'nombre'"
-                          placeholder="Nombre">
-                        <mat-error class="mb-1" *ngIf="contactoFrom.get('nombre').hasError('required')">
-                          El nombre es requerido
-                        </mat-error>
-                      </mat-form-field>
-                    <div class="w-full mb-3">
-                        <mat-label class="ml-3">Tipo: </mat-label>
-                        <mat-radio-group aria-label="Select an option" formControlName="tipo">
-                            <mat-radio-button [value]='"COMPRAS"' class="ml-5">Compras</mat-radio-button>
-                            <mat-radio-button [value]='"CONTADURIA"' class="ml-5">Contaduría</mat-radio-button>
-                            <mat-radio-button [value]='"CALIDAD"' class="ml-5">Calidad</mat-radio-button>
-                            <mat-radio-button [value]='"EXPEDICION"' class="ml-5">Expendición</mat-radio-button>
-                            <mat-radio-button [value]='"INGENIERIA"' class="ml-5">Ingeniería</mat-radio-button>
-                            <mat-radio-button [value]='"INFORMES"' class="ml-5">Informes</mat-radio-button>
-                            <mat-radio-button [value]='"OTROS"' class="ml-5">Otros</mat-radio-button>
-                        </mat-radio-group>
-                        <mat-error class="mb-1" *ngIf="contactoFrom.get('tipo').hasError('required') && !contactoFrom.get('tipo').pristine">
-                            El tipo es requerido
-                        </mat-error>
-                    </div>
-                    <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Email</mat-label>
-                        <mat-icon matPrefix svgIcon="heroicons_solid:mail" class="mr-3"></mat-icon>
-                        <input
-                          id="email"
-                          matInput
-                          [formControlName]="'email'"
-                          placeholder="Email">
-                        <mat-error class="mb-1" *ngIf="contactoFrom.get('email').hasError('required')">
-                          El email es requerido
-                        </mat-error>
-                      </mat-form-field>
-                      
-                      <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Teléfono</mat-label>
-                        <mat-icon matPrefix svgIcon="heroicons_solid:phone" class="mr-3"></mat-icon>
-                        <input
-                          id="telefono"
-                          matInput
-                          [formControlName]="'telefono'"
-                          placeholder="Teléfono">
-                        <mat-error class="mb-1" *ngIf="contactoFrom.get('telefono').hasError('required')">
-                          El teléfono es requerido
-                        </mat-error>
-                      </mat-form-field>
-                </form>
-            </div>
-        </mat-tab>
-    </mat-tab-group>
+<div class="flex flex-col w-full p-6 sm:p-10" id="top">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+    <div>
+      <h1 class="text-2xl font-semibold mb-2">Contacto</h1>
+    </div>
+    <form class="flex flex-col gap-2" [formGroup]="contactoFrom">
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Nombre</mat-label>
+        <mat-icon matPrefix svgIcon="mat_solid:account_circle" class="mr-3"></mat-icon>
+        <input id="nombre" matInput [formControlName]="'nombre'" placeholder="Nombre">
+        <mat-error class="mb-1" *ngIf="contactoFrom.get('nombre').hasError('required')">
+          El nombre es requerido
+        </mat-error>
+      </mat-form-field>
+      <div class="w-full mb-3">
+        <mat-label class="ml-3">Tipo: </mat-label>
+        <mat-radio-group aria-label="Select an option" formControlName="tipo">
+          <mat-radio-button [value]='"COMPRAS"' class="ml-5">Compras</mat-radio-button>
+          <mat-radio-button [value]='"CONTADURIA"' class="ml-5">Contaduría</mat-radio-button>
+          <mat-radio-button [value]='"CALIDAD"' class="ml-5">Calidad</mat-radio-button>
+          <mat-radio-button [value]='"EXPEDICION"' class="ml-5">Expendición</mat-radio-button>
+          <mat-radio-button [value]='"INGENIERIA"' class="ml-5">Ingeniería</mat-radio-button>
+          <mat-radio-button [value]='"INFORMES"' class="ml-5">Informes</mat-radio-button>
+          <mat-radio-button [value]='"OTROS"' class="ml-5">Otros</mat-radio-button>
+        </mat-radio-group>
+        <mat-error class="mb-1"
+          *ngIf="contactoFrom.get('tipo').hasError('required') && !contactoFrom.get('tipo').pristine">
+          El tipo es requerido
+        </mat-error>
+      </div>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Email</mat-label>
+        <mat-icon matPrefix svgIcon="heroicons_solid:mail" class="mr-3"></mat-icon>
+        <input id="email" matInput [formControlName]="'email'" placeholder="Email">
+        <mat-error class="mb-1" *ngIf="contactoFrom.get('email').hasError('required')">
+          El email es requerido
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Teléfono</mat-label>
+        <mat-icon matPrefix svgIcon="heroicons_solid:phone" class="mr-3"></mat-icon>
+        <input id="telefono" matInput [formControlName]="'telefono'" placeholder="Teléfono">
+        <mat-error class="mb-1" *ngIf="contactoFrom.get('telefono').hasError('required')">
+          El teléfono es requerido
+        </mat-error>
+      </mat-form-field>
+    </form>
+  </div>
 </div>

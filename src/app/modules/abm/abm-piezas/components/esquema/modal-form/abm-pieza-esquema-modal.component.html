@@ -5,7 +5,7 @@
     <form [formGroup]="formEsquema" class=" mat-form-without-wrapper">
         <mat-tab-group>
             <mat-tab label="Datos Generales">
-                <div class="p-4">
+                <div class="flex flex-col gap-2">
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Título</mat-label>
                         <input matInput formControlName="titulo" required>
@@ -39,7 +39,7 @@
             </mat-tab>
 
             <mat-tab label="Pasos">
-                <div class="p-4">
+                <div class="flex flex-col gap-2">
                     <ng-container formArrayName="pasos">
                         <div *ngFor="let pasoGroup of pasosFormArray.controls; let i = index" [formGroup]="pasoGroup"
                             class="flex items-start gap-2">

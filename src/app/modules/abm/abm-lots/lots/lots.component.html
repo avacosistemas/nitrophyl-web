@@ -11,7 +11,7 @@
           </mat-panel-title>
         </mat-expansion-panel-header>
 
-        <form [formGroup]="formFilter" class="mt-2 " (keydown.enter)="onEnter($event)">
+        <form [formGroup]="formFilter" class="flex flex-col gap-2" (keydown.enter)="onEnter($event)">
           <div class="flex gap-3 justify-around">
 
             <mat-form-field appearance="outline" class=" w-[calc(100%/5-12px*4/5)] ">

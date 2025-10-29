@@ -20,7 +20,7 @@
             </fuse-alert>
 
             <!-- Sign in form -->
-            <form class="mt-8" (ngSubmit)="login($event)" [formGroup]="loginForm" #loginNgForm="ngForm">
+            <form (ngSubmit)="login($event)" [formGroup]="loginForm" class="flex flex-col gap-3 mt-8" #loginNgForm="ngForm">
                 <!-- Username field -->
                 <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Usuario</mat-label>

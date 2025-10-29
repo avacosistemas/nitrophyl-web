@@ -5,7 +5,7 @@
         <div class="flex w-full gap-4">
           <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
 
-            <div>
+            <div class="flex flex-col gap-2">
               <div>
                 <h1 class="text-2xl font-semibold mb-2">Molde</h1>
               </div>
@@ -85,7 +85,7 @@
       </form>
     </mat-tab>
     <mat-tab label="Bocas">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <div class="flex justify-around gap-3" [formGroup]="bocaForm" *ngIf="mode === 'Edit'">
           <mat-form-field class="w-full" appearance="outline">
             <mat-label>Número de Boca </mat-label>
@@ -161,7 +161,7 @@
       </div>
     </mat-tab>
     <mat-tab label="Dimensiones">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <div class="flex justify-center gap-3" [formGroup]="dimensionForm" *ngIf="mode === 'Edit'">
           <mat-form-field class="min-w-[25%]" appearance="outline">
             <mat-label>Dimensión </mat-label>
@@ -213,7 +213,7 @@
       </div>
     </mat-tab>
     <mat-tab label="Planos">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <table mat-table [dataSource]="planos" class="border-2 rounded-2xl w-full">
           <ng-container matColumnDef="nombre">
             <th mat-header-cell *matHeaderCellDef> Nombre </th>
@@ -254,7 +254,7 @@
       </div>
     </mat-tab>
     <mat-tab label="Fotos">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <table mat-table [dataSource]="fotos" class="border-2 rounded-2xl w-full">
           <ng-container matColumnDef="nombre">
             <th mat-header-cell *matHeaderCellDef> Nombre </th>
@@ -291,7 +291,7 @@
       </div>
     </mat-tab>
     <mat-tab label="Clientes">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <div *ngIf="mode === 'Edit'">
           <div class="flex justify-center gap-2 w-full" [formGroup]="clientForm">
             <mat-form-field class="w-1/3" appearance="outline">
@@ -331,7 +331,7 @@
       </div>
     </mat-tab>
     <mat-tab label="Observaciones">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <div class="flex justify-around gap-2" [formGroup]="observacionForm" *ngIf="mode === 'Edit'">
           <mat-form-field class="w-full" appearance="outline">
             <mat-label>Observación</mat-label>

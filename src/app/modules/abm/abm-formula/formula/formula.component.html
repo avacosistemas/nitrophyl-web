@@ -1,8 +1,8 @@
-<div class="flex flex-col w-full" id="top" *ngIf="mode === 'Edit' || mode === 'Create'">
+<div class="flex flex-col w-full p-6 sm:p-10" id="top" *ngIf="mode === 'Edit' || mode === 'Create'">
   <!-- mode: Edit || Create. -->
-  <div class="grid border-2 bg-white border-gray-200 rounded-2xl m-8 p-8">
+  <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
 
-    <form class="mt-4" [formGroup]="form">
+    <form class="flex flex-col gap-2" [formGroup]="form">
       <div class="flex gap-6" *ngIf="mode === 'Edit'">
         <mat-form-field appearance="outline" class="w-full">
           <mat-label>Versión </mat-label>
@@ -100,7 +100,7 @@
         <div class="flex items-start">
           <div class="truncate text-lg font-medium leading-6 tracking-tight"> Agregar Máquina </div>
         </div>
-        <div class="mt-4">
+        <div class="flex flex-col gap-2 justify-between">
           <form [formGroup]="formTestMachine" class="w-full">
             <mat-form-field class="w-full" appearance="outline">
               <mat-label>Máquina </mat-label>

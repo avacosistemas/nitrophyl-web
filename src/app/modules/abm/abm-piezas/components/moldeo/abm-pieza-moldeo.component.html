@@ -108,7 +108,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2 mt-4">
                 <mat-chip-list aria-label="Bombeos">
                     <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" (removed)="quitarBombeo(i)"
                         [removable]="mode !== 'view'" class="bg-gray-200">
