@@ -75,7 +75,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   public mode(option: number, row: any): void {
     switch (option) {
       case 1:
-        this._formulas.setMode('Edit');
+        this._formulas.setMode('Clone');
         break;
       case 2:
         this._formulas.setMode('View');
@@ -83,6 +83,9 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       case 3:
         this._formulas.setTestTitle(row);
         this._formulas.setMode('Test');
+        break;
+      case 4:
+        this._formulas.setMode('Edit');
         break;
       default:
         break;

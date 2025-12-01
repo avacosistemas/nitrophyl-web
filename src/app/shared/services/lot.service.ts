@@ -7,7 +7,9 @@ import {
   ILotResponse,
   ILotsResponse,
   ILotResponseAutocomplete,
-  IInformeLoteResponse
+  IInformeLoteResponse,
+  IRegistroEnvio,
+  IRegistroEnvioResponse
 } from 'app/shared/models/lot.interface';
 import { IResponse } from '../models/response.interface';
 
@@ -201,11 +203,10 @@ export class LotService {
     return this.http.get<IResponse<number>>(url);
   }
 
-  enviarInformePorCorreo(idCliente: number, idLote: string, archivo: string | null = null, nombreArchivo: string = '', observaciones: string = '', observacionesInforme: string = ''): Observable<any> {
+  enviarInformePorCorreo(idCliente: number, idLote: string, archivo: string | null = null, observaciones: string = '', observacionesInforme: string = ''): Observable<any> {
     const body = {
       idCliente: idCliente,
       idLote: idLote,
-      nombreArchivo: nombreArchivo,
       observaciones: observaciones,
       observacionesInforme: observacionesInforme,
       archivo: archivo
@@ -235,6 +236,19 @@ export class LotService {
           return jsonResponse.data.archivo;
         })
       );
+  }
+
+  getRegistroEnvios(params: any): Observable<IRegistroEnvioResponse> {
+    let httpParams = new HttpParams();
+
+    Object.keys(params).forEach(key => {
+      if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
+        httpParams = httpParams.set(key, params[key]);
+      }
+    });
+
+    const url = `${environment.server}registroEnvioInformeCalidad`;
+    return this.http.get<IRegistroEnvioResponse>(url, { params: httpParams });
   }
 
   public deleteGrafico(idGraficoprueba: number): Observable<ILotResponse> {

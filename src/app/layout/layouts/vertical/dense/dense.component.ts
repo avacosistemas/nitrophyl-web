@@ -130,4 +130,18 @@ export class DenseLayoutComponent implements OnInit, OnDestroy {
     changePassword(): void {
         this._router.navigate(['/change-password']);
     }
+
+    reloadApp(): void {
+        const token = localStorage.getItem('accessToken');
+        const userData = localStorage.getItem('userData');
+        const permissions = localStorage.getItem('userPermissions');
+
+        localStorage.clear();
+
+        if (token) localStorage.setItem('accessToken', token);
+        if (userData) localStorage.setItem('userData', userData);
+        if (permissions) localStorage.setItem('userPermissions', permissions);
+
+        window.location.reload();
+    }
 }

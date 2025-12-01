@@ -5,10 +5,13 @@ import { Observable } from 'rxjs';
 import {
   Cliente,
   Contacto,
+  Domicilio,
   ResponseCliente,
   ResponseClientes,
   ResponseContacto,
   ResponseContactos,
+  ResponseDomicilio,
+  ResponseDomicilios,
 } from '../models/cliente.model';
 
 @Injectable({
@@ -82,5 +85,37 @@ export class ClientesService {
 
   getCorreoInforme(idCliente: number): Observable<any> {
     return this.http.get<any>(`${environment.server}cliente/correoinforme/${idCliente}`);
+  }
+
+  public getDomicilios(idCliente: number): Observable<ResponseDomicilios> {
+    return this.http.get<ResponseDomicilios>(
+      `${environment.server}clienteDomicilio?idCliente=${idCliente}`
+    );
+  }
+
+  public getDomicilioById(id: number): Observable<ResponseDomicilio> {
+    return this.http.get<ResponseDomicilio>(
+      `${environment.server}clienteDomicilio/${id}`
+    );
+  }
+
+  public createDomicilio(domicilio: Domicilio): Observable<any> {
+    return this.http.post<any>(
+      `${environment.server}clienteDomicilio`,
+      domicilio
+    );
+  }
+
+  public updateDomicilio(id: number, domicilio: Domicilio): Observable<any> {
+    return this.http.put<any>(
+      `${environment.server}clienteDomicilio/${id}`,
+      domicilio
+    );
+  }
+
+  public deleteDomicilio(id: number): Observable<any> {
+    return this.http.delete<any>(
+      `${environment.server}clienteDomicilio/${id}`
+    );
   }
 }

@@ -37,6 +37,14 @@
                             requerido</mat-error>
                     </mat-form-field>
 
+                    <mat-form-field appearance="outline" class="form-field w-full">
+                        <mat-label>Hoja de Proceso</mat-label>
+                        <input type="text" matInput formControlName="hojaProceso" placeholder="Hoja de Proceso">
+                        <mat-error *ngIf="piezaForm.get('hojaProceso').hasError('maxlength')">
+                            Máximo 100 caracteres.
+                        </mat-error>
+                    </mat-form-field>
+
                     <div *ngIf="mode === 'create'" class="flex flex-col gap-2">
                         <mat-form-field appearance="outline" class="form-field w-full ">
                             <mat-label>Molde</mat-label>
@@ -86,19 +94,28 @@
                         <mat-error *ngIf="piezaForm.get('idCliente').hasError('required')">El cliente es
                             requerido</mat-error>
                     </mat-form-field>
-                    <mat-form-field appearance="outline" class="form-field w-full ">
-                        <mat-label>Código de Cliente</mat-label>
-                        <input matInput formControlName="nombrePiezaCliente">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="form-field w-full ">
-                        <mat-label>Cotización</mat-label>
-                        <input matInput type="number" formControlName="cotizacionCliente">
-                        <mat-error *ngIf="piezaForm.get('cotizacionCliente').hasError('pattern')">Debe ser un valor
-                            numérico.</mat-error>
-                    </mat-form-field>
+                    <div class="flex gap-4">
+                        <mat-form-field appearance="outline" class="form-field w-1/2">
+                            <mat-label>Cotización</mat-label>
+                            <input matInput type="number" formControlName="cotizacionCliente">
+                            <mat-error *ngIf="piezaForm.get('cotizacionCliente').hasError('pattern')">Debe ser
+                                numérico.</mat-error>
+                            <mat-error *ngIf="piezaForm.get('cotizacionCliente').hasError('required')">Requerido si hay
+                                fecha.</mat-error>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="form-field w-1/2">
+                            <mat-label>Fecha Cotización</mat-label>
+                            <input matInput [matDatepicker]="pickerCotizacion" formControlName="fechaCotizacionCliente">
+                            <mat-datepicker-toggle matSuffix [for]="pickerCotizacion"></mat-datepicker-toggle>
+                            <mat-datepicker #pickerCotizacion></mat-datepicker>
+                            <mat-error *ngIf="piezaForm.get('fechaCotizacionCliente').hasError('required')">Requerido si
+                                hay valor.</mat-error>
+                        </mat-form-field>
+                    </div>
                     <mat-form-field appearance="outline" class="form-field w-full ">
                         <mat-label>Observaciones de cotización</mat-label>
                         <textarea matInput formControlName="observacionesCotizacionCliente"></textarea>
+                        <mat-hint>Habilitado solo si cotización y fecha están completos.</mat-hint>
                     </mat-form-field>
                 </div>
             </div>
@@ -148,7 +165,7 @@
                                 requerido</mat-error>
                         </mat-form-field>
                     </div>
-                    <div class="border-y py-4 my-2">
+                    <div class="border-y py-4 my-2" *ngIf="mode === 'edit' || mode === 'view'">
                         <span class="text-lg font-semibold tracking-tight leading-6">Espesores de Plancha</span>
                         <div *ngIf="mode !== 'view'" class="flex items-start gap-4 mt-2" [formGroup]="espesorForm">
                             <mat-form-field appearance="outline" class="flex-1">
@@ -193,7 +210,7 @@
                             No se han agregado rangos de espesor.
                         </div>
                     </div>
-                    <div class="flex gap-4">
+                    <div class="flex gap-4" *ngIf="mode === 'edit' || mode === 'view'">
                         <mat-form-field appearance="outline" class="form-field w-full ">
                             <mat-label>Peso Crudo (gramos)</mat-label>
                             <input matInput type="number" formControlName="pesoCrudo">
@@ -208,10 +225,14 @@
 
             <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
                 *ngIf="mode === 'create'">
-                <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
-                    Plano
-                </span>
-                <div class="flex flex-col gap-2" formGroupName="plano">
+                <div class="flex justify-between items-center" formGroupName="plano">
+                    <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                        Plano
+                    </span>
+                    <mat-checkbox formControlName="sinPlano" color="primary">No hay plano</mat-checkbox>
+                </div>
+
+                <div class="flex flex-col gap-2" formGroupName="plano" *ngIf="!piezaForm.get('plano.sinPlano').value">
                     <label for="file-upload" class="cursor-pointer mb-4 relative" *ngIf="mode === 'create'">
                         <div
                             class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
@@ -237,7 +258,10 @@
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-1/2">
                             <mat-label>Revisión</mat-label>
-                            <input matInput type="number" formControlName="planoRevision" required>
+                            <input matInput type="text" formControlName="planoRevision" required>
+                            <mat-error *ngIf="piezaForm.get('plano.planoRevision').hasError('pattern')">
+                                Solo números O solo letras.
+                            </mat-error>
                         </mat-form-field>
                     </div>
                     <mat-form-field appearance="outline">
@@ -255,6 +279,7 @@
                 </div>
             </div>
         </div>
+
         <div class="flex gap-4 w-full">
             <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4 w-1/3"
                 *ngIf="mode === 'edit' || mode === 'view'">

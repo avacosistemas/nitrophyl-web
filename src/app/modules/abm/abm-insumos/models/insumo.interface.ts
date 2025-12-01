@@ -6,6 +6,7 @@ export interface IInsumo {
   idMateriaPrima?: number;
   materiaPrimaNombre?: string;
   cantidadMateriaPrima?: number;
+  observaciones?: string;
   usuarioCreacion?: string;
   fechaCreacion?: number;
   usuarioActualizacion?: string;
@@ -48,17 +49,17 @@ export interface IInsumoStockHistorial {
 }
 
 export interface IInsumoStockHistorialApiResponse {
-    status: string;
-    data: {
-        page: IInsumoStockHistorial[];
-        totalReg: number;
-    };
+  status: string;
+  data: {
+    page: IInsumoStockHistorial[];
+    totalReg: number;
+  };
 }
 
 export interface ICreateInsumoStock {
-    cantidad: number;
-    fecha: string;
-    idInsumo: number;
-    tipo: TipoMovimientoStock;
-    observaciones?: string;
+  cantidad: number;
+  fecha: string;
+  idInsumo: number;
+  tipo: TipoMovimientoStock;
+  observaciones?: string;
 }

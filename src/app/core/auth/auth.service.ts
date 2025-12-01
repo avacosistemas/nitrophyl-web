@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
+import { catchError, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
 import { environment } from 'environments/environment';
-import { User } from 'app/core/user/user.types';
+import { Router } from '@angular/router';
+import { NotificationRelayService, RelayMessage } from 'app/core/services/notification-relay.service';
 
 @Injectable({
     providedIn: 'root'
@@ -18,7 +19,9 @@ export class AuthService {
     // -----------------------------------------------------------------------------------------------------
     constructor(
         private _httpClient: HttpClient,
-        private _userService: UserService
+        private _userService: UserService,
+        private _router: Router,
+        private _notificationRelay: NotificationRelayService
     ) {
         const token = this.accessToken;
     }
@@ -35,7 +38,6 @@ export class AuthService {
         if (token && token.split('.').length === 3) {
             return token;
         } else {
-            console.error('Token inválido encontrado en localStorage:', token);
             return '';
         }
     }
@@ -125,49 +127,41 @@ export class AuthService {
         const apiURL = this.getApiUrl('refresh');
 
         return this._httpClient.post(apiURL, null).pipe(
-            catchError(() => of(false)),
+            catchError((error) => {
+                this.signOut();
+                return of(false);
+            }),
             switchMap((response: any) => {
-                this.accessToken = response.accessToken;
-                this._authenticated = true;
-                this._userService.user = response.user;
-                return of(true);
+                if (response && response.token) {
+                    this.accessToken = response.token;
+                    this._authenticated = true;
+
+                    const user = {
+                        name: response.name,
+                        lastname: response.lastname,
+                        email: response.email,
+                    };
+                    localStorage.setItem('userData', JSON.stringify(user));
+                    localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
+                    this._userService.user = user;
+                    return of(true);
+                } else {
+                    this.signOut();
+                    return of(false);
+                }
             })
         );
     }
 
-    // signInUsingToken(): Observable<any> {
-    //     const apiURL = this.getApiUrl('refresh');
-
-    //     return this._httpClient.post(apiURL, null).pipe(
-    //         catchError(() => of(false)),
-    //         switchMap((response: any) => {
-    //             if (response && response.token) {
-    //                 this.accessToken = response.token;
-    //                 this._authenticated = true;
-
-    //                 const user = {
-    //                     name: response.name,
-    //                     lastname: response.lastname,
-    //                     email: response.email,
-    //                 };
-    //                 localStorage.setItem('userData', JSON.stringify(user)); 
-    //                 localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
-    //                 this._userService.user = user;
-    //                 return of(true);
-    //             } else {
-    //                 return of(false);
-    //             }
-    //         })
-    //     );
-    // }
     /**
      * Sign out
      */
     signOut(): Observable<any> {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('userPermissions');
+        localStorage.clear();
         this._authenticated = false;
+        if (this._userService) {
+            this._userService.user = null;
+        }
         return of(true);
     }
 
@@ -199,13 +193,15 @@ export class AuthService {
             return of(true);
         }
 
-        if (!this.accessToken) {
-            console.error('No se encontró un token de acceso');
+        const accessToken = this.accessToken;
+
+        if (!accessToken) {
             return of(false);
         }
 
-        if (AuthUtils.isTokenExpired(this.accessToken)) {
-            console.error('El token ha expirado');
+        if (AuthUtils.isTokenExpired(accessToken)) {
+            console.error('El token ha expirado. Cerrando sesión.');
+            this.signOut();
             return of(false);
         }
 

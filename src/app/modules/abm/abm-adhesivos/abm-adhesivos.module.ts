@@ -48,6 +48,9 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
         MatSnackBarModule,
         MatProgressSpinnerModule,
         MatTooltipModule,
+    ],
+    exports: [
+        AdhesivoModalComponent
     ]
 })
 export class ABMAdhesivosModule { }

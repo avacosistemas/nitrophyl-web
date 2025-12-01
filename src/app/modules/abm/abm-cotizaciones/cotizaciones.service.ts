@@ -23,6 +23,11 @@ export class CotizacionesService {
         return this.http.get<ICotizacionApiResponse>(this.apiUrl, { params: httpParams });
     }
 
+    getPiezasCliente(idCliente: number): Observable<any> {
+        const params = new HttpParams().set('idCliente', idCliente.toString());
+        return this.http.get<any>(`${environment.server}piezaCliente`, { params });
+    }
+
     createCotizacion(dto: ICotizacionCreateDTO): Observable<any> {
         return this.http.post(this.apiUrl, dto);
     }

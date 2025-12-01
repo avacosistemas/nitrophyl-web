@@ -49,6 +49,12 @@ export class ABMClientesComponent implements OnInit, AfterContentChecked, OnDest
             case 'saveContacto':
                 this.save();
                 break;
+            case 'createDomicilio':
+                this.createDomicilio();
+                break;
+            case 'saveDomicilio':
+                this.save();
+                break;
         }
     }
 
@@ -89,26 +95,39 @@ export class ABMClientesComponent implements OnInit, AfterContentChecked, OnDest
         if (event.component === 'EditContacto') {
             this.titulo = 'Edición Contacto';
         }
+        if (event.component === 'GrillaDomicilios') {
+            this.titulo = 'Consulta Domicilios';
+        }
+        if (event.component === 'CreateDomicilio') {
+            this.titulo = 'Nuevo Domicilio';
+        }
+        if (event.component === 'EditDomicilio') {
+            this.titulo = 'Edición Domicilio';
+        }
     }
 
     edit(): void {
         this.abmClientesSvc.events.next(2);
     }
 
-    close(): void  {
+    close(): void {
         this.abmClientesSvc.events.next(1);
     }
 
-    create(): void  {
+    create(): void {
         this.clientesService.setMode('Create');
         this.router.navigate(['../clientes/create']);
     }
 
-    createContacto(): void  {
+    createContacto(): void {
         this.abmClientesSvc.events.next(5);
     }
 
-    save(): void  {
+    createDomicilio(): void {
+        this.abmClientesSvc.events.next(5);
+    }
+
+    save(): void {
         this.abmClientesSvc.events.next(4);
     }
 }

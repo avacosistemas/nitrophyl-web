@@ -46,3 +46,20 @@ export interface ResponseContacto {
     status: string;
     data: Contacto;
 }
+
+export interface Domicilio {
+    id: number;
+    idCliente: number;
+    domicilio: string;
+    tipo: 'OTROS' | 'EXPEDICION' | 'INGENIERIA' | 'COMPRAS' | 'INFORMES' | 'CONTADURIA' | 'CALIDAD';
+}
+
+export interface ResponseDomicilios {
+    status: string;
+    data: Array<Domicilio>;
+}
+
+export interface ResponseDomicilio {
+    status: string;
+    data: Domicilio;
+}

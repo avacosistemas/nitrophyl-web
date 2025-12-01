@@ -29,6 +29,13 @@ export class NavegacionService {
           type: 'basic',
           permissionCode: 'MENU_INFORME_CALIDAD',
         },
+          {
+          id: 'registro-envios',
+          link: '/registro-envios',
+          title: 'Registro de envíos',
+          type: 'basic',
+          permissionCode: 'MENU_INFORME_CALIDAD',
+        },
         {
           id: 'configuracion',
           link: '/configuracion',

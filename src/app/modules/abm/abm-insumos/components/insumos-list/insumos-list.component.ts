@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { AbmInsumosService } from '../../abm-insumos.service';
 import { IInsumo, IErrorResponse } from '../../models/insumo.interface';
 import { InsumoModalComponent } from '../insumo-modal/insumo-modal.component';
+import { InsumoObservationModalComponent } from '../insumo-observation-modal/insumo-observation-modal.component';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
 @Component({
@@ -18,7 +19,7 @@ import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.c
 export class InsumosListComponent implements OnInit, OnDestroy {
     isLoading = true;
     dataSource = new MatTableDataSource<IInsumo>([]);
-    displayedColumns: string[] = ['tipoNombre', 'nombre', 'materiaPrimaNombre', 'cantidadMateriaPrima', 'acciones'];
+    displayedColumns: string[] = ['tipoNombre', 'nombre', 'materiaPrimaNombre', 'acciones'];
 
     private subscriptions = new Subscription();
     private materiaPrimaUnidades = new Map<number, string>();
@@ -66,20 +67,22 @@ export class InsumosListComponent implements OnInit, OnDestroy {
         this.subscriptions.add(sub);
     }
 
-    formatCantidad(insumo: IInsumo): string {
-        if (!insumo.cantidadMateriaPrima || !insumo.idMateriaPrima) {
-            return '';
+    formatMateriaPrima(insumo: IInsumo): string {
+        if (!insumo.idMateriaPrima) {
+            return 'No requiere';
         }
 
         const unidad = this.materiaPrimaUnidades.get(insumo.idMateriaPrima) || '';
-        return `${insumo.cantidadMateriaPrima} ${unidad}`;
+        const cantidadStr = insumo.cantidadMateriaPrima ? `${insumo.cantidadMateriaPrima} ${unidad}` : '';
+
+        return `${insumo.materiaPrimaNombre} - ${cantidadStr}`;
     }
 
     applyFilter(event: Event): void {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSource.filter = filterValue.trim().toLowerCase();
     }
-    
+
     goToStock(insumo: IInsumo): void {
         const unidadMedida = this.materiaPrimaUnidades.get(insumo.idMateriaPrima);
         this.router.navigate(['/insumos/stock', insumo.id], { state: { insumo, unidadMedida } });
@@ -142,5 +145,15 @@ export class InsumosListComponent implements OnInit, OnDestroy {
             }
         });
         this.subscriptions.add(sub);
+    }
+
+    openObservationModal(insumo: IInsumo): void {
+        this.dialog.open(InsumoObservationModalComponent, {
+            width: '500px',
+            data: {
+                title: insumo.nombre,
+                observation: insumo.observaciones
+            }
+        });
     }
 }

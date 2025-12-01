@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { EventEmitter,  } from '@angular/core';
+import { EventEmitter, } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
 // * Environment.
@@ -104,5 +104,9 @@ export class FormulasService {
   public marcarRevision(idFormula: number): Observable<any> {
     const url = `${this.url}/marcarrevision/${idFormula}`;
     return this.http.get<any>(url);
+  }
+
+  public clonar(idFormula: number, body: IFormula): Observable<IFormulaResponse> {
+    return this.http.put<IFormulaResponse>(`${this.url}/clonar/${idFormula}`, body);
   }
 }

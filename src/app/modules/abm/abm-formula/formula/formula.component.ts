@@ -56,6 +56,8 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   public materialsFail: boolean = false;
   public materials$: IMaterial[] | undefined;
 
+  public hardnessUnits: string[] = ['SHORE_A', 'SHORE_D'];
+
   public machine: string = '';
   public formTest: FormGroup;
   public formTestMachine: FormGroup;
@@ -93,15 +95,11 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.mode = this._formulas.getMode();
 
-    if (
-      this.mode === 'Edit' ||
-      this.mode === 'Create' ||
-      this.mode === 'Test'
-    ) {
+    if (['Edit', 'Create', 'Test', 'Clone'].includes(this.mode)) {
       this.activeRoute.paramMap.subscribe(
         (param: any) => (this.id = param.get('id'))
       );
-      if (this.mode === 'Edit' || this.mode === 'Create') {
+      if (['Edit', 'Create', 'Clone'].includes(this.mode)) {
         this.setForm();
       }
       if (this.mode === 'Test') {
@@ -123,6 +121,9 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       case 'Edit':
         this.loadData();
         break;
+      case 'Clone':
+        this.loadData();
+        break;
       case 'Test':
         this.getRevision();
         this.getMachines();
@@ -134,7 +135,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    if (this.subscription) {
+    if (this.suscripcion) {
       this.suscripcion.unsubscribe();
     }
   }
@@ -176,7 +177,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.postFormula();
     }
     if (this.mode === 'Edit') {
-      this.putFormula();
+      this.clonarFormula();
+    }
+    if (this.mode === 'Clone') {
+      this.clonarFormula();
     }
   }
 
@@ -328,12 +332,18 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       ),
     ]).subscribe({
       next: ([materials, formula]: [IMaterialsResponse, IFormulaResponse]) => {
+        this.formula$ = formula.data;
+
         this.form.controls.version.setValue(formula.data.version);
         this.form.controls.date.setValue(formula.data.fecha);
         this.form.controls.name.setValue(formula.data.nombre);
         this.form.controls.norma.setValue(formula.data.norma);
         this.form.controls.observaciones.setValue(formula.data.observaciones);
-        this.formula$ = formula.data;
+
+        this.form.controls.durezaMinima.setValue(formula.data.durezaMinima);
+        this.form.controls.durezaMaxima.setValue(formula.data.durezaMaxima);
+        this.form.controls.unidadDureza.setValue(formula.data.unidadDureza);
+
         if (this.materialsFail) {
           this.materials$ = [
             {
@@ -371,6 +381,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     this._formulas.get({ id: this.id }).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
+          this.formula$ = formula.data;
           this.form.controls.version.setValue(formula.data.version);
           this.form.controls.date.setValue(formula.data.fecha);
           this.form.controls.name.setValue(formula.data.nombre);
@@ -390,13 +401,14 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       idMaterial: this.form.controls.material.value,
       norma: this.form.controls.norma.value,
       observaciones: this.form.controls.observaciones.value,
+      durezaMinima: this.form.controls.durezaMinima.value,
+      durezaMaxima: this.form.controls.durezaMaxima.value,
+      unidadDureza: this.form.controls.unidadDureza.value,
     };
     this._formulas.post(body).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
           this.openSnackBar(true);
-          // this._formulas.setMode('Edit');
-          // this.router.navigate([`/formulas/edit/${formula.data.id}`]);
           this.router.navigate(['/formulas/grid']);
         }
       },
@@ -410,14 +422,39 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private putFormula(): void {
     const error: string = 'FormulaComponent => putFormula(): ';
-    const body: IFormula = {
-      id: this.formula$.id,
-      nombre: this.form.controls.name.value,
-      idMaterial: this.form.controls.material.value,
-      material: this.formula$.material,
-      norma: this.form.controls.norma.value,
-      observaciones: this.form.controls.observaciones.value,
+
+    const body: any = {
+      ...this.formula$,
+      rpdto: this.formula$.rpdto ? { ...this.formula$.rpdto } : null
     };
+
+    body.nombre = this.form.controls.name.value;
+    body.idMaterial = this.form.controls.material.value;
+    body.norma = this.form.controls.norma.value;
+    body.observaciones = this.form.controls.observaciones.value;
+    body.durezaMinima = this.form.controls.durezaMinima.value;
+    body.durezaMaxima = this.form.controls.durezaMaxima.value;
+    body.unidadDureza = this.form.controls.unidadDureza.value;
+
+    if (body.fecha && body.fecha.includes('/')) {
+      const [day, month, year] = body.fecha.split('/');
+      if (day && month && year) {
+        body.fecha = `${year}-${month}-${day}`;
+      }
+    }
+
+    if (body.rpdto) {
+      if (body.rpdto.fechaHasta === "") {
+        body.rpdto.fechaHasta = null;
+      }
+      if (body.rpdto.fecha && body.rpdto.fecha.includes('/')) {
+        const [d, m, y] = body.rpdto.fecha.split('/');
+        if (d && m && y) {
+          body.rpdto.fecha = `${y}-${m}-${d}`;
+        }
+      }
+    }
+
     this._formulas.put(body).subscribe({
       next: (formula: IFormulaResponse) => {
         if (formula.status === 'OK') {
@@ -434,6 +471,35 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  private clonarFormula(): void {
+    const error: string = 'FormulaComponent => clonarFormula(): ';
+
+    const body: IFormula = {
+      nombre: this.form.controls.name.value,
+      idMaterial: this.form.controls.material.value,
+      material: this.formula$ ? this.formula$.material : undefined,
+      norma: this.form.controls.norma.value,
+      observaciones: this.form.controls.observaciones.value,
+      durezaMinima: this.form.controls.durezaMinima.value,
+      durezaMaxima: this.form.controls.durezaMaxima.value,
+      unidadDureza: this.form.controls.unidadDureza.value,
+    };
+
+    this._formulas.clonar(this.id, body).subscribe({
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.openSnackBar(true, 'Nueva versión generada correctamente');
+          this.router.navigate(['/formulas/grid']);
+        }
+      },
+      error: (err) => {
+        this.openSnackBar(false, 'Error al clonar la fórmula');
+        console.error(error, err);
+      },
+      complete: () => { },
+    });
+  }
+
   private setFormMachine(): void {
     this.formTestMachine = this.formBuilder.group({
       machine: [null, Validators.required],
@@ -442,10 +508,10 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private setForm(): void {
     this.form = this.formBuilder.group({
-      version: [{ value: null, disabled: this.mode === 'Edit' }],
-      date: [{ value: null, disabled: this.mode === 'Edit' }],
+      version: [{ value: null, disabled: true }],
+      date: [{ value: null, disabled: true }],
       name: [
-        { value: null, disabled: this.mode === 'Edit' },
+        { value: null, disabled: this.mode === 'Edit' || this.mode === 'Clone' },
         Validators.compose([
           Validators.required,
           Validators.minLength(1),
@@ -453,17 +519,21 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
         ]),
       ],
       material: [
-        { value: null, disabled: this.mode === 'Edit' },
+        { value: null, disabled: this.mode === 'Edit' || this.mode === 'Clone' },
         Validators.required,
       ],
       norma: [
-        { value: null, disabled: this.mode === 'Edit' },
+        { value: null, disabled: false },
         Validators.compose([
           Validators.required,
           Validators.minLength(3),
           Validators.maxLength(100),
         ]),
       ],
+      unidadDureza: [null, Validators.required],
+      durezaMinima: [null, Validators.required],
+      durezaMaxima: [null, Validators.required],
+
       observaciones: [null, Validators.maxLength(255)],
     });
   }

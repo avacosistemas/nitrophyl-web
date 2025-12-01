@@ -11,6 +11,9 @@ export interface IFormula {
   norma?: string;
   observaciones?: string;
   rpdto?: IRpdto | null;
+  durezaMinima?: number;
+  durezaMaxima?: number;
+  unidadDureza?: string;
 }
 
 export interface IRpdto {
@@ -20,9 +23,9 @@ export interface IRpdto {
   fechaHasta?: string;
 }
 
-export interface IConfiguracionPruebaParametro
-{ id: number;
-  maquinaPrueba: { id: number; nombre?: string ; idMaquina?: number ; posicion?: number };
+export interface IConfiguracionPruebaParametro {
+  id: number;
+  maquinaPrueba: { id: number; nombre?: string; idMaquina?: number; posicion?: number };
   minimo: number;
   maximo: number;
   norma: string;
@@ -38,13 +41,6 @@ export interface ITestFormula {
   observacionesReporte: string;
   mostrarResultadosReporte?: boolean;
 }
-
-// export interface IParams {
-//   maquinaPrueba: string;
-//   maximo: number | null;
-//   minimo: number | null;
-//   norma: string | null;
-// }
 
 export interface IConditions {
   id?: number;

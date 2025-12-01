@@ -8,6 +8,7 @@ import { IAdhesivo, IAdhesivoDto } from '../../models/adhesivo.interface';
 interface DialogData {
     mode: 'create' | 'edit';
     adhesivo?: IAdhesivo;
+    nombre?: string;
 }
 
 @Component({
@@ -42,6 +43,8 @@ export class AdhesivoModalComponent implements OnInit {
 
         if (this.mode === 'edit' && this.data.adhesivo) {
             this.form.patchValue({ nombre: this.data.adhesivo.nombre });
+        } else if (this.mode === 'create' && this.data.nombre) {
+            this.form.patchValue({ nombre: this.data.nombre });
         }
     }
 
@@ -61,10 +64,10 @@ export class AdhesivoModalComponent implements OnInit {
             : this.abmAdhesivosService.updateAdhesivo(this.data.adhesivo.id, dto);
 
         request$.subscribe({
-            next: () => {
+            next: (response) => {
                 this.isLoading = false;
                 this.notificationService.showSuccess(`Adhesivo ${this.mode === 'create' ? 'creado' : 'actualizado'} correctamente.`);
-                this.dialogRef.close(true);
+                this.dialogRef.close(response.data);
             },
             error: (err) => {
                 this.isLoading = false;

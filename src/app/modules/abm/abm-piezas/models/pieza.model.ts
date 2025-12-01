@@ -53,6 +53,7 @@ export interface PiezaProceso {
     bombeos: Bombeo[];
     desmoldante: string | null;
     postCura: string | null;
+    hojaProceso: string | null;
 }
 
 export interface PiezaCreateDTO {
@@ -67,6 +68,7 @@ export interface PiezaCreateDTO {
     idTipoPieza: number;
     nombrePiezaCliente?: string;
     cotizacionCliente?: number;
+    fechaCotizacionCliente?: string;
     observacionesCotizacionCliente?: string;
     observacionesMolde?: string;
     observacionesPesoCrudo?: string;
@@ -75,9 +77,10 @@ export interface PiezaCreateDTO {
     planoClasificacion?: string;
     planoCodigo?: string;
     planoObservaciones?: string;
-    planoRevision?: number;
+    planoRevision?: string;
     revisionIncial: number;
     unidadDureza: string;
+    hojaProceso?: string;
 }
 
 export interface PiezaUpdateDTO {
@@ -91,6 +94,7 @@ export interface PiezaUpdateDTO {
     pesoCrudo: number | null;
     observacionesPesoCrudo: string | null;
     observacionesRevision: string | null;
+    hojaProceso?: string;
 }
 
 export interface PiezaCliente {
@@ -118,7 +122,7 @@ export interface Plano {
     idPieza: number;
     archivo?: string | null;
     codigo: string;
-    revision: number;
+    revision: string;
     clasificacion: string;
     observaciones: string;
     nombreArchivo?: string;

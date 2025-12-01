@@ -28,6 +28,8 @@ import { ABMPiezaMoldeoComponent } from './components/moldeo/abm-pieza-moldeo.co
 import { ABMPiezaDesmoldantePostcuraComponent } from './components/desmoldante-postcura/abm-pieza-desmoldante-postcura.component';
 import { ABMPiezaEsquemaComponent } from './components/esquema/abm-pieza-esquema.component';
 import { ABMPiezaFinalizacionComponent } from './components/finalizacion/abm-pieza-finalizacion.component';
+import { ABMAdhesivosModule } from '../abm-adhesivos/abm-adhesivos.module';
+import { ABMTratamientosModule } from '../abm-tratamiento/abm-tratamiento.module';
 import { SharedModule } from 'app/shared/shared.module';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -85,6 +87,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     PromptsModule,
     ABMPiezaInsumoModalFormModule,
     ABMPiezaEsquemaModalModule,
+    ABMAdhesivosModule,
+    ABMTratamientosModule,
     MatDialogModule,
     MatSlideToggleModule,
     ABMPiezaModalPlanoModule,

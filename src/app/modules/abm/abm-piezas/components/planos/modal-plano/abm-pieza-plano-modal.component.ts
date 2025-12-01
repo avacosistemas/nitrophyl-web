@@ -34,7 +34,7 @@ export class ABMPiezaPlanoModalComponent implements OnInit {
         this.uploadForm = this.formBuilder.group({
             archivo: [null, Validators.required],
             codigo: ['', Validators.required],
-            revision: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
+            revision: [null, [Validators.required, Validators.pattern(/^([0-9]+|[a-zA-Z]+)$/)]],
             clasificacion: ['NITROPHYL', Validators.required],
             observaciones: [''],
         });

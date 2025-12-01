@@ -53,7 +53,6 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   ) {
     this.clienteForm = this.formBuilder.group({
       id: [null],
-      // codigo: [null],
       razonSocial: [null, [Validators.required]],
       email: [null, [Validators.required]],
       cuit: [null, [Validators.required]],
@@ -114,10 +113,13 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
     this.router.navigateByUrl(`/clientes/${element.id}/grid-contactos`);
   }
 
+  public verDomicilio(element): void {
+    this.router.navigateByUrl(`/clientes/${element.id}/grid-domicilios`);
+  }
+
   public expandRow(element): void {
     this.clienteForm.patchValue({
       id: element.id,
-      // codigo: element.codigo,
       nombre: element.nombre,
       razonSocial: element.razonSocial,
       email: element.email,

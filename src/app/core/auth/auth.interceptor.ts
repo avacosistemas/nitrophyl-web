@@ -9,13 +9,10 @@ import { Router } from '@angular/router';
 export class AuthInterceptor implements HttpInterceptor {
     private authService: AuthService;
 
-    /**
-     * Constructor
-     */
     constructor(
         private injector: Injector,
         private router: Router
-    ) {}
+    ) { }
 
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         this.authService = this.injector.get(AuthService);
@@ -33,9 +30,8 @@ export class AuthInterceptor implements HttpInterceptor {
             catchError((error) => {
                 if (error instanceof HttpErrorResponse && error.status === 401) {
                     const currentUrl = this.router.url;
-                    if (currentUrl !== '/sign-in') {
-                        this.authService.signOut();
-                        // location.reload();
+                    if (currentUrl !== '/sign-in' && currentUrl !== '/forgot-password') {
+                        this.authService.signOut().subscribe();
                     }
                 }
                 return throwError(error);

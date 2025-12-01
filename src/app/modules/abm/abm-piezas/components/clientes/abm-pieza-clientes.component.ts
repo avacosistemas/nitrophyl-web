@@ -1,9 +1,9 @@
-import { Component, OnInit, OnDestroy, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, OnChanges, SimpleChanges, ViewChild, TemplateRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { Observable, Subscription, of } from 'rxjs';
+import { Observable, Subscription, merge } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -27,12 +27,13 @@ interface Cliente {
 export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements OnInit, OnDestroy, OnChanges {
   @Input() piezaId: number;
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
+  @ViewChild('editCodeDialog') editCodeDialog: TemplateRef<any>;
 
   clientesDisponibles: Cliente[] = [];
   filteredClientes$: Observable<Cliente[]>;
   selectedClients = new MatTableDataSource<PiezaCliente>([]);
 
-  baseDisplayedColumns: string[] = ['codigoCliente', 'nombreCliente', 'nombrePiezaPersonalizado', 'cotizacion', 'fechaCotizacion', 'observacionesCotizacion'];
+  baseDisplayedColumns: string[] = ['nombreCliente', 'nombrePiezaPersonalizado', 'cotizacion', 'fechaCotizacion', 'observacionesCotizacion'];
   displayedColumnsClients: string[];
 
   clienteForm: FormGroup;
@@ -40,6 +41,10 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
   isLoading: boolean = false;
   editMode: boolean = false;
   clienteToEdit: PiezaCliente | null = null;
+
+  clientToEditCode: PiezaCliente | null = null;
+  editCodeControl = new FormControl('');
+
   private subscription: Subscription = new Subscription();
 
   constructor(
@@ -57,6 +62,7 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
       cliente: [null, Validators.required],
       nombrePiezaPersonalizado: [''],
       cotizacion: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')],
+      fechaCotizacion: [null],
       observacionesCotizacion: [{ value: '', disabled: true }]
     });
   }
@@ -68,15 +74,7 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
       this.loadSelectedClients();
     }
 
-    this.clienteForm.get('cotizacion').valueChanges.subscribe(value => {
-      const obsControl = this.clienteForm.get('observacionesCotizacion');
-      if (value) {
-        obsControl.enable();
-      } else {
-        obsControl.disable();
-        obsControl.reset();
-      }
-    });
+    this.setupValidationLogic();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -95,6 +93,45 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
 
   ngOnDestroy(): void {
     this.subscription.unsubscribe();
+  }
+
+
+  private setupValidationLogic(): void {
+    const cotCtrl = this.clienteForm.get('cotizacion');
+    const fecCtrl = this.clienteForm.get('fechaCotizacion');
+    const obsCtrl = this.clienteForm.get('observacionesCotizacion');
+
+    this.subscription.add(
+      merge(cotCtrl.valueChanges, fecCtrl.valueChanges).subscribe(() => {
+        const hasCot = !!cotCtrl.value;
+        const hasFec = !!fecCtrl.value;
+
+        if (hasCot && !fecCtrl.hasValidator(Validators.required)) {
+          fecCtrl.setValidators([Validators.required]);
+          fecCtrl.updateValueAndValidity({ emitEvent: false });
+        } else if (!hasCot && fecCtrl.hasValidator(Validators.required)) {
+          fecCtrl.clearValidators();
+          fecCtrl.updateValueAndValidity({ emitEvent: false });
+        }
+
+        if (hasFec && !cotCtrl.hasValidator(Validators.required)) {
+          cotCtrl.setValidators([Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+          cotCtrl.updateValueAndValidity({ emitEvent: false });
+        } else if (!hasFec && cotCtrl.hasValidator(Validators.required)) {
+          cotCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+          cotCtrl.updateValueAndValidity({ emitEvent: false });
+        }
+
+        if (hasCot && hasFec && cotCtrl.valid && fecCtrl.valid) {
+          if (obsCtrl.disabled) obsCtrl.enable({ emitEvent: false });
+        } else {
+          if (obsCtrl.enabled) {
+            obsCtrl.disable({ emitEvent: false });
+            obsCtrl.setValue('', { emitEvent: false });
+          }
+        }
+      })
+    );
   }
 
   setDisplayedColumns(): void {
@@ -152,6 +189,40 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
     );
   }
 
+  openEditCodeDialog(row: PiezaCliente): void {
+    this.clientToEditCode = row;
+    this.editCodeControl.setValue(row.nombrePiezaPersonalizado);
+    this.dialog.open(this.editCodeDialog, { width: '400px' });
+  }
+
+  saveClientCode(): void {
+    if (!this.clientToEditCode) return;
+
+    this.isLoading = true;
+
+    const dto = {
+      idCliente: this.clientToEditCode.idCliente,
+      idPieza: this.clientToEditCode.idPieza,
+      nombrePiezaPersonalizado: this.editCodeControl.value
+    };
+
+    this.subscription.add(
+      this.abmPiezaService.actualizarClienteDePieza(this.clientToEditCode.id, dto).subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Código de cliente actualizado correctamente.');
+          this.dialog.closeAll();
+          this.loadSelectedClients();
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error al actualizar código:', err);
+          this.notificationService.showError('Error al actualizar el código de cliente.');
+          this.isLoading = false;
+        }
+      })
+    );
+  }
+
   addOrUpdateCliente(): void {
     if (this.clienteForm.invalid) {
       this.notificationService.showError('Por favor, complete los campos requeridos.');
@@ -160,6 +231,12 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
 
     this.isLoading = true;
     const formValue = this.clienteForm.value;
+    let fechaISO = null;
+
+    if (formValue.fechaCotizacion) {
+      fechaISO = new Date(formValue.fechaCotizacion).toISOString();
+    }
+
     const selectedClienteId = formValue.cliente.id;
 
     if (this.editMode) {
@@ -168,6 +245,7 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
         idPieza: this.piezaId,
         nombrePiezaPersonalizado: formValue.nombrePiezaPersonalizado,
         cotizacion: formValue.cotizacion,
+        fechaCotizacion: fechaISO,
         observacionesCotizacion: formValue.observacionesCotizacion
       };
       this.subscription.add(
@@ -185,6 +263,7 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
         idPieza: this.piezaId,
         nombrePiezaPersonalizado: formValue.nombrePiezaPersonalizado,
         cotizacion: formValue.cotizacion,
+        fechaCotizacion: fechaISO,
         observacionesCotizacion: formValue.observacionesCotizacion
       };
       this.subscription.add(
@@ -201,9 +280,12 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
       cliente: clienteObj,
       nombrePiezaPersonalizado: cliente.nombrePiezaPersonalizado,
       cotizacion: cliente.cotizacion,
+      fechaCotizacion: cliente.fechaCotizacion ? new Date(cliente.fechaCotizacion) : null,
       observacionesCotizacion: cliente.observacionesCotizacion
     });
     this.clienteForm.get('cliente').disable();
+    this.clienteForm.get('cotizacion').updateValueAndValidity();
+    this.clienteForm.get('fechaCotizacion').updateValueAndValidity();
   }
 
   cancelEdit(): void {
@@ -211,6 +293,8 @@ export class ABMPiezaClientesComponent extends ABMPiezaBaseComponent implements 
     this.clienteToEdit = null;
     this.clienteForm.reset();
     this.clienteForm.get('cliente').enable();
+    this.clienteForm.get('cotizacion').setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+    this.clienteForm.get('fechaCotizacion').clearValidators();
   }
 
   private handleResponse(successMessage: string) {

@@ -15,7 +15,7 @@
             <input type="text" placeholder="Buscar tipo de insumo..." aria-label="Tipo de Insumo" matInput
                 formControlName="tipoInsumo" [matAutocomplete]="autoTipo" required>
             <button mat-icon-button matSuffix *ngIf="form.get('tipoInsumo').value"
-                    (click)="clearTipoInsumoSelection(); $event.stopPropagation()">
+                (click)="clearTipoInsumoSelection(); $event.stopPropagation()">
                 <mat-icon>close</mat-icon>
             </button>
             <mat-autocomplete #autoTipo="matAutocomplete" [displayWith]="displayTipoInsumoFn">
@@ -36,7 +36,7 @@
             <input type="text" placeholder="Buscar materia prima..." aria-label="Materia Prima" matInput
                 formControlName="materiaPrima" [matAutocomplete]="autoMateria">
             <button mat-icon-button matSuffix *ngIf="form.get('materiaPrima').value"
-                    (click)="clearMateriaPrimaSelection(); $event.stopPropagation()">
+                (click)="clearMateriaPrimaSelection(); $event.stopPropagation()">
                 <mat-icon>close</mat-icon>
             </button>
             <mat-autocomplete #autoMateria="matAutocomplete" [displayWith]="displayMateriaPrimaFn">
@@ -56,7 +56,7 @@
                 <mat-error *ngIf="form.get('cantidadMateriaPrima').hasError('required')">
                     La cantidad es requerida.
                 </mat-error>
-                 <mat-error *ngIf="form.get('cantidadMateriaPrima').hasError('min')">
+                <mat-error *ngIf="form.get('cantidadMateriaPrima').hasError('min')">
                     Debe ser mayor a 0.
                 </mat-error>
             </mat-form-field>
@@ -64,6 +64,13 @@
                 {{ selectedMateriaPrima.unidadMedidaStock }}
             </span>
         </div>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput formControlName="observaciones" cdkTextareaAutosize cdkAutosizeMinRows="2"
+                maxlength="255"></textarea>
+            <mat-hint align="end">{{form.get('observaciones').value?.length || 0}}/255</mat-hint>
+        </mat-form-field>
 
     </form>
 </div>

@@ -8,6 +8,9 @@ import { ABMClientesCrearComponent } from './crear-cliente/abm-clientes-crear.co
 import { ABMClientesCrearContactoComponent } from './crear-contacto/abm-clientes-crear-contacto.component';
 import { ABMClientesGrillaContactosComponent } from './grilla-contactos/abm-clientes-grilla-contactos.component';
 import { ABMClientesGrillaComponent } from './grilla/abm-clientes-grilla.component';
+import { ABMClientesGrillaDomiciliosComponent } from './grilla-domicilios/abm-clientes-grilla-domicilios.component';
+import { ABMClientesCrearDomicilioComponent } from './crear-domicilio/abm-clientes-crear-domicilio.component';
+import { ABMClientesDomicilioComponent } from './domicilio/abm-clientes-domicilio.component';
 
 // * Material.
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -51,6 +54,18 @@ const abmUsuariosRoutes: Route[] = [
         path: ':idCliente/contacto/:idContacto',
         component: ABMClientesContactoComponent
       },
+      {
+        path: ':idCliente/grid-domicilios',
+        component: ABMClientesGrillaDomiciliosComponent,
+      },
+      {
+        path: ':idCliente/crear-domicilio',
+        component: ABMClientesCrearDomicilioComponent,
+      },
+      {
+        path: ':idCliente/domicilio/:idDomicilio',
+        component: ABMClientesDomicilioComponent
+      },
     ],
   },
 ];
@@ -67,6 +82,9 @@ const maskConfig: Partial<IConfig> = {
     ABMClientesGrillaContactosComponent,
     ABMClientesCrearContactoComponent,
     ABMClientesContactoComponent,
+    ABMClientesGrillaDomiciliosComponent,
+    ABMClientesCrearDomicilioComponent,
+    ABMClientesDomicilioComponent,
   ],
   imports: [
     RouterModule.forChild(abmUsuariosRoutes),

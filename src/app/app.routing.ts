@@ -13,6 +13,37 @@ export const appRoutes: Route[] = [
 
   // { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'usuarios/grid' },
 
+  {
+    path: '',
+    component: LayoutComponent,
+    data: {
+      layout: 'empty'
+    },
+    children: [
+      {
+        path: 'sign-out',
+        loadChildren: () => import('app/modules/auth/sign-out/sign-out.module').then(m => m.AuthSignOutModule)
+      }
+    ]
+  },
+  {
+    path: '',
+    canActivate: [AuthGuard],
+    canActivateChild: [AuthGuard],
+    component: LayoutComponent,
+    data: {
+      layout: 'empty',
+    },
+    children: [
+      {
+        path: 'unlock-session',
+        loadChildren: () =>
+          import('app/modules/auth/unlock-session/unlock-session.module').then(
+            (m: any) => m.AuthUnlockSessionModule
+          ),
+      },
+    ],
+  },
   // Auth routes for guests
   {
     path: '',
@@ -71,13 +102,6 @@ export const appRoutes: Route[] = [
       layout: 'empty',
     },
     children: [
-      {
-        path: 'sign-out',
-        loadChildren: () =>
-          import('app/modules/auth/sign-out/sign-out.module').then(
-            (m: any) => m.AuthSignOutModule
-          ),
-      },
       {
         path: 'unlock-session',
         loadChildren: () =>
@@ -217,7 +241,7 @@ export const appRoutes: Route[] = [
             (m: any) => m.ABMPrensasModule
           ),
       },
-            {
+      {
         path: 'prensas',
         data: { permission: 'MENU_PRENSAS' },
         loadChildren: () =>
@@ -249,7 +273,7 @@ export const appRoutes: Route[] = [
             (m: any) => m.ABMClientesModule
           ),
       },
-       {
+      {
         path: 'cotizaciones',
         data: { permission: 'MENU_ADMINISTRACION_COTIZACION' },
         loadChildren: () =>
@@ -296,6 +320,12 @@ export const appRoutes: Route[] = [
         path: 'reports',
         loadChildren: () =>
           import('app/modules/reports/reports.module').then(m => m.ReportsModule)
+      },
+      {
+        path: 'registro-envios',
+        data: { permission: 'MENU_INFORME_CALIDAD' },
+        loadChildren: () =>
+          import('app/modules/registro-envios/registro-envios.module').then(m => m.RegistroEnviosModule)
       },
       {
         path: 'resultados',

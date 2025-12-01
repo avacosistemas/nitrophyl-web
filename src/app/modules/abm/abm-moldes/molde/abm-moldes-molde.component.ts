@@ -4,7 +4,10 @@ import {
   FormControl,
   FormGroup,
   Validators,
-  FormArray
+  FormArray,
+  ValidatorFn,
+  AbstractControl,
+  ValidationErrors
 } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -115,6 +118,14 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   private initialMolde: Molde;
   private pristineBocasData: Boca[] = [];
 
+  private requireAtLeastOneCheckbox(): ValidatorFn {
+    return (formArray: AbstractControl): ValidationErrors | null => {
+      const checkboxes = formArray as FormArray;
+      const hasAtLeastOne = checkboxes.controls.some(control => control.value === true);
+      return hasAtLeastOne ? null : { requireAtLeastOne: true };
+    };
+  }
+
   constructor(
     private activatedRoute: ActivatedRoute,
     public dialog: MatDialog,
@@ -133,7 +144,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       observaciones: [null],
       ubicacion: [null],
       client: [null, [Validators.required]],
-      piezaTipos: this._formBuilder.array([])
+      piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox())
     });
     this.bocaForm = this._formBuilder.group({
       boca: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
@@ -389,6 +400,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   editMolde() {
+    this.moldeForm.markAllAsTouched(); 
+    
     if (this.moldeForm.invalid) {
       this.notificationService.showError('Por favor, corrija los errores en el formulario.');
       return;

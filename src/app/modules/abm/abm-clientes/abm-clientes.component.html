@@ -1,16 +1,14 @@
 <div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
-    <app-header
-      [title]="titulo"
-      [subtitle]="subTitulo || ''"
-      [breadcrumbs]="[
+  <app-header [title]="titulo" [subtitle]="subTitulo || ''" [breadcrumbs]="[
         { title: 'Administración', route: ['/clientes/grid'], condition: true },
         { title: 'Clientes', route: ['/clientes/grid'], condition: true },
         { title: 'Crear', route: [], condition: titulo === 'Nuevo Cliente' },
         { title: 'Consultar', route: [], condition: titulo === 'Consulta Clientes' },
         { title: 'Consultar', route: [], condition: titulo === 'Consulta Contactos' },
-        { title: 'Editar', route: [], condition: titulo === 'Edición Contacto' }
-        ]"
-      [buttons]="[
+        { title: 'Editar', route: [], condition: titulo === 'Edición Contacto' },
+        { title: 'Consultar', route: [], condition: titulo === 'Consulta Domicilios' },
+        { title: 'Editar', route: [], condition: titulo === 'Edición Domicilio' }
+        ]" [buttons]="[
         {
           type: 'flat',
           label: 'Guardar Cliente',
@@ -21,7 +19,7 @@
         {
           type: 'stroked',
           label: 'Cerrar',
-          condition: titulo !== 'Consulta Clientes' && titulo !== 'Consulta Contactos',
+          condition: titulo !== 'Consulta Clientes' && titulo !== 'Consulta Contactos' && titulo !== 'Consulta Domicilios',
           isDisabled: false,
           action: 'close'
         },
@@ -52,12 +50,31 @@
           condition: ('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Contacto' || titulo === 'Edición Contacto'),
           isDisabled: false,
           action: 'saveContacto'
+        },
+        {
+          type: 'stroked',
+          label: 'Volver a ABM Clientes',
+          condition: titulo === 'Consulta Domicilios',
+          isDisabled: false,
+          action: 'goToClientes'
+        },
+        {
+          type: 'flat',
+          label: 'Agregar nuevo domicilio',
+          condition: ('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Consulta Domicilios'),
+          isDisabled: false,
+          action: 'createDomicilio'
+        },
+        {
+          type: 'flat',
+          label: 'Guardar domicilio',
+          condition: ('LISTADO_CLIENTE_CREATE' | hasPermission) && (titulo === 'Nuevo Domicilio' || titulo === 'Edición Domicilio'),
+          isDisabled: false,
+          action: 'saveDomicilio'
         }
-      ]"
-      (buttonAction)="handleAction($event)">
-    </app-header>
-    <div class="content-scroll">
-      <router-outlet (activate)="componentAdded($event)"></router-outlet>
-    </div>
+      ]" (buttonAction)="handleAction($event)">
+  </app-header>
+  <div class="content-scroll">
+    <router-outlet (activate)="componentAdded($event)"></router-outlet>
   </div>
-  
+</div>

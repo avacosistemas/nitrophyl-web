@@ -10,6 +10,7 @@ import { InsumosListComponent } from './components/insumos-list/insumos-list.com
 import { InsumoModalComponent } from './components/insumo-modal/insumo-modal.component';
 import { InsumoStockComponent } from './components/insumo-stock/insumo-stock.component';
 import { InsumoStockModalComponent } from './components/insumo-stock-modal/insumo-stock-modal.component';
+import { InsumoObservationModalComponent } from './components/insumo-observation-modal/insumo-observation-modal.component'; 
 
 import { MatTableModule } from '@angular/material/table';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -36,7 +37,8 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
         InsumosListComponent,
         InsumoModalComponent,
         InsumoStockComponent,
-        InsumoStockModalComponent
+        InsumoStockModalComponent,
+        InsumoObservationModalComponent
     ],
     imports: [
         CommonModule,

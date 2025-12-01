@@ -33,9 +33,9 @@
 
             <mat-form-field appearance="outline" class="w-1/4">
                 <mat-label>Revisión</mat-label>
-                <input matInput type="number" formControlName="revision" required>
+                <input matInput type="text" formControlName="revision" required>
                 <mat-error *ngIf="uploadForm.get('revision')?.hasError('pattern')">
-                    Debe ser un número entero.
+                    Debe ser solo números o solo letras.
                 </mat-error>
             </mat-form-field>
 

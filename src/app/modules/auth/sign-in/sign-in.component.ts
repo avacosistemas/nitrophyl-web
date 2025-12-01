@@ -1,95 +1,91 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, NgForm, Validators } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
 
 @Component({
-    selector: 'auth-sign-in',
+    selector   : 'auth-sign-in',
     templateUrl: './sign-in.component.html',
-    animations: fuseAnimations
+    animations : fuseAnimations
 })
-export class AuthSignInComponent implements OnInit {
+export class AuthSignInComponent implements OnInit
+{
     @ViewChild('loginNgForm') loginNgForm: NgForm;
 
     alert: { type: FuseAlertType; message: string } = {
-        type: 'success',
+        type   : 'success',
         message: ''
     };
     loginForm: FormGroup;
     showAlert: boolean = false;
 
+    /**
+     * Constructor
+     */
     constructor(
-        private _formBuilder: FormBuilder,
         private _authService: AuthService,
-        private _activatedRoute: ActivatedRoute,
+        private _formBuilder: FormBuilder,
         private _router: Router
-    ) { }
+    )
+    {
+    }
 
-    ngOnInit(): void {
+    // -----------------------------------------------------------------------------------------------------
+    // @ Lifecycle hooks
+    // -----------------------------------------------------------------------------------------------------
+
+    ngOnInit(): void
+    {
         this.loginForm = this._formBuilder.group({
-            username: ['', [Validators.required]],
-            password: ['', Validators.required]
-        });
-
-        this._activatedRoute.queryParamMap.subscribe(params => {
-            const usernameFromForgot = params.get('username');
-            if (usernameFromForgot) {
-                this.loginForm.get('username').setValue(usernameFromForgot);
-            }
+            username : ['', [Validators.required]],
+            password : ['', Validators.required]
         });
     }
 
-    login(event: Event): void {
+    // -----------------------------------------------------------------------------------------------------
+    // @ Public methods
+    // -----------------------------------------------------------------------------------------------------
+
+    login(event: Event): void
+    {
         event.preventDefault();
 
-        if (this.loginForm.invalid) {
+        if ( this.loginForm.invalid )
+        {
             return;
         }
 
         this.loginForm.disable();
+
         this.showAlert = false;
 
-        this._authService.signIn(this.loginForm.value).subscribe({
-            next: (response) => {
-                console.log("el componente response", response);
-                if (response && response.status === 'CHANGE_PASSWORD_REQUIRED') {
+        this._authService.signIn(this.loginForm.value)
+            .pipe(
+                finalize(() => {
+                    this.loginForm.enable();
+                })
+            )
+            .subscribe(
+                (response) => {
+                    if (response && response.status === 'CHANGE_PASSWORD_REQUIRED') {
+                        this._router.navigate(['/change-password'], { 
+                            state: { username: this.loginForm.get('username').value } 
+                        });
+                        return;
+                    }
 
-                    const tempCredentials = {
-                        username: this.loginForm.get('username').value,
-                        temporaryPassword: this.loginForm.get('password').value
+                    this._router.navigateByUrl('/welcome');
+                },
+                (error) => {
+                    this.alert = {
+                        type   : 'error',
+                        message: 'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.'
                     };
-
-                    localStorage.setItem('tempUserCredentials', JSON.stringify(tempCredentials));
-
-                    this._router.navigate(['/reset-password']);
-                    return;
+                    this.showAlert = true;
                 }
-
-                if (response && response.permissions) {
-                    localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
-                    this._authService.handleLoginSuccess(response);
-                    const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('welcome') || 'welcome';
-                    this._router.navigateByUrl(redirectURL);
-                } else {
-                    this.handleLoginError('Respuesta inesperada del servidor.');
-                }
-            },
-            error: (error) => {
-                this.handleLoginError('Usuario o contraseña incorrectos. Por favor, intenta de nuevo.');
-            }
-        });
-    }
-
-
-    private handleLoginError(message: string): void {
-        this.loginForm.enable();
-
-        this.alert = {
-            type: 'error',
-            message: message
-        };
-        this.showAlert = true;
+            );
     }
 }

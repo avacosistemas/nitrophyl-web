@@ -1,21 +1,24 @@
-<div class="flex flex-col w-full p-6 sm:p-10" id="top" *ngIf="mode === 'Edit' || mode === 'Create'">
-  <!-- mode: Edit || Create. -->
+<div class="flex flex-col w-full p-6 sm:p-10" id="top" *ngIf="mode === 'Edit' || mode === 'Create' || mode === 'Clone'">
   <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
 
+    <div class="mb-6 text-2xl font-bold">
+      {{ mode === 'Create' ? 'Nueva Fórmula' : (mode === 'Clone' ? 'Nueva Versión' : 'Editar Fórmula') }}
+    </div>
+
     <form class="flex flex-col gap-2" [formGroup]="form">
-      <div class="flex gap-6" *ngIf="mode === 'Edit'">
+      <div class="flex gap-6" *ngIf="mode === 'Edit' || mode === 'Clone'">
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Versión </mat-label>
+          <mat-label>Versión Actual</mat-label>
           <input matInput [formControlName]="'version'">
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Fecha </mat-label>
+          <mat-label>Fecha</mat-label>
           <input matInput [formControlName]="'date'">
         </mat-form-field>
       </div>
 
       <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Nombre </mat-label>
+        <mat-label>Nombre</mat-label>
         <input matInput [formControlName]="'name'" placeholder="Nombre">
         <mat-error class="mb-1" *ngIf="form.get('name').hasError('required')">
           El nombre es requerido.
@@ -29,7 +32,7 @@
       </mat-form-field>
 
       <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Material </mat-label>
+        <mat-label>Material</mat-label>
         <mat-select [formControlName]="'material'"
           [placeholder]="(!materials$ && !materialsFail) ? 'Materiales: Cargando...' : ((!materials$ && materialsFail) ? 'No se ha podido cargar la lista de materiales' : 'Materiales')">
           <mat-option *ngFor="let material of materials$" [value]="material.id">
@@ -42,7 +45,7 @@
       </mat-form-field>
 
       <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Norma </mat-label>
+        <mat-label>Norma</mat-label>
         <input matInput [formControlName]="'norma'" placeholder="Norma">
         <mat-error class="mb-1" *ngIf="form.get('norma').hasError('required')">
           La norma es requerida.
@@ -55,13 +58,44 @@
         </mat-error>
       </mat-form-field>
 
+      <div class="flex gap-4 flex-col sm:flex-row">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Unidad Dureza</mat-label>
+          <mat-select formControlName="unidadDureza" placeholder="Seleccione unidad">
+            <mat-option *ngFor="let unit of hardnessUnits" [value]="unit">
+              {{ unit }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="form.get('unidadDureza').hasError('required')">Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Dureza Mínima</mat-label>
+          <input matInput type="number" formControlName="durezaMinima" required>
+          <mat-error *ngIf="form.get('durezaMinima').hasError('required')">Requerido</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Dureza Máxima</mat-label>
+          <input matInput type="number" formControlName="durezaMaxima" required>
+          <mat-error *ngIf="form.get('durezaMaxima').hasError('required')">Requerido</mat-error>
+        </mat-form-field>
+      </div>
+
       <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Observaciones </mat-label>
+        <mat-label>Observaciones</mat-label>
         <textarea matInput [formControlName]="'observaciones'" placeholder="Observaciones" maxlength="256"></textarea>
-        <mat-error class="mb-1" *ngIf="form.get('norma').hasError('maxlength')">
+        <mat-error class="mb-1" *ngIf="form.get('observaciones').hasError('maxlength')">
           Máximo 255 caracteres.
         </mat-error>
       </mat-form-field>
+
+      <div class="flex items-center justify-end gap-2 mt-4">
+        <button mat-button (click)="close()">Cancelar</button>
+        <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="create()">
+          {{ mode === 'Create' ? 'Guardar' : (mode === 'Clone' ? 'Generar Versión' : 'Actualizar') }}
+        </button>
+      </div>
     </form>
   </div>
 </div>

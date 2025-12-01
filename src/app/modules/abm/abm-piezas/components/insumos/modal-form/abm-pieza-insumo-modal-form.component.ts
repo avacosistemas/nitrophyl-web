@@ -1,12 +1,14 @@
 import { Component, OnInit, Inject, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
 import { ABMPiezaService } from '../../../abm-piezas.service';
 import { Insumo, IInsumoTratado, IAdhesivo, ITipoInsumoJerarquico, ITratamiento } from '../../../models/pieza.model';
 import { Observable, of, Subject, BehaviorSubject, combineLatest, merge } from 'rxjs';
 import { switchMap, startWith, map, takeUntil, debounceTime, catchError } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { AdhesivoModalComponent } from 'app/modules/abm/abm-adhesivos/components/adhesivo-modal/adhesivo-modal.component';
+import { TratamientoModalComponent } from 'app/modules/abm/abm-tratamiento/components/tratamiento-modal/tratamiento-modal.component';
 
 @Component({
   selector: 'app-abm-pieza-insumo-modal-form',
@@ -47,7 +49,8 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     public dialogRef: MatDialogRef<ABMPiezaInsumoModalFormComponent>,
     @Inject(MAT_DIALOG_DATA) public data: { idPieza: number, insumoTratado?: IInsumoTratado },
     private notificationService: NotificationService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    public dialog: MatDialog
   ) {
     this.insumoForm = this.fb.group({
       tipos: this.fb.array([]),
@@ -315,7 +318,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       startWith(''),
       debounceTime(300),
       switchMap(() => {
-        const searchTerm = this.tratamientoCtrl.value || '';
+        const searchTerm = typeof this.tratamientoCtrl.value === 'string' ? this.tratamientoCtrl.value : '';
         return this.abmPiezaService.buscarTratamientos(searchTerm).pipe(
           map(response => response.data || []),
           map(apiTratamientos => apiTratamientos.filter(apiT => !this.tratamientosSeleccionados.some(selT => selT.id === apiT.id))),
@@ -329,7 +332,7 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       startWith(''),
       debounceTime(300),
       switchMap(() => {
-        const searchTerm = this.adhesivoCtrl.value || '';
+        const searchTerm = typeof this.adhesivoCtrl.value === 'string' ? this.adhesivoCtrl.value : '';
         return this.abmPiezaService.buscarAdhesivos(searchTerm).pipe(
           map(response => response.data || []),
           map(apiAdhesivos => apiAdhesivos.filter(apiA => !this.adhesivosSeleccionados.some(selA => selA.id === apiA.id))),
@@ -340,10 +343,37 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
   }
 
   addTratamiento(event: MatAutocompleteSelectedEvent): void {
-    this.tratamientosSeleccionados.push(event.option.value);
-    this.tratamientoInput.nativeElement.value = '';
+    const value = event.option.value;
+
+    if (this.tratamientoInput) {
+      this.tratamientoInput.nativeElement.value = '';
+    }
     this.tratamientoCtrl.setValue(null);
-    this.updateTratamientosFormControl();
+
+    if (typeof value === 'string' && value.startsWith('NEW_TRATAMIENTO:')) {
+      const nombreIngresado = value.replace('NEW_TRATAMIENTO:', '');
+      this.openCreateTratamientoModal(nombreIngresado);
+    } else {
+      this.tratamientosSeleccionados.push(value);
+      this.updateTratamientosFormControl();
+    }
+  }
+
+  private openCreateTratamientoModal(nombre: string): void {
+    const dialogRef = this.dialog.open(TratamientoModalComponent, {
+      width: '500px',
+      disableClose: true,
+      data: { mode: 'create', nombre: nombre }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && typeof result === 'object' && result.id) {
+        this.tratamientosSeleccionados.push(result);
+        this.updateTratamientosFormControl();
+      }
+      if (this.tratamientoInput) this.tratamientoInput.nativeElement.value = '';
+      this.tratamientoCtrl.setValue(null);
+    });
   }
 
   removeTratamiento(tratamiento: ITratamiento): void {
@@ -361,10 +391,37 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
   }
 
   addAdhesivo(event: MatAutocompleteSelectedEvent): void {
-    this.adhesivosSeleccionados.push(event.option.value);
-    this.adhesivoInput.nativeElement.value = '';
+    const value = event.option.value;
+
+    if (this.adhesivoInput) {
+      this.adhesivoInput.nativeElement.value = '';
+    }
     this.adhesivoCtrl.setValue(null);
-    this.updateAdhesivosFormControl();
+
+    if (typeof value === 'string' && value.startsWith('NEW_ADHESIVO:')) {
+      const nombreIngresado = value.replace('NEW_ADHESIVO:', '');
+      this.openCreateAdhesivoModal(nombreIngresado);
+    } else {
+      this.adhesivosSeleccionados.push(value);
+      this.updateAdhesivosFormControl();
+    }
+  }
+
+  private openCreateAdhesivoModal(nombre: string): void {
+    const dialogRef = this.dialog.open(AdhesivoModalComponent, {
+      width: '500px',
+      disableClose: true,
+      data: { mode: 'create', nombre: nombre }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && typeof result === 'object' && result.id) {
+        this.adhesivosSeleccionados.push(result);
+        this.updateAdhesivosFormControl();
+      }
+      if (this.adhesivoInput) this.adhesivoInput.nativeElement.value = '';
+      this.adhesivoCtrl.setValue(null);
+    });
   }
 
   removeAdhesivo(adhesivo: IAdhesivo): void {
@@ -376,13 +433,13 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  public clearInsumoSelection(): void {
-    this.insumoForm.get('insumo').setValue(null);
-  }
-
   private updateAdhesivosFormControl(): void {
     this.insumoForm.get('adhesivos').setValue(this.adhesivosSeleccionados.map(a => a.id));
     this.cdr.markForCheck();
+  }
+
+  public clearInsumoSelection(): void {
+    this.insumoForm.get('insumo').setValue(null);
   }
 
   displayFn(item: { nombre: string }): string {

@@ -29,6 +29,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
     filteredPiezas$: Observable<any[]>;
     clientesDisponibles: Cliente[] = [];
     filteredClientes$: Observable<Cliente[]>;
+    piezasCliente: any[] = [];
 
     private _destroying$ = new Subject<void>();
 
@@ -46,6 +47,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         this.form = this._fb.group({
             pieza: [null, Validators.required],
             cliente: [null, Validators.required],
+            soloPiezasCliente: [false],
             valor: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
             fecha: [new Date(), Validators.required],
             observaciones: ['']
@@ -55,6 +57,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.loadClientesDropdown();
         this.setupPiezasAutocomplete();
+        this.setupClienteLogic();
     }
 
     ngOnDestroy(): void {
@@ -78,6 +81,58 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         });
     }
 
+    setupClienteLogic(): void {
+        this.form.get('cliente').valueChanges
+            .pipe(takeUntil(this._destroying$))
+            .subscribe(cliente => {
+                if (this.form.get('soloPiezasCliente').value && cliente?.id) {
+                    this.loadPiezasByCliente(cliente.id);
+                    this.form.get('pieza').setValue(null);
+                }
+                else if (!cliente?.id) {
+                    this.piezasCliente = [];
+                    if (this.form.get('soloPiezasCliente').value) {
+                        this.form.get('soloPiezasCliente').setValue(false);
+                    }
+                }
+            });
+
+        this.form.get('soloPiezasCliente').valueChanges
+            .pipe(takeUntil(this._destroying$))
+            .subscribe(checked => {
+                this.form.get('pieza').setValue(null);
+
+                if (checked) {
+                    const cliente = this.form.get('cliente').value;
+                    if (cliente?.id) {
+                        this.loadPiezasByCliente(cliente.id);
+                    } else {
+                        this._notificationService.showError('Debe seleccionar un cliente primero.');
+                        this.form.get('soloPiezasCliente').setValue(false, { emitEvent: false });
+                    }
+                }
+            });
+    }
+
+    loadPiezasByCliente(idCliente: number): void {
+        this.isLoading = true;
+        this._cotizacionesService.getPiezasCliente(idCliente)
+            .pipe(takeUntil(this._destroying$))
+            .subscribe({
+                next: (res: any) => {
+                    this.piezasCliente = res?.data || [];
+                    this.isLoading = false;
+                    this.form.get('pieza').updateValueAndValidity({ onlySelf: true, emitEvent: true });
+                },
+                error: (err) => {
+                    console.error('Error cargando piezas del cliente', err);
+                    this.isLoading = false;
+                    this._notificationService.showError('Error al cargar las piezas del cliente.');
+                    this.form.get('soloPiezasCliente').setValue(false);
+                }
+            });
+    }
+
     private _filterClientes(value: string | Cliente): Cliente[] {
         const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
         if (!filterValue) {
@@ -94,15 +149,30 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
             startWith(''),
             debounceTime(300),
             switchMap(value => {
+                const isRestricted = this.form.get('soloPiezasCliente').value;
                 const searchTerm = typeof value === 'string' ? value : value?.denominacion;
-                if (typeof value === 'object' && value !== null) {
-                    return of([]);
+
+                if (isRestricted) {
+                    return of(this._filterLocalPiezas(searchTerm));
+                } else {
+                    if (typeof value === 'object' && value !== null) {
+                        return of([]);
+                    }
+                    return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50, soloVigentes: true }).pipe(
+                        map(res => res.data.page),
+                        catchError(() => of([]))
+                    );
                 }
-                return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50, soloVigentes: true }).pipe(
-                    map(res => res.data.page),
-                    catchError(() => of([]))
-                );
             })
+        );
+    }
+
+    private _filterLocalPiezas(term: string): any[] {
+        if (!term) return this.piezasCliente;
+        const filterValue = term.toLowerCase();
+        return this.piezasCliente.filter(pieza =>
+            (pieza.denominacion && pieza.denominacion.toLowerCase().includes(filterValue)) ||
+            (pieza.codigo && pieza.codigo.toLowerCase().includes(filterValue))
         );
     }
 

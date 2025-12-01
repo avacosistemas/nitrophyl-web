@@ -11,8 +11,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { PiezaProceso, PiezaCreateDTO, PiezaUpdateDTO, Molde, Espesor } from '../../models/pieza.model';
-import { Observable, of, combineLatest, forkJoin, throwError } from 'rxjs';
-import { map, startWith, catchError, debounceTime, switchMap, filter, takeUntil } from 'rxjs/operators';
+import { Observable, of, combineLatest, forkJoin, throwError, merge } from 'rxjs';
+import { map, startWith, catchError, debounceTime, switchMap, filter } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
@@ -24,7 +24,7 @@ import { MatTableDataSource } from '@angular/material/table';
 
 interface ForkJoinResults {
     tiposPieza: { id: number; nombre: string; }[];
-    formulasResponse: { data: { id: number; nombre: string; }[] };
+    formulasResponse: { data: { id: number; nombre: string; durezaMinima?: number; durezaMaxima?: number; unidadDureza?: string; }[] };
     clientesResponse: { data: { id: number; nombre: string; codigo?: string; }[] };
     pieza: PiezaProceso | null;
 }
@@ -45,23 +45,22 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     pieceNames$: Observable<string[]>;
     tiposPieza$: Observable<{ id: number; nombre: string }[]>;
-    formulas$: Observable<{ id: number; nombre: string; }[]>;
-    clientes$: Observable<{ id: number; nombre: string; codigo?: string; }[]>;
+    formulas$: Observable<{ id: number; nombre: string; durezaMinima?: number; durezaMaxima?: number; unidadDureza?: string; }[]>;
+    clientes$: Observable<{ id: number; nombre: string; codigo?: string }[]>;
 
-    filteredPieceNames$: Observable<string[]>;
-    filteredTiposPieza$: Observable<{ id: number; nombre: string; }[]>;
-    filteredFormulas$: Observable<{ id: number; nombre: string; }[]>;
-    filteredClientes$: Observable<{ id: number; nombre: string; codigo?: string; }[]>;
+    filteredTiposPieza$: Observable<{ id: number; nombre: string }[]>;
+    filteredFormulas$: Observable<{ id: number; nombre: string }[]>;
+    filteredClientes$: Observable<{ id: number; nombre: string; codigo?: string }[]>;
     filteredMoldes$: Observable<Molde[]>;
-
-    clasificacionOptions: { value: string; label: string }[] = [
-        { value: 'NITROPHYL', label: 'NITROPHYL' },
-        { value: 'CLIENTE', label: 'CLIENTE' }
-    ];
 
     tiposDurezaOptions: { value: string; label: string }[] = [
         { value: 'SHORE_A', label: 'Shore A' },
         { value: 'SHORE_D', label: 'Shore D' },
+    ];
+
+    clasificacionOptions = [
+        { value: 'NITROPHYL', label: 'Nitrophyl' },
+        { value: 'CLIENTE', label: 'Cliente' }
     ];
 
     selectedFile: File | null = null;
@@ -96,11 +95,14 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             idCliente: [{ value: null, disabled: false }],
             nombrePiezaCliente: [{ value: null, disabled: false }],
             cotizacionCliente: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')],
+            fechaCotizacionCliente: [null],
             observacionesCotizacionCliente: [{ value: null, disabled: true }],
             revision: [{ value: null, disabled: true }],
             fechaRevision: [{ value: null, disabled: true }],
             observacionesRevision: [{ value: null, disabled: false }],
+            hojaProceso: [null, Validators.maxLength(100)],
             plano: this.fb.group({
+                sinPlano: [false],
                 archivo: [null],
                 planoCodigo: [null],
                 planoRevision: [null],
@@ -109,15 +111,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             }),
         });
 
-        this.piezaForm.get('cotizacionCliente').valueChanges.subscribe(value => {
-            const obsControl = this.piezaForm.get('observacionesCotizacionCliente');
-            if (value) {
-                obsControl.enable();
-            } else {
-                obsControl.disable();
-                obsControl.reset();
-            }
-        });
+        this.setupCotizacionValidation();
 
         this.espesorForm = this.fb.group({
             min: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
@@ -156,6 +150,111 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                     })
                 );
             })
+        );
+
+        this.piezaForm.get('idFormula').valueChanges.subscribe(formula => {
+            if (formula && typeof formula === 'object' && formula.id) {
+                if (formula.durezaMinima !== undefined) {
+                    this.piezaForm.patchValue({ durezaMinima: formula.durezaMinima });
+                }
+                if (formula.durezaMaxima !== undefined) {
+                    this.piezaForm.patchValue({ durezaMaxima: formula.durezaMaxima });
+                }
+                if (formula.unidadDureza) {
+                    this.piezaForm.patchValue({ unidadDureza: formula.unidadDureza });
+                }
+            }
+        });
+
+        this.piezaForm.get('plano.sinPlano').valueChanges.subscribe(sinPlano => {
+            this.togglePlanoValidators(sinPlano);
+        });
+    }
+
+    private togglePlanoValidators(sinPlano: boolean): void {
+        const archivoCtrl = this.piezaForm.get('plano.archivo');
+        const codigoCtrl = this.piezaForm.get('plano.planoCodigo');
+        const revisionCtrl = this.piezaForm.get('plano.planoRevision');
+        const clasificacionCtrl = this.piezaForm.get('plano.planoClasificacion');
+        const observacionesCtrl = this.piezaForm.get('plano.planoObservaciones');
+
+        if (sinPlano) {
+            this.removeSelectedFile();
+
+            archivoCtrl.clearValidators();
+            codigoCtrl.clearValidators();
+            revisionCtrl.clearValidators();
+            clasificacionCtrl.clearValidators();
+
+            codigoCtrl.setValue(null);
+            revisionCtrl.setValue(null);
+            clasificacionCtrl.setValue(null);
+            observacionesCtrl.setValue(null);
+
+        } else {
+            if (this.mode === 'create') {
+                codigoCtrl.setValidators([Validators.required]);
+                revisionCtrl.setValidators([Validators.required, Validators.pattern(/^([0-9]+|[a-zA-Z]+)$/)]);
+                clasificacionCtrl.setValidators([Validators.required]);
+            }
+        }
+
+        archivoCtrl.updateValueAndValidity();
+        codigoCtrl.updateValueAndValidity();
+        revisionCtrl.updateValueAndValidity();
+        clasificacionCtrl.updateValueAndValidity();
+    }
+
+    private setupCotizacionValidation(): void {
+        const cotizacionCtrl = this.piezaForm.get('cotizacionCliente');
+        const fechaCtrl = this.piezaForm.get('fechaCotizacionCliente');
+        const obsCtrl = this.piezaForm.get('observacionesCotizacionCliente');
+
+        this.subscriptions.push(
+            merge(cotizacionCtrl.valueChanges, fechaCtrl.valueChanges)
+                .subscribe(() => {
+                    const hasCotizacion = !!cotizacionCtrl.value;
+                    const hasFecha = !!fechaCtrl.value;
+
+                    if (hasCotizacion || hasFecha) {
+                        if (hasCotizacion && !fechaCtrl.hasValidator(Validators.required)) {
+                            fechaCtrl.setValidators([Validators.required]);
+                            fechaCtrl.updateValueAndValidity({ emitEvent: false });
+                        } else if (!hasCotizacion && fechaCtrl.hasValidator(Validators.required)) {
+                            fechaCtrl.clearValidators();
+                            fechaCtrl.updateValueAndValidity({ emitEvent: false });
+                        }
+
+                        if (hasFecha && !cotizacionCtrl.hasValidator(Validators.required)) {
+                            cotizacionCtrl.setValidators([Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                            cotizacionCtrl.updateValueAndValidity({ emitEvent: false });
+                        } else if (!hasFecha && cotizacionCtrl.hasValidator(Validators.required)) {
+                            cotizacionCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                            cotizacionCtrl.updateValueAndValidity({ emitEvent: false });
+                        }
+                    } else {
+                        if (fechaCtrl.hasValidator(Validators.required)) {
+                            fechaCtrl.clearValidators();
+                            fechaCtrl.updateValueAndValidity({ emitEvent: false });
+                        }
+
+                        if (cotizacionCtrl.hasValidator(Validators.required)) {
+                            cotizacionCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                            cotizacionCtrl.updateValueAndValidity({ emitEvent: false });
+                        }
+                    }
+
+                    if (hasCotizacion && hasFecha && cotizacionCtrl.valid && fechaCtrl.valid) {
+                        if (obsCtrl.disabled) {
+                            obsCtrl.enable({ emitEvent: false });
+                        }
+                    } else {
+                        if (obsCtrl.enabled) {
+                            obsCtrl.disable({ emitEvent: false });
+                            obsCtrl.setValue(null, { emitEvent: false });
+                        }
+                    }
+                })
         );
     }
 
@@ -197,9 +296,12 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.piezaForm.get('codigo').setValidators([Validators.required]);
             this.piezaForm.get('idMolde').setValidators([Validators.required]);
             this.piezaForm.get('idCliente').setValidators([Validators.required]);
-            this.piezaForm.get('plano.planoCodigo').setValidators([Validators.required]);
-            this.piezaForm.get('plano.planoRevision').setValidators([Validators.required, Validators.pattern("^[0-9]*$")]);
-            this.piezaForm.get('plano.planoClasificacion').setValidators([Validators.required]);
+
+            if (!this.piezaForm.get('plano.sinPlano').value) {
+                this.piezaForm.get('plano.planoCodigo').setValidators([Validators.required]);
+                this.piezaForm.get('plano.planoRevision').setValidators([Validators.required, Validators.pattern(/^([0-9]+|[a-zA-Z]+)$/)]);
+                this.piezaForm.get('plano.planoClasificacion').setValidators([Validators.required]);
+            }
         } else {
             this.piezaForm.get('codigo').clearValidators();
             this.piezaForm.get('idMolde').clearValidators();
@@ -269,7 +371,10 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 this.pieza = results.pieza;
                 this.patchPiezaForm(this.pieza, results);
             } else if (this.mode === 'create') {
-                this.piezaForm.reset({ unidadDureza: 'SHORE_A' });
+                this.piezaForm.reset({
+                    unidadDureza: 'SHORE_A',
+                    plano: { sinPlano: false }
+                });
             }
         });
     }
@@ -291,6 +396,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             revision: pieza.revision,
             fechaRevision: pieza.fechaRevision,
             observacionesRevision: pieza.observacionesRevision,
+            hojaProceso: pieza.hojaProceso,
         });
 
         this.espesoresDataSource.data = pieza.espesores || [];
@@ -333,6 +439,12 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             return;
         }
 
+        const sinPlano = this.piezaForm.get('plano.sinPlano').value;
+        if (this.mode === 'create' && !sinPlano && !this.selectedFile) {
+            this.notificationService.showError('Debe seleccionar un archivo de plano o marcar "No hay plano".');
+            return;
+        }
+
         if (this.mode === 'create') {
             this.openInitialRevisionModal();
         } else if (this.mode === 'edit') {
@@ -343,6 +455,13 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     public crearPieza(revisionInicial: number): void {
         const createAction = (planoArchivo: string | null) => {
             const formValues = this.piezaForm.getRawValue();
+
+            let fechaCotizacionISO = null;
+            if (formValues.fechaCotizacionCliente) {
+                const dateObj = new Date(formValues.fechaCotizacionCliente);
+                fechaCotizacionISO = dateObj.toISOString();
+            }
+
             const dto: PiezaCreateDTO = {
                 codigo: formValues.codigo,
                 denominacion: formValues.nombre,
@@ -355,6 +474,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 idTipoPieza: formValues.idTipoPieza?.id,
                 nombrePiezaCliente: formValues.nombrePiezaCliente,
                 cotizacionCliente: formValues.cotizacionCliente,
+                fechaCotizacionCliente: fechaCotizacionISO,
                 observacionesCotizacionCliente: formValues.observacionesCotizacionCliente,
                 observacionesMolde: formValues.observacionesMolde,
                 observacionesPesoCrudo: formValues.observacionesPesoCrudo,
@@ -366,6 +486,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 planoRevision: formValues.plano.planoRevision,
                 revisionIncial: revisionInicial,
                 unidadDureza: formValues.unidadDureza,
+                hojaProceso: formValues.hojaProceso,
             };
 
             this.abmPiezaService.agregarPieza(dto).subscribe({
@@ -382,7 +503,9 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             });
         };
 
-        if (this.selectedFile) {
+        const sinPlano = this.piezaForm.get('plano.sinPlano').value;
+
+        if (!sinPlano && this.selectedFile) {
             const reader = new FileReader();
             reader.onload = () => createAction((reader.result as string).split(',')[1]);
             reader.readAsDataURL(this.selectedFile);
@@ -400,6 +523,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             pesoCrudo: formValues.pesoCrudo,
             observacionesPesoCrudo: formValues.observacionesPesoCrudo,
             observacionesRevision: formValues.observacionesRevision,
+            hojaProceso: formValues.hojaProceso,
         };
 
         this.abmPiezaService.updatePieza(this.piezaId, dto as PiezaUpdateDTO).subscribe({

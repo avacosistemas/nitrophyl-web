@@ -1,13 +1,7 @@
 <div class="flex flex-col flex-auto min-w-0" id="top">
-  <!-- Main -->
   <div class="flex-auto p-6 sm:p-10">
-    <!-- CONTENT GOES HERE -->
     <div>
       <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="border-2 rounded-2xl w-full">
-        <!-- <ng-container matColumnDef="codigo">
-          <th mat-header-cell *matHeaderCellDef class="pr-2">Código</th>
-          <td mat-cell *matCellDef="let element" class="pr-2">{{ element.codigo }}</td>
-        </ng-container> -->
         <ng-container matColumnDef="razonSocial">
           <th mat-header-cell *matHeaderCellDef>Razón Social</th>
           <td mat-cell *matCellDef="let element">{{ element.razonSocial }}</td>
@@ -46,6 +40,9 @@
                     <button mat-flat-button type="button" color="primary" class="self-center"
                       (click)="verContacto(element)">
                       Contactos</button>&nbsp;&nbsp;
+                    <button mat-flat-button type="button" color="primary" class="self-center"
+                      (click)="verDomicilio(element)">
+                      Domicilios</button>&nbsp;&nbsp;
                     <button mat-flat-button color="primary" [disabled]="clienteForm.pristine || clienteForm.invalid"
                       (click)="updateCliente()">
                       Guardar cambios</button>&nbsp;
@@ -56,11 +53,6 @@
                       <p class="mb-2">Habilitado</p>
                       <mat-slide-toggle formControlName="activo"></mat-slide-toggle>
                     </div>
-
-                    <!-- <mat-form-field appearance="outline" class="flex-1">
-                      <mat-label>Código</mat-label>
-                      <input id="codigo" matInput [formControlName]="'codigo'" placeholder="Código" />
-                    </mat-form-field> -->
 
                     <mat-form-field appearance="outline" class="flex-1">
                       <mat-label>Nombre</mat-label>
@@ -155,7 +147,7 @@
                       <mat-error class="mb-1" *ngIf="clienteForm.get('empresa').hasError('required')">
                         La empresa es requerida
                       </mat-error>
-                    </mat-form-field>                    
+                    </mat-form-field>
                     <mat-form-field appearance="outline" class="w-1/3">
                       <mat-label>Página</mat-label>
                       <input id="webSite" matInput [formControlName]="'webSite'" placeholder="Página" />

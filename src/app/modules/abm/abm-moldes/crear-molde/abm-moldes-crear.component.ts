@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -10,7 +10,7 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { MoldesService } from 'app/shared/services/moldes.service';
 import { Subscription } from 'rxjs';
 import { ABMMoldeService } from '../abm-moldes.service';
-import { HttpErrorResponse } from '@angular/common/http'; 
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'abm-moldes-crear',
@@ -22,6 +22,14 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   moldeForm: FormGroup;
   public clients$: any = [];
   public tiposPieza$: { id: number; nombre: string }[] = [];
+
+  private requireAtLeastOneCheckbox(): ValidatorFn {
+    return (formArray: AbstractControl): ValidationErrors | null => {
+      const checkboxes = formArray as FormArray;
+      const hasAtLeastOne = checkboxes.controls.some(control => control.value === true);
+      return hasAtLeastOne ? null : { requireAtLeastOne: true };
+    };
+  }
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -41,7 +49,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       client: [null, Validators.required],
       observations: [null],
       location: [null],
-      piezaTipos: this._formBuilder.array([])
+      piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox())
     });
     this.suscripcion = this.ABMoldesService.events.subscribe((data: any) => {
       if (data == 1) {
@@ -106,7 +114,12 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     this.moldeForm.markAllAsTouched();
 
     if (this.moldeForm.invalid) {
-      this.notificationService.showError('Por favor, complete todos los campos requeridos.');
+      const piezaTiposControl = this.moldeForm.get('piezaTipos');
+      if (piezaTiposControl?.hasError('requireAtLeastOne')) {
+        this.notificationService.showError('Debe seleccionar al menos un tipo de pieza.');
+      } else {
+        this.notificationService.showError('Por favor, complete todos los campos requeridos.');
+      }
       return;
     }
 

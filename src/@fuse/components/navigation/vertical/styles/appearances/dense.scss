@@ -95,22 +95,24 @@ fuse-vertical-navigation {
 
         &:not(.fuse-vertical-navigation-hover):not(.fuse-vertical-navigation-mode-over) {
 
-            /* Wrapper */
             .fuse-vertical-navigation-wrapper {
 
-                /* Content */
                 .fuse-vertical-navigation-content {
 
                     .fuse-vertical-navigation-item-wrapper {
 
                         .fuse-vertical-navigation-item {
                             padding: 10px 16px;
+                            justify-content: center; 
 
                             .fuse-vertical-navigation-item-arrow,
                             .fuse-vertical-navigation-item-badge,
                             .fuse-vertical-navigation-item-title-wrapper {
-                                white-space: nowrap;
-                                opacity: 0;
+                                display: none !important; 
+                            }
+
+                            .fuse-vertical-navigation-item-icon {
+                                margin-right: 0 !important;
                             }
                         }
                     }
@@ -124,7 +126,7 @@ fuse-vertical-navigation {
 
                     fuse-vertical-navigation-group-item {
 
-                        > .fuse-vertical-navigation-item-wrapper {
+                        >.fuse-vertical-navigation-item-wrapper {
 
                             .fuse-vertical-navigation-item {
 
@@ -142,12 +144,10 @@ fuse-vertical-navigation {
             }
         }
 
-        /* Aside wrapper */
         .fuse-vertical-navigation-aside-wrapper {
             left: var(--fuse-vertical-navigation-dense-width);
         }
 
-        /* Hover */
         &.fuse-vertical-navigation-hover {
 
             .fuse-vertical-navigation-wrapper {
@@ -161,13 +161,19 @@ fuse-vertical-navigation {
                             width: calc(var(--fuse-vertical-navigation-width) - 24px);
                             min-width: calc(var(--fuse-vertical-navigation-width) - 24px);
                             max-width: calc(var(--fuse-vertical-navigation-width) - 24px);
+                            justify-content: flex-start;
 
                             .fuse-vertical-navigation-item-arrow,
                             .fuse-vertical-navigation-item-badge,
                             .fuse-vertical-navigation-item-title-wrapper {
+                                display: flex;
                                 white-space: nowrap;
                                 animation: removeWhiteSpaceNoWrap 1ms linear 350ms;
                                 animation-fill-mode: forwards;
+                            }
+                            
+                            .fuse-vertical-navigation-item-icon {
+                                margin-right: 16px !important; 
                             }
                         }
                     }
@@ -185,9 +191,11 @@ fuse-vertical-navigation {
     0% {
         white-space: nowrap
     }
+
     99% {
         white-space: nowrap
     }
+
     100% {
         white-space: normal;
     }

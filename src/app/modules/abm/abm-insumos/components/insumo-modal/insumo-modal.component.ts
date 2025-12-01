@@ -59,7 +59,8 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
             nombre: ['', [Validators.required, Validators.maxLength(100)]],
             tipoInsumo: [null, Validators.required],
             materiaPrima: [null],
-            cantidadMateriaPrima: [null]
+            cantidadMateriaPrima: [null],
+            observaciones: ['', [Validators.maxLength(255)]]
         });
     }
 
@@ -85,12 +86,13 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
         });
         this.subscriptions.add(sub);
     }
-    
+
     private patchForm(): void {
         if (this.mode === 'edit' && this.data.insumo) {
             this.form.patchValue({
                 nombre: this.data.insumo.nombre,
-                cantidadMateriaPrima: this.data.insumo.cantidadMateriaPrima
+                cantidadMateriaPrima: this.data.insumo.cantidadMateriaPrima,
+                observaciones: this.data.insumo.observaciones
             });
 
             if (this.data.insumo.idTipo) {
@@ -156,7 +158,7 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
     clearTipoInsumoSelection(): void {
         this.form.get('tipoInsumo').setValue(null);
     }
-    
+
     clearMateriaPrimaSelection(): void {
         this.form.get('materiaPrima').setValue(null);
     }
@@ -180,6 +182,7 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
             idMateriaPrima: materiaSeleccionada?.id || null,
             materiaPrimaNombre: materiaSeleccionada?.nombre || null,
             cantidadMateriaPrima: formValue.cantidadMateriaPrima || null,
+            observaciones: formValue.observaciones
         };
 
         const request$ = this.mode === 'create'

@@ -30,6 +30,12 @@
                     <mat-icon>password</mat-icon>
                     <span>Cambiar contraseña</span>
                 </button>
+                <button mat-menu-item (click)="reloadApp()">
+                    <mat-icon [svgIcon]="'heroicons_outline:refresh'"></mat-icon>
+                    <span>Actualizar</span>
+                </button>
+
+                <mat-divider class="my-2"></mat-divider>
                 <button mat-menu-item (click)="signOut()">
                     <mat-icon>logout</mat-icon>
                     <span>Cerrar sesión</span>

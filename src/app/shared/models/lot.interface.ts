@@ -58,3 +58,22 @@ export interface IInformeLoteResponse {
   status: string;
   data: IInformeLoteData;
 }
+
+export interface IRegistroEnvio {
+  usuarioCreacion: string;
+  fechaCreacion: number;
+  cliente: string;
+  lote: string;
+  formula: string;
+  emailEnviado: string;
+  observacionesMail: string;
+  observacionesInforme: string;
+}
+
+export interface IRegistroEnvioResponse {
+  status: string;
+  data: {
+    page: IRegistroEnvio[];
+    totalReg: number;
+  };
+}

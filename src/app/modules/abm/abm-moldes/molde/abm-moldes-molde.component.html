@@ -80,6 +80,11 @@
                 No hay tipos de pieza para seleccionar.
               </div>
             </div>
+            <div
+              *ngIf="moldeForm.get('piezaTipos')?.hasError('requireAtLeastOne') && moldeForm.get('piezaTipos')?.touched"
+              class="text-red-600 text-sm mt-2">
+              Debe seleccionar al menos un tipo de pieza.
+            </div>
           </div>
         </div>
       </form>

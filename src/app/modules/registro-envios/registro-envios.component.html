@@ -1,0 +1,14 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <app-header
+    [title]="subtitle"
+    [breadcrumbs]="[
+      { title: title, route: ['/registro-envios'], condition: true },
+      { title: subtitle, route: [], condition: true }
+    ]"
+  >
+  </app-header>
+
+  <div class="content-scroll">
+    <router-outlet></router-outlet>
+  </div>
+</div>

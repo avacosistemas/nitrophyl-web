@@ -5,7 +5,7 @@ export interface Part {
     esProducto?: boolean,
     id?: number,
     piezas?: Array<any>,
-    tipo?: string
+    tipo?: string,
 };
 
 export interface PartResponse {

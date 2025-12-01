@@ -1,0 +1,33 @@
+<div class="flex flex-col w-full p-6 sm:p-10" id="top">
+    <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+        <div>
+            <h1 class="text-2xl font-semibold mb-2">Domicilio</h1>
+        </div>
+        <form class="flex flex-col gap-2" [formGroup]="domicilioForm">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Domicilio</mat-label>
+                <mat-icon matPrefix svgIcon="heroicons_solid:location-marker" class="mr-3"></mat-icon>
+                <input id="domicilio" matInput [formControlName]="'domicilio'" placeholder="Domicilio">
+                <mat-error class="mb-1" *ngIf="domicilioForm.get('domicilio').hasError('required')">
+                    El domicilio es requerido
+                </mat-error>
+            </mat-form-field>
+            <div class="w-full mb-3">
+                <mat-label class="ml-3">Tipo: </mat-label>
+                <mat-radio-group aria-label="Select an option" formControlName="tipo">
+                    <mat-radio-button [value]='"OTROS"' class="ml-5">Otros</mat-radio-button>
+                    <mat-radio-button [value]='"EXPEDICION"' class="ml-5">Expedición</mat-radio-button>
+                    <mat-radio-button [value]='"INGENIERIA"' class="ml-5">Ingeniería</mat-radio-button>
+                    <mat-radio-button [value]='"COMPRAS"' class="ml-5">Compras</mat-radio-button>
+                    <mat-radio-button [value]='"INFORMES"' class="ml-5">Informes</mat-radio-button>
+                    <mat-radio-button [value]='"CONTADURIA"' class="ml-5">Contaduría</mat-radio-button>
+                    <mat-radio-button [value]='"CALIDAD"' class="ml-5">Calidad</mat-radio-button>
+                </mat-radio-group>
+                <mat-error class="mb-1"
+                    *ngIf="domicilioForm.get('tipo').hasError('required') && !domicilioForm.get('tipo').pristine">
+                    El tipo es requerido
+                </mat-error>
+            </div>
+        </form>
+    </div>
+</div>

@@ -8,6 +8,7 @@ import { ITratamiento, ITratamientoDto } from '../../models/tratamiento.interfac
 interface DialogData {
     mode: 'create' | 'edit';
     tratamiento?: ITratamiento;
+    nombre?: string;
 }
 
 @Component({
@@ -42,6 +43,8 @@ export class TratamientoModalComponent implements OnInit {
 
         if (this.mode === 'edit' && this.data.tratamiento) {
             this.form.patchValue({ nombre: this.data.tratamiento.nombre });
+        } else if (this.mode === 'create' && this.data.nombre) {
+            this.form.patchValue({ nombre: this.data.nombre });
         }
     }
 
@@ -61,10 +64,10 @@ export class TratamientoModalComponent implements OnInit {
             : this.abmTratamientoService.updateTratamiento(this.data.tratamiento.id, dto);
 
         request$.subscribe({
-            next: () => {
+            next: (response) => {
                 this.isLoading = false;
                 this.notificationService.showSuccess(`Tratamiento ${this.mode === 'create' ? 'creado' : 'actualizado'} correctamente.`);
-                this.dialogRef.close(true);
+                this.dialogRef.close(response.data);
             },
             error: (err) => {
                 this.isLoading = false;

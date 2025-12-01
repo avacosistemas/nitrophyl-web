@@ -30,6 +30,13 @@
             </mat-form-field>
         </div>
 
+        <div class="flex w-full px-1">
+            <mat-checkbox formControlName="soloPiezasCliente" color="primary"
+                [disabled]="!form.get('cliente').value?.id">
+                Mostrar solo piezas del cliente
+            </mat-checkbox>
+        </div>
+
         <div class="flex w-full gap-3">
             <mat-form-field appearance="outline" class="w-1/2">
                 <mat-label>Precio</mat-label>
