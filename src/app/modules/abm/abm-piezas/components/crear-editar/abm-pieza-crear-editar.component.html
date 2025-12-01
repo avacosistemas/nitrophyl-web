@@ -11,7 +11,6 @@
                         <mat-label>Código</mat-label>
                         <input type="text" matInput formControlName="codigo">
                     </mat-form-field>
-
                     <mat-form-field appearance="outline" class="form-field w-full">
                         <mat-label>Nombre de la Pieza</mat-label>
                         <input type="text" matInput formControlName="nombre" required>
@@ -140,7 +139,7 @@
                                 requerida</mat-error>
                         </mat-form-field>
 
-                        <mat-form-field *ngIf="mode === 'create'" appearance="outline" class="form-field w-full">
+                        <mat-form-field appearance="outline" class="form-field w-full">
                             <mat-label>Unidad de Dureza</mat-label>
                             <mat-select formControlName="unidadDureza" required>
                                 <mat-option *ngFor="let option of tiposDurezaOptions" [value]="option.value">

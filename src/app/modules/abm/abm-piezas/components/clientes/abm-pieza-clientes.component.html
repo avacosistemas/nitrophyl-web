@@ -79,7 +79,7 @@
 
       <ng-container matColumnDef="fechaCotizacion">
         <th mat-header-cell *matHeaderCellDef> Fecha Cot. </th>
-        <td mat-cell *matCellDef="let element">{{ element.fechaCotizacion | date:'dd/MM/yyyy' || '-' }}</td>
+        <td mat-cell *matCellDef="let element">{{ (element.fechaCotizacion | date:'dd/MM/yyyy':'UTC') || '-' }}</td>
       </ng-container>
 
       <ng-container matColumnDef="observacionesCotizacion">

@@ -21,6 +21,7 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { RevisionInicialInputComponent } from './revision-inicial-input.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatTableDataSource } from '@angular/material/table';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
 
 interface ForkJoinResults {
     tiposPieza: { id: number; nombre: string; }[];
@@ -28,16 +29,17 @@ interface ForkJoinResults {
     clientesResponse: { data: { id: number; nombre: string; codigo?: string; }[] };
     pieza: PiezaProceso | null;
 }
-
 @Component({
     selector: 'app-abm-pieza-crear-editar',
     templateUrl: './abm-pieza-crear-editar.component.html',
     styleUrls: ['./abm-pieza-crear-editar.component.scss'],
+    providers: [
+        { provide: MAT_DATE_LOCALE, useValue: 'es-ES' }
+    ]
 })
 export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() piezaId: number | null = null;
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
-
     piezaForm: FormGroup;
     espesorForm: FormGroup;
     espesoresDataSource = new MatTableDataSource<Espesor>([]);
@@ -85,9 +87,9 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             nombre: [{ value: null, disabled: false }, Validators.required],
             idTipoPieza: [{ value: null, disabled: false }, Validators.required],
             idFormula: [{ value: null, disabled: false }, Validators.required],
-            durezaMinima: [{ value: null, disabled: false }, Validators.required],
-            durezaMaxima: [{ value: null, disabled: false }, Validators.required],
-            unidadDureza: [{ value: 'SHORE_A', disabled: false }],
+            durezaMinima: [{ value: null, disabled: true }, Validators.required],
+            durezaMaxima: [{ value: null, disabled: true }, Validators.required],
+            unidadDureza: [{ value: 'SHORE_A', disabled: true }],
             pesoCrudo: [{ value: null, disabled: false }],
             observacionesPesoCrudo: [{ value: null, disabled: false }],
             idMolde: [{ value: null, disabled: true }],
@@ -280,6 +282,10 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.piezaForm.get('idMolde').disable();
             this.piezaForm.get('revision').disable();
             this.piezaForm.get('fechaRevision').disable();
+
+            this.piezaForm.get('durezaMinima').disable();
+            this.piezaForm.get('durezaMaxima').disable();
+            this.piezaForm.get('unidadDureza').disable();
         } else if (this.mode === 'edit') {
             this.piezaForm.enable();
             this.piezaForm.get('codigo').disable();
@@ -288,6 +294,10 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.piezaForm.get('idFormula').disable();
             this.piezaForm.get('revision').disable();
             this.piezaForm.get('fechaRevision').disable();
+
+            this.piezaForm.get('durezaMinima').disable();
+            this.piezaForm.get('durezaMaxima').disable();
+            this.piezaForm.get('unidadDureza').disable();
         }
     }
 

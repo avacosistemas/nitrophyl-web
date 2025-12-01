@@ -4,38 +4,41 @@
         <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
     </div>
     <form [formGroup]="form" class="flex flex-col gap-2">
-        <div class="flex w-full gap-3">
-            <mat-form-field appearance="outline" class="w-1/2">
-                <mat-label>Pieza</mat-label>
-                <input type="text" placeholder="Buscar pieza por nombre o código..." matInput formControlName="pieza"
-                    [matAutocomplete]="autoPieza" required>
-                <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
-                    <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
-                        {{ pieza.codigo }} - {{ pieza.denominacion }}
-                    </mat-option>
-                </mat-autocomplete>
-                <mat-error *ngIf="form.get('pieza').hasError('required')">La pieza es requerida.</mat-error>
-            </mat-form-field>
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Cliente</mat-label>
+            <input type="text" placeholder="Buscar cliente por nombre o código..." matInput formControlName="cliente"
+                [matAutocomplete]="autoCliente" required>
+            
+            <button *ngIf="form.get('cliente').value" matSuffix mat-icon-button aria-label="Limpiar" (click)="clearCliente($event)">
+                <mat-icon>close</mat-icon>
+            </button>
 
-            <mat-form-field appearance="outline" class="w-1/2">
-                <mat-label>Cliente</mat-label>
-                <input type="text" placeholder="Buscar cliente por nombre o código..." matInput
-                    formControlName="cliente" [matAutocomplete]="autoCliente" required>
-                <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
-                    <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                        {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
-                    </mat-option>
-                </mat-autocomplete>
-                <mat-error *ngIf="form.get('cliente').hasError('required')">El cliente es requerido.</mat-error>
-            </mat-form-field>
-        </div>
+            <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+                    {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="form.get('cliente').hasError('required')">El cliente es requerido.</mat-error>
+        </mat-form-field>
 
         <div class="flex w-full px-1">
-            <mat-checkbox formControlName="soloPiezasCliente" color="primary"
-                [disabled]="!form.get('cliente').value?.id">
+            <mat-checkbox formControlName="soloPiezasCliente" color="primary">
                 Mostrar solo piezas del cliente
             </mat-checkbox>
         </div>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Pieza</mat-label>
+            <input type="text" placeholder="Buscar pieza por nombre o código..." matInput formControlName="pieza"
+                [matAutocomplete]="autoPieza" required>
+            <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
+                    {{ pieza.codigo }} - {{ pieza.denominacion }}
+                </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="form.get('pieza').hasError('required')">La pieza es requerida.</mat-error>
+        </mat-form-field>
+
 
         <div class="flex w-full gap-3">
             <mat-form-field appearance="outline" class="w-1/2">

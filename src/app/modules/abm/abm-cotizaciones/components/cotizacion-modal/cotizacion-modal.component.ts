@@ -17,6 +17,7 @@ interface Cliente {
     nombre: string;
     codigo?: string;
 }
+
 @Component({
     selector: 'app-cotizacion-modal',
     templateUrl: './cotizacion-modal.component.html',
@@ -47,7 +48,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         this.form = this._fb.group({
             pieza: [null, Validators.required],
             cliente: [null, Validators.required],
-            soloPiezasCliente: [false],
+            soloPiezasCliente: [{ value: false, disabled: true }],
             valor: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
             fecha: [new Date(), Validators.required],
             observaciones: ['']
@@ -63,6 +64,11 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this._destroying$.next();
         this._destroying$.complete();
+    }
+
+    clearCliente(event: Event): void {
+        event.stopPropagation();
+        this.form.get('cliente').setValue(null);
     }
 
     loadClientesDropdown(): void {
@@ -85,15 +91,20 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         this.form.get('cliente').valueChanges
             .pipe(takeUntil(this._destroying$))
             .subscribe(cliente => {
-                if (this.form.get('soloPiezasCliente').value && cliente?.id) {
-                    this.loadPiezasByCliente(cliente.id);
-                    this.form.get('pieza').setValue(null);
-                }
-                else if (!cliente?.id) {
-                    this.piezasCliente = [];
-                    if (this.form.get('soloPiezasCliente').value) {
-                        this.form.get('soloPiezasCliente').setValue(false);
+                const soloPiezasCtrl = this.form.get('soloPiezasCliente');
+
+                if (cliente?.id) {
+                    soloPiezasCtrl.enable({ emitEvent: false });
+
+                    if (soloPiezasCtrl.value) {
+                        this.loadPiezasByCliente(cliente.id);
+                        this.form.get('pieza').setValue(null);
                     }
+                }
+                else {
+                    this.piezasCliente = [];
+                    soloPiezasCtrl.setValue(false, { emitEvent: false });
+                    soloPiezasCtrl.disable({ emitEvent: false });
                 }
             });
 
@@ -134,10 +145,11 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
     }
 
     private _filterClientes(value: string | Cliente): Cliente[] {
-        const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
-        if (!filterValue) {
+        if (!value) {
             return this.clientesDisponibles;
         }
+        const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+
         return this.clientesDisponibles.filter(cliente =>
             cliente.nombre.toLowerCase().includes(filterValue) ||
             (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))

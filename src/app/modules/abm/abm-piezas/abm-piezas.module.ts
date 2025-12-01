@@ -44,6 +44,20 @@ import { ABMPiezaModalPlanoModule } from './components/planos/modal-plano/abm-pi
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { CoreSharedModule } from 'app/core/shared/shared.module';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatMomentDateModule, MomentDateAdapter } from '@angular/material-moment-adapter';
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'DD/MM/YYYY',
+  },
+  display: {
+    dateInput: 'DD/MM/YYYY',
+    monthYearLabel: 'MMMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @NgModule({
   declarations: [
@@ -94,6 +108,15 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     ABMPiezaModalPlanoModule,
     CoreSharedModule,
     MatProgressSpinnerModule,
+  ],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
+    {
+      provide: DateAdapter,
+      useClass: MomentDateAdapter,
+      deps: [MAT_DATE_LOCALE],
+    },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ]
 })
 export class ABMPiezasModule { }
