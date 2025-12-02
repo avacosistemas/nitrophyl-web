@@ -30,6 +30,7 @@ import { ABMPiezaEsquemaComponent } from './components/esquema/abm-pieza-esquema
 import { ABMPiezaFinalizacionComponent } from './components/finalizacion/abm-pieza-finalizacion.component';
 import { ABMAdhesivosModule } from '../abm-adhesivos/abm-adhesivos.module';
 import { ABMTratamientosModule } from '../abm-tratamiento/abm-tratamiento.module';
+import { ABMPiezaClienteModalComponent } from './components/clientes/modal/abm-pieza-cliente-modal.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -75,6 +76,7 @@ export const MY_DATE_FORMATS = {
     ABMPiezaDesmoldantePostcuraComponent,
     ABMPiezaEsquemaComponent,
     ABMPiezaFinalizacionComponent,
+    ABMPiezaClienteModalComponent, 
   ],
   imports: [
     CommonModule,

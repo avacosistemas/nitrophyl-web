@@ -89,13 +89,6 @@
           Máximo 255 caracteres.
         </mat-error>
       </mat-form-field>
-
-      <div class="flex items-center justify-end gap-2 mt-4">
-        <button mat-button (click)="close()">Cancelar</button>
-        <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="create()">
-          {{ mode === 'Create' ? 'Guardar' : (mode === 'Clone' ? 'Generar Versión' : 'Actualizar') }}
-        </button>
-      </div>
     </form>
   </div>
 </div>

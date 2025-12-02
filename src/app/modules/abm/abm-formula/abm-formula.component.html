@@ -11,8 +11,10 @@
     [buttons]="[
       {
         type: 'flat',
-        label: title === 'Crear Fórmula' ? 'Guardar Fórmula' : title === 'Crear Nueva Versión' ? 'Guardar Versión' : '',
-        condition: title === 'Crear Fórmula' || title === 'Crear Nueva Versión',
+        label: title === 'Crear Fórmula' ? 'Guardar Fórmula' : 
+               title === 'Crear Nueva Versión' ? 'Crear nueva versión' : 
+               title === 'Editar Fórmula' ? 'Guardar edición' : '',
+        condition: title === 'Crear Fórmula' || title === 'Crear Nueva Versión' || title === 'Editar Fórmula',
         isDisabled: false,
         action: 'save'
       },

@@ -89,6 +89,9 @@ export class ABMFormulaComponent implements AfterContentChecked {
           this.title = 'Consultar Fórmula';
           break;
         case 'Edit':
+          this.title = 'Editar Fórmula';
+          break;
+        case 'Clone':
           this.title = 'Crear Nueva Versión';
           break;
         case 'Test':

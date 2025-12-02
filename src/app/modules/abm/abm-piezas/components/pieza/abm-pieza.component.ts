@@ -116,7 +116,6 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
         const formsToCheck = [
             this.abmPiezaCrearEditarComponent?.piezaForm,
             this.abmPiezaMoldesComponent?.moldeForm,
-            this.abmPiezaClientesComponent?.clienteForm,
             this.abmPiezaDimensionesComponent?.dimensionForm,
             this.abmPiezaMoldeoComponent?.moldeoForm,
             this.abmPiezaDesmoldantePostcuraComponent?.form,
@@ -128,7 +127,6 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
     private markAllFormsPristine(): void {
         this.abmPiezaCrearEditarComponent?.piezaForm?.markAsPristine();
         this.abmPiezaMoldesComponent?.moldeForm?.markAsPristine();
-        this.abmPiezaClientesComponent?.clienteForm?.markAsPristine();
         this.abmPiezaDimensionesComponent?.dimensionForm?.markAsPristine();
         this.abmPiezaMoldeoComponent?.moldeoForm?.markAsPristine();
         this.abmPiezaDesmoldantePostcuraComponent?.form?.markAsPristine();
@@ -184,31 +182,35 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
 
         if (this.mode !== 'view') {
             switch (this.currentTab) {
-                case 0:
+                case 0: // General
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = this.mode === 'create' ? 'Crear Pieza' : 'Guardar Pieza';
                     break;
-                case 2:
+                case 2: // Insumos
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Añadir Insumo';
                     break;
-                case 3:
+                case 3: // Moldeo
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Moldeo';
                     break;
-                case 4:
+                case 4: // Desmoldante
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Desmoldante/Postcura';
                     break;
-                case 5:
+                case 5: // Esquema
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Añadir Esquema';
                     break;
-                case 6:
+                case 6: // Finalización
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Pieza Terminada';
                     break;
-                case 9:
+                case 8: // Clientes
+                    this.mostrarBotonEdicion = true;
+                    this.botonEdicionTexto = 'Agregar Cliente';
+                    break;
+                case 9: // Planos
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Subir Plano';
                     break;
@@ -243,6 +245,9 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                 break;
             case 6:
                 this.onGuardarFinalizacion();
+                break;
+            case 8:
+                this.abrirModalAgregarCliente();
                 break;
             case 9:
                 this.abrirModalSubirPlano();
@@ -298,23 +303,18 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
         }
     }
 
+    abrirModalAgregarCliente(): void {
+        if (this.abmPiezaClientesComponent) {
+            this.abmPiezaClientesComponent.openModal();
+        }
+    }
+
     abrirModalSubirPlano(): void {
         const dialogRef = this.dialog.open(ABMPiezaPlanoModalComponent, {
             width: '600px',
             data: {
-                title: 'Subir Plano',
-                fileTypeDescription: 'Plano PDF',
-                acceptFileTypes: '.pdf',
-                showClassification: true,
-                clasificacionOptions: [
-                    { value: 'NITROPHYL', label: 'Nitrophyl' },
-                    { value: 'CLIENTE', label: 'Cliente' }
-                ],
+                title: 'Subir Nuevo Plano',
                 piezaId: this.piezaId,
-                serviceUpload: (dto) => {
-                    const payload = { ...dto, idPieza: this.piezaId };
-                    return this.abmPiezaService.uploadPlano(payload);
-                }
             }
         });
 

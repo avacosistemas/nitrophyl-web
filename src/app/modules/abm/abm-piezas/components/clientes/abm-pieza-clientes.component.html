@@ -1,58 +1,10 @@
-<div>
-  <div *ngIf="mode !== 'view'">
-    <form [formGroup]="clienteForm" class="w-full mat-form-without-wrapper">
-      <div class="flex flex-col md:flex-row justify-start items-start gap-3 flex-wrap">
-
-        <mat-form-field class="w-full md:flex-1 md:min-w-[200px]" appearance="outline">
-          <mat-label>Cliente</mat-label>
-          <input type="text" placeholder="Buscar cliente por nombre o código..." matInput formControlName="cliente"
-            [matAutocomplete]="autoCliente">
-          <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayCliente">
-            <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-              {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
-
-        <mat-form-field class="w-full md:flex-1 md:min-w-[200px]" appearance="outline">
-          <mat-label>Código de Cliente</mat-label>
-          <input matInput formControlName="nombrePiezaPersonalizado" placeholder="Ej: Código 123-A">
-        </mat-form-field>
-
-        <mat-form-field class="w-full md:flex-1 md:min-w-[200px]" appearance="outline">
-          <mat-label>Cotización</mat-label>
-          <input matInput type="number" formControlName="cotizacion" placeholder="Ej: 250.50">
-          <mat-error *ngIf="clienteForm.get('cotizacion').hasError('pattern')">Debe ser un valor numérico.</mat-error>
-        </mat-form-field>
-
-        <mat-form-field class="w-full md:flex-1 md:min-w-[200px]" appearance="outline">
-          <mat-label>Observaciones</mat-label>
-          <textarea matInput formControlName="observacionesCotizacion" placeholder="Añadir notas..."
-            rows="1"></textarea>
-        </mat-form-field>
-
-        <div class="w-full md:w-auto flex gap-2 items-center md:pt-2">
-          <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" style="height: 52px;"
-            mat-flat-button type="button" (click)="addOrUpdateCliente()" [disabled]="clienteForm.invalid || isLoading">
-            <span class="mat-button-wrapper">{{ buttonText }}</span>
-          </button>
-          <button *ngIf="editMode" mat-stroked-button type="button" (click)="cancelEdit()" style="height: 52px;"
-            [disabled]="isLoading">
-            Cancelar
-          </button>
-        </div>
-
-      </div>
-    </form>
-  </div>
-
-  <div class="relative mt-6">
+<div class="w-full">
+  <div class="relative">
     <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
       <mat-progress-spinner mode="indeterminate" [diameter]="50"></mat-progress-spinner>
     </div>
 
     <table mat-table [dataSource]="selectedClients" class="border-2 rounded-2xl w-full">
-
       <ng-container matColumnDef="nombreCliente">
         <th mat-header-cell *matHeaderCellDef> Cliente </th>
         <td mat-cell *matCellDef="let element">{{ element.nombreCliente }}</td>
@@ -60,21 +12,15 @@
 
       <ng-container matColumnDef="nombrePiezaPersonalizado">
         <th mat-header-cell *matHeaderCellDef> Cód. de Cliente </th>
-        <td mat-cell *matCellDef="let element">
-          <div class="flex items-center gap-2">
-            <span>{{ element.nombrePiezaPersonalizado || '-' }}</span>
-            <button mat-icon-button *ngIf="mode !== 'view'" (click)="openEditCodeDialog(element)"
-              matTooltip="Editar Código" class="w-8 h-8 flex items-center justify-center">
-              <mat-icon class="icon-size-4 text-gray-500 hover:text-primary"
-                svgIcon="heroicons_solid:pencil"></mat-icon>
-            </button>
-          </div>
-        </td>
+        <td mat-cell *matCellDef="let element"> {{ element.nombrePiezaPersonalizado || '-' }} </td>
       </ng-container>
 
       <ng-container matColumnDef="cotizacion">
         <th mat-header-cell *matHeaderCellDef> Cotización </th>
-        <td mat-cell *matCellDef="let element">{{ element.cotizacion | currency }}</td>
+        <td mat-cell *matCellDef="let element">
+          <span *ngIf="element.cotizacion">{{ element.cotizacion | currency }}</span>
+          <span *ngIf="!element.cotizacion">-</span>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="fechaCotizacion">
@@ -84,16 +30,22 @@
 
       <ng-container matColumnDef="observacionesCotizacion">
         <th mat-header-cell *matHeaderCellDef> Obs. de cotización </th>
-        <td mat-cell *matCellDef="let element">{{ element.observacionesCotizacion || '-' }}</td>
+        <td mat-cell *matCellDef="let element">
+          <span class="truncate max-w-xs block" [matTooltip]="element.observacionesCotizacion">
+            {{ element.observacionesCotizacion || '-' }}
+          </span>
+        </td>
       </ng-container>
 
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef></th>
         <td mat-cell *matCellDef="let row" class="text-right">
           <ng-container *ngIf="mode !== 'view'">
-            <div class="flex justify-end cursor-pointer gap-1">
-              <!-- <mat-icon (click)="startEdit(row)" svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"></mat-icon> -->
-              <mat-icon (click)="eliminarCliente(row)" svgIcon="heroicons_solid:trash" matTooltip="Eliminar"></mat-icon>
+            <div class="flex justify-end cursor-pointer gap-2 pr-2">
+              <mat-icon (click)="openModal(row)" class="text-gray-500 hover:text-primary"
+                svgIcon="heroicons_solid:pencil" matTooltip="Editar"></mat-icon>
+              <mat-icon (click)="eliminarCliente(row)" class="text-gray-500 hover:text-warn"
+                svgIcon="heroicons_solid:trash" matTooltip="Eliminar"></mat-icon>
             </div>
           </ng-container>
         </td>
@@ -110,29 +62,3 @@
     </table>
   </div>
 </div>
-
-<ng-template #editCodeDialog>
-  <div class="pb-2">
-    <h2 class="text-xl font-bold mb-4">Editar Código de Cliente</h2>
-    <div class="flex flex-col gap-4">
-      <p class="text-secondary">Cliente: <strong>{{ clientToEditCode?.nombreCliente }}</strong></p>
-
-      <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Código de Cliente</mat-label>
-        <input matInput [formControl]="editCodeControl" placeholder="Ej: ABC-123">
-      </mat-form-field>
-    </div>
-  </div>
-  <div mat-dialog-actions class="flex justify-end pb-6 gap-2">
-    <button mat-flat-button class="mat-focus-indicator mat-stroked-button mat-button-base mr-2"
-      (click)="dialog.closeAll()">
-      <span class="mat-button-wrapper"> Cancelar </span>
-      <span matripple class="mat-ripple mat-button-ripple"></span>
-    </button>
-    <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
-      (click)="saveClientCode()">
-      <span class="mat-button-wrapper"> Guardar </span>
-      <span matripple class="mat-ripple mat-button-ripple"></span>
-    </button>
-  </div>
-</ng-template>
