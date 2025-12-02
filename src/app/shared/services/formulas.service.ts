@@ -109,4 +109,8 @@ export class FormulasService {
   public clonar(idFormula: number, body: IFormula): Observable<IFormulaResponse> {
     return this.http.put<IFormulaResponse>(`${this.url}/clonar/${idFormula}`, body);
   }
+
+  public update(idFormula: number, body: IFormula): Observable<IFormulaResponse> {
+    return this.http.put<IFormulaResponse>(`${this.url}/${idFormula}`, body);
+  }
 }

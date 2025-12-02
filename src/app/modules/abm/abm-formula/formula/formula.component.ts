@@ -177,7 +177,7 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       this.postFormula();
     }
     if (this.mode === 'Edit') {
-      this.clonarFormula();
+      this.updateFormula();
     }
     if (this.mode === 'Clone') {
       this.clonarFormula();
@@ -494,6 +494,35 @@ export class FormulaComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err) => {
         this.openSnackBar(false, 'Error al clonar la fórmula');
+        console.error(error, err);
+      },
+      complete: () => { },
+    });
+  }
+
+  private updateFormula(): void {
+    const error: string = 'FormulaComponent => updateFormula(): ';
+
+    const body: IFormula = {
+      nombre: this.form.controls.name.value,
+      idMaterial: this.form.controls.material.value,
+      material: this.formula$ ? this.formula$.material : undefined,
+      norma: this.form.controls.norma.value,
+      observaciones: this.form.controls.observaciones.value,
+      durezaMinima: this.form.controls.durezaMinima.value,
+      durezaMaxima: this.form.controls.durezaMaxima.value,
+      unidadDureza: this.form.controls.unidadDureza.value,
+    };
+
+    this._formulas.update(this.id, body).subscribe({
+      next: (formula: IFormulaResponse) => {
+        if (formula.status === 'OK') {
+          this.openSnackBar(true, 'Fórmula actualizada correctamente');
+          this.router.navigate(['/formulas/grid']);
+        }
+      },
+      error: (err) => {
+        this.openSnackBar(false, 'Error al actualizar la fórmula');
         console.error(error, err);
       },
       complete: () => { },
