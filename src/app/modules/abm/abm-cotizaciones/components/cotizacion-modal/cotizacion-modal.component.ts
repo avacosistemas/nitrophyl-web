@@ -131,7 +131,14 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this._destroying$))
             .subscribe({
                 next: (res: any) => {
-                    this.piezasCliente = res?.data || [];
+                    //this.piezasCliente = res?.data || [];
+
+                    this.piezasCliente = (res?.data || []).map(item => ({
+                        id: item.idPieza,
+                        codigo: item.codigo,
+                        denominacion: item.denominacion
+                    }));
+
                     this.isLoading = false;
                     this.form.get('pieza').updateValueAndValidity({ onlySelf: true, emitEvent: true });
                 },
