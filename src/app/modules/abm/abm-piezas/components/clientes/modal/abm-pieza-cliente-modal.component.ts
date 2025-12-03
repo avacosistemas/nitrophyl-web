@@ -86,7 +86,19 @@ export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
                     }
                 },
                 error: (err) => {
-                    this.notificationService.showError('Error al cargar clientes.');
+                    const res = err.error;
+
+                    if (res && res.status === 'VALIDATIONS_ERRORS') {
+                        const msg = res.message || res.error || (res.errors ? 'Error en validación de datos' : null);
+
+                        if (msg) {
+                            this.notificationService.showError(msg);
+                        } else {
+                            this.notificationService.showError('No se pudieron validar los datos del cliente.');
+                        }
+                    } else {
+                        this.notificationService.showError('Error al cargar clientes.');
+                    }
                 }
             })
         );
@@ -179,7 +191,28 @@ export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
                 },
                 error: (err) => {
                     this.isLoading = false;
-                    this.notificationService.showError('Error al guardar los datos.');
+
+                    const res = err.error;
+
+                    if (res && res.status === 'VALIDATIONS_ERRORS') {
+                        if (res.message) {
+                            this.notificationService.showError(res.message);
+                        }
+                        else if (res.errors) {
+                            const errorMsg = typeof res.errors === 'string'
+                                ? res.errors
+                                : 'Verifique los campos ingresados (errores múltiples).';
+                            this.notificationService.showError(errorMsg);
+                        }
+                        else if (res.error) {
+                            this.notificationService.showError(res.error);
+                        }
+                        else {
+                            this.notificationService.showError('Error de validación. Por favor verifique los datos.');
+                        }
+                    } else {
+                        this.notificationService.showError('Error al guardar los datos.');
+                    }
                 }
             })
         );
