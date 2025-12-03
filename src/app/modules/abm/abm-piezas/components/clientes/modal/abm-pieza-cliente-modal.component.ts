@@ -7,6 +7,7 @@ import { Subscription, Observable, merge } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { PiezaCliente } from '../../../models/pieza.model';
 import { ABMPiezaService } from '../../../abm-piezas.service';
+import { DatePipe } from '@angular/common';
 
 interface Cliente {
     id: number;
@@ -19,7 +20,8 @@ interface Cliente {
     templateUrl: './abm-pieza-cliente-modal.component.html',
     styles: [`
         .mat-dialog-content { overflow: visible !important; }
-    `]
+    `],
+    providers: [DatePipe]
 })
 export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
     form: FormGroup;
@@ -36,7 +38,8 @@ export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
         @Inject(MAT_DIALOG_DATA) public data: { piezaId: number, clienteAsociado?: PiezaCliente },
         private _clients: ClientesService,
         private _piezaService: ABMPiezaService,
-        private notificationService: NotificationService
+        private notificationService: NotificationService,
+        private datePipe: DatePipe,
     ) {
         this.form = this.fb.group({
             cliente: [null, Validators.required],
@@ -94,7 +97,7 @@ export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
         this.form.patchValue({
             nombrePiezaPersonalizado: data.nombrePiezaPersonalizado,
             cotizacion: data.cotizacion,
-            fechaCotizacion: data.fechaCotizacion ? new Date(data.fechaCotizacion) : null,
+            fechaCotizacion: data.fechaCotizacion ? this.datePipe.transform(data.fechaCotizacion, 'dd/MM/yyyy') : null,
             observacionesCotizacion: data.observacionesCotizacion
         });
 
@@ -148,7 +151,7 @@ export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
 
         let fechaISO = null;
         if (formValue.fechaCotizacion) {
-            fechaISO = new Date(formValue.fechaCotizacion).toISOString();
+            fechaISO = this.datePipe.transform(formValue.fechaCotizacion, 'dd/MM/yyyy');
         }
 
         const dto: any = {
