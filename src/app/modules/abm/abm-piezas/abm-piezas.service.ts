@@ -220,12 +220,8 @@ export class ABMPiezaService {
         );
     }
 
-    getTiposBombeo(): Observable<string[]> {
-        return of(['AUTOMATICO', 'ESCALONADO']);
-    }
-
     getTiposDimension(): Observable<string[]> {
-        return of(['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO']);
+        return of(['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO', 'ESPESOR', 'LARGO']);
     }
 
     getTiposInsumo(): Observable<ApiResponse<ITipoInsumoJerarquico[]>> {

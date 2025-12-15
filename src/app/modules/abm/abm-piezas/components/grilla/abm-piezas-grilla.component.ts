@@ -16,6 +16,8 @@ import { FormulasService } from 'app/shared/services/formulas.service';
 import { MaterialsService } from 'app/shared/services/materials.service';
 import { IFormula, IFormulasResponse } from 'app/shared/models/formula.interface';
 import { IMaterialsResponse } from 'app/shared/models/material.interface';
+import { Cliente } from 'app/shared/models/cliente.model';
+import { ClientesService } from 'app/shared/services/clientes.service';
 
 @Component({
   selector: 'app-abm-piezas-grilla',
@@ -31,9 +33,12 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   private _destroying$ = new Subject<void>();
 
   displayedColumns: string[] = [
-    'vigente', 'codigo', 'denominacion', 'tipo', 'material',
-    'formula', 'revision', 'fechaRevision', 'acciones'
+    'vigente', 'tipo', 'material',
+    'formula', 'codigo', 'denominacion', 'cliente', 'piezaPersonalizada', 'acciones'
   ];
+
+// 'revision', 'fechaRevision',
+
   searchForm: FormGroup;
   dataSource = new MatTableDataSource<Pieza>([]);
   totalReg: number = 0;
@@ -43,6 +48,8 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   formulasFail: boolean = false;
   materialsFail: boolean = false;
 
+  clientesDisponibles: Cliente[] = [];
+
   soloVigentes = new FormControl(true);
 
   private allFormulas: IFormula[] = [];
@@ -50,6 +57,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
   filteredFormulas$: Observable<IFormula[]>;
   filteredMaterials$: Observable<any[]>;
+  filteredClientes$: Observable<Cliente[]>;
 
   constructor(
     private abmPiezaService: ABMPiezaService,
@@ -59,19 +67,23 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     private sanitizer: DomSanitizer,
     private notificationService: NotificationService,
     private _formulas: FormulasService,
-    private _materials: MaterialsService
+    private _materials: MaterialsService,
+    private _clientesService: ClientesService,
+    private _notificationService: NotificationService
   ) {
     this.searchForm = this.formBuilder.group({
       nombre: [null],
       idFormula: [null],
       idMaterial: [null],
       tiposPieza: [null],
-      soloVigentes: [true]
+      soloVigentes: [true],
+      idCliente: [null]
     });
   }
 
   ngOnInit(): void {
     this.loadAutocompleteData();
+    this.loadClientesDropdown();
   }
 
   ngAfterViewInit(): void {
@@ -132,6 +144,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       nombre: formValues.nombre,
       idFormula: typeof formValues.idFormula === 'object' ? formValues.idFormula?.id : formValues.idFormula,
       idMaterial: typeof formValues.idMaterial === 'object' ? formValues.idMaterial?.id : formValues.idMaterial,
+      idCliente: typeof formValues.idCliente === 'object' ? formValues.idCliente?.id : formValues.idCliente,
     };
 
     if (formValues.tiposPieza && formValues.tiposPieza.length > 0) {
@@ -147,6 +160,11 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
     return params;
   }
+
+  clearCliente(event: Event): void {
+        event.stopPropagation();
+        this.searchForm.get('idCliente').setValue(null);
+    }
 
   private refreshGrid(): void {
     this.paginator.page.emit();
@@ -241,6 +259,34 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   clearMaterialInput(): void {
     this.searchForm.get('idMaterial')?.setValue(null);
     if (this.materialInput) this.materialInput.nativeElement.value = '';
+  }
+
+  loadClientesDropdown(): void {
+      this._clientesService.getClientes().pipe(takeUntil(this._destroying$)).subscribe({
+          next: (res: any) => {
+              this.clientesDisponibles = res?.data || [];
+              this.filteredClientes$ = this.searchForm.get('idCliente').valueChanges.pipe(
+                  startWith(''),
+                  map(value => this._filterClientes(value))
+              );
+          },
+          error: (err) => {
+              console.error('Error al cargar la lista de clientes:', err);
+              this._notificationService.showError('Error al cargar la lista de clientes.');
+          }
+      });
+  }
+
+  private _filterClientes(value: string | Cliente): Cliente[] {
+      if (!value) {
+          return this.clientesDisponibles;
+      }
+      const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+
+      return this.clientesDisponibles.filter(cliente =>
+          cliente.nombre.toLowerCase().includes(filterValue) ||
+          (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
+      );
   }
 
   loadAutocompleteData(): void {

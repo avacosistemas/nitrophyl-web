@@ -161,7 +161,7 @@ export interface Prensa {
 
 export interface Bombeo {
     id?: number;
-    tipo: 'AUTOMATICO' | 'ESCALONADO';
+    tipo: 'AUTOMATICO' | 'ESCALONADO' | 'FONDO' | 'SUAVE';
     cantidad: number;
     presion: number;
 }

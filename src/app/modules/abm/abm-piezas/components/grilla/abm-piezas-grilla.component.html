@@ -14,23 +14,11 @@
                         <div class="row flex gap-3 justify-around">
 
                             <mat-form-field appearance="outline" class="w-1/4">
-                                <mat-label> Código / Denominación </mat-label>
-                                <input matInput formControlName="nombre" placeholder="Código o Denominación">
-                            </mat-form-field>
-
-                            <mat-form-field appearance="outline" class="w-1/4">
-                                <mat-label>Fórmula</mat-label>
-                                <input type="text" matInput formControlName="idFormula" [matAutocomplete]="autoFormula"
-                                    placeholder="Fórmula" #formulaInput>
-                                <button mat-icon-button matSuffix *ngIf="searchForm.get('idFormula')?.value"
-                                    (click)="clearFormulaInput(); $event.stopPropagation()">
-                                    <mat-icon>close</mat-icon>
-                                </button>
-                                <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFn">
-                                    <mat-option *ngFor="let formula of filteredFormulas$ | async" [value]="formula">
-                                        {{formula.nombre}}
-                                    </mat-option>
-                                </mat-autocomplete>
+                                <mat-label>Tipo de Pieza</mat-label>
+                                <mat-select formControlName="tiposPieza" multiple>
+                                    <mat-option *ngFor="let tipo of tiposPieza" [value]="tipo.id">{{ tipo.nombre
+                                        }}</mat-option>
+                                </mat-select>
                             </mat-form-field>
 
                             <mat-form-field appearance="outline" class="w-1/4">
@@ -49,12 +37,42 @@
                             </mat-form-field>
 
                             <mat-form-field appearance="outline" class="w-1/4">
-                                <mat-label>Tipo de Pieza</mat-label>
-                                <mat-select formControlName="tiposPieza" multiple>
-                                    <mat-option *ngFor="let tipo of tiposPieza" [value]="tipo.id">{{ tipo.nombre
-                                        }}</mat-option>
-                                </mat-select>
+                                <mat-label>Fórmula</mat-label>
+                                <input type="text" matInput formControlName="idFormula" [matAutocomplete]="autoFormula"
+                                    placeholder="Fórmula" #formulaInput>
+                                <button mat-icon-button matSuffix *ngIf="searchForm.get('idFormula')?.value"
+                                    (click)="clearFormulaInput(); $event.stopPropagation()">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+                                <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFn">
+                                    <mat-option *ngFor="let formula of filteredFormulas$ | async" [value]="formula">
+                                        {{formula.nombre}}
+                                    </mat-option>
+                                </mat-autocomplete>
                             </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-1/4">
+                                <mat-label> Código / Denominación /Código Cliente </mat-label>
+                                <input matInput formControlName="nombre" placeholder="Código o Denominación o Código Cliente">
+                            </mat-form-field>
+                            
+                           <mat-form-field appearance="outline" class="w-1/4">
+                                <mat-label>Cliente</mat-label>
+                                <input type="text" placeholder="Cliente" matInput formControlName="idCliente"
+                                    [matAutocomplete]="autoCliente">
+                                
+                                <button *ngIf="searchForm.get('idCliente').value" matSuffix mat-icon-button aria-label="Limpiar" (click)="clearCliente($event)">
+                                    <mat-icon>close</mat-icon>
+                                </button>
+
+                                <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
+                                    <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+                                        {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                                    </mat-option>
+                                </mat-autocomplete>
+                                
+                            </mat-form-field>
+                            
                         </div>
 
                         <div class="w-full justify-between flex">
@@ -117,15 +135,26 @@
                         <td mat-cell *matCellDef="let element"> {{element.material}} </td>
                     </ng-container>
 
-                    <ng-container matColumnDef="revision">
+                    <!-- <ng-container matColumnDef="revision">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header="revision"> Revisión </th>
                         <td mat-cell *matCellDef="let element"> {{element.revision}} </td>
-                    </ng-container>
+                    </ng-container> -->
 
-                    <ng-container matColumnDef="fechaRevision">
+                    <!-- <ng-container matColumnDef="fechaRevision">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header="fechaRevision"> Fecha Revisión </th>
                         <td mat-cell *matCellDef="let element"> {{ element.fechaRevision | date:'dd/MM/yyyy' }} </td>
+                    </ng-container> -->
+
+                    <ng-container matColumnDef="cliente">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header="cliente"> Cliente </th>
+                        <td mat-cell *matCellDef="let element"> {{ element.cliente }} </td>
                     </ng-container>
+
+                    <ng-container matColumnDef="piezaPersonalizada">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header="piezaPersonalizada"> Código Cliente </th>
+                        <td mat-cell *matCellDef="let element"> {{ element.piezaPersonalizada }} </td>
+                    </ng-container>
+
 
                     <ng-container matColumnDef="tipo">
                         <th mat-header-cell *matHeaderCellDef mat-sort-header="idTipoPieza"> Tipo </th>
