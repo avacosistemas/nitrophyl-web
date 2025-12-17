@@ -1,6 +1,7 @@
 export interface IInsumo {
   id: number;
   nombre: string;
+  origen?: 'FABRICADO' | 'COMPRADO' | 'PROVISTO';
   idTipo?: number;
   tipoNombre?: string;
   idMateriaPrima?: number;

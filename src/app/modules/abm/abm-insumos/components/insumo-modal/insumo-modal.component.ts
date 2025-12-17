@@ -31,6 +31,12 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
     filteredMateriasPrimas$: Observable<IMateriaPrima[]>;
     selectedMateriaPrima: IMateriaPrima | null = null;
 
+    origenes = [
+        { value: 'FABRICADO', label: 'Fabricado' },
+        { value: 'COMPRADO', label: 'Comprado' },
+        { value: 'PROVISTO', label: 'Provisto' }
+    ];
+
     private subscriptions = new Subscription();
 
     constructor(
@@ -57,6 +63,7 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
     private initForm(): void {
         this.form = this.fb.group({
             nombre: ['', [Validators.required, Validators.maxLength(100)]],
+            origen: [null, Validators.required], 
             tipoInsumo: [null, Validators.required],
             materiaPrima: [null],
             cantidadMateriaPrima: [null],
@@ -177,6 +184,7 @@ export class InsumoModalComponent implements OnInit, OnDestroy {
 
         let dto: Partial<IInsumo> = {
             nombre: formValue.nombre,
+            origen: formValue.origen,
             idTipo: tipoSeleccionado?.codigo,
             tipoNombre: tipoSeleccionado?.nombre,
             idMateriaPrima: materiaSeleccionada?.id || null,

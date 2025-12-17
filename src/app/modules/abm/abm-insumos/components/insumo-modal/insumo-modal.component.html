@@ -11,6 +11,18 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Origen</mat-label>
+            <mat-select formControlName="origen" required>
+                <mat-option *ngFor="let org of origenes" [value]="org.value">
+                    {{ org.label }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('origen').hasError('required')">
+                El origen es requerido.
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
             <mat-label>Tipo de Insumo</mat-label>
             <input type="text" placeholder="Buscar tipo de insumo..." aria-label="Tipo de Insumo" matInput
                 formControlName="tipoInsumo" [matAutocomplete]="autoTipo" required>

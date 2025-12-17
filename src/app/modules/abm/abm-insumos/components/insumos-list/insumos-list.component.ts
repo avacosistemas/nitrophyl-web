@@ -19,7 +19,13 @@ import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.c
 export class InsumosListComponent implements OnInit, OnDestroy {
     isLoading = true;
     dataSource = new MatTableDataSource<IInsumo>([]);
-    displayedColumns: string[] = ['tipoNombre', 'nombre', 'materiaPrimaNombre', 'acciones'];
+    displayedColumns: string[] = ['tipoNombre', 'nombre', 'origen', 'materiaPrimaNombre', 'acciones'];
+
+    origenMapping = {
+        'FABRICADO': 'Fabricado',
+        'COMPRADO': 'Comprado',
+        'PROVISTO': 'Proveído'
+    };
 
     private subscriptions = new Subscription();
     private materiaPrimaUnidades = new Map<number, string>();
