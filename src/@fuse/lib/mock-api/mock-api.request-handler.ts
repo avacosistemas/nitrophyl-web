@@ -54,6 +54,7 @@ export class FuseMockApiHandler
 
         // Execute the reply callback
         const replyResult = this._reply({
+            url      : this.request.url, 
             request  : this.request,
             urlParams: this.urlParams
         });

@@ -1,4 +1,3 @@
-
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ExtraOptions, PreloadAllModules, RouterModule } from '@angular/router';
@@ -24,7 +23,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AuthInterceptor } from 'app/core/auth/auth.interceptor';
 
 const routerConfig: ExtraOptions = {
-    preloadingStrategy       : PreloadAllModules,
+    preloadingStrategy: PreloadAllModules,
     scrollPositionRestoration: 'enabled'
 };
 
@@ -32,7 +31,7 @@ const routerConfig: ExtraOptions = {
     declarations: [
         AppComponent,
     ],
-    imports     : [
+    imports: [
         BrowserModule,
         BrowserAnimationsModule,
         RouterModule.forRoot(appRoutes, routerConfig),
@@ -54,14 +53,14 @@ const routerConfig: ExtraOptions = {
         MaterialModule,
         MatMenuModule
     ],
-    bootstrap   : [
+    bootstrap: [
         AppComponent
     ],
-    providers   : [
+    providers: [
         {
-            provide : HTTP_INTERCEPTORS,
+            provide: HTTP_INTERCEPTORS,
             useClass: AuthInterceptor,
-            multi : true
+            multi: true
         }
     ],
 })

@@ -281,6 +281,24 @@ export const appRoutes: Route[] = [
             (m: any) => m.CotizacionesModule
           ),
       },
+       {
+        path: 'orden-compra',
+        // canActivate: [PermissionGuard],
+        // data: { permission: 'MENU_ADMINISTRACION_ORDEN_COMPRA' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-orden-compra/abm-orden-compra.module').then(
+            (m: any) => m.ABMOrdenCompraModule
+          ),
+      },
+      {
+          path: 'orden-fabricacion',
+          // canActivate: [PermissionGuard],
+          // data: { permission: 'MENU_ADMINISTRACION_ORDEN_FABRICACION' },
+          loadChildren: () =>
+            import('app/modules/abm/abm-orden-fabricacion/abm-orden-fabricacion.module').then(
+              (m: any) => m.ABMOrdenFabricacionModule
+            ),
+      },
       {
         path: 'formulas',
         loadChildren: () =>

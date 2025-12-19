@@ -2,11 +2,21 @@ import { Injectable } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { finalize, Observable } from 'rxjs';
 import { FuseLoadingService } from '@fuse/services/loading/loading.service';
+import { environment } from 'environments/environment';
 
 @Injectable()
 export class FuseLoadingInterceptor implements HttpInterceptor
 {
     handleRequestsAutomatically: boolean;
+
+    private mockEndpoints: string[] = [
+        '/ordenCompra',
+        '/ordenesCompra/porCliente',
+        '/ordenFabricacion',
+        '/piezas/paraFabricacion',
+        '/piezas/stock',
+        '/piezas/cotizacion'
+    ];
 
     /**
      * Constructor
@@ -30,19 +40,26 @@ export class FuseLoadingInterceptor implements HttpInterceptor
      */
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>>
     {
-        // If the Auto mode is turned off, do nothing
-        if ( !this.handleRequestsAutomatically )
-        {
-            return next.handle(req);
+        let newReq = req.clone();
+
+        if (environment.enableMockup) {
+            const isMockable = this.mockEndpoints.some(endpoint => req.url.includes(endpoint));
+            if (isMockable) {
+                const newUrl = req.url.replace(environment.server, environment.mockServer);
+                newReq = req.clone({ url: newUrl });
+            }
         }
 
-        // Set the loading status to true
-        this._fuseLoadingService._setLoadingStatus(true, req.url);
+        if ( !this.handleRequestsAutomatically )
+        {
+            return next.handle(newReq);
+        }
 
-        return next.handle(req).pipe(
+        this._fuseLoadingService._setLoadingStatus(true, newReq.url);
+
+        return next.handle(newReq).pipe(
             finalize(() => {
-                // Set the status to false if there are any errors or the request is completed
-                this._fuseLoadingService._setLoadingStatus(false, req.url);
+                this._fuseLoadingService._setLoadingStatus(false, newReq.url);
             }));
     }
 }

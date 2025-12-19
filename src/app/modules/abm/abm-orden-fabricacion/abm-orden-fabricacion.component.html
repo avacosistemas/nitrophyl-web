@@ -1,0 +1,13 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <app-header 
+        [title]="title" 
+        [subtitle]="subtitle" 
+        [breadcrumbs]="breadcrumbs" 
+        [buttons]="buttons" 
+        (buttonAction)="handleAction($event)">
+    </app-header>
+
+    <div class="flex-auto overflow-hidden bg-gray-100 dark:bg-transparent">
+        <router-outlet (activate)="onChildActivate($event)"></router-outlet>
+    </div>
+</div>

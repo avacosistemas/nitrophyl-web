@@ -1,0 +1,96 @@
+<div class="p-6 sm:p-10 w-full">
+    <mat-accordion>
+        <mat-expansion-panel [expanded]="true">
+            <mat-expansion-panel-header class="h-12">
+                <mat-panel-title><span class="text-xl font-extrabold tracking-tight">Búsqueda</span></mat-panel-title>
+            </mat-expansion-panel-header>
+            <form [formGroup]="searchForm" (ngSubmit)="search()" class="flex flex-col gap-4 mt-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Cliente</mat-label>
+                        <input type="text" placeholder="Buscar cliente..." matInput formControlName="cliente"
+                            [matAutocomplete]="autoCliente" #clienteInput="matAutocompleteTrigger">
+                        <button *ngIf="searchForm.get('cliente').value" matSuffix mat-icon-button aria-label="Clear"
+                            (click)="clearClientSelection(); $event.stopPropagation()">
+                            <mat-icon class="icon-size-5" svgIcon="heroicons_solid:x-circle"></mat-icon>
+                        </button>
+
+                        <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
+                            <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
+                                {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Fecha Desde</mat-label>
+                        <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde">
+                        <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerDesde></mat-datepicker>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline">
+                        <mat-label>Fecha Hasta</mat-label>
+                        <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta">
+                        <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerHasta></mat-datepicker>
+                    </mat-form-field>
+                </div>
+                <mat-form-field appearance="outline">
+                    <mat-label>Nro. Comprobante / Interno</mat-label>
+                    <input matInput formControlName="searchText" placeholder="Buscar...">
+                </mat-form-field>
+                <div class="flex justify-end gap-2">
+                    <button mat-stroked-button type="button" (click)="limpiarFiltros()">Limpiar</button>
+                    <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
+                        type="submit">Buscar</button>
+                </div>
+            </form>
+        </mat-expansion-panel>
+    </mat-accordion>
+
+    <div class="relative mt-6">
+        <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 z-10 flex items-center justify-center">
+            <mat-progress-spinner color="primary" mode="indeterminate"></mat-progress-spinner>
+        </div>
+        <table mat-table [dataSource]="dataSource" matSort class="border-2 rounded-2xl w-full">
+            <ng-container matColumnDef="fecha">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
+                <td mat-cell *matCellDef="let element">{{ element.fecha | date:'dd/MM/yyyy' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="clienteNombre">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+                <td mat-cell *matCellDef="let element">{{ element.clienteNombre }}</td>
+            </ng-container>
+            <ng-container matColumnDef="nroComprobante">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nro. Comprobante</th>
+                <td mat-cell *matCellDef="let element">{{ element.nroComprobante }}</td>
+            </ng-container>
+            <ng-container matColumnDef="nroInterno">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nro. Interno</th>
+                <td mat-cell *matCellDef="let element">{{ element.nroInterno }}</td>
+            </ng-container>
+            <ng-container matColumnDef="archivo">
+                <th mat-header-cell *matHeaderCellDef>Archivo</th>
+                <td mat-cell *matCellDef="let element">
+                    <div *ngIf="element.archivoNombre" class="flex gap-2">
+                        <button mat-icon-button matTooltip="Previsualizar" (click)="previewArchivo(element)">
+                            <mat-icon svgIcon="heroicons_outline:eye"></mat-icon>
+                        </button>
+                        <button mat-icon-button matTooltip="Descargar" (click)="downloadArchivo(element)">
+                            <mat-icon svgIcon="heroicons_outline:download"></mat-icon>
+                        </button>
+                    </div>
+                    <span *ngIf="!element.archivoNombre">-</span>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            <tr *matNoDataRow>
+                <td class="text-center py-4" [attr.colspan]="displayedColumns.length">
+                    No se encontraron órdenes de compra.
+                </td>
+            </tr>
+        </table>
+        <mat-paginator [length]="totalReg" [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons></mat-paginator>
+    </div>
+</div>

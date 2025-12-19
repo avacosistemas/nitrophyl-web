@@ -29,7 +29,7 @@ export class NavegacionService {
           type: 'basic',
           permissionCode: 'MENU_INFORME_CALIDAD',
         },
-          {
+        {
           id: 'registro-envios',
           link: '/registro-envios',
           title: 'Registro de envíos',
@@ -107,6 +107,22 @@ export class NavegacionService {
           link: '/cotizaciones',
           title: 'Cotizaciones y Precios',
           permissionCode: 'MENU_ADMINISTRACION_COTIZACION',
+          type: 'basic',
+        },
+        {
+          icon: 'heroicons_solid:shopping-cart',
+          id: 'orden-compra',
+          link: '/orden-compra',
+          title: 'Orden de Compra',
+          // permissionCode: 'MENU_ADMINISTRACION_ORDEN_COMPRA',
+          type: 'basic',
+        },
+        {
+          icon: 'heroicons_solid:clipboard-list',
+          id: 'orden-fabricacion',
+          link: '/orden-fabricacion',
+          title: 'Orden de Fabricación',
+          // permissionCode: 'MENU_ADMINISTRACION_ORDEN_FABRICACION',
           type: 'basic',
         },
       ],
