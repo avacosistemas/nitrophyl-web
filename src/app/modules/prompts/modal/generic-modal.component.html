@@ -50,6 +50,7 @@
     <div mat-dialog-actions class="flex shrink-0 items-center gap-2 flex-row-reverse">
         <button mat-flat-button (click)="onConfirm()" *ngIf="data.showConfirmButton" [color]="data.type === 'success' ? 'primary' :
                        data.type === 'warning' ? 'warn' : null"
+            [disabled]="data.customComponent && !customComponentInstance?.getValue()"
             class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
             <span class="mat-button-wrapper">
                 {{ data.confirmButtonText || 'Confirmar' }}

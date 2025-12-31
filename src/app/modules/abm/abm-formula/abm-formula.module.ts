@@ -20,6 +20,9 @@ import { FormulaTestModalComponent } from './formula-test-modal/formula-test-mod
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 import { MaterialModule } from 'app/material.module';
+import { FormsModule } from '@angular/forms';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { DeleteFormulaConfirmationComponent } from './formulas/delete-formula-confirmation.component';
 
 const routes: Route[] = [
   {
@@ -41,8 +44,30 @@ const routes: Route[] = [
 ];
 
 @NgModule({
-  declarations: [ABMFormulaComponent, FormulasComponent, FormulaComponent, FormulaTestModalComponent, TestModifyDialogComponent, CheckParamDialogComponent],
-  imports: [RouterModule.forChild(routes), ABMSharedModule, MatSidenavModule, MatIconModule, FuseCardModule, HeaderSharedModule, PromptsModule, MaterialModule],
-  entryComponents: [TestModifyDialogComponent, CheckParamDialogComponent]
+  declarations: [
+    ABMFormulaComponent,
+    FormulasComponent,
+    FormulaComponent,
+    FormulaTestModalComponent,
+    TestModifyDialogComponent,
+    CheckParamDialogComponent,
+    DeleteFormulaConfirmationComponent
+  ],
+  imports: [
+    RouterModule.forChild(routes),
+    ABMSharedModule,
+    MatSidenavModule,
+    MatIconModule,
+    FuseCardModule,
+    HeaderSharedModule,
+    PromptsModule,
+    MaterialModule,
+    FormsModule,
+    MatCheckboxModule,
+  ],
+  entryComponents: [
+    TestModifyDialogComponent,
+    CheckParamDialogComponent
+  ]
 })
 export class ABMFormulaModule { }

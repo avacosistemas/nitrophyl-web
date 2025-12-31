@@ -14,6 +14,9 @@ import { ABMClientesDomicilioComponent } from './domicilio/abm-clientes-domicili
 
 // * Material.
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { CoreSharedModule } from 'app/core/shared/shared.module';
 import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
@@ -94,7 +97,10 @@ const maskConfig: Partial<IConfig> = {
     CoreSharedModule,
     HeaderSharedModule,
     PromptsModule,
-    MaterialModule
+    MaterialModule,
+    MatExpansionModule,
+    MatPaginatorModule,
+    MatCheckboxModule,
   ],
 })
 export class ABMClientesModule { }

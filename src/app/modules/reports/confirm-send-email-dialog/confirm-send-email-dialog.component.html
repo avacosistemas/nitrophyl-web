@@ -4,8 +4,11 @@
             <mat-icon class="text-secondary" [svgIcon]="'heroicons_outline:x'"></mat-icon>
         </button>
     </div>
-    <h1 mat-dialog-title class="text-lg font-semibold mb-4">Enviar Informe al correo: <strong class="font-extrabold">{{email}}</strong></h1>
-
+    <h1 mat-dialog-title class="text-lg font-semibold mb-4">
+        Enviar {{ isMultiple ? 'Informes' : 'Informe' }} al correo:
+        <strong class="font-extrabold">{{email}}</strong>
+    </h1>
+    
     <form [formGroup]="graphicForm" class="flex flex-col">
         <label for="file-upload" class="cursor-pointer mb-4 relative">
             <div
@@ -24,7 +27,7 @@
                 <mat-icon>cancel</mat-icon>
             </button>
         </label>
-        
+
         <mat-form-field appearance="outline">
             <mat-label>Observaciones</mat-label>
             <textarea matInput formControlName="observaciones" rows="4"></textarea>

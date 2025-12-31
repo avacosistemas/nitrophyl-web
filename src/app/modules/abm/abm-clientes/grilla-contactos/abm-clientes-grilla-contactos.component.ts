@@ -25,8 +25,8 @@ export class ABMClientesGrillaContactosComponent implements OnInit, OnDestroy {
     suscripcion: Subscription;
     provincias = [];
     ingresosBrutos = [
-        {id: 1, name: "Régimen General"},
-        {id: 2, name: "Régimen Simplificado"}
+        { id: 1, name: "Régimen General" },
+        { id: 2, name: "Régimen Simplificado" }
     ];
 
 
@@ -75,36 +75,39 @@ export class ABMClientesGrillaContactosComponent implements OnInit, OnDestroy {
         this.clientesService.getClienteById(this.clienteId).subscribe(d => {
             this.ABMClientesService.viewEvents.next(d.data.razonSocial);
         },
-        err => {
-            this.ABMClientesService.viewEvents.next("Nombre Cliente");
-        })
+            err => {
+                this.ABMClientesService.viewEvents.next("Nombre Cliente");
+            })
     }
 
     editContacto(row) {
         this.router.navigateByUrl(`/clientes/${this.clienteId}/contacto/${row.id}`);
     }
 
-    deleteContacto(row) {
+    deleteContacto(row: any) {
         const dialogRef = this.dialog.open(RemoveDialogComponent, {
             maxWidth: '40%',
-            data: {data: row.nombre, seccion: "contacto", boton: "Eliminar"},
+            data: { data: row.nombre, seccion: "contacto", boton: "Eliminar" },
         });
+
         dialogRef.afterClosed().subscribe(result => {
-            if(result) {
-                this.clientesService.deleteContacto(row.id).subscribe(d => {
-                    if(d.status == "OK") {
-                        this.openSnackBar("Cambios realizados", "X", "green-snackbar");
-                        this.inicializar();
-                    } else {
-                        this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+            if (result) {
+                this.clientesService.deleteContacto(row.id).subscribe(
+                    (d) => {
+                        if (d.status === "OK") {
+                            this.openSnackBar("Contacto eliminado con éxito", "X", "green-snackbar");
+                            this.inicializar();
+                        } else {
+                            this.openSnackBar("No se pudo eliminar el contacto", "X", "red-snackbar");
+                        }
+                    },
+                    (err) => {
+                        console.error(err);
+                        this.openSnackBar("Error de servidor al intentar eliminar", "X", "red-snackbar");
                     }
-                },
-                err => {
-                    this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
-                })
+                );
             }
         });
-        
     }
 
     create() {

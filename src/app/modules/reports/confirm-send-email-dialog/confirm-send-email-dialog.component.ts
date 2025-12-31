@@ -14,6 +14,7 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
     selectedFile: File | null = null;
     formSubmitted: boolean = false;
     email: string;
+    isMultiple: boolean = false;
 
     constructor(
         public dialogRef: MatDialogRef<ConfirmSendEmailDialogComponent>,
@@ -27,6 +28,7 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
         private clientsService: ClientesService
     ) {
         this.email = data.email;
+        this.isMultiple = data.idLote.includes(',');
     }
 
     ngOnInit(): void {
@@ -83,11 +85,12 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
         }
     }
 
+
     sendEmail(idCliente: number, idLote: string, archivo: string | null, observaciones: string, observacionesInforme: string): void {
         this.lotService.enviarInformePorCorreo(idCliente, idLote, archivo, observaciones, observacionesInforme).subscribe({
             next: (response: any) => {
                 if (response && response.status === 'ERROR') {
-                    this.openSnackBar(false, response.message || 'Error al enviar el informe');
+                    this.openSnackBar(false, response.error || 'Error al enviar el informe');
                 } else {
                     this.openSnackBar(true, 'Informe enviado correctamente', 'green');
                     this.dialogRef.close({ result: 'success' });

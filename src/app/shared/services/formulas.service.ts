@@ -113,4 +113,8 @@ export class FormulasService {
   public update(idFormula: number, body: IFormula): Observable<IFormulaResponse> {
     return this.http.put<IFormulaResponse>(`${this.url}/${idFormula}`, body);
   }
+
+  public delete(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.url}/${id}`);
+  }
 }

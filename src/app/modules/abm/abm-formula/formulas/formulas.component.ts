@@ -16,6 +16,10 @@ import { IMaterialsResponse } from 'app/shared/models/material.interface';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
 
+import { MatDialog } from '@angular/material/dialog';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { DeleteFormulaConfirmationComponent } from './delete-formula-confirmation.component';
+
 @Component({
   selector: 'app-formulas',
   templateUrl: './formulas.component.html',
@@ -33,6 +37,9 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     'name',
     'material',
     'norma',
+    'unidadDureza',
+    'durezaMinima',
+    'durezaMaxima',
     'fecha',
     'version',
     'actions',
@@ -47,7 +54,8 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   constructor(
     private _formulas: FormulasService,
     private _materials: MaterialsService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private dialog: MatDialog
   ) {
     this.setForm();
   }
@@ -121,6 +129,9 @@ export class FormulasComponent implements OnInit, AfterViewInit {
         'Nombre': item.nombre || '',
         'Material': materialNombre,
         'Norma': item.norma || '',
+        'Unidad Dureza': item.unidadDureza || '',
+        'Dureza Mín.': item.durezaMinima || '',
+        'Dureza Máx.': item.durezaMaxima || '',
         'Versión': item.version || '',
         'Fecha': item.fecha || '',
       };
@@ -141,6 +152,66 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       default:
         console.warn('Tipo de exportación no soportado:', tipo);
     }
+  }
+
+  public openObservations(row: IFormula): void {
+    this.dialog.open(GenericModalComponent, {
+      width: '500px',
+      data: {
+        title: `Observaciones de ${row.nombre}`,
+        message: row.observaciones,
+        type: 'info',
+        icon: 'document-text',
+        showCloseButton: true,
+        cancelButtonText: 'Cerrar',
+        showConfirmButton: false
+      }
+    });
+  }
+
+  public deleteFormula(row: IFormula): void {
+    const dialogRef = this.dialog.open(GenericModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Confirmar eliminación',
+        message: `Se va a borrar la formula <b>${row.nombre}</b>. Si se borra la formula, se perderan todas las parametrizaciones de todas las revisiones. ¿Está seguro que desea continuar?`,
+        type: 'warning',
+        icon: 'exclamation',
+        showConfirmButton: true,
+        confirmButtonText: 'Borrar Fórmula',
+        cancelButtonText: 'Cancelar',
+        customComponent: DeleteFormulaConfirmationComponent
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed === true) {
+        this._formulas.delete(row.id).subscribe({
+          next: () => {
+            this.showModalMessage('Éxito', 'La fórmula se ha eliminado correctamente.', 'success');
+            this.loadData();
+          },
+          error: (err) => {
+            const errorMessage = err.error?.message || 'No se pudo eliminar la fórmula debido a que tiene registros asociados (Lotes, Piezas o Informes).';
+            this.showModalMessage('Error al eliminar', errorMessage, 'error');
+          }
+        });
+      }
+    });
+  }
+
+  private showModalMessage(title: string, message: string, type: 'success' | 'error'): void {
+    this.dialog.open(GenericModalComponent, {
+      width: '400px',
+      data: {
+        title: title,
+        message: message,
+        type: type,
+        icon: type === 'success' ? 'check-circle' : 'x-circle',
+        showConfirmButton: true,
+        confirmButtonText: 'Aceptar'
+      }
+    });
   }
 
   private loadData(): void {

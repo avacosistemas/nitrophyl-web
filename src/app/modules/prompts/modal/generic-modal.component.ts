@@ -28,7 +28,8 @@ export class GenericModalComponent implements AfterViewInit {
     @ViewChild('customComponentContainer', { read: ViewContainerRef, static: true }) customComponentContainer: ViewContainerRef;
 
     private customComponentInstance: CustomModalComponentWithValue | null = null;
-
+    public isCustomComponentValid: boolean = false;
+    
     constructor(
         public dialogRef: MatDialogRef<GenericModalComponent>,
         @Inject(MAT_DIALOG_DATA) public data: DialogData,

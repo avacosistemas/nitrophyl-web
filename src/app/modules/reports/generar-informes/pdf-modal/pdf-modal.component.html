@@ -1,0 +1,41 @@
+<div class="flex flex-col h-full max-h-[95vh] bg-white overflow-hidden rounded-xl">
+    <div *ngIf="data.informes" 
+        class="flex items-center gap-2 px-6 py-4 border-b border-gray-100 overflow-x-auto scrollbar-hide">
+        <button *ngFor="let info of data.informes; let i = index"
+                (click)="setInforme(i)"
+                class="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap"
+                [ngClass]="currentIndex === i 
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                    : 'bg-white text-gray-600 hover:bg-gray-200 border border-gray-200'">
+            {{ info.nroLote || (i + 1) }}
+        </button>
+    </div>
+
+    <div class="flex-auto overflow-y-auto bg-slate-200 flex flex-col items-center custom-scrollbar">
+        <div class="w-full bg-white overflow-hidden">
+            <pdf-viewer 
+                [src]="pdfSrc" 
+                [render-text]="true" 
+                [original-size]="false" 
+                [autoresize]="true"
+                [show-all]="true"
+                [fit-to-page]="true"
+                [zoom]="1"
+                style="display: block; width: 100%; height: 80vh;">
+            </pdf-viewer>
+        </div>
+    </div>
+
+    <div mat-dialog-actions class="flex items-center justify-end gap-3 px-6 py-4 bg-white border-t border-gray-100">
+        <button mat-button (click)="close()" mat-stroked-button>
+            Cerrar
+        </button>
+        
+        <button *ngIf="shouldShowDownloadButton()" 
+                mat-flat-button color="accent"
+                (click)="downloadPdf()">
+            <mat-icon class="text-lg">download</mat-icon>
+            Descargar PDF
+        </button>
+    </div>
+</div>

@@ -1,19 +1,14 @@
-import { Component, OnInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  FormControl,
-} from '@angular/forms';
+import { Component, OnInit, ElementRef, ViewChild, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { LotService } from 'app/shared/services/lot.service';
-import { debounceTime, startWith, map, switchMap, delay, takeUntil } from 'rxjs/operators';
-import { Observable, of, Subject } from 'rxjs';
+import { debounceTime, startWith, catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { Observable, of, Subject, forkJoin, throwError } from 'rxjs';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { HttpErrorResponse } from '@angular/common/http';
-import { SafeResourceUrl } from '@angular/platform-browser';
-import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
+import { PDFModalComponent } from './pdf-modal/pdf-modal.component';
 import { IInformeLoteData } from 'app/shared/models/lot.interface';
 import { ConfirmSendEmailDialogComponent } from '../confirm-send-email-dialog/confirm-send-email-dialog.component';
 import { NotificationService } from 'app/shared/services/notification.service';
@@ -28,18 +23,19 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
   @ViewChild('lotInput') lotInput: ElementRef<HTMLInputElement>;
 
   informesForm: FormGroup;
-  clients: { id: number; nombre: string; email: string; codigo?: string }[] = [];
   clientFilterControl = new FormControl('');
-  filteredClients: Observable<{ id: number; nombre: string; email: string; codigo?: string }[]>;
-  lot: { nombre: string; id: string }[] = [];
+  filteredClients: Observable<any[]>;
+  clients: any[] = [];
+
   lotFilterControl = new FormControl('');
-  filteredLots: Observable<{ nombre: string; id: string }[]>;
+  filteredLots: Observable<any[]>;
+
+  dataSource = new MatTableDataSource<IInformeLoteData>([]);
+  displayedColumns: string[] = ['nroLote', 'fecha', 'grado', 'material', 'acciones'];
+
   errorMessage: string = '';
   errorList: string[] = [];
   showErrorAlert: boolean = false;
-  pdfPreviewUrl: SafeResourceUrl | null = null;
-  selectedLotDetails: IInformeLoteData | null = null;
-
   isSending: boolean = false;
 
   private destroy$ = new Subject<void>();
@@ -50,35 +46,16 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     private clientsService: ClientesService,
     private lotService: LotService,
     private notificationService: NotificationService,
+    private cdRef: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
     this.informesForm = this.fb.group({
       selectedClient: [null, Validators.required],
-      selectedLote: [null, Validators.required],
       observacionesInforme: [''],
     });
 
-    this.filteredLots = this.lotFilterControl.valueChanges.pipe(
-      debounceTime(300),
-      startWith(''),
-      switchMap((value) => {
-        if (typeof value === 'string' && value.length > 0) {
-          return this.lotService.getLotesByNroLote(value);
-        } else if (typeof value === 'object' && value !== null && 'nombre' in value) {
-          return this.lotService.getLotesByNroLote(value.nombre);
-        } else {
-          this.informesForm.get('selectedLote')?.setValue(null);
-          return of({ status: 'OK', data: [] });
-        }
-      }),
-      map(response => response.data.map((lot: any) => ({
-        nombre: lot.nombre,
-        id: lot.codigo,
-      }))),
-      takeUntil(this.destroy$)
-    );
-
+    this.setupFilters();
     this.getClients();
   }
 
@@ -87,183 +64,195 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private setupFilters(): void {
+    this.filteredLots = this.lotFilterControl.valueChanges.pipe(
+      debounceTime(300),
+      startWith(''),
+      switchMap((value) => {
+        const term = typeof value === 'string' ? value : value?.nombre;
+        if (term && term.length > 0) {
+          return this.lotService.getLotesByNroLote(term);
+        }
+        return of({ status: 'OK', data: [] });
+      }),
+      map(response => response.data.map((lot: any) => ({
+        nombre: lot.nombre,
+        id: lot.codigo,
+      }))),
+      takeUntil(this.destroy$)
+    );
+  }
+
   getClients(): void {
     this.clientsService.getClientes().subscribe({
       next: (response) => {
         if (response.status === 'OK') {
-          this.clients = response.data.map((client: any) => ({
-            id: client.id,
-            nombre: client.nombre,
-            email: client.email,
-            codigo: client.codigo
-          }));
+          this.clients = response.data;
           this.filteredClients = this.clientFilterControl.valueChanges.pipe(
             startWith(''),
             map(value => this._filterClients(value || '')),
             takeUntil(this.destroy$)
           );
         }
-      },
-      error: (error) => {
-        console.error('Error al obtener los clientes', error);
-        this.notificationService.showError('Error al obtener los clientes.');
       }
     });
   }
 
-  getLotes(): void {
-    this.lotService.getLotes().subscribe({
-      next: (response) => {
-        if (response.status === 'OK') {
-          this.lot = response.data.map((lot: any) => ({
-            nombre: lot.nombre,
-            id: lot.codigo,
-          }));;
-          this.filteredLots = this.lotFilterControl.valueChanges.pipe(
-            startWith(''),
-            switchMap(value => this._filterLots(value || '')),
-            takeUntil(this.destroy$)
-          );
+  onLotSelected(event: MatAutocompleteSelectedEvent): void {
+    const lotBasicInfo = event.option.value;
+
+    if (this.dataSource.data.find(l => l.id.toString() === lotBasicInfo.id.toString())) {
+      this.notificationService.showError('Este lote ya ha sido añadido.');
+      this.clearLotSearch();
+      return;
+    }
+
+    this.lotService.getInformeLote(lotBasicInfo.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        if (response && response.data) {
+          const newData = [...this.dataSource.data, response.data];
+          this.dataSource.data = newData;
+
+          this.clearLotSearch();
+          this.cdRef.detectChanges();
         }
-      },
-      error: (error) => {
-        console.error('Error al obtener los lotes', error);
-        this.notificationService.showError('Error al obtener los lotes.');
-      }
-    });
+      });
   }
 
-  onSubmit(): void {
+  removeLot(id: number): void {
+    this.dataSource.data = this.dataSource.data.filter(l => l.id !== id);
+    this.cdRef.detectChanges();
   }
 
-  openConfirmSendEmailDialog(idCliente: number, idLote: string, email: string, observacionesInforme: string): void {
-    this.isSending = true;
-    const dialogRef = this.dialog.open(ConfirmSendEmailDialogComponent, {
-      width: '600px',
-      data: { idCliente: idCliente, idLote: idLote, email: email, observacionesInforme: observacionesInforme }
-    });
-
-    dialogRef.beforeClosed().subscribe(() => {
-      this.isSending = false;
-    });
-
-    dialogRef.afterClosed().subscribe(result => {
-      this.isSending = false;
-
-      if (result && result.result === 'success') {
-        this.clearClientInput();
-        this.clearLotInput();
-        this.informesForm.reset();
-        this.informesForm.markAsPristine();
-        this.notificationService.showSuccess('Informe enviado correctamente.');
-      }
-    });
+  private clearLotSearch(): void {
+    this.lotFilterControl.setValue('');
+    if (this.lotInput) {
+      this.lotInput.nativeElement.value = '';
+    }
   }
 
   onEnviarInforme(): void {
-    if (this.informesForm.valid) {
-      const { idCliente, idLote } = this.getSelectedValues();
+    if (this.informesForm.valid && this.dataSource.data.length > 0) {
+      this.isSending = true;
+      const idCliente = this.informesForm.get('selectedClient').value.id;
+      const idLotes = this.dataSource.data.map(l => l.id).join(',');
       const observacionesInforme = this.informesForm.get('observacionesInforme').value;
 
-      if (idCliente && idLote) {
-        this.clientsService.getCorreoInforme(idCliente).subscribe({
-          next: (response) => {
-            if (response && response.data) {
-              const correo = response.data;
-              this.openConfirmSendEmailDialog(idCliente, idLote, correo, observacionesInforme);
-            } else {
-              this.errorMessage = 'Error: No se pudo obtener el correo electrónico del cliente';
-              this.showErrorAlert = true;
-              this.notificationService.showError('Error al obtener el correo electrónico del cliente.');
-            }
-          },
-          error: (errorResponse: HttpErrorResponse) => {
-            console.error('Error al obtener el correo electrónico del cliente', errorResponse);
-
-            if (errorResponse.error && errorResponse.error.message) {
-              this.errorMessage = errorResponse.error.message;
-              this.showErrorAlert = true;
-              this.notificationService.showError(errorResponse.error.message);
-            } else {
-              this.errorMessage = 'Error al obtener el correo electrónico del cliente';
-              this.showErrorAlert = true;
-              this.notificationService.showError('Error al obtener el correo electrónico del cliente.');
-            }
+      this.clientsService.getCorreoInforme(idCliente).subscribe({
+        next: (response) => {
+          if (response && response.data) {
+            this.openConfirmSendEmailDialog(idCliente, idLotes, response.data, observacionesInforme);
+          } else {
+            this.notificationService.showError('No se pudo obtener el correo del cliente');
+            this.isSending = false;
           }
-        });
-      } else {
-        this.errorMessage = 'Error: No se pudo obtener el ID del cliente o del lote';
-        this.showErrorAlert = true;
-        this.notificationService.showError('Error: No se pudo obtener el ID del cliente o del lote.');
-      }
+        },
+        error: (err) => {
+          this.handleError(err);
+          this.isSending = false;
+        }
+      });
     }
   }
 
   onVistaPreviaInforme(): void {
-    if (this.informesForm.valid) {
-      const { idCliente, idLote } = this.getSelectedValues();
-      const observacionesInforme = this.informesForm.get('observacionesInforme').value;
+    const idCliente = this.informesForm.get('selectedClient').value?.id;
+    const lotesSeleccionados = this.dataSource.data;
+    const observacionesInforme = this.informesForm.get('observacionesInforme').value;
 
-      if (idCliente && idLote) {
-        this.lotService.getInformeCalidad(idCliente, idLote, observacionesInforme).subscribe({
-          next: (response) => {
-            if (response && response.data && response.data.archivo && response.data.nombre) {
-              const archivoBase64 = response.data.archivo;
-              const nombreArchivo = response.data.nombre;
+    if (idCliente && lotesSeleccionados.length > 0) {
+      this.isSending = true;
+      this.closeError();
 
-              this.dialog.open(PDFModalDialogComponent, {
-                maxWidth: '90%',
-                width: '860px',
-                data: {
-                  src: archivoBase64,
-                  title: nombreArchivo,
-                  showDownloadButton: true
-                },
-              });
+      const peticiones = lotesSeleccionados.map(lote =>
+        this.lotService.getInformeCalidad(idCliente, lote.id.toString(), observacionesInforme).pipe(
+          catchError(err => {
+            err.loteError = lote.nroLote;
+            return throwError(() => err);
+          })
+        )
+      );
 
-              this.closeError();
-            } else {
-              this.errorMessage = 'Respuesta inesperada del servidor.';
-              this.errorList = [];
-              this.showErrorAlert = true;
-            }
-          },
-          error: (err: any) => {
-            console.error('Error al obtener el informe para la vista previa', err);
-            this.handleError(err);
-          },
-        });
-      } else {
-        this.notificationService.showError('Error: No se pudo obtener el ID del cliente o del lote.');
-      }
+      forkJoin(peticiones).subscribe({
+        next: (responses: any[]) => {
+          this.isSending = false;
+          const informesParaModal = responses.map((res, index) => ({
+            src: res.data.archivo,
+            title: res.data.nombre,
+            nroLote: lotesSeleccionados[index].nroLote
+          }));
+
+          this.dialog.open(PDFModalComponent, {
+            maxWidth: '95vw', width: '1000px',
+            data: { informes: informesParaModal, showDownloadButton: true },
+          });
+        },
+        error: (err) => {
+          this.isSending = false;
+          this.handleError(err);
+        }
+      });
     }
   }
 
-  _displayClientName(client?: { nombre: string }): string | undefined {
-    return client ? client.nombre : undefined;
+  private handleError(error: any): void {
+    this.showErrorAlert = true;
+    this.errorList = [];
+
+    const nombreLote = error.loteError ? `[Lote ${error.loteError}] ` : '';
+
+    if (error instanceof HttpErrorResponse) {
+      const errorData = error.error;
+
+      if (errorData) {
+        this.errorMessage = `${nombreLote}${errorData.message || 'Error de validación.'}`;
+
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          this.errorList = Object.entries(errorData.errors).map(
+            ([campo, mensaje]) => `${campo}: ${mensaje}`
+          );
+        }
+      } else {
+        this.errorMessage = `${nombreLote}${error.message}`;
+      }
+    } else {
+      this.errorMessage = 'Error inesperado al generar los informes.';
+    }
+
+    this.cdRef.detectChanges();
+
+    setTimeout(() => {
+      document.getElementById('top')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 
-  _displayLotName(lote?: { nombre: string }): string | undefined {
-    return lote ? lote.nombre : undefined;
+  openConfirmSendEmailDialog(idCliente: number, idLote: string, email: string, observacionesInforme: string): void {
+    const dialogRef = this.dialog.open(ConfirmSendEmailDialogComponent, {
+      width: '600px',
+      data: { idCliente, idLote, email, observacionesInforme }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.isSending = false;
+      if (result?.result === 'success') {
+        this.resetPage();
+      }
+    });
   }
+
+  resetPage(): void {
+    this.dataSource.data = [];
+    this.informesForm.reset();
+    this.clientFilterControl.setValue('');
+    this.notificationService.showSuccess('Informes enviados correctamente.');
+  }
+
+  _displayClientName(client?: any): string { return client ? client.nombre : ''; }
+  _displayLotName(lote?: any): string { return lote ? lote.nombre : ''; }
 
   onClientSelected(event: MatAutocompleteSelectedEvent): void {
     this.informesForm.get('selectedClient')?.setValue(event.option.value);
-  }
-
-  onLotSelected(event: MatAutocompleteSelectedEvent): void {
-    const selectedLot = event.option.value;
-    this.informesForm.get('selectedLote')?.setValue(selectedLot);
-
-    this.lotService.getInformeLote(selectedLot.id)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        if (response && response.data) {
-          this.selectedLotDetails = response.data;
-        } else {
-          this.selectedLotDetails = null;
-        }
-      });
   }
 
   clearClientInput(): void {
@@ -272,69 +261,17 @@ export class GenerarInformesComponent implements OnInit, OnDestroy {
     this.clientInput.nativeElement.value = '';
   }
 
-  clearLotInput(): void {
-    this.lotFilterControl.setValue('');
-    this.informesForm.get('selectedLote')?.setValue(null);
-    this.lotInput.nativeElement.value = '';
-    this.selectedLotDetails = null;
-  }
-
   closeError(): void {
     this.showErrorAlert = false;
     this.errorMessage = '';
     this.errorList = [];
   }
 
-  private _normalizeValue(value: string): string {
-    return value.toLowerCase().replace(/\s/g, '');
-  }
-
-  private handleError(error: any): void {
-    this.errorMessage = 'Hubo un error en la petición.';
-    this.errorList = [];
-    this.showErrorAlert = true;
-    if (error instanceof HttpErrorResponse) {
-      if (error.error) {
-        if (error.error.message) {
-          this.errorMessage = error.error.message;
-        }
-        if (error.error.errors) {
-          this.errorList = Object.values(error.error.errors);
-        }
-        if (error.error.status === 'VALIDATIONS_ERRORS') {
-          this.errorMessage = error.error.message || 'Ocurrió un error.';
-          this.errorList = Object.entries(error.error.errors || {}).map(([key, value]) => `${key}: ${value}`);
-        }
-      } else {
-        this.errorMessage = `Error en la petición: ${error.message}`;
-      }
-    } else {
-      this.errorMessage = `Error inesperado: ${error}`;
-    }
-  }
-
-  private _filterLots(value: string | any): Observable<{ nombre: string; id: string }[]> {
-    const filterValue = (typeof value === 'string' ? value : value.nombre).toLowerCase();
-    return of(this.lot.filter(lote =>
-      lote.nombre.toLowerCase().includes(filterValue)
-    ));
-  }
-
-  private _filterClients(value: string | any): { id: number; nombre: string; email: string; codigo?: string }[] {
+  private _filterClients(value: string | any): any[] {
     const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
-    if (!filterValue) {
-      return this.clients;
-    }
-
-    return this.clients.filter(client =>
-      client.nombre.toLowerCase().includes(filterValue) ||
-      (client.codigo && client.codigo.toLowerCase().includes(filterValue))
+    return this.clients.filter(c =>
+      c.nombre.toLowerCase().includes(filterValue) ||
+      (c.codigo && c.codigo.toLowerCase().includes(filterValue))
     );
-  }
-
-  private getSelectedValues(): { idCliente: number | null; idLote: string | null } {
-    const { id: idCliente } = this.informesForm.get('selectedClient')?.value || {};
-    const { id: idLote } = this.informesForm.get('selectedLote')?.value || {};
-    return { idCliente, idLote };
   }
 }

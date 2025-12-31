@@ -16,6 +16,7 @@ export interface Cliente {
     observacionesFacturacion: string;
     telefono: string;
     contacto?: any;
+    activo?: boolean;
 }
 
 export interface Contacto {
@@ -30,6 +31,7 @@ export interface Contacto {
 export interface ResponseClientes {
     status: string;
     data: Array<Cliente>;
+    total?: number;
 }
 
 export interface ResponseCliente {

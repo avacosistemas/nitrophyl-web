@@ -26,6 +26,9 @@ import { ReportsComponent } from './reports.component';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 import { ConfirmSendEmailDialogComponent } from './confirm-send-email-dialog/confirm-send-email-dialog.component';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
+import { PDFModalComponent } from './generar-informes/pdf-modal/pdf-modal.component';
+
 export const MY_DATE_FORMATS = {
   parse: {
     dateInput: 'DD/MM/YYYY',
@@ -53,6 +56,7 @@ const informesRoutes: Route[] = [
     ReportsComponent,
     ConfirmDialogComponent,
     ConfirmSendEmailDialogComponent,
+    PDFModalComponent
   ],
   imports: [
     CommonModule,
@@ -76,7 +80,8 @@ const informesRoutes: Route[] = [
     MatSortModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    MatMomentDateModule
+    MatMomentDateModule,
+    PdfViewerModule
   ],
   exports: [
     ConfirmDialogComponent,

@@ -1,6 +1,39 @@
 <div class="flex flex-col flex-auto min-w-0" id="top">
   <div class="flex-auto p-6 sm:p-10">
     <div>
+      <mat-accordion class="mb-4 block">
+        <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+          <mat-expansion-panel-header class="h-12">
+            <mat-panel-title>
+              <span class="text-xl font-extrabold tracking-tight">Búsqueda</span>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <form [formGroup]="filterForm" class="flex flex-col gap-2 mt-4">
+            <div class="row flex gap-3 items-center">
+              <mat-form-field appearance="outline" class="flex-auto">
+                <mat-label>Búsqueda rápida</mat-label>
+                <input matInput formControlName="busquedaRapida" placeholder="Nombre, Razón Social o Dirección">
+                <mat-icon matPrefix svgIcon="heroicons_outline:search" class="mr-2"></mat-icon>
+              </mat-form-field>
+            </div>
+
+            <div class="row flex justify-between mt-2 gap-2">
+              <mat-checkbox formControlName="activo">Solo habilitados</mat-checkbox>
+              <div class="row flex justify-end gap-2">
+                <button mat-stroked-button type="button" (click)="clearFilters()">
+                  Limpiar
+                </button>
+
+                <button mat-flat-button color="accent" (click)="search()">
+                  Buscar
+                </button>
+              </div>
+            </div>
+          </form>
+        </mat-expansion-panel>
+      </mat-accordion>
+
       <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="border-2 rounded-2xl w-full">
         <ng-container matColumnDef="razonSocial">
           <th mat-header-cell *matHeaderCellDef>Razón Social</th>
@@ -205,6 +238,9 @@
           [class.example-expanded-row]="expandedElement === element" (click)="expandRow(element)"></tr>
         <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
       </table>
+      <mat-paginator [length]="totalRecords" style="display: flex; justify-content: right;" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 100]"
+        (page)="onPageChange($event)" aria-label="Seleccionar página">
+      </mat-paginator>
     </div>
   </div>
 </div>

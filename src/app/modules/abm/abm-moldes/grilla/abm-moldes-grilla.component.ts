@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { Molde } from "app/shared/models/molde.model";
 import { MoldesService } from "app/shared/services/moldes.service";
@@ -9,6 +9,7 @@ import { ClientesService } from "app/shared/services/clientes.service";
 import { Cliente } from "app/shared/models/cliente.model";
 import { Observable, of } from "rxjs";
 import { map, startWith } from "rxjs/operators";
+import { Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'abm-moldes-grilla',
@@ -30,6 +31,9 @@ export class ABMMoldesGrillaComponent implements OnInit {
   totalReg: number = 0;
   pageSize: number = 50;
   pageIndex: number = 0;
+
+  sortField: string = 'codigo';
+  isAsc: boolean = true;
 
   constructor(
     private moldesService: MoldesService,
@@ -116,11 +120,26 @@ export class ABMMoldesGrillaComponent implements OnInit {
     );
   }
 
+  sortData(sort: Sort) {
+    if (!sort.active || sort.direction === '') {
+      this.sortField = 'codigo';
+      this.isAsc = true;
+    } else {
+      this.sortField = sort.active;
+      this.isAsc = sort.direction === 'asc';
+    }
+
+    this.pageIndex = 0;
+    this.cargarMoldes();
+  }
+
   cargarMoldes() {
     const formValues = this.searchForm.value;
     const params = {
       first: (this.pageIndex * this.pageSize) + 1,
       rows: this.pageSize,
+      idx: this.sortField,
+      asc: this.isAsc,
       codigo: formValues.code,
       nombre: formValues.name,
       estado: formValues.status,
