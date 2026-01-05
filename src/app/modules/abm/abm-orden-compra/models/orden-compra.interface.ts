@@ -6,7 +6,16 @@ export interface IOrdenCompra {
     nroComprobante: string;
     nroInterno: string;
     archivoNombre?: string;
-    archivoContenido?: string;
+}
+
+export interface IOrdenCompraItem {
+    idTemp?: number;
+    idPieza: number;
+    codigo: string;
+    denominacion: string;
+    cantidad: number;
+    precio: number;
+    fechaCotizacion?: string;
 }
 
 export interface IOrdenCompraCreateDTO {
@@ -15,7 +24,13 @@ export interface IOrdenCompraCreateDTO {
     nroComprobante: string;
     nroInterno: string;
     archivoNombre?: string;
-    archivoContenido?: string;
+    archivoContenido?: string | null;
+    items: {
+        idPieza: number;
+        cantidad: number;
+        precio: number;
+        fechaCotizacion?: string;
+    }[];
 }
 
 export interface IOrdenCompraApiResponse {
@@ -24,9 +39,4 @@ export interface IOrdenCompraApiResponse {
         page: IOrdenCompra[];
         totalReg: number;
     };
-}
-
-export interface IOrdenCompraSingleApiResponse {
-    status: string;
-    data: IOrdenCompra;
 }

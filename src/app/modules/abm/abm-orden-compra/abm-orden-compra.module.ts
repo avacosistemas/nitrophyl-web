@@ -19,13 +19,15 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatMomentDateModule, MomentDateAdapter } from '@angular/material-moment-adapter';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 
 import { ABMOrdenCompraComponent } from './abm-orden-compra.component';
 import { OrdenCompraListComponent } from './components/orden-compra-list/orden-compra-list.component';
-import { OrdenCompraModalComponent } from './components/orden-compra-modal/orden-compra-modal.component';
+import { OrdenCompraFormComponent } from './components/orden-compra-form/orden-compra-form.component';
 
 export const MY_DATE_FORMATS = {
     parse: { dateInput: 'DD/MM/YYYY' },
@@ -41,7 +43,7 @@ export const MY_DATE_FORMATS = {
     declarations: [
         ABMOrdenCompraComponent,
         OrdenCompraListComponent,
-        OrdenCompraModalComponent
+        OrdenCompraFormComponent
     ],
     imports: [
         CommonModule,
@@ -63,7 +65,9 @@ export const MY_DATE_FORMATS = {
         MatExpansionModule,
         MatAutocompleteModule,
         MatDatepickerModule,
-        MatMomentDateModule
+        MatMomentDateModule,
+        MatSelectModule,
+        MatCheckboxModule
     ],
     providers: [
         DatePipe,

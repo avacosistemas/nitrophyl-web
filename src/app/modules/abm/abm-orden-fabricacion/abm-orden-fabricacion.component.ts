@@ -65,13 +65,13 @@ export class ABMOrdenFabricacionComponent implements AfterContentChecked {
             this.title = 'Órdenes de Fabricación';
             this.subtitle = '';
             this.breadcrumbs = baseBreadcrumb;
-            this.buttons = [{
-                type: 'flat',
-                label: 'Crear Orden de Fabricación',
-                condition: true,
-                isDisabled: false,
-                action: 'create'
-            }];
+            // this.buttons = [{
+            //     type: 'flat',
+            //     label: 'Crear Orden de Fabricación',
+            //     condition: true,
+            //     isDisabled: false,
+            //     action: 'create'
+            // }];
         } else if (this.currentComponent instanceof OrdenFabricacionFormComponent) {
             this.title = 'Generar Orden';
             this.breadcrumbs = [...baseBreadcrumb, { title: 'Nueva', route: [], condition: true }];
