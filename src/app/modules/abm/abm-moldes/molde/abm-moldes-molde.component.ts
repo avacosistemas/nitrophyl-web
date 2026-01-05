@@ -112,10 +112,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     'acciones',
   ];
   public pristineClient: boolean = true;
-
+  public initialMolde: Molde;
+  
   private descriptionChanges = new Subject<Boca>();
   private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
-  private initialMolde: Molde;
   private pristineBocasData: Boca[] = [];
 
   private requireAtLeastOneCheckbox(): ValidatorFn {
@@ -143,6 +143,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       nombre: [null, [Validators.required, Validators.maxLength(100)]],
       observaciones: [null],
       ubicacion: [null],
+      cantidadBocas: [{ value: null, disabled: true }],
       client: [null, [Validators.required]],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox())
     });
@@ -400,8 +401,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   editMolde() {
-    this.moldeForm.markAllAsTouched(); 
-    
+    this.moldeForm.markAllAsTouched();
+
     if (this.moldeForm.invalid) {
       this.notificationService.showError('Por favor, corrija los errores en el formulario.');
       return;
@@ -534,6 +535,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       observaciones: data.observaciones,
       ubicacion: data.ubicacion,
       client: propietarioObj,
+      cantidadBocas: data.cantidadBocas,
     });
 
     const piezaTiposFormArray = this.moldeForm.get('piezaTipos') as FormArray;
@@ -916,137 +918,135 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   addBoca(): void {
-    if (this.bocaForm.invalid) {
+    if (this.bocaForm.invalid) return;
 
-      if (this.bocaForm.get('boca').hasError('required')) {
-        this.notificationService.showError('El número de boca es obligatorio.')
-      } else if (this.bocaForm.get('boca').hasError('pattern')) {
-        this.notificationService.showError('El número de boca debe contener solo números.');
-      } else if (this.bocaForm.get('estado').hasError('required')) {
-        this.notificationService.showError('El estado es obligatorio.');
-      } else if (this.bocaForm.get('descripcion').hasError('maxlength')) {
-        this.notificationService.showError('La descripción no puede tener más de 100 caracteres.');
-      } else {
-        this.notificationService.showError('Por favor, corrija los errores en el formulario.');
+    const dialogRef = this.dialog.open(GenericModalComponent, {
+      data: {
+        title: 'Agregar Boca',
+        message: 'Al agregar esta boca, se actualizará automáticamente la <b>Cantidad de Bocas</b> indicada en la creación del molde. ¿Desea continuar?',
+        icon: 'exclamation',
+        type: 'info',
+        showConfirmButton: true,
+        confirmButtonText: 'Agregar',
+        cancelButtonText: 'Cancelar'
+      },
+      width: '450px'
+    });
+
+    dialogRef.afterClosed().subscribe(confirm => {
+      if (confirm) {
+        const newBoca: Boca = {
+          idMolde: Number(this.currentId),
+          nroBoca: parseInt(this.bocaForm.get('boca').value, 10),
+          estado: this.bocaForm.get('estado').value,
+          descripcion: this.bocaForm.get('descripcion').value,
+        };
+
+        this._molds.postBoca(newBoca).subscribe({
+          next: (res) => {
+            if (res.status === 'OK') {
+              this.notificationService.showSuccess('Boca agregada y contador actualizado.');
+              this.bocaForm.reset({
+                estado: 'ACTIVO',
+                boca: null,
+                descripcion: null
+              });
+              this.getBocas();
+            } else {
+              this.notificationService.showError(res.message || 'No se pudo agregar la boca.');
+            }
+          },
+          error: (err) => {
+            this.notificationService.showError('Ocurrió un error al procesar la solicitud.');
+            console.error(err);
+          }
+        });
       }
-      return;
-    }
-    if (this.bocaForm.invalid) {
-      return;
-    }
-
-    const newBoca: Boca = {
-      nroBoca: parseInt(this.bocaForm.get('boca').value, 10),
-      estado: this.bocaForm.get('estado').value,
-      descripcion: this.bocaForm.get('descripcion').value,
-    };
-
-    if (this.bocas.some(b => b.nroBoca === newBoca.nroBoca)) {
-      this.notificationService.showError('Ya existe una boca con ese número.');
-      return;
-    }
-
-    const updatedBocas = [...this.bocas, newBoca];
-
-    this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
-      next: (response) => {
-        if (response.status === 'OK') {
-          this.notificationService.showSuccess('Boca agregada correctamente.');
-          this.bocaForm.reset();
-          this.pristineBocas = false;
-          this.getBocas();
-        } else {
-          this.notificationService.showError('Error al agregar la boca.');
-        }
-      },
-      error: (error) => {
-        this.notificationService.showError('Error al agregar la boca.');
-        console.error('Error al agregar la boca:', error);
-      },
     });
   }
 
   deleteBoca(bocaToDelete: Boca): void {
     const dialogRef = this.dialog.open(RemoveDialogComponent, {
-      maxWidth: '450px',
-      data: { data: null, seccion: 'boca', boton: 'Eliminar' },
+      data: {
+        boton: 'Eliminar',
+        seccion: 'Boca',
+        mensaje: `¿Está seguro que desea quitar la boca <b>${bocaToDelete.nroBoca}</b>? Se actualizará la cantidad de bocas del molde y se reacomodarán las posiciones.`
+      }
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const updatedBocas = this.bocas.filter(boca => boca.nroBoca !== bocaToDelete.nroBoca);
-
-        this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
-          next: (response) => {
-            if (response.status === 'OK') {
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && bocaToDelete.id) {
+        this._molds.deleteBocaIndividual(bocaToDelete.id).subscribe({
+          next: (res) => {
+            if (res.status === 'OK') {
               this.notificationService.showSuccess('Boca eliminada correctamente.');
               this.getBocas();
-              this.pristineBocas = false;
-            } else {
-              this.notificationService.showError('Error al eliminar la boca.');
             }
-          },
-          error: (error) => {
-            this.notificationService.showError('Error al eliminar la boca.');
-            console.error('Error al eliminar la boca:', error);
-          },
+          }
         });
+      }
+    });
+  }
+
+  updateBocaDescription(bocaToUpdate: Boca): void {
+    if (!bocaToUpdate.id) return;
+
+    const payload = {
+      descripcion: bocaToUpdate.descripcion,
+      estado: bocaToUpdate.estado
+    };
+
+    this._molds.updateBoca(bocaToUpdate.id, payload).subscribe({
+      next: (res) => {
+        if (res.status === 'OK') {
+          this.notificationService.showSuccess('Descripción actualizada.');
+        }
       }
     });
   }
 
   onStateChange(boca: Boca, newState: string): void {
     const bocaIndex = this.bocas.findIndex(b => b.nroBoca === boca.nroBoca);
-    if (bocaIndex === -1) { return; }
+    if (bocaIndex === -1) return;
 
     const originalBoca = this.pristineBocasData.find(b => b.nroBoca === boca.nroBoca);
-
-    if (!originalBoca || originalBoca.estado === newState) {
-      return;
-    }
+    if (!originalBoca || originalBoca.estado === newState) return;
 
     const dialogRef = this.dialog.open(GenericModalComponent, {
       data: {
         title: 'Cambio de Estado de Boca',
         message: `Está modificando el estado de la Boca N°${originalBoca.nroBoca} de <b>${originalBoca.estado}</b> a <b>${newState}</b>, por favor indique una observación.`,
         type: 'warning',
-        icon: 'exclamation',
-        showConfirmButton: true,
-        confirmButtonText: 'Guardar',
-        cancelButtonText: 'Cancelar',
         customComponent: TextareaModalComponent
       },
       width: '500px'
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        const bocaWithObservation = { ...boca, estado: newState, observacionesEstado: result };
-        this.bocas[bocaIndex] = bocaWithObservation;
-        const updatedBocas = [...this.bocas];
+    dialogRef.afterClosed().subscribe(observationResult => {
+      if (observationResult) {
+        const payload: Partial<Boca> = {
+          estado: newState,
+          descripcion: boca.descripcion,
+          observacionesEstado: observationResult
+        };
 
-        this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
-          next: (response) => {
-            if (response.status === 'OK') {
+        this._molds.updateBoca(boca.id, payload).subscribe({
+          next: (res) => {
+            if (res.status === 'OK') {
               this.notificationService.showSuccess('Estado actualizado correctamente.');
               this.getBocas();
-              this.pristineBocas = false;
             } else {
               this.notificationService.showError('Error al actualizar el estado.');
-              this.bocas[bocaIndex] = { ...originalBoca };
-              this.bocas = [...this.bocas];
+              this.getBocas();
             }
           },
-          error: (error) => {
-            this.notificationService.showError('Error al actualizar el estado.');
-            console.error('Error al actualizar el estado:', error);
-            this.bocas[bocaIndex] = { ...originalBoca };
-            this.bocas = [...this.bocas];
-          },
+          error: () => {
+            this.notificationService.showError('Error de red al actualizar.');
+            this.getBocas();
+          }
         });
       } else {
-        this.bocas[bocaIndex] = { ...originalBoca };
-        this.bocas = [...this.bocas];
+        this.getBocas();
       }
     });
   }
@@ -1055,31 +1055,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     boca.descripcion = newDescription;
     this.descriptionChanges.next(boca);
     this.pristineBocas = false;
-  }
-
-  updateBocaDescription(bocaToUpdate: Boca): void {
-
-    const bocaIndex = this.bocas.findIndex(boca => boca.nroBoca === bocaToUpdate.nroBoca);
-    if (bocaIndex !== -1) {
-      this.bocas[bocaIndex] = { ...this.bocas[bocaIndex], descripcion: bocaToUpdate.descripcion };
-      const updatedBocas = [...this.bocas];
-
-      this._molds.updateMoldeBocas(this.currentId, updatedBocas).subscribe({
-        next: (response) => {
-          if (response.status === 'OK') {
-            this.notificationService.showSuccess('Descripcion actualizada correctamente.');
-            this.getBocas();
-            this.pristineBocas = false;
-          } else {
-            this.notificationService.showError('Error al actualizar la descripcion.');
-          }
-        },
-        error: (error) => {
-          this.notificationService.showError('Error al actualizar la descripcion.');
-          console.error('Error al actualizar la descripcion:', error);
-        },
-      });
-    }
   }
 
   getBocas(): void {

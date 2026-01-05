@@ -46,6 +46,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       code: [null, [Validators.required, Validators.maxLength(30)]],
       estado: ['ACTIVO', [Validators.required]],
       name: [null, [Validators.required, Validators.maxLength(100)]],
+      cantidadBocas: [null, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]], 
       client: [null, Validators.required],
       observations: [null],
       location: [null],
@@ -140,7 +141,8 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       clienteDuenio: client ? client.nombre : null,
       propio: client?.id === -1,
       id: 0,
-      piezaTipos: selectedTiposPieza
+      cantidadBocas: this.moldeForm.controls.cantidadBocas.value,
+      piezaTipos: selectedTiposPieza,
     };
 
     this.moldesService.postMolde(model).subscribe({

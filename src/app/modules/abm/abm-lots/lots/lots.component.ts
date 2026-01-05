@@ -460,21 +460,38 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   public delete(lote: ILot): void {
+    const mensajeCustom = `Se va a borrar el lote <b>${lote.nroLote}</b>. 
+    Si se borra el lote, se perderán los resultados de los ensayos realizados. 
+    Tampoco podrán generarse informes de calidad ni recuperar los ya generados. 
+    <br><br>¿Está seguro que desea continuar?`;
+
     const dialogRef = this.dialog.open(RemoveDialogComponent, {
       maxWidth: '40%',
-      data: { data: lote.nroLote, seccion: 'lote', boton: 'Eliminar' },
+      data: {
+        data: lote.nroLote,
+        seccion: 'lote',
+        boton: 'Eliminar',
+        mensaje: mensajeCustom,
+        check: true,
+      },
     });
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.lotService.delete(lote.id).subscribe((response) => {
-          if (response.status === 'OK') {
-            this.lots$ = this.lotService
-              .get()
-              .pipe(map((res: ILotsResponse) => res.data));
-            this.openSnackBar(true, null);
-            this.search();
-          } else {
-            this.openSnackBar(false, response.error);
+        this.lotService.delete(lote.id).subscribe({
+          next: (response) => {
+            if (response.status === 'OK') {
+              this.lots$ = this.lotService.get().pipe(map((res: ILotsResponse) => res.data));
+              this.openSnackBar(true, null);
+              this.search();
+            } else {
+              this.openSnackBar(false, response.error);
+            }
+          },
+          error: (error) => {
+            const mensajeError = error.error?.data || 'No se puede borrar el lote.';
+
+            this.openSnackBar(false, mensajeError);
           }
         });
       }
@@ -693,50 +710,50 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
- private async _dialog(lote: ILot, set: string): Promise<void> {
-  try {
-    // Esperamos la respuesta de hasEnsayos
-    const res = await firstValueFrom(this.lotService.hasEnsayos(lote.id));
-    const hasEnsayos: Boolean = res.data;
+  private async _dialog(lote: ILot, set: string): Promise<void> {
+    try {
+      // Esperamos la respuesta de hasEnsayos
+      const res = await firstValueFrom(this.lotService.hasEnsayos(lote.id));
+      const hasEnsayos: Boolean = res.data;
 
-    if (!hasEnsayos) {
-      this.openSnackBar(false, 'No se pueden aprobar/rechazar lotes sin ensayos.');
-      return; // No abrimos el modal
+      if (!hasEnsayos) {
+        this.openSnackBar(false, 'No se pueden aprobar/rechazar lotes sin ensayos.');
+        return; // No abrimos el modal
+      }
+
+      // Abrimos el modal si tiene ensayos
+      const dialogRef = this.dialog.open(LotDialogComponent, {
+        width: 'fit-content',
+        data: { set: set }
+      });
+
+      const result = await firstValueFrom(dialogRef.afterClosed());
+
+      if (!result) return;
+
+      const { status, observation, fecha } = result;
+
+      if ((status === 'APROBADO' || status === 'APROBADO_OBSERVADO') && this.validarFechas(fecha, lote.fecha)) {
+        await firstValueFrom(this.lotService.approve(lote.id, {
+          estado: status,
+          observaciones: observation,
+          fecha: fecha
+        }));
+        this.openSnackBar(true);
+        this.search();
+      } else if (status === 'RECHAZADO' && this.validarFechas(fecha, lote.fecha)) {
+        await firstValueFrom(this.lotService.reject(lote.id, observation, fecha));
+        this.openSnackBar(true);
+        this.search();
+      } else {
+        this.openSnackBar(false, 'La fecha seleccionada no puede ser anterior a la fecha de creación del lote.');
+      }
+
+    } catch (err) {
+      console.error('Error en _dialog:', err);
+      this.openSnackBar(false, 'No se pudieron realizar los cambios.');
     }
-
-    // Abrimos el modal si tiene ensayos
-    const dialogRef = this.dialog.open(LotDialogComponent, {
-      width: 'fit-content',
-      data: { set: set }
-    });
-
-    const result = await firstValueFrom(dialogRef.afterClosed());
-
-    if (!result) return;
-
-    const { status, observation, fecha } = result;
-
-    if ((status === 'APROBADO' || status === 'APROBADO_OBSERVADO') && this.validarFechas(fecha, lote.fecha)) {
-      await firstValueFrom(this.lotService.approve(lote.id, {
-        estado: status,
-        observaciones: observation,
-        fecha: fecha
-      }));
-      this.openSnackBar(true);
-      this.search();
-    } else if (status === 'RECHAZADO' && this.validarFechas(fecha, lote.fecha)) {
-      await firstValueFrom(this.lotService.reject(lote.id, observation, fecha));
-      this.openSnackBar(true);
-      this.search();
-    } else {
-      this.openSnackBar(false, 'La fecha seleccionada no puede ser anterior a la fecha de creación del lote.');
-    }
-
-  } catch (err) {
-    console.error('Error en _dialog:', err);
-    this.openSnackBar(false, 'No se pudieron realizar los cambios.');
   }
-}
 
 
   private createFormulaValidator(): ValidatorFn {

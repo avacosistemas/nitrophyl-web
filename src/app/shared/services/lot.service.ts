@@ -126,7 +126,7 @@ export class LotService {
   }
 
   public delete(id: number): Observable<ILotResponse> {
-    return this.http.delete<ILotResponse>(`${this._url}/delete/${id}`);
+    return this.http.delete<ILotResponse>(`${this._url}/${id}`);
   }
 
   public toggleDrawerEdit(): void {

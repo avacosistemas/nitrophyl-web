@@ -8,6 +8,7 @@ export interface Molde {
   idClienteDuenio: number;
   clienteDuenio: string;
   propio: boolean;
+  cantidadBocas?: number;
   alto?: number;
   ancho?: number;
   profundidad?: number;
@@ -26,6 +27,8 @@ export interface ResponseMolde {
 }
 
 export interface Boca {
+  id?: number;
+  idMolde?: number;   
   estado: string;
   nroBoca: number;
   descripcion: string;

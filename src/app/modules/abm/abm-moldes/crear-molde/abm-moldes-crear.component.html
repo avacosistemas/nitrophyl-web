@@ -40,6 +40,14 @@
           </mat-form-field>
 
           <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Cantidad de Bocas</mat-label>
+            <input type="number" matInput formControlName="cantidadBocas" placeholder="Cantidad de bocas">
+            <mat-error *ngIf="moldeForm.get('cantidadBocas').hasError('required')">
+              La cantidad de bocas es requerida
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field class="w-full" appearance="outline">
             <mat-label>Propietario </mat-label>
             <mat-select formControlName="client" placeholder="Propietario">
               <mat-option [value]="-1"> Nitrophyl </mat-option>

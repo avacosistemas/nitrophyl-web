@@ -21,12 +21,14 @@
               </mat-form-field>
 
               <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Estado </mat-label>
+                <mat-label>Estado</mat-label>
                 <mat-select formControlName="estado" placeholder="Estado">
                   <mat-option [value]='"ACTIVO"'>Activo</mat-option>
                   <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
                   <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
-                  <mat-option [value]='"EN_FABRICACION"'>En Fabricación</mat-option>
+                  <mat-option [value]='"EN_FABRICACION"' *ngIf="initialMolde?.estado === 'EN_FABRICACION'">
+                    En Fabricación
+                  </mat-option>
                 </mat-select>
               </mat-form-field>
 
@@ -39,6 +41,12 @@
                 <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('maxlength')">
                   Máximo 100 caracteres
                 </mat-error>
+              </mat-form-field>
+
+              <mat-form-field class="w-full" appearance="outline">
+                <mat-label>Cantidad de Bocas</mat-label>
+                <input type="number" matInput formControlName="cantidadBocas">
+                <mat-hint>Este valor se actualiza automáticamente al gestionar las bocas.</mat-hint>
               </mat-form-field>
 
               <mat-form-field class="w-full" appearance="outline">
@@ -335,7 +343,7 @@
         </table>
       </div>
     </mat-tab>
-    <mat-tab label="Observaciones">
+    <mat-tab label="Historial">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <div class="flex justify-around gap-2" [formGroup]="observacionForm" *ngIf="mode === 'Edit'">
           <mat-form-field class="w-full" appearance="outline">

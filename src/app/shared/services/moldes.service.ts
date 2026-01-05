@@ -62,8 +62,20 @@ export class MoldesService {
     );
   }
 
-  public getMoldeBocas(id: number): Observable<ResponseBoca> {
-    return this.http.get<ResponseBoca>(`${environment.server}molde/boca/${id}`);
+  public getMoldeBocas(idMolde: number): Observable<ResponseBoca> {
+    return this.http.get<ResponseBoca>(`${environment.server}moldeBoca?idMolde=${idMolde}`);
+  }
+
+  public postBoca(boca: Partial<Boca>): Observable<any> {
+    return this.http.post<any>(`${environment.server}moldeBoca`, boca);
+  }
+
+  public updateBoca(idBoca: number, boca: Partial<Boca>): Observable<any> {
+    return this.http.put<any>(`${environment.server}moldeBoca/${idBoca}`, boca);
+  }
+
+  public deleteBocaIndividual(idBoca: number): Observable<any> {
+    return this.http.delete<any>(`${environment.server}moldeBoca/${idBoca}`);
   }
 
   public updateMoldeBocas(

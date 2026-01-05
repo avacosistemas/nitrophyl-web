@@ -1,24 +1,42 @@
 <div>
-    <div class="w-full flex justify-between">
-        <div class="flex mt-3">
-            <div class="warning-icon">
-                <mat-icon svgIcon="heroicons_outline:exclamation"></mat-icon>
+    <div class="w-full flex items-center justify-between">
+        <div class="flex mt-3 gap-3 items-center">
+            <div class="bg-red-100 flex h-10 items-center justify-center rounded-full w-10">
+                <mat-icon svgIcon="heroicons_outline:exclamation" class="text-red-500"></mat-icon>
             </div>
-            <h1 class="font-semibold mt-2 ml-2" *ngIf="data.boton === 'Eliminar'">Eliminar {{ data.seccion }}</h1>
-            <h1 class="font-semibold mt-2 ml-2" *ngIf="data.boton === 'Cerrar'">Descartar cambios {{ data.seccion }}
-            </h1>
+            <h1 class="font-semibold text-xl" *ngIf="data.boton === 'Eliminar'">Eliminar {{ data.seccion }}</h1>
+            <h1 class="font-semibold text-xl" *ngIf="data.boton === 'Cerrar'">Descartar cambios {{ data.seccion }}</h1>
         </div>
-        <button mat-flat-button (click)="close()">
-            <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
+    </div>
+
+    <div class="ml-12 py-4 max-w-lg">
+        <ng-container *ngIf="data.mensaje; else defaultText">
+            <p [innerHTML]="data.mensaje"></p>
+        </ng-container>
+
+        <ng-template #defaultText>
+            <p *ngIf="data.boton === 'Eliminar'">
+                ¿Está seguro que desea eliminar el {{ data.seccion }} <b>{{ data.data }}</b> permanentemente?
+                Esta acción no se puede deshacer.
+            </p>
+            <p *ngIf="data.boton === 'Cerrar'">
+                ¿Está seguro que desea cerrar y no guardar los cambios realizados?
+            </p>
+        </ng-template>
+
+        <div *ngIf="data.check" class="mt-6">
+            <mat-checkbox [(ngModel)]="confirmCheck" color="warn">
+                <span class="text-sm italic">
+                    {{ data.checkMessage || 'He leído y estoy de acuerdo.' }}
+                </span>
+            </mat-checkbox>
+        </div>
+    </div>
+
+    <div class="flex w-full justify-end gap-3">
+        <button mat-stroked-button (click)="close()">Cancelar</button>
+        <button mat-raised-button color="warn" (click)="save()" [disabled]="data.check && !confirmCheck">
+            {{ data.boton }}
         </button>
     </div>
-    <div class="ml-11 mr-15">
-        <h1 *ngIf="data.boton === 'Eliminar'">¿Está seguro que desea eliminar el {{ data.seccion }} <b>{{ data.data
-                }}</b> permanentemente? Esta acción no se
-            puede deshacer.</h1>
-        <h1 *ngIf="data.boton === 'Cerrar'">¿Está seguro que desea cerrar y no guardar los cambios realizados?</h1>
-    </div>
-    <mat-dialog-actions style="display: flex; justify-content: flex-end;">
-        <button mat-raised-button color="warn" (click)="save()">{{ data.boton }}</button>
-    </mat-dialog-actions>
 </div>
