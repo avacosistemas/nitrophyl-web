@@ -174,7 +174,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
       width: '500px',
       data: {
         title: 'Confirmar eliminación',
-        message: `Se va a borrar la formula <b>${row.nombre}</b>. Si se borra la formula, se perderan todas las parametrizaciones de todas las revisiones. ¿Está seguro que desea continuar?`,
+        message: `Se va a borrar la formula <b>${row.nombre}</b>. Si se borra la formula, se perderán todas las parametrizaciones de la revisión. ¿Está seguro que desea continuar?`,
         type: 'warning',
         icon: 'exclamation',
         showConfirmButton: true,
