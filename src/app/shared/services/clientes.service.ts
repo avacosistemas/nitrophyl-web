@@ -25,7 +25,7 @@ export class ClientesService {
 
   getClientes(params?: any): Observable<ResponseClientes> {
     return this.http.get<ResponseClientes>(`${environment.server}clientes`, { params });
-}
+  }
 
   public createCliente(cliente: Cliente): Observable<any> {
     return this.http.post<any>(`${environment.server}cliente`, cliente);

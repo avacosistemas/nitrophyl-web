@@ -149,11 +149,23 @@
             <ng-container matColumnDef="descripcion">
               <th mat-header-cell *matHeaderCellDef> Descripcion </th>
               <td mat-cell *matCellDef="let element">
-                <mat-form-field class="h-1 w-full">
-                  <input matInput placeholder="Descripcion" [value]="element.descripcion"
-                    (input)="onDescriptionInput(element, $any($event.target).value)" class="w-full"
-                    [disabled]="mode === 'View'">
-                </mat-form-field>
+                <div class="w-full relative">
+                  <mat-form-field class="h-1 relative w-full">
+                    <input matInput placeholder="Descripcion" [value]="element.descripcion"
+                      (input)="onDescriptionInput(element, $any($event.target).value)" 
+                      class="w-full pr-20"
+                      [disabled]="mode === 'View'">
+                  </mat-form-field>
+
+                  <div *ngIf="isDescriptionModified(element)" class="absolute right-2 top-1 flex flex-nowrap shrink-0">
+                    <button mat-icon-button color="success" (click)="saveDescription(element)" matTooltip="Guardar cambios">
+                      <mat-icon>check</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="cancelDescription(element)" matTooltip="Cancelar cambios">
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                </div>
               </td>
             </ng-container>
 

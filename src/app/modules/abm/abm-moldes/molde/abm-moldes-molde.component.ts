@@ -113,7 +113,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   ];
   public pristineClient: boolean = true;
   public initialMolde: Molde;
-  
+
   private descriptionChanges = new Subject<Boca>();
   private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
   private pristineBocasData: Boca[] = [];
@@ -202,21 +202,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       .subscribe(({ dimension, newValue }) => {
         this.updateDimensionValue(dimension, newValue);
       });
-
-    this.descriptionChanges
-      .pipe(
-        debounceTime(500),
-        distinctUntilChanged((a, b) => a.nroBoca === b.nroBoca && a.descripcion === b.descripcion)
-      )
-      .subscribe(boca => {
-        this.updateBocaDescription(boca);
-      });
   }
 
   ngOnDestroy(): void {
     this.suscripcion.unsubscribe();
     this.dimensionValueChanges.unsubscribe();
-    this.descriptionChanges.unsubscribe();
     if (this.planos) {
       this.planos.data = [];
     }
@@ -1017,6 +1007,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         title: 'Cambio de Estado de Boca',
         message: `Está modificando el estado de la Boca N°${originalBoca.nroBoca} de <b>${originalBoca.estado}</b> a <b>${newState}</b>, por favor indique una observación.`,
         type: 'warning',
+        cancelButtonText: 'Cancelar',
+        showConfirmButton: true,
         customComponent: TextareaModalComponent
       },
       width: '500px'
@@ -1051,10 +1043,52 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     });
   }
 
+  isDescriptionModified(element: Boca): boolean {
+    if (!this.pristineBocasData) return false;
+    const original = this.pristineBocasData.find(b => b.id === element.id);
+    return (original?.descripcion || '') !== (element.descripcion || '');
+  }
+
   onDescriptionInput(boca: Boca, newDescription: string): void {
     boca.descripcion = newDescription;
-    this.descriptionChanges.next(boca);
     this.pristineBocas = false;
+  }
+
+  saveDescription(boca: Boca): void {
+    if (!boca.id) return;
+
+    const payload = {
+      descripcion: boca.descripcion,
+      estado: boca.estado
+    };
+
+    this._molds.updateBoca(boca.id, payload).subscribe({
+      next: (res) => {
+        if (res.status === 'OK') {
+          this.notificationService.showSuccess('Descripción actualizada correctamente.');
+
+          const originalIndex = this.pristineBocasData.findIndex(b => b.id === boca.id);
+          if (originalIndex !== -1) {
+            this.pristineBocasData[originalIndex].descripcion = boca.descripcion;
+          }
+          this.pristineBocas = true;
+        } else {
+          this.notificationService.showError('No se pudo guardar la descripción.');
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        this.notificationService.showError('Error al conectar con el servidor.');
+      }
+    });
+  }
+
+  cancelDescription(boca: Boca): void {
+    const original = this.pristineBocasData.find(b => b.id === boca.id);
+    if (original) {
+      boca.descripcion = original.descripcion;
+    }
+    this.pristineBocas = true;
   }
 
   getBocas(): void {
