@@ -12,6 +12,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { TextareaModalComponent } from './textarea-modal/textarea-modal.component';
 import { MatSortModule } from '@angular/material/sort'; 
+import { MatRadioModule } from '@angular/material/radio';
 
 const abmUsuariosRoutes: Route[] = [
     {
@@ -48,7 +49,8 @@ const abmUsuariosRoutes: Route[] = [
         HeaderSharedModule,
         ReactiveFormsModule,
         MatSortModule,
-        MatPaginatorModule
+        MatPaginatorModule,
+        MatRadioModule
     ]
 })
 export class ABMMoldesModule {

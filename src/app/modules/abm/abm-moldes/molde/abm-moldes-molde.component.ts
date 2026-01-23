@@ -15,7 +15,6 @@ import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.compone
 import { DialogCustomComponent } from 'app/modules/prompts/dialog-custom/dialog-custom.component';
 import {
   Boca,
-  Dimension,
   Fotos,
   Molde,
   Planos,
@@ -23,7 +22,7 @@ import {
 } from 'app/shared/models/molde.model';
 import { MoldesService } from 'app/shared/services/moldes.service';
 import { Subscription, Subject, Observable, forkJoin } from 'rxjs';
-import { debounceTime, distinctUntilChanged, take, startWith, map } from 'rxjs/operators';
+import { take, startWith, map } from 'rxjs/operators';
 import { ABMMoldeService } from '../abm-moldes.service';
 import * as FileSaver from 'file-saver';
 import { ABMMoldesModalComponent } from '../modal/abm-moldes-modal.component';
@@ -57,15 +56,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   suscripcion: Subscription;
   moldeForm: FormGroup;
   bocaForm: FormGroup;
-  dimensionForm: FormGroup;
   observacionForm: FormGroup;
+  
   displayedColumnsBocas: string[] = [
     'boca',
     'estado',
     'descripcion',
     'acciones',
   ];
-  displayedColumnsDimensiones: string[] = ['dimension', 'valor', 'acciones'];
+
   displayedColumnsPlanos: string[] = [
     'nombre',
     'clasificacion',
@@ -88,16 +87,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   planos: MatTableDataSource<Planos> = new MatTableDataSource<Planos>([]);
   fotos: MatTableDataSource<Fotos> = new MatTableDataSource<Fotos>([]);
   bocas: Array<Boca> = [];
-  dimensiones: Array<Dimension> = [];
+
   estados = ['ACTIVO', 'INACTIVO', 'REPARACION', 'EN_FABRICACION'];
-  dimensionesSelect = ['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO'];
   currentTab: number = 0;
   pristineBocas: boolean = true;
-  pristineDimensiones: boolean = true;
   currentId: number;
-  filesTestPlano;
-  filesTestPlanoBlob;
-  filesTestFoto;
   bocaGridForm: FormGroup = new FormGroup({});
 
   tiposPieza: { id: number; nombre: string }[] = [];
@@ -114,8 +108,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   public pristineClient: boolean = true;
   public initialMolde: Molde;
 
-  private descriptionChanges = new Subject<Boca>();
-  private dimensionValueChanges = new Subject<{ dimension: Dimension, newValue: any }>();
   private pristineBocasData: Boca[] = [];
 
   private requireAtLeastOneCheckbox(): ValidatorFn {
@@ -144,18 +136,38 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       observaciones: [null],
       ubicacion: [null],
       cantidadBocas: [{ value: null, disabled: true }],
-      client: [null, [Validators.required]],
-      piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox())
+      propio: [true, [Validators.required]],
+      client: [null],
+      piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
+      
+      tipoMolde: ['RECTANGULAR', Validators.required],
+      alto: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
+      ancho: [null, [Validators.pattern("^[0-9]*$")]],
+      profundidad: [null, [Validators.pattern("^[0-9]*$")]],
+      diametro: [null, [Validators.pattern("^[0-9]*$")]]
     });
+
+    this.moldeForm.get('tipoMolde').valueChanges.subscribe(tipo => {
+      this.updateDimensionValidators(tipo);
+    });
+
+    this.moldeForm.get('propio').valueChanges.subscribe(isPropio => {
+      const clientControl = this.moldeForm.get('client');
+      if (isPropio) {
+        clientControl.clearValidators();
+        clientControl.setValue(null);
+      } else {
+        clientControl.setValidators(Validators.required);
+      }
+      clientControl.updateValueAndValidity();
+    });
+
     this.bocaForm = this._formBuilder.group({
       boca: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
       estado: [null, [Validators.required]],
       descripcion: [null, [Validators.maxLength(100)]],
     });
-    this.dimensionForm = this._formBuilder.group({
-      dimension: [null, [Validators.required]],
-      valor: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
-    });
+
     this.observacionForm = this._formBuilder.group({
       observacion: [null, [Validators.required]],
     });
@@ -176,6 +188,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this.currentId = this.activatedRoute.snapshot.params['id'];
     this.inicializar();
 
+    this.updateDimensionValidators('RECTANGULAR'); 
+
     let mostrarBoton = false;
     if (this.mode !== 'View') {
       switch (this.currentTab) {
@@ -193,20 +207,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.clientForm.disable();
       this.observacionForm.disable();
     }
-
-    this.dimensionValueChanges
-      .pipe(
-        debounceTime(500),
-        distinctUntilChanged((a, b) => a.dimension.tipoDimension === b.dimension.tipoDimension && a.newValue === b.newValue)
-      )
-      .subscribe(({ dimension, newValue }) => {
-        this.updateDimensionValue(dimension, newValue);
-      });
   }
 
   ngOnDestroy(): void {
     this.suscripcion.unsubscribe();
-    this.dimensionValueChanges.unsubscribe();
     if (this.planos) {
       this.planos.data = [];
     }
@@ -223,6 +227,40 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     }
   }
 
+  updateDimensionValidators(tipoMolde: string) {
+    const anchoCtrl = this.moldeForm.get('ancho');
+    const profCtrl = this.moldeForm.get('profundidad');
+    const diametroCtrl = this.moldeForm.get('diametro');
+
+    anchoCtrl.clearValidators();
+    profCtrl.clearValidators();
+    diametroCtrl.clearValidators();
+    
+    const numberPattern = Validators.pattern("^[0-9]*$");
+
+    if (tipoMolde === 'RECTANGULAR') {
+      anchoCtrl.setValidators([Validators.required, numberPattern]);
+      profCtrl.setValidators([Validators.required, numberPattern]);
+      diametroCtrl.setValidators([numberPattern]); 
+      
+      if(this.mode !== 'View' && !this.initialMolde) diametroCtrl.setValue(null);
+      
+    } else { 
+      diametroCtrl.setValidators([Validators.required, numberPattern]);
+      anchoCtrl.setValidators([numberPattern]); 
+      profCtrl.setValidators([numberPattern]);
+
+      if(this.mode !== 'View' && !this.initialMolde) {
+         anchoCtrl.setValue(null);
+         profCtrl.setValue(null);
+      }
+    }
+
+    anchoCtrl.updateValueAndValidity();
+    profCtrl.updateValueAndValidity();
+    diametroCtrl.updateValueAndValidity();
+  }
+
   private _filterClients(value: string | Cliente, source: Cliente[]): Cliente[] {
     const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
     if (!filterValue) {
@@ -237,8 +275,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   displayClient(client: Cliente): string {
     return client ? client.nombre : '';
   }
-
-  allowTabChange: boolean = true;
 
   tabChange(event: MatTabChangeEvent) {
     if (this.currentTab === 0 && this.moldeForm.dirty) {
@@ -282,18 +318,15 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
           mostrarBoton = false;
           break;
         case 2:
-          mostrarBoton = false;
+          mostrarBoton = true;
           break;
         case 3:
           mostrarBoton = true;
           break;
-        case 4:
-          mostrarBoton = true;
-          break;
-        case 5:
+        case 4: 
           mostrarBoton = false;
           break;
-        case 6:
+        case 5:
           mostrarBoton = false;
           break;
       }
@@ -308,10 +341,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         case 0:
           viewEventText = 'Guardar Molde';
           break;
-        case 3:
+        case 2:
           viewEventText = 'Subir Plano';
           break;
-        case 4:
+        case 3:
           viewEventText = 'Subir Foto';
           break;
       }
@@ -321,7 +354,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
   canChangeTab(): boolean {
     if (this.moldeForm.dirty) {
-
       const dialogRef = this.dialog.open(RemoveDialogComponent, {
         maxWidth: '450px',
         data: {
@@ -342,7 +374,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         } else if (res === 'back') {
           result = true;
           this.currentTab = 0;
-
           this.ABMoldesService.events.next({ mostrarBotonEdicion: true });
         } else {
           result = false;
@@ -358,7 +389,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     if (
       this.moldeForm.pristine == true &&
       this.pristineBocas &&
-      this.pristineDimensiones &&
       this.pristineClient &&
       this.pristineObservaciones
     ) {
@@ -381,11 +411,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       setTimeout(() => {
         this.editMolde();
       }, 0);
-    } else if (this.currentTab === 3) {
+    } else if (this.currentTab === 2) {
       this.uploadPlano();
-    } else if (this.currentTab === 4) {
+    } else if (this.currentTab === 3) {
       this.uploadFoto();
-    } else if (this.currentTab === 6) {
+    } else if (this.currentTab === 5) {
       this.addObservacion();
     }
   }
@@ -397,31 +427,64 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.notificationService.showError('Por favor, corrija los errores en el formulario.');
       return;
     }
-    const clientValue = this.moldeForm.get('client').value;
-    if (!clientValue || typeof clientValue === 'string') {
-      this.notificationService.showError('Por favor, seleccione un propietario válido.');
-      return;
+
+    const isPropio = this.moldeForm.get('propio').value;
+    let client: Cliente = null;
+    
+    if (!isPropio) {
+      const clientValue = this.moldeForm.get('client').value;
+      if (!clientValue || typeof clientValue === 'string') {
+        this.notificationService.showError('Por favor, seleccione un propietario válido.');
+        return;
+      }
+      client = clientValue;
     }
-    const client: Cliente = clientValue;
 
     const selectedTiposPieza = this.moldeForm.value.piezaTipos
-      .map((checked, i) => checked ? { id: this.tiposPieza[i].id } : null)
+      .map((checked, i) => checked ? {
+        id: this.tiposPieza[i].id,
+        nombre: this.tiposPieza[i].nombre
+      } : null)
       .filter(v => v !== null);
+    
+    const tipoMolde = this.moldeForm.get('tipoMolde').value;
+    const alto = this.moldeForm.get('alto').value;
+    let ancho = 0;
+    let profundidad = 0;
+    let diametro = 0;
+
+    if (tipoMolde === 'RECTANGULAR') {
+      ancho = this.moldeForm.get('ancho').value;
+      profundidad = this.moldeForm.get('profundidad').value;
+    } else {
+      diametro = this.moldeForm.get('diametro').value;
+    }
 
     let model: Molde = {
-      codigo: this.moldeForm.controls.codigo.value,
-      estado: this.moldeForm.controls.estado.value,
-      nombre: this.moldeForm.controls.nombre.value,
-      observaciones: this.moldeForm.controls.observaciones.value,
-      ubicacion: this.moldeForm.controls.ubicacion.value,
-      idClienteDuenio: client.id !== -1 ? client.id : null,
-      clienteDuenio: client.id !== -1 ? client.nombre : null,
-      propio: client.id === -1,
+      ...this.initialMolde,
+
       id: this.currentId,
-      piezaTipos: selectedTiposPieza
+      codigo: this.moldeForm.get('codigo').value,
+      estado: this.moldeForm.get('estado').value,
+      nombre: this.moldeForm.get('nombre').value,
+      observaciones: this.moldeForm.get('observaciones').value || '',
+      ubicacion: this.moldeForm.get('ubicacion').value || '',
+      cantidadBocas: this.moldeForm.get('cantidadBocas').value,
+      piezaTipos: selectedTiposPieza,
+
+      propio: isPropio,
+      idClienteDuenio: isPropio ? null : client.id,
+      clienteDuenio: isPropio ? null : client.nombre,
+      
+      tipoMolde: tipoMolde,
+      alto: alto,
+      ancho: ancho,
+      profundidad: profundidad,
+      diametro: diametro
     };
 
     const newState = this.moldeForm.get('estado').value;
+
     if (this.initialMolde && newState !== this.initialMolde.estado) {
       const dialogRef = this.dialog.open(GenericModalComponent, {
         data: {
@@ -469,7 +532,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       next: ({ molde, tiposPieza, clientes }) => {
         this.tiposPieza = tiposPieza;
 
-        this.clients$ = [{ id: -1, nombre: 'Nitrophyl', codigo: 'N/A' }, ...clientes.data];
+        this.clients$ = clientes.data;
 
         this.filteredClients$ = this.moldeForm.get('client').valueChanges.pipe(
           startWith(''),
@@ -477,7 +540,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         );
         this.filteredClientsForAdding$ = this.clientForm.get('client').valueChanges.pipe(
           startWith(''),
-          map(value => this._filterClients(value, this.clients$.filter(c => c.id !== -1)))
+          map(value => this._filterClients(value, this.clients$))
         );
 
         this.loadMoldeData(molde.data);
@@ -503,7 +566,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         }
       }
     });
-    this._molds.getMoldeDimensiones(this.currentId).subscribe((d) => { this.dimensiones = d.data; });
     this._molds.getPlanos(this.currentId).subscribe((d) => { this.planos.data = d.data; });
     this._molds.getFotos(this.currentId).subscribe((response) => { this.fotos.data = response.data; });
     this._molds.getClients(this.currentId).subscribe((res: any) => (this.clients = res.data));
@@ -515,8 +577,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   loadMoldeData(data: Molde): void {
     if (!data) return;
     this.initialMolde = JSON.parse(JSON.stringify(data));
-    const propietarioId = data.idClienteDuenio === null ? -1 : data.idClienteDuenio;
-    const propietarioObj = this.clients$.find(c => c.id === propietarioId);
+
+    const isPropio = data.propio;
+    const propietarioId = isPropio ? null : data.idClienteDuenio;
+    const propietarioObj = isPropio ? null : this.clients$.find(c => c.id === propietarioId);
+
+    const tipo = data.tipoMolde || 'RECTANGULAR';
 
     this.moldeForm.patchValue({
       codigo: data.codigo,
@@ -524,14 +590,21 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       nombre: data.nombre,
       observaciones: data.observaciones,
       ubicacion: data.ubicacion,
+      propio: isPropio,
       client: propietarioObj,
       cantidadBocas: data.cantidadBocas,
+      
+      tipoMolde: tipo,
+      alto: data.alto,
+      ancho: data.ancho,
+      profundidad: data.profundidad,
+      diametro: data.diametro
     });
 
+    this.updateDimensionValidators(tipo);
+
     const piezaTiposFormArray = this.moldeForm.get('piezaTipos') as FormArray;
-
     piezaTiposFormArray.clear();
-
     this.tiposPieza.forEach(tipo => {
       const isSelected = data.piezaTipos?.some(pt => pt.id === tipo.id);
       piezaTiposFormArray.push(new FormControl(isSelected));
@@ -597,10 +670,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.notificationService.showError('Se ha producido un error.');
-        console.error(
-          `abm-moldes-molde.component.ts => private updateClientsOnBackend(): `,
-          err
-        );
+        console.error(err);
       },
       complete: () => { },
     });
@@ -730,12 +800,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   public downloadFoto(foto: Fotos): void {
     this._molds.downloadFoto(foto.id).subscribe((response: any) => {
       const byteCharacters = atob(response.data.archivo);
-
       const byteArrays = [];
 
       for (let offset = 0; offset < byteCharacters.length; offset += 512) {
         const slice = byteCharacters.slice(offset, offset + 512);
-
         const byteNumbers = new Array(slice.length);
         for (let i = 0; i < slice.length; i++) {
           byteNumbers[i] = slice.charCodeAt(i);
@@ -760,17 +828,14 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   public openPlano(plano: Plano): void {
-
     this._molds.downloadPlano(plano.id).subscribe({
       next: (response: any) => {
         const base64Content = response?.data?.archivo;
-
         if (!base64Content) {
           console.error('No se recibió un string Base64 válido del backend.');
           this.notificationService.showError('Error al obtener el plano.');
           return;
         }
-
         this.dialog.open(PDFModalDialogComponent, {
           maxWidth: '75%',
           width: '80vw',
@@ -787,123 +852,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         console.error('Error al descargar el plano:', error);
         this.notificationService.showError('Error al obtener el plano.');
       }
-    });
-  }
-
-  addDimension(): void {
-    if (this.dimensionForm.invalid) {
-      if (this.dimensionForm.get('dimension').hasError('required')) {
-        this.notificationService.showError('El tipo de dimensión es obligatorio.');
-      } else if (this.dimensionForm.get('valor').hasError('required')) {
-        this.notificationService.showError('El valor de la dimensión es obligatorio.');
-      } else if (this.dimensionForm.get('valor').hasError('pattern')) {
-        this.notificationService.showError('El valor de la dimensión debe contener solo números.');
-      } else {
-        this.notificationService.showError('Por favor, corrija los errores en el formulario.');
-      }
-      return;
-    }
-
-    const newDimension: Dimension = {
-      tipoDimension: this.dimensionForm.get('dimension').value,
-      valor: this.dimensionForm.get('valor').value,
-    };
-
-    const dimensionExists = this.dimensiones.some(
-      (dimension) => dimension.tipoDimension === newDimension.tipoDimension
-    );
-
-    if (dimensionExists) {
-      this.notificationService.showError('Ya existe una dimensión con este tipo.');
-      return;
-    }
-
-    const updatedDimensions = [...this.dimensiones, newDimension];
-
-    this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
-      next: (response) => {
-        if (response.status === 'OK') {
-          this.notificationService.showSuccess('Dimensión agregada correctamente.');
-          this.dimensionForm.reset();
-          this.pristineDimensiones = true;
-          this.getDimensiones();
-        } else {
-          this.notificationService.showError('Error al agregar la dimensión.');
-        }
-      },
-      error: (error) => {
-        this.notificationService.showError('Error al agregar la dimensión.');
-        console.error('Error al agregar la dimensión:', error);
-      },
-    });
-  }
-
-  deleteDimension(dimensionToDelete: Dimension): void {
-    const dialogRef = this.dialog.open(RemoveDialogComponent, {
-      maxWidth: '450px',
-      data: { data: null, seccion: 'dimensión', boton: 'Eliminar' },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-
-        const updatedDimensions = this.dimensiones.filter(dimension =>
-          dimension.tipoDimension !== dimensionToDelete.tipoDimension
-        );
-
-        this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
-          next: (response) => {
-            if (response.status === 'OK') {
-              this.notificationService.showSuccess('Dimensión eliminada correctamente.');
-              this.getDimensiones();
-              this.pristineDimensiones = true;
-            } else {
-              this.notificationService.showError('Error al eliminar la dimensión.');
-            }
-          },
-          error: (error) => {
-            this.notificationService.showError('Error al eliminar la dimensión.');
-            console.error('Error al eliminar la dimensión:', error);
-          },
-        });
-      }
-    });
-  }
-
-  onDimensionValueChanged(dimension: Dimension, newValue: any): void {
-    this.dimensionValueChanges.next({ dimension, newValue });
-  }
-
-  updateDimensionValue(dimensionToUpdate: Dimension, newValue: any): void {
-
-    const dimensionIndex = this.dimensiones.findIndex(dimension => dimension.tipoDimension === dimensionToUpdate.tipoDimension);
-
-    if (dimensionIndex !== -1) {
-
-      this.dimensiones[dimensionIndex] = { ...this.dimensiones[dimensionIndex], valor: newValue };
-      const updatedDimensions = [...this.dimensiones];
-
-      this._molds.updateMoldeDimensiones(this.currentId, updatedDimensions).subscribe({
-        next: (response) => {
-          if (response.status === 'OK') {
-            this.notificationService.showSuccess('Dimensión actualizada correctamente.');
-            this.pristineDimensiones = true;
-            this.getDimensiones();
-          } else {
-            this.notificationService.showError('Error al actualizar la dimensión.');
-          }
-        },
-        error: (error) => {
-          this.notificationService.showError('Error al actualizar la dimensión.');
-          console.error('Error al actualizar la dimensión:', error);
-        },
-      });
-    }
-  }
-
-  getDimensiones(): void {
-    this._molds.getMoldeDimensiones(this.currentId).subscribe((d) => {
-      this.dimensiones = d.data;
     });
   }
 
@@ -974,23 +922,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
             }
           }
         });
-      }
-    });
-  }
-
-  updateBocaDescription(bocaToUpdate: Boca): void {
-    if (!bocaToUpdate.id) return;
-
-    const payload = {
-      descripcion: bocaToUpdate.descripcion,
-      estado: bocaToUpdate.estado
-    };
-
-    this._molds.updateBoca(bocaToUpdate.id, payload).subscribe({
-      next: (res) => {
-        if (res.status === 'OK') {
-          this.notificationService.showSuccess('Descripción actualizada.');
-        }
       }
     });
   }

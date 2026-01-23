@@ -19,7 +19,7 @@ import { Sort } from '@angular/material/sort';
 export class ABMMoldesGrillaComponent implements OnInit {
   component = "Grilla";
   moldes: Array<Molde> = [];
-  displayedColumns: string[] = ['statusIcon', 'code', 'name', 'ubicacion', 'alto', 'ancho', 'profundidad', 'diametro', 'acciones'];
+  displayedColumns: string[] = ['statusIcon', 'alertas', 'code', 'name', 'ubicacion', 'alto', 'ancho', 'profundidad', 'diametro', 'acciones'];
   showSuccess: boolean = false;
   showError: boolean = false;
   panelOpenState: boolean = false;
@@ -189,5 +189,13 @@ export class ABMMoldesGrillaComponent implements OnInit {
 
   clearClienteInput(): void {
     this.searchForm.get('idCliente').setValue(null);
+  }
+
+  getTooltipFaltantes(faltantes: string): string {
+    if (!faltantes) return '';
+    return faltantes
+      .split(',')
+      .map(item => `• ${item.trim()}`)
+      .join('\n');
   }
 }

@@ -2,101 +2,158 @@
   <mat-tab-group class="mt-2 col-span-12 grid-rows-1" (selectedTabChange)="tabChange($event)">
     <mat-tab label="Datos del Molde">
       <form [formGroup]="moldeForm">
-        <div class="flex w-full gap-4">
-          <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
+        <div class="flex flex-col w-full gap-4">
+          <div class="flex w-full gap-4">
+            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
+              <div class="flex flex-col gap-2">
+                <div>
+                  <h1 class="text-2xl font-semibold mb-2">Molde</h1>
+                </div>
+                <mat-form-field class="w-full" appearance="outline">
+                  <mat-label> Código </mat-label>
+                  <input type="text" placeholder="Código " matInput formControlName="codigo" required maxlength="30">
+                  <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
+                    El código es requerido
+                  </mat-error>
+                  <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
+                    Máximo 30 caracteres
+                  </mat-error>
+                </mat-form-field>
 
-            <div class="flex flex-col gap-2">
+                <mat-form-field class="w-full" appearance="outline">
+                  <mat-label>Estado</mat-label>
+                  <mat-select formControlName="estado" placeholder="Estado">
+                    <mat-option [value]='"ACTIVO"'>Activo</mat-option>
+                    <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
+                    <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
+                    <mat-option [value]='"EN_FABRICACION"' *ngIf="initialMolde?.estado === 'EN_FABRICACION'">
+                      En Fabricación
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+
+                <mat-form-field class="w-full" appearance="outline">
+                  <mat-label> Descripción </mat-label>
+                  <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Descripción">
+                  <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
+                    La descripción es requerida
+                  </mat-error>
+                  <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('maxlength')">
+                    Máximo 100 caracteres
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full" appearance="outline">
+                  <mat-label>Cantidad de Bocas</mat-label>
+                  <input type="number" matInput formControlName="cantidadBocas">
+                  <mat-hint>Este valor se actualiza automáticamente al gestionar las bocas.</mat-hint>
+                </mat-form-field>
+
+                <div class="flex flex-col gap-2 mt-2 mb-2">
+                  <label class="text-gray-600 font-medium">Propietario</label>
+                  <mat-radio-group formControlName="propio" class="flex gap-4">
+                    <mat-radio-button [value]="true" color="primary">Nitrophyl</mat-radio-button>
+                    <mat-radio-button [value]="false" color="primary">Cliente</mat-radio-button>
+                  </mat-radio-group>
+                </div>
+
+                <mat-form-field class="w-full" appearance="outline" *ngIf="moldeForm.get('propio').value === false">
+                  <mat-label> Cliente </mat-label>
+                  <input type="text" placeholder="Buscar por código o nombre" matInput formControlName="client"
+                    [matAutocomplete]="autoPropietario">
+                  <mat-autocomplete #autoPropietario="matAutocomplete" [displayWith]="displayClient">
+                    <mat-option *ngFor="let client of filteredClients$ | async" [value]="client">
+                      {{ (client.codigo ? client.codigo + ' - ' : '') + client.nombre }}
+                    </mat-option>
+                  </mat-autocomplete>
+                  <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
+                    El cliente es requerido
+                  </mat-error>
+                </mat-form-field>
+
+                <mat-form-field class="w-full" appearance="outline">
+                  <mat-label>Observaciones </mat-label>
+                  <input id="observations" matInput [formControlName]="'observaciones'" placeholder="Observaciones">
+                </mat-form-field>
+                <mat-form-field class="w-full" appearance="outline">
+                  <mat-label>Ubicación </mat-label>
+                  <input id="location" matInput [formControlName]="'ubicacion'" placeholder="Ubicación">
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
               <div>
-                <h1 class="text-2xl font-semibold mb-2">Molde</h1>
+                <h1 class="text-2xl font-semibold mb-2">Tipos de Pieza</h1>
               </div>
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label> Código </mat-label>
-                <input type="text" placeholder="Código " matInput formControlName="codigo" required maxlength="30">
-                <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
-                  El código es requerido
-                </mat-error>
-                <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
-                  Máximo 30 caracteres
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Estado</mat-label>
-                <mat-select formControlName="estado" placeholder="Estado">
-                  <mat-option [value]='"ACTIVO"'>Activo</mat-option>
-                  <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
-                  <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
-                  <mat-option [value]='"EN_FABRICACION"' *ngIf="initialMolde?.estado === 'EN_FABRICACION'">
-                    En Fabricación
-                  </mat-option>
-                </mat-select>
-              </mat-form-field>
-
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label> Descripción </mat-label>
-                <input type="text" id="name" matInput [formControlName]="'nombre'" placeholder="Descripción">
-                <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('required')">
-                  La descripción es requerida
-                </mat-error>
-                <mat-error class="mb-1" *ngIf="moldeForm.get('nombre').hasError('maxlength')">
-                  Máximo 100 caracteres
-                </mat-error>
-              </mat-form-field>
-
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Cantidad de Bocas</mat-label>
-                <input type="number" matInput formControlName="cantidadBocas">
-                <mat-hint>Este valor se actualiza automáticamente al gestionar las bocas.</mat-hint>
-              </mat-form-field>
-
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label> Propietario </mat-label>
-                <input type="text" placeholder="Buscar por código o nombre" matInput formControlName="client"
-                  [matAutocomplete]="autoPropietario">
-                <mat-autocomplete #autoPropietario="matAutocomplete" [displayWith]="displayClient">
-                  <mat-option *ngFor="let client of filteredClients$ | async" [value]="client">
-                    {{ client.id === -1 ? client.nombre : (client.codigo ? client.codigo + ' - ' : '') + client.nombre
-                    }}
-                  </mat-option>
-                </mat-autocomplete>
-                <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
-                  El propietario es requerido
-                </mat-error>
-              </mat-form-field>
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Observaciones </mat-label>
-                <input id="observations" matInput [formControlName]="'observaciones'" placeholder="Observaciones">
-              </mat-form-field>
-              <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Ubicación </mat-label>
-                <input id="location" matInput [formControlName]="'ubicacion'" placeholder="Ubicación">
-              </mat-form-field>
+              <div class="flex flex-wrap gap-3 w-fill" formArrayName="piezaTipos">
+                <div *ngFor="let tipo of tiposPieza; let i = index">
+                  <mat-checkbox [formControlName]="i">
+                    {{ tipo.nombre }}
+                  </mat-checkbox>
+                </div>
+                <div *ngIf="!tiposPieza || tiposPieza.length === 0" class="text-gray-500">
+                  No hay tipos de pieza para seleccionar.
+                </div>
+              </div>
+              <div
+                *ngIf="moldeForm.get('piezaTipos')?.hasError('requireAtLeastOne') && moldeForm.get('piezaTipos')?.touched"
+                class="text-red-600 text-sm mt-2">
+                Debe seleccionar al menos un tipo de pieza.
+              </div>
             </div>
           </div>
 
-          <div class="border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
+          <div class="border-2 bg-white border-gray-200 rounded-2xl p-8 w-full sm:w-1/2">
             <div>
-              <h1 class="text-2xl font-semibold mb-2">Tipos de Pieza</h1>
+              <h1 class="text-2xl font-semibold mb-4">Dimensiones</h1>
             </div>
-            <div class="flex flex-wrap gap-3 w-fill" formArrayName="piezaTipos">
-              <div *ngFor="let tipo of tiposPieza; let i = index">
-                <mat-checkbox [formControlName]="i">
-                  {{ tipo.nombre }}
-                </mat-checkbox>
+            
+            <div class="flex flex-col gap-4">
+              <div class="flex gap-8 items-center">
+                <label class="font-medium text-gray-700">Forma:</label>
+                <mat-radio-group formControlName="tipoMolde" class="flex gap-4">
+                  <mat-radio-button value="RECTANGULAR" color="primary">Rectangular</mat-radio-button>
+                  <mat-radio-button value="CIRCULAR" color="primary">Circular</mat-radio-button>
+                </mat-radio-group>
               </div>
-              <div *ngIf="!tiposPieza || tiposPieza.length === 0" class="text-gray-500">
-                No hay tipos de pieza para seleccionar.
+
+              <div class="flex gap-4 flex-wrap mt-2">
+                <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+                  <mat-label>Alto (mm)</mat-label>
+                  <input type="number" matInput formControlName="alto">
+                  <mat-error *ngIf="moldeForm.get('alto').hasError('required')">Requerido</mat-error>
+                </mat-form-field>
+
+                <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'RECTANGULAR'">
+                  <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+                    <mat-label>Ancho (mm)</mat-label>
+                    <input type="number" matInput formControlName="ancho">
+                    <mat-error *ngIf="moldeForm.get('ancho').hasError('required')">Requerido</mat-error>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+                    <mat-label>Profundidad (mm)</mat-label>
+                    <input type="number" matInput formControlName="profundidad">
+                    <mat-error *ngIf="moldeForm.get('profundidad').hasError('required')">Requerido</mat-error>
+                  </mat-form-field>
+                </ng-container>
+
+                <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'CIRCULAR'">
+                  <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+                    <mat-label>Diámetro (mm)</mat-label>
+                    <input type="number" matInput formControlName="diametro">
+                    <mat-error *ngIf="moldeForm.get('diametro').hasError('required')">Requerido</mat-error>
+                  </mat-form-field>
+                </ng-container>
               </div>
-            </div>
-            <div
-              *ngIf="moldeForm.get('piezaTipos')?.hasError('requireAtLeastOne') && moldeForm.get('piezaTipos')?.touched"
-              class="text-red-600 text-sm mt-2">
-              Debe seleccionar al menos un tipo de pieza.
             </div>
           </div>
+
         </div>
       </form>
     </mat-tab>
+
     <mat-tab label="Bocas">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <div class="flex justify-around gap-3" [formGroup]="bocaForm" *ngIf="mode === 'Edit'">
@@ -152,16 +209,17 @@
                 <div class="w-full relative">
                   <mat-form-field class="h-1 relative w-full">
                     <input matInput placeholder="Descripcion" [value]="element.descripcion"
-                      (input)="onDescriptionInput(element, $any($event.target).value)" 
-                      class="w-full pr-20"
+                      (input)="onDescriptionInput(element, $any($event.target).value)" class="w-full pr-20"
                       [disabled]="mode === 'View'">
                   </mat-form-field>
 
                   <div *ngIf="isDescriptionModified(element)" class="absolute right-2 top-1 flex flex-nowrap shrink-0">
-                    <button mat-icon-button color="success" (click)="saveDescription(element)" matTooltip="Guardar cambios">
+                    <button mat-icon-button color="success" (click)="saveDescription(element)"
+                      matTooltip="Guardar cambios">
                       <mat-icon>check</mat-icon>
                     </button>
-                    <button mat-icon-button color="warn" (click)="cancelDescription(element)" matTooltip="Cancelar cambios">
+                    <button mat-icon-button color="warn" (click)="cancelDescription(element)"
+                      matTooltip="Cancelar cambios">
                       <mat-icon>close</mat-icon>
                     </button>
                   </div>
@@ -185,58 +243,7 @@
         </div>
       </div>
     </mat-tab>
-    <mat-tab label="Dimensiones">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
-        <div class="flex justify-center gap-3" [formGroup]="dimensionForm" *ngIf="mode === 'Edit'">
-          <mat-form-field class="min-w-[25%]" appearance="outline">
-            <mat-label>Dimensión </mat-label>
-            <mat-select id="dimension" placeholder="Dimensión" formControlName="dimension">
-              <mat-option *ngFor="let dimension of dimensionesSelect" [value]="dimension">
-                {{ dimension }}
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field class="min-w-[25%]" appearance="outline">
-            <mat-label>Valor en MM </mat-label>
-            <input id="valor" matInput placeholder="Valor en mm" formControlName="valor">
-          </mat-form-field>
-          <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
-            mat-flat-button (click)="addDimension()"
-            [disabled]="!dimensionForm.get('valor').value || !dimensionForm.get('dimension').value">
-            <span class="mat-button-wrapper"> Agregar </span>
-            <span matripple="" class="mat-ripple mat-button-ripple"></span>
-          </button>
-        </div>
-        <div>
-          <table mat-table [dataSource]="dimensiones" class="border-2 rounded-2xl w-full">
-            <ng-container matColumnDef="dimension">
-              <th mat-header-cell *matHeaderCellDef> Dimension </th>
-              <td mat-cell *matCellDef="let element"> {{element.tipoDimension}} </td>
-            </ng-container>
-            <ng-container matColumnDef="valor">
-              <th mat-header-cell *matHeaderCellDef> Valor en mm </th>
-              <td mat-cell *matCellDef="let element">
-                <mat-form-field class="h-1 w-full">
-                  <input type="number" matInput [disabled]="mode === 'View'" [value]="element.valor"
-                    (input)="onDimensionValueChanged(element, $any($event.target).value)">
-                </mat-form-field>
-              </td>
-            </ng-container>
-            <ng-container matColumnDef="acciones">
-              <th mat-header-cell *matHeaderCellDef></th>
-              <td mat-cell *matCellDef="let row" class="text-right">
-                <button *ngIf="mode === 'Edit'">
-                  <mat-icon svgIcon="heroicons_outline:trash" matTooltip="Eliminar" (click)="deleteDimension(row)">
-                  </mat-icon>
-                </button>
-              </td>
-            </ng-container>
-            <tr mat-header-row *matHeaderRowDef="displayedColumnsDimensiones"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumnsDimensiones;"></tr>
-          </table>
-        </div>
-      </div>
-    </mat-tab>
+
     <mat-tab label="Planos">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <table mat-table [dataSource]="planos" class="border-2 rounded-2xl w-full">

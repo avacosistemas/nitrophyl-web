@@ -23,10 +23,10 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
 
     prensasDisponibles$: Observable<Prensa[]>;
 
-    tiposBombeo: any[] = [{value: 'AUTOMATICO', label: 'Automático'},
-        {value: 'ESCALONADO', label: 'Escalonado'},
-        {value: 'SUAVE', label: 'Suave'},
-        {value: 'FONDO', label: 'A Fondo'}];
+    tiposBombeo: any[] = [{ value: 'AUTOMATICO', label: 'Automático' },
+    { value: 'ESCALONADO', label: 'Escalonado' },
+    { value: 'SUAVE', label: 'Suave' },
+    { value: 'FONDO', label: 'A Fondo' }];
 
     moldeoForm = this.fb.group({
         precalentamientoHabilitado: [false],
@@ -150,13 +150,20 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
 
     togglePrecalentamientoControls(habilitado: boolean): void {
         if (this.mode === 'view') return;
+
+        const tiempoControl = this.moldeoForm.get('precalentamientoTiempo');
+        const unidadControl = this.moldeoForm.get('precalentamientoUnidad');
+
         if (habilitado) {
-            this.moldeoForm.get('precalentamientoTiempo').enable();
-            this.moldeoForm.get('precalentamientoUnidad').enable();
+            tiempoControl.enable();
+            unidadControl.enable();
+            tiempoControl.setValidators([Validators.required]);
         } else {
-            this.moldeoForm.get('precalentamientoTiempo').disable();
-            this.moldeoForm.get('precalentamientoUnidad').disable();
+            tiempoControl.disable();
+            unidadControl.disable();
+            tiempoControl.clearValidators();
         }
+        tiempoControl.updateValueAndValidity();
     }
 
     private _filterPrensas(value: any, prensas: Prensa[]): Prensa[] {
@@ -236,6 +243,8 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
     }
 
     public guardarMoldeo(): void {
+        this.moldeoForm.markAllAsTouched();
+
         if (this.moldeoForm.invalid) {
             this.notificationService.showError('Por favor, complete todos los campos requeridos de Moldeo.');
             return;

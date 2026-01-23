@@ -67,6 +67,8 @@ import { LotGraphicDialogComponent } from '../lot-graphic-dialog/lot-graphic-dia
 import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { saveAs } from 'file-saver';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { LotStatusChangeComponent } from './lot-status-change/lot-status-change.component'; 
 
 export interface Estado {
   idEstado: string;
@@ -656,6 +658,61 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     }));
   }
 
+  public async changeStatus(lote: ILot): Promise<void> {
+    try {
+      const res = await firstValueFrom(this.lotService.hasEnsayos(lote.id));
+      const hasEnsayos: Boolean = res.data;
+
+      if (!hasEnsayos) {
+        this.openSnackBar(false, 'No se pueden cambiar estado de lotes sin ensayos.');
+        return;
+      }
+
+      const minDate = new Date(lote.fecha); 
+
+      const dialogRef = this.dialog.open(GenericModalComponent, {
+        width: '500px',
+        disableClose: true,
+        data: {
+          title: 'Cambiar Estado del Lote',
+          message: `Está a punto de cambiar el estado del lote <b>${lote.nroLote}</b>.<br>Seleccione el nuevo resultado.`,
+          type: 'warning',
+          icon: 'exclamation',
+          confirmButtonText: 'Guardar Cambio',
+          cancelButtonText: 'Cancelar',
+          showConfirmButton: true,
+          showCloseButton: true,
+          customComponent: LotStatusChangeComponent, 
+          componentData: { minDate: minDate }
+        }
+      });
+
+      const result = await firstValueFrom(dialogRef.afterClosed());
+
+      if (result) {
+        const { estado, fecha, observaciones } = result;
+        const fechaFormatted = moment(fecha).toISOString(); 
+
+        if (estado === 'RECHAZADO') {
+          await firstValueFrom(this.lotService.reject(lote.id, observaciones, fechaFormatted));
+        } else {
+          await firstValueFrom(this.lotService.approve(lote.id, {
+            estado: estado,
+            observaciones: observaciones,
+            fecha: fechaFormatted
+          }));
+        }
+
+        this.openSnackBar(true, 'Estado actualizado correctamente.');
+        this.search();
+      }
+
+    } catch (err) {
+      console.error('Error cambiando estado:', err);
+      this.openSnackBar(false, 'Ocurrió un error al intentar cambiar el estado.');
+    }
+  }
+
   public openGraphicModal(lote: ILot): void {
     const dialogRef = this.dialog.open(LotGraphicDialogComponent, {
       width: '840px',
@@ -712,16 +769,14 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private async _dialog(lote: ILot, set: string): Promise<void> {
     try {
-      // Esperamos la respuesta de hasEnsayos
       const res = await firstValueFrom(this.lotService.hasEnsayos(lote.id));
       const hasEnsayos: Boolean = res.data;
 
       if (!hasEnsayos) {
         this.openSnackBar(false, 'No se pueden aprobar/rechazar lotes sin ensayos.');
-        return; // No abrimos el modal
+        return; 
       }
 
-      // Abrimos el modal si tiene ensayos
       const dialogRef = this.dialog.open(LotDialogComponent, {
         width: 'fit-content',
         data: { set: set }

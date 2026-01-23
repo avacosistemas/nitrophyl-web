@@ -31,6 +31,8 @@ import { A11yModule } from '@angular/cdk/a11y';
 import { LotUpdateService } from 'app/shared/services/lot-update.service';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 import { MaterialModule } from 'app/material.module';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { LotStatusChangeComponent } from './lots/lot-status-change/lot-status-change.component';
 
 const routes: Route[] = [
   {
@@ -46,7 +48,9 @@ const routes: Route[] = [
     LotsComponent,
     LotDialogComponent,
     LotModalComponent,
-    LotGraphicDialogComponent
+    LotGraphicDialogComponent,
+    LotStatusChangeComponent,
+    GenericModalComponent
   ],
   imports: [
     RouterModule.forChild(routes),
@@ -70,7 +74,8 @@ const routes: Route[] = [
   entryComponents: [
     LotModalComponent,
     LotDialogComponent,
-    LotGraphicDialogComponent
+    LotGraphicDialogComponent,
+    LotStatusChangeComponent
   ]
 })
 export class ABMLotsModule { }

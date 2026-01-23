@@ -1,94 +1,151 @@
 <div class="flex flex-col w-full p-6" id="top">
   <form [formGroup]="moldeForm">
-    <div class="flex w-full gap-4">
-      <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
+    <div class="flex flex-col gap-4">
+      <div class="flex w-full gap-4">
+        <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
 
-        <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2">
+            <div>
+              <h1 class="text-2xl font-semibold mb-2">Molde</h1>
+            </div>
+            <mat-form-field class="w-full" appearance="outline">
+              <mat-label>Código </mat-label>
+              <input id="code" matInput [formControlName]="'code'" placeholder="Código">
+              <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('required')">
+                El código es requerido
+              </mat-error>
+              <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('maxlength')">
+                Máximo 30 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="w-full" appearance="outline">
+              <mat-label>Estado </mat-label>
+              <mat-select formControlName="estado" placeholder="Estado">
+                <mat-option [value]='"ACTIVO"'>Activo</mat-option>
+                <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
+                <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
+                <mat-option [value]='"EN_FABRICACION"'>En Fabricación</mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field class="w-full" appearance="outline">
+              <mat-label>Descripción </mat-label>
+              <input id="name" matInput [formControlName]="'name'" placeholder="Descripción">
+              <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('required')">
+                La descripción es requerida
+              </mat-error>
+              <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('maxlength')">
+                Máximo 100 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="w-full" appearance="outline">
+              <mat-label>Cantidad de Bocas</mat-label>
+              <input type="number" matInput formControlName="cantidadBocas" placeholder="Cantidad de bocas">
+              <mat-error *ngIf="moldeForm.get('cantidadBocas').hasError('required')">
+                La cantidad de bocas es requerida
+              </mat-error>
+            </mat-form-field>
+
+            <div class="flex flex-col gap-2 mt-2 mb-2">
+              <label class="text-gray-600 font-medium">Propietario</label>
+              <mat-radio-group formControlName="propio" class="flex gap-4">
+                <mat-radio-button [value]="true" color="primary">Nitrophyl</mat-radio-button>
+                <mat-radio-button [value]="false" color="primary">Cliente</mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <mat-form-field class="w-full" appearance="outline" *ngIf="moldeForm.get('propio').value === false">
+              <mat-label>Cliente</mat-label>
+              <mat-select formControlName="client" placeholder="Seleccione un cliente">
+                <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
+              </mat-select>
+              <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
+                El cliente es requerido
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field class="w-full" appearance="outline">
+              <mat-label>Observaciones </mat-label>
+              <textarea matInput id="observations" [formControlName]="'observations'" placeholder="Observaciones"
+                cols="30" rows="3"></textarea>
+            </mat-form-field>
+            <mat-form-field class="w-full" appearance="outline">
+              <mat-label>Ubicación </mat-label>
+              <textarea matInput id="location" [formControlName]="'location'" placeholder="Ubicación" cols="30"
+                rows="3"></textarea>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
           <div>
-            <h1 class="text-2xl font-semibold mb-2">Molde</h1>
+            <h1 class="text-2xl font-semibold mb-2">Tipos de Pieza</h1>
           </div>
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Código </mat-label>
-            <input id="code" matInput [formControlName]="'code'" placeholder="Código">
-            <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('required')">
-              El código es requerido
-            </mat-error>
-            <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('maxlength')">
-              Máximo 30 caracteres
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Estado </mat-label>
-            <mat-select formControlName="estado" placeholder="Estado">
-              <mat-option [value]='"ACTIVO"'>Activo</mat-option>
-              <mat-option [value]='"INACTIVO"'>Inactivo</mat-option>
-              <mat-option [value]='"REPARACION"'>En Reparación</mat-option>
-              <mat-option [value]='"EN_FABRICACION"'>En Fabricación</mat-option>
-            </mat-select>
-          </mat-form-field>
-
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Descripción </mat-label>
-            <input id="name" matInput [formControlName]="'name'" placeholder="Descripción">
-            <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('required')">
-              La descripción es requerida
-            </mat-error>
-            <mat-error class="mb-1" *ngIf="moldeForm.get('name').hasError('maxlength')">
-              Máximo 100 caracteres
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Cantidad de Bocas</mat-label>
-            <input type="number" matInput formControlName="cantidadBocas" placeholder="Cantidad de bocas">
-            <mat-error *ngIf="moldeForm.get('cantidadBocas').hasError('required')">
-              La cantidad de bocas es requerida
-            </mat-error>
-          </mat-form-field>
-
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Propietario </mat-label>
-            <mat-select formControlName="client" placeholder="Propietario">
-              <mat-option [value]="-1"> Nitrophyl </mat-option>
-              <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
-            </mat-select>
-            <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
-              El propietario es requerido
-            </mat-error>
-          </mat-form-field>
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Observaciones </mat-label>
-            <textarea matInput id="observations" [formControlName]="'observations'" placeholder="Observaciones"
-              cols="30" rows="3"></textarea>
-          </mat-form-field>
-          <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Ubicación </mat-label>
-            <textarea matInput id="location" [formControlName]="'location'" placeholder="Ubicación" cols="30"
-              rows="3"></textarea>
-          </mat-form-field>
+          <div class="flex flex-wrap gap-3 w-fill" formArrayName="piezaTipos">
+            <div *ngFor="let tipo of tiposPieza$; let i = index">
+              <mat-checkbox [formControlName]="i">
+                {{ tipo.nombre }}
+              </mat-checkbox>
+            </div>
+            <div *ngIf="!tiposPieza$ || tiposPieza$.length === 0" class="text-gray-500">
+              No hay tipos de pieza para seleccionar.
+            </div>
+          </div>
+          <div *ngIf="moldeForm.get('piezaTipos')?.hasError('requireAtLeastOne') && moldeForm.get('piezaTipos')?.touched"
+            class="text-red-600 text-sm mt-2">
+            Debe seleccionar al menos un tipo de pieza.
+          </div>
         </div>
       </div>
 
-      <div class="border-2 bg-white border-gray-200 rounded-2xl p-8 sm:w-1/2">
+      <div class="border-2 bg-white border-gray-200 rounded-2xl p-8 w-full sm:w-1/2">
         <div>
-          <h1 class="text-2xl font-semibold mb-2">Tipos de Pieza</h1>
+          <h1 class="text-2xl font-semibold mb-4">Dimensiones</h1>
         </div>
-        <div class="flex flex-wrap gap-3 w-fill" formArrayName="piezaTipos">
-          <div *ngFor="let tipo of tiposPieza$; let i = index">
-            <mat-checkbox [formControlName]="i">
-              {{ tipo.nombre }}
-            </mat-checkbox>
+        
+        <div class="flex flex-col gap-4">
+          <div class="flex gap-8 items-center">
+            <label class="font-medium text-gray-700">Forma:</label>
+            <mat-radio-group formControlName="tipoMolde" class="flex gap-4">
+              <mat-radio-button value="RECTANGULAR" color="primary">Rectangular</mat-radio-button>
+              <mat-radio-button value="CIRCULAR" color="primary">Circular</mat-radio-button>
+            </mat-radio-group>
           </div>
-          <div *ngIf="!tiposPieza$ || tiposPieza$.length === 0" class="text-gray-500">
-            No hay tipos de pieza para seleccionar.
+
+          <div class="flex gap-4 flex-wrap mt-2">
+            <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+              <mat-label>Alto (mm)</mat-label>
+              <input type="number" matInput formControlName="alto">
+              <mat-error *ngIf="moldeForm.get('alto').hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+
+            <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'RECTANGULAR'">
+              <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+                <mat-label>Ancho (mm)</mat-label>
+                <input type="number" matInput formControlName="ancho">
+                <mat-error *ngIf="moldeForm.get('ancho').hasError('required')">Requerido</mat-error>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+                <mat-label>Profundidad (mm)</mat-label>
+                <input type="number" matInput formControlName="profundidad">
+                <mat-error *ngIf="moldeForm.get('profundidad').hasError('required')">Requerido</mat-error>
+              </mat-form-field>
+            </ng-container>
+
+            <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'CIRCULAR'">
+              <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
+                <mat-label>Diámetro (mm)</mat-label>
+                <input type="number" matInput formControlName="diametro">
+                <mat-error *ngIf="moldeForm.get('diametro').hasError('required')">Requerido</mat-error>
+              </mat-form-field>
+            </ng-container>
           </div>
-        </div>
-        <div *ngIf="moldeForm.get('piezaTipos')?.hasError('requireAtLeastOne') && moldeForm.get('piezaTipos')?.touched"
-          class="text-red-600 text-sm mt-2">
-          Debe seleccionar al menos un tipo de pieza.
         </div>
       </div>
+
     </div>
   </form>
 </div>

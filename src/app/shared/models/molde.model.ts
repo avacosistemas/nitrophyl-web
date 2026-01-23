@@ -9,14 +9,19 @@ export interface Molde {
   clienteDuenio: string;
   propio: boolean;
   cantidadBocas?: number;
+  tipoMolde?: string; 
   alto?: number;
   ancho?: number;
   profundidad?: number;
   diametro?: number;
+  
   ultimoRegistro?: string;
-  piezaTipos?: { id: number, nombre: string }[];
+  piezaTipos?: { id: number, nombre?: string }[];
   observacionesEstado?: string;
+
+  faltantes?: string; 
 }
+
 
 export interface ResponseMolde {
   status: string;
