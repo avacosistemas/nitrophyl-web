@@ -5,6 +5,7 @@ export interface IOrdenCompra {
     idCliente: number;
     nroComprobante: string;
     nroInterno: string;
+    estado: string;
     archivoNombre?: string;
 }
 

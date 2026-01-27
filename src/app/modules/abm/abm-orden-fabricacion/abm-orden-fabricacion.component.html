@@ -7,7 +7,7 @@
         (buttonAction)="handleAction($event)">
     </app-header>
 
-    <div class="flex-auto overflow-hidden bg-gray-100 dark:bg-transparent">
+    <div class="content-scroll">
         <router-outlet (activate)="onChildActivate($event)"></router-outlet>
     </div>
 </div>

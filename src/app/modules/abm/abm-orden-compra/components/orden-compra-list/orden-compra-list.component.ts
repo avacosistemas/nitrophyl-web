@@ -27,7 +27,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenCompra>([]);
-    displayedColumns: string[] = ['fecha', 'clienteNombre', 'nroComprobante', 'nroInterno', 'archivo'];
+    displayedColumns: string[] = ['fecha', 'clienteNombre', 'nroComprobante', 'nroInterno', 'estado', 'archivo']; 
     totalReg: number = 0;
 
     searchForm: FormGroup;

@@ -130,13 +130,18 @@
 
                                     <div class="flex-1 min-w-[240px] flex flex-col justify-center px-6 py-3 bg-gray-900 text-white rounded-2xl shadow-lg border border-gray-700">
                                         <div class="flex justify-between items-baseline mb-1">
-                                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Precio Unit.</span>
+                                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cotización ($)</span>
                                             <span class="text-lg font-bold text-green-400">{{ precioUnitarioActual | currency:'USD':'symbol':'1.0-2' }}</span>
                                         </div>
                                         <div class="flex justify-between items-baseline border-t border-gray-700 pt-1">
-                                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Subtotal</span>
-                                            <span class="text-2xl font-black text-white leading-none">
-                                                {{ precioTotalItem | currency:'USD':'symbol':'1.0-2' }}
+                                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Fecha Cotiz.</span>
+                                            <span class="text-lg font-black text-white leading-none">
+                                                <ng-container *ngIf="piezaCotizacionInfo?.tieneCotizacion">
+                                                    {{ piezaCotizacionInfo.fecha | date:'dd/MM/yyyy' }}
+                                                </ng-container>
+                                                <ng-container *ngIf="!piezaCotizacionInfo?.tieneCotizacion">
+                                                    {{ piezaForm.get('cotizacionFecha').value ? (piezaForm.get('cotizacionFecha').value | date:'dd/MM/yyyy') : '--/--/----' }}
+                                                </ng-container>
                                             </span>
                                         </div>
                                     </div>
@@ -208,14 +213,14 @@
                                     <button mat-icon-button (click)="removePieza(i)" color="warn"><mat-icon class="icon-size-4" svgIcon="heroicons_solid:trash"></mat-icon></button>
                                 </div>
                                 <div class="flex justify-between md:flex-col mb-1">
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Precio Unit.</span>
+                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cotización ($)</span>
                                     <span class="text-lg font-bold text-gray-700">{{ item.precio | currency:'USD':'symbol':'1.0-2' }}</span>
                                 </div>
                                 <div class="h-px bg-gray-200 w-full hidden md:block"></div>
                                 <div class="flex justify-between md:flex-col">
-                                    <span class="text-[9px] font-black text-green-600 uppercase">Total Item</span>
-                                    <span class="text-2xl font-black text-green-600">
-                                        {{ (item.precio * item.cantidadSolicitada) | currency:'USD':'symbol':'1.0-2' }}
+                                    <span class="text-[9px] font-black text-blue-600 uppercase">Fecha Cotiz.</span>
+                                    <span class="text-lg font-black text-blue-600">
+                                        {{ item.fechaCotizacion | date:'dd/MM/yyyy' }}
                                     </span>
                                 </div>
                             </div>

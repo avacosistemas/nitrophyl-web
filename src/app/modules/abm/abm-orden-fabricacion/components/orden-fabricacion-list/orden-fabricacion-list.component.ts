@@ -6,11 +6,14 @@ import { MatSort } from '@angular/material/sort';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { Subject, merge, of, Observable } from 'rxjs';
 import { startWith, switchMap, map, catchError, takeUntil } from 'rxjs/operators';
-import { IOrdenFabricacion } from '../../models/orden-fabricacion.interface';
+import { IOrdenFabricacion, IOrdenFabricacionPieza } from '../../models/orden-fabricacion.interface';
 import { AbmOrdenFabricacionService } from '../../abm-orden-fabricacion.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { Cliente } from 'app/shared/models/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete'
+import { MatDialog } from '@angular/material/dialog';
+import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog.component';
+import { FinalizarOrdenDialogComponent } from '../dialogs/finalizar-orden-dialog.component';
 
 type ClienteNitrophyl = Partial<Cliente> & { id: number | null; nombre: string };
 
@@ -25,7 +28,10 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
-    displayedColumns: string[] = ['fecha', 'clienteNombre', 'nroOrden', 'estado'];
+    displayedColumns: string[] = [
+        'ocNro', 'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
+        'ofNro', 'ofFecha', 'estado', 'deFabrica', 'deStock', 'prensa', 'operario', 'estimada', 'entregada', 'acciones'
+    ];
     totalReg: number = 0;
 
     searchForm: FormGroup;
@@ -39,7 +45,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         private _clientesService: ClientesService,
         private _notificationService: NotificationService,
         private _fb: FormBuilder,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _dialog: MatDialog
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
@@ -71,7 +78,33 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                 this.isLoading = false;
                 if (response && response.data) {
                     this.totalReg = response.data.totalReg;
-                    return response.data.page;
+
+                    const filasPlanas = [];
+
+                    response.data.page.forEach((orden: IOrdenFabricacion) => {
+
+                        const piezaPrincipal: IOrdenFabricacionPieza = orden.piezas[0] || ({} as IOrdenFabricacionPieza);
+
+                        filasPlanas.push({
+                            ...orden,
+
+                            ocNro: orden.ordenCompraNro,
+                            ocFecha: orden.ordenCompraFecha,
+
+                            piezaNombre: piezaPrincipal.nombrePieza || '-',
+                            piezaFormula: 'NK',
+                            ocCantidad: piezaPrincipal.cantidadSolicitada || 0,
+
+                            cantFabrica: piezaPrincipal.cantidadAFabricar || 0,
+                            cantStock: piezaPrincipal.stockActual || 0,
+                            prensa: orden.prensa || null,
+                            operario: orden.operario || null,
+                            fechaEstimada: orden.fechaEstimada || null,
+                            fechaEntregada: orden.fechaEntregada || null
+                        });
+                    });
+
+                    return filasPlanas;
                 }
                 return [];
             }),
@@ -140,5 +173,60 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                 this.clientAutocompleteTrigger.openPanel();
             }
         }, 50);
+    }
+
+    asignarPrensa(orden: IOrdenFabricacion): void {
+        const dialogRef = this._dialog.open(AsignarPrensaDialogComponent, {
+            width: '600px',
+            data: {
+
+                sugeridoFabrica: orden.piezas[0]?.cantidadAFabricar,
+                sugeridoStock: orden.piezas[0]?.stockActual
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.isLoading = true;
+
+
+                console.log('Datos a guardar:', result);
+
+
+                setTimeout(() => {
+                    this._notificationService.showSuccess('Orden asignada a prensa correctamente');
+                    this.search();
+                }, 1000);
+            }
+        });
+    }
+
+    finalizarOrden(orden: IOrdenFabricacion): void {
+        const dialogRef = this._dialog.open(FinalizarOrdenDialogComponent, {
+            width: '400px',
+            data: {}
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.isLoading = true;
+
+                console.log('Finalizar con fecha:', result.fechaEntregada);
+
+                setTimeout(() => {
+                    this._notificationService.showSuccess('Orden finalizada correctamente');
+                    this.search();
+                }, 1000);
+            }
+        });
+    }
+
+    formatEstado(estado: string): string {
+        switch (estado) {
+            case 'EN_PROCESO': return 'En Proceso';
+            case 'PENDIENTE': return 'Pendiente';
+            case 'FINALIZADA': return 'Finalizada';
+            default: return estado;
+        }
     }
 }

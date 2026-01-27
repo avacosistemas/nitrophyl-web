@@ -27,12 +27,16 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 import { ABMOrdenFabricacionComponent } from './abm-orden-fabricacion.component';
 import { OrdenFabricacionListComponent } from './components/orden-fabricacion-list/orden-fabricacion-list.component';
 import { OrdenFabricacionFormComponent } from './components/orden-fabricacion-form/orden-fabricacion-form.component';
+import { AsignarPrensaDialogComponent } from './components/dialogs/asignar-prensa-dialog.component';
+import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-orden-dialog.component';
 
 @NgModule({
     declarations: [
         ABMOrdenFabricacionComponent,
         OrdenFabricacionListComponent,
-        OrdenFabricacionFormComponent
+        OrdenFabricacionFormComponent,
+        AsignarPrensaDialogComponent,
+        FinalizarOrdenDialogComponent
     ],
     imports: [
         CommonModule,

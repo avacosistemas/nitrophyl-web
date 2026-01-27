@@ -8,11 +8,12 @@ import { OrdenFabricacionFormComponent } from './components/orden-fabricacion-fo
 
 @Component({
     selector: 'abm-orden-fabricacion',
-    templateUrl: './abm-orden-fabricacion.component.html'
+    templateUrl: './abm-orden-fabricacion.component.html',
+    styleUrls: ['./abm-orden-fabricacion.component.scss']
 })
 export class ABMOrdenFabricacionComponent implements AfterContentChecked {
     title: string = 'Órdenes de Fabricación';
-    subtitle: string = ''; 
+    subtitle: string = '';
     breadcrumbs: any[] = [];
     buttons: any[] = [];
     private currentComponent: any;
@@ -21,12 +22,12 @@ export class ABMOrdenFabricacionComponent implements AfterContentChecked {
         public dialog: MatDialog,
         private cdref: ChangeDetectorRef,
         private router: Router,
-        private _ofService: AbmOrdenFabricacionService 
+        private _ofService: AbmOrdenFabricacionService
     ) {
         this.router.events.pipe(filter(event => event instanceof NavigationEnd)).subscribe(() => {
             this.updateHeader();
         });
-        
+
         this._ofService.headerButtons$.subscribe(btns => {
             this.buttons = btns;
             this.cdref.markForCheck();
