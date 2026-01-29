@@ -1,0 +1,71 @@
+<h2 mat-dialog-title class="font-bold text-gray-800">Asignar Prensa y Tarea</h2>
+
+<mat-dialog-content [formGroup]="form" class="flex flex-col gap-6 pt-2 pb-4">
+    <div class="flex flex-row gap-4 w-full">
+        <div class="flex flex-col gap-4 w-2/3">
+            <div class="flex flex-1 gap-4">
+                <div
+                    class="flex-1 bg-gray-100 rounded-xl p-4 flex flex-col items-center justify-center border border-gray-200">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Solicitadas</span>
+                    <span class="text-3xl font-bold text-gray-800">{{ data.cantidadSolicitada }}</span>
+                </div>
+                <div
+                    class="flex-1 bg-gray-100 rounded-xl p-4 flex flex-col items-center justify-center border border-gray-200">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">En Stock</span>
+                    <span class="text-3xl font-bold text-gray-800">{{ data.stockDisponible }}</span>
+                </div>
+            </div>
+
+            <div class="flex gap-4 pr-4 w-full">
+                <mat-form-field appearance="outline" class="flex-1 w-1/2">
+                    <mat-label>Cant. a Fabricar</mat-label>
+                    <input matInput type="number" formControlName="cantFabrica" min="0">
+                    <mat-error *ngIf="form.get('cantFabrica').hasError('min')">No puede ser negativo</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-1 w-1/2">
+                    <mat-label>Tomar de Stock</mat-label>
+                    <input matInput type="number" formControlName="cantStock" min="0">
+                    <mat-error *ngIf="form.get('cantStock').hasError('min')">No puede ser negativo</mat-error>
+                    <mat-hint align="end" *ngIf="form.get('cantStock').value > data.stockDisponible"
+                        class="text-red-500">
+                        Supera stock disponible
+                    </mat-hint>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="flex-1 rounded-xl p-4 flex flex-col items-center justify-center border transition-colors duration-300"
+            [ngClass]="totalColorClass">
+            <span class="text-xs font-bold uppercase tracking-wider mb-1" [ngClass]="totalTextClass">TOTAL</span>
+            <span class="text-4xl font-extrabold" [ngClass]="totalTextClass">{{ currentTotal }}</span>
+        </div>
+    </div>
+
+    <div class="flex gap-4">
+        <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Nro. Prensa</mat-label>
+            <input matInput formControlName="prensa">
+            <mat-error>Requerido</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Operario</mat-label>
+            <input matInput formControlName="operario">
+            <mat-error>Requerido</mat-error>
+        </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Fecha Estimada Entrega</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="fechaEstimada">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error>Requerido</mat-error>
+    </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="pb-6 pr-6">
+    <button mat-button mat-dialog-close class="mr-2">Cancelar</button>
+    <button mat-flat-button color="primary" [disabled]="form.invalid" class="rounded-full px-6" (click)="save()">
+        Asignar
+    </button>
+</mat-dialog-actions>

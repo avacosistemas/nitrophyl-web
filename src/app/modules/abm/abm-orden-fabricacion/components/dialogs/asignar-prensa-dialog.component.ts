@@ -1,51 +1,31 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
     selector: 'app-asignar-prensa-dialog',
-    template: `
-        <h2 mat-dialog-title>Asignar Prensa y Tarea</h2>
-        <mat-dialog-content [formGroup]="form" class="flex flex-col gap-4 pt-4">
-            <div class="flex gap-4">
-                <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Cant. a Fabricar</mat-label>
-                    <input matInput type="number" formControlName="cantFabrica">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Tomar de Stock</mat-label>
-                    <input matInput type="number" formControlName="cantStock">
-                </mat-form-field>
-            </div>
-            <div class="flex gap-4">
-                <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Nro. Prensa</mat-label>
-                    <input matInput formControlName="prensa">
-                </mat-form-field>
-                <mat-form-field appearance="outline" class="flex-1">
-                    <mat-label>Operario</mat-label>
-                    <input matInput formControlName="operario">
-                </mat-form-field>
-            </div>
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Fecha Estimada Entrega</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="fechaEstimada">
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-            </mat-form-field>
-        </mat-dialog-content>
-        <mat-dialog-actions align="end">
-            <button mat-button mat-dialog-close>Cancelar</button>
-            <button mat-flat-button color="primary" [disabled]="form.invalid" (click)="save()">Asignar</button>
-        </mat-dialog-actions>
-    `
+    templateUrl: './asignar-prensa-dialog.component.html',
 })
-export class AsignarPrensaDialogComponent {
+export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
     form: FormGroup;
+    currentTotal: number = 0;
+
+    totalColorClass: string = 'bg-gray-100 border-gray-200';
+    totalTextClass: string = 'text-gray-800';
+
+    private _unsubscribeAll: Subject<any> = new Subject<any>();
+
     constructor(
         private fb: FormBuilder,
         public dialogRef: MatDialogRef<AsignarPrensaDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: any
+        @Inject(MAT_DIALOG_DATA) public data: {
+            cantidadSolicitada: number,
+            stockDisponible: number,
+            sugeridoFabrica: number,
+            sugeridoStock: number
+        }
     ) {
         this.form = this.fb.group({
             cantFabrica: [data.sugeridoFabrica || 0, [Validators.required, Validators.min(0)]],
@@ -55,6 +35,41 @@ export class AsignarPrensaDialogComponent {
             fechaEstimada: [null, Validators.required]
         });
     }
+
+    ngOnInit(): void {
+        this.calculateTotal();
+
+        this.form.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => {
+                this.calculateTotal();
+            });
+    }
+
+    ngOnDestroy(): void {
+        this._unsubscribeAll.next(null);
+        this._unsubscribeAll.complete();
+    }
+
+    calculateTotal(): void {
+        const fabrica = this.form.get('cantFabrica').value || 0;
+        const stock = this.form.get('cantStock').value || 0;
+
+        this.currentTotal = fabrica + stock;
+        const solicitada = this.data.cantidadSolicitada || 0;
+
+        if (this.currentTotal === solicitada) {
+            this.totalColorClass = 'bg-green-100 border-green-200';
+            this.totalTextClass = 'text-green-800';
+        } else if (this.currentTotal < solicitada) {
+            this.totalColorClass = 'bg-red-100 border-red-200';
+            this.totalTextClass = 'text-red-800';
+        } else {
+            this.totalColorClass = 'bg-yellow-100 border-yellow-200';
+            this.totalTextClass = 'text-yellow-800';
+        }
+    }
+
     save() {
         if (this.form.valid) this.dialogRef.close(this.form.value);
     }

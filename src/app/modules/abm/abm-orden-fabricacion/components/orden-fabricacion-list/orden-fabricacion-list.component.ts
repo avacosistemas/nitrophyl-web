@@ -176,22 +176,23 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     asignarPrensa(orden: IOrdenFabricacion): void {
+        const pieza = orden.piezas && orden.piezas.length > 0 ? orden.piezas[0] : null;
+
         const dialogRef = this._dialog.open(AsignarPrensaDialogComponent, {
             width: '600px',
+            panelClass: 'custom-dialog-container',
             data: {
-
-                sugeridoFabrica: orden.piezas[0]?.cantidadAFabricar,
-                sugeridoStock: orden.piezas[0]?.stockActual
+                cantidadSolicitada: pieza ? pieza.cantidadSolicitada : 0,
+                stockDisponible: pieza ? pieza.stockActual : 0,
+                sugeridoFabrica: pieza ? pieza.cantidadAFabricar : 0,
+                sugeridoStock: 0
             }
         });
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.isLoading = true;
-
-
                 console.log('Datos a guardar:', result);
-
 
                 setTimeout(() => {
                     this._notificationService.showSuccess('Orden asignada a prensa correctamente');
