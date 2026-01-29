@@ -86,7 +86,7 @@ export const ordenesFabricacion = [
                 formula: 'NK',
                 cantidadSolicitada: 20,
                 cantidadAFabricar: 0,
-                stockActual: 0
+                stockActual: 10
             }
         ]
     }
