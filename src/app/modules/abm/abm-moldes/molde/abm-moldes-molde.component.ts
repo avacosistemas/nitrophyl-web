@@ -155,7 +155,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       const clientControl = this.moldeForm.get('client');
       if (isPropio) {
         clientControl.clearValidators();
-        clientControl.setValue(null);
       } else {
         clientControl.setValidators(Validators.required);
       }

@@ -48,7 +48,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       name: [null, [Validators.required, Validators.maxLength(100)]],
       cantidadBocas: [null, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
       propio: [true, Validators.required],
-      client: [null],
+      client: [{ value: null, disabled: true }],
       observations: [null],
       location: [null],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
@@ -69,8 +69,10 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       if (isPropio) {
         clientControl.clearValidators();
         clientControl.setValue(null);
+        clientControl.disable();
       } else {
         clientControl.setValidators(Validators.required);
+        clientControl.disable();
       }
       clientControl.updateValueAndValidity();
     });

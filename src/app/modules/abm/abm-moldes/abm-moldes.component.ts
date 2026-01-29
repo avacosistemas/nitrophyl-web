@@ -93,20 +93,19 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
     actualizarTitulo(): void {
         const url = this.router.url;
 
+        this.mostrarBotonEdicion = false;
+        this.botonEdicion = '';
+        this.moldeTitulo = null;
+        this.moldeNombre = null;
+
         if (url.includes('/grid')) {
             this.titulo = 'Consulta Moldes';
-            this.moldeTitulo = null;
-            this.moldeNombre = null;
         } else if (url.includes('/molde/ver/')) {
-            this.moldeTitulo = null;
             this.titulo = 'Vista Molde';
         } else if (url.includes('/molde/editar/')) {
-            this.moldeTitulo = null;
             this.titulo = 'Edición Molde';
         } else if (url.includes('/create')) {
-            this.moldeTitulo = null;
             this.titulo = 'Nuevo Molde';
-            this.moldeNombre = null;
         } else if (url.includes('/ingresos-egresos/')) {
             this.moldesService.getMoldeById(this.activatedRoute.snapshot.children[0].params['id']).subscribe((d) => {
                 this.moldeTitulo = 'Ingresos / Egresos';
@@ -114,7 +113,6 @@ export class ABMMoldesComponent implements OnInit, AfterContentChecked, OnDestro
             });
         } else {
             this.titulo = 'Moldes';
-            this.moldeNombre = null;
         }
     }
 

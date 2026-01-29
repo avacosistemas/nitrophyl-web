@@ -175,9 +175,9 @@
                 <mat-icon>image</mat-icon>
               </button>
             </ng-container>
-            <ng-container *ngIf="lot.estado === 'PENDIENTE_APROBACION'">
-              <button (click)="changeStatus(lot)" matTooltip="Dictaminar Lote">
-                <mat-icon>rate_review</mat-icon>
+            <ng-container *ngIf="lot.estado !== 'PENDIENTE_APROBACION'">
+              <button (click)="changeStatus(lot)" matTooltip="Cambiar estado">
+                <mat-icon>sync</mat-icon>
               </button>
             </ng-container>
             <ng-container *ngIf="lot.estado === 'PENDIENTE_APROBACION'">
