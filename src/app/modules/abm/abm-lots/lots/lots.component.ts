@@ -9,7 +9,7 @@ import {
 } from '@angular/forms';
 import { ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { map, Observable, of, startWith, Subscription } from 'rxjs';
+import { map, Observable, startWith, Subscription } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
 // * Services.
@@ -65,10 +65,10 @@ import {
 import { LotModalComponent } from 'app/modules/abm/abm-lots/lot-modal/lot-modal.component';
 import { LotGraphicDialogComponent } from '../lot-graphic-dialog/lot-graphic-dialog.component';
 import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { saveAs } from 'file-saver';
+import { DomSanitizer } from '@angular/platform-browser';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
-import { LotStatusChangeComponent } from './lot-status-change/lot-status-change.component'; 
+import { LotStatusChangeComponent } from './lot-status-change/lot-status-change.component';
+import { LotCommentsComponent } from '../lot-comments/lot-comments.component';
 
 export interface Estado {
   idEstado: string;
@@ -658,6 +658,20 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     }));
   }
 
+  public openCommentsModal(lote: ILot): void {
+    const dialogRef = this.dialog.open(LotCommentsComponent, {
+      width: '800px',
+      data: { lotId: lote.id, nroLote: lote.nroLote },
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        //
+      }
+    });
+  }
+
   public async changeStatus(lote: ILot): Promise<void> {
     try {
       const res = await firstValueFrom(this.lotService.hasEnsayos(lote.id));
@@ -668,7 +682,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         return;
       }
 
-      const minDate = new Date(lote.fecha); 
+      const minDate = new Date(lote.fecha);
 
       const dialogRef = this.dialog.open(GenericModalComponent, {
         width: '500px',
@@ -682,7 +696,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
           cancelButtonText: 'Cancelar',
           showConfirmButton: true,
           showCloseButton: true,
-          customComponent: LotStatusChangeComponent, 
+          customComponent: LotStatusChangeComponent,
           componentData: { minDate: minDate }
         }
       });
@@ -691,7 +705,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (result) {
         const { estado, fecha, observaciones } = result;
-        const fechaFormatted = moment(fecha).toISOString(); 
+        const fechaFormatted = moment(fecha).toISOString();
 
         if (estado === 'RECHAZADO') {
           await firstValueFrom(this.lotService.reject(lote.id, observaciones, fechaFormatted));
@@ -774,7 +788,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
 
       if (!hasEnsayos) {
         this.openSnackBar(false, 'No se pueden aprobar/rechazar lotes sin ensayos.');
-        return; 
+        return;
       }
 
       const dialogRef = this.dialog.open(LotDialogComponent, {

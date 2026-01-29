@@ -77,3 +77,19 @@ export interface IRegistroEnvioResponse {
     totalReg: number;
   };
 }
+
+export interface ILotObservation {
+  id: number;
+  idLote: number;
+  observaciones: string;
+  mostrarReporte: boolean;
+  fechaCreacion?: string;
+  usuarioCreacion?: string;
+  fechaActualizacion?: string;
+  usuarioActualizacion?: string;
+}
+
+export interface ILotObservationResponse {
+  data: ILotObservation[];
+  status: string;
+}

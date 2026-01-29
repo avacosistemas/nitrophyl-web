@@ -9,7 +9,9 @@ import {
   ILotResponseAutocomplete,
   IInformeLoteResponse,
   IRegistroEnvio,
-  IRegistroEnvioResponse
+  IRegistroEnvioResponse,
+  ILotObservation,
+  ILotObservationResponse
 } from 'app/shared/models/lot.interface';
 import { IResponse } from '../models/response.interface';
 
@@ -25,6 +27,7 @@ export class LotService {
   private readonly _urlCount: string = `${environment.server}lote/count`;
   private readonly _urlMonitor: string = `${environment.server}lote/monitor`;
   private readonly _urlCountMonitor: string = `${environment.server}lote/monitor/count`;
+  private readonly _urlObservation: string = `${environment.server}lote/observacion`;
   private readonly _drawer: BehaviorSubject<boolean>;
   private readonly _drawerEdit: BehaviorSubject<boolean>;
 
@@ -253,5 +256,17 @@ export class LotService {
 
   public deleteGrafico(idGraficoprueba: number): Observable<ILotResponse> {
     return this.http.delete<ILotResponse>(`${this._url}/graficos/${idGraficoprueba}`);
+  }
+
+  public getObservaciones(idLote: number): Observable<ILotObservationResponse> {
+    return this.http.get<ILotObservationResponse>(`${this._urlObservation}/${idLote}`);
+  }
+
+  public createObservacion(observation: Partial<ILotObservation>): Observable<IResponse<any>> {
+    return this.http.post<IResponse<any>>(this._urlObservation, observation);
+  }
+
+  public toggleObservacionCheck(idLoteObservacion: number): Observable<IResponse<any>> {
+    return this.http.put<IResponse<any>>(`${this._urlObservation}/check/${idLoteObservacion}`, {});
   }
 }

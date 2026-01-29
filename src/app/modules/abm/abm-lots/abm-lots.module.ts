@@ -32,6 +32,7 @@ import { LotUpdateService } from 'app/shared/services/lot-update.service';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 import { MaterialModule } from 'app/material.module';
 import { LotStatusChangeComponent } from './lots/lot-status-change/lot-status-change.component';
+import { LotCommentsComponent } from './lot-comments/lot-comments.component'; 
 
 const routes: Route[] = [
   {
@@ -48,7 +49,8 @@ const routes: Route[] = [
     LotDialogComponent,
     LotModalComponent,
     LotGraphicDialogComponent,
-    LotStatusChangeComponent
+    LotStatusChangeComponent,
+    LotCommentsComponent
   ],
   imports: [
     RouterModule.forChild(routes),
@@ -73,7 +75,8 @@ const routes: Route[] = [
     LotModalComponent,
     LotDialogComponent,
     LotGraphicDialogComponent,
-    LotStatusChangeComponent
+    LotStatusChangeComponent,
+    LotCommentsComponent
   ]
 })
 export class ABMLotsModule { }
