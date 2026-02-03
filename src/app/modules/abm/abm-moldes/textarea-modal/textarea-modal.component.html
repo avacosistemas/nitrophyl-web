@@ -1,6 +1,6 @@
 <div [formGroup]="form" class="w-full">
     <mat-form-field class="w-full" appearance="outline">
-        <mat-label>Observación</mat-label>
+        <mat-label>{{ label }}</mat-label>
         <textarea matInput
                   formControlName="observation"
                   rows="4"

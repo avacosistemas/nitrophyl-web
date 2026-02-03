@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -8,14 +8,23 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class TextareaModalComponent implements OnInit {
     form: FormGroup;
 
+    @Input() initialValue: string = '';
+    @Input() isRequired: boolean = true;
+    @Input() label: string = 'Observación';
+
     constructor(private fb: FormBuilder) {
         this.form = this.fb.group({
-            observation: ['', Validators.required]
+            observation: [''] 
         });
     }
 
     ngOnInit(): void {
-        //
+        const validators = this.isRequired ? [Validators.required] : [];
+        const observationControl = this.form.get('observation');
+        
+        observationControl.setValidators(validators);
+        observationControl.setValue(this.initialValue || '');
+        observationControl.updateValueAndValidity();
     }
 
     public getValue(): string | null {

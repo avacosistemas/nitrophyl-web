@@ -57,7 +57,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   moldeForm: FormGroup;
   bocaForm: FormGroup;
   observacionForm: FormGroup;
-  
+
   displayedColumnsBocas: string[] = [
     'boca',
     'estado',
@@ -103,6 +103,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   public clients: Array<any> = [];
   public displayedColumnsClients: string[] = [
     'nombre',
+    'observaciones',
     'acciones',
   ];
   public pristineClient: boolean = true;
@@ -139,7 +140,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       propio: [true, [Validators.required]],
       client: [null],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
-      
+
       tipoMolde: ['RECTANGULAR', Validators.required],
       alto: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
       ancho: [null, [Validators.pattern("^[0-9]*$")]],
@@ -172,6 +173,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     });
     this.clientForm = this._formBuilder.group({
       client: [null, [Validators.required]],
+      observaciones: [null],
     });
     this.suscripcion = this.ABMoldesService.events.subscribe((data: any) => {
       if (data == 1) {
@@ -187,7 +189,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     this.currentId = this.activatedRoute.snapshot.params['id'];
     this.inicializar();
 
-    this.updateDimensionValidators('RECTANGULAR'); 
+    this.updateDimensionValidators('RECTANGULAR');
 
     let mostrarBoton = false;
     if (this.mode !== 'View') {
@@ -234,24 +236,24 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     anchoCtrl.clearValidators();
     profCtrl.clearValidators();
     diametroCtrl.clearValidators();
-    
+
     const numberPattern = Validators.pattern("^[0-9]*$");
 
     if (tipoMolde === 'RECTANGULAR') {
       anchoCtrl.setValidators([Validators.required, numberPattern]);
       profCtrl.setValidators([Validators.required, numberPattern]);
-      diametroCtrl.setValidators([numberPattern]); 
-      
-      if(this.mode !== 'View' && !this.initialMolde) diametroCtrl.setValue(null);
-      
-    } else { 
+      diametroCtrl.setValidators([numberPattern]);
+
+      if (this.mode !== 'View' && !this.initialMolde) diametroCtrl.setValue(null);
+
+    } else {
       diametroCtrl.setValidators([Validators.required, numberPattern]);
-      anchoCtrl.setValidators([numberPattern]); 
+      anchoCtrl.setValidators([numberPattern]);
       profCtrl.setValidators([numberPattern]);
 
-      if(this.mode !== 'View' && !this.initialMolde) {
-         anchoCtrl.setValue(null);
-         profCtrl.setValue(null);
+      if (this.mode !== 'View' && !this.initialMolde) {
+        anchoCtrl.setValue(null);
+        profCtrl.setValue(null);
       }
     }
 
@@ -322,7 +324,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         case 3:
           mostrarBoton = true;
           break;
-        case 4: 
+        case 4:
           mostrarBoton = false;
           break;
         case 5:
@@ -429,7 +431,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
     const isPropio = this.moldeForm.get('propio').value;
     let client: Cliente = null;
-    
+
     if (!isPropio) {
       const clientValue = this.moldeForm.get('client').value;
       if (!clientValue || typeof clientValue === 'string') {
@@ -445,7 +447,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
         nombre: this.tiposPieza[i].nombre
       } : null)
       .filter(v => v !== null);
-    
+
     const tipoMolde = this.moldeForm.get('tipoMolde').value;
     const alto = this.moldeForm.get('alto').value;
     let ancho = 0;
@@ -462,7 +464,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     let model: Molde = {
       ...this.initialMolde,
 
-      id: this.currentId,
+      id: Number(this.currentId),
       codigo: this.moldeForm.get('codigo').value,
       estado: this.moldeForm.get('estado').value,
       nombre: this.moldeForm.get('nombre').value,
@@ -474,7 +476,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       propio: isPropio,
       idClienteDuenio: isPropio ? null : client.id,
       clienteDuenio: isPropio ? null : client.nombre,
-      
+
       tipoMolde: tipoMolde,
       alto: alto,
       ancho: ancho,
@@ -494,13 +496,18 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
           showConfirmButton: true,
           confirmButtonText: 'Guardar',
           cancelButtonText: 'Cancelar',
-          customComponent: TextareaModalComponent
+          customComponent: TextareaModalComponent,
+          componentData: {
+            initialValue: '',
+            label: 'Observación del cambio de estado',
+            isRequired: true
+          }
         },
         width: '500px'
       });
 
       dialogRef.afterClosed().subscribe(result => {
-        if (result) {
+        if (result !== false && result !== null) {
           model.observacionesEstado = result;
           this.callUpdateMoldeApi(model);
         }
@@ -511,13 +518,34 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   }
 
   private callUpdateMoldeApi(model: Molde): void {
-    this._molds.updateMolde(this.currentId, model).subscribe((res) => {
-      if (res.status == 'OK') {
-        this.moldeForm.markAsPristine();
-        this.notificationService.showSuccess('Cambios realizados.');
-        this.initialMolde = JSON.parse(JSON.stringify(model));
-      } else {
-        this.notificationService.showError('No se pudieron realizar los cambios.');
+    this._molds.updateMolde(this.currentId, model).subscribe({
+      next: (res) => {
+        if (res.status == 'OK') {
+          this.moldeForm.markAsPristine();
+          this.notificationService.showSuccess('Cambios realizados.');
+          this.initialMolde = JSON.parse(JSON.stringify(model));
+          if (model.observacionesEstado) {
+            this.initialMolde.estado = model.estado;
+          }
+        } else {
+          this.notificationService.showError('No se pudieron realizar los cambios');
+          console.error('No se pudieron realizar los cambios: ' + (res.message || 'Error desconocido.'));
+        }
+      },
+      error: (err) => {
+        console.error('Error al actualizar molde:', err);
+        let errorMessage = 'No se pudieron realizar los cambios. ';
+        if (err.error && err.error.message) {
+          errorMessage += err.error.message;
+        } else if (err.message) {
+          errorMessage += err.message;
+        } else {
+          errorMessage += 'Hubo un error inesperado.';
+        }
+        this.notificationService.showError(errorMessage);
+      },
+      complete: () => {
+        //
       }
     });
   }
@@ -592,7 +620,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       propio: isPropio,
       client: propietarioObj,
       cantidadBocas: data.cantidadBocas,
-      
+
       tipoMolde: tipo,
       alto: data.alto,
       ancho: data.ancho,
@@ -631,9 +659,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     if (exists) {
       this.notificationService.showError('El cliente ya esta asociado al molde.');
     } else {
+      const observaciones = this.clientForm.get('observaciones').value;
       this.clients.push({
         idCliente: selectedClient.id,
         nombre: selectedClient.nombre,
+        observaciones: observaciones,
       });
       this.clients.sort((a, b) => a.idCliente - b.idCliente);
       this.clients = [...this.clients];
@@ -641,6 +671,38 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       this.clientForm.reset();
       this.updateClientsOnBackend();
     }
+  }
+
+  public editClientObservation(clientToEdit: any): void {
+    const dialogRef = this.dialog.open(GenericModalComponent, {
+      width: '500px',
+      data: {
+        title: 'Editar Observación del Cliente',
+        message: `Modificando las observaciones para el cliente <b>${clientToEdit.nombre}</b>.`,
+        showConfirmButton: true,
+        confirmButtonText: 'Guardar Cambios',
+        cancelButtonText: 'Cancelar',
+        customComponent: TextareaModalComponent,
+        componentData: {
+          initialValue: clientToEdit.observaciones || '',
+          label: 'Observaciones',
+          isRequired: false
+        }
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== false && result !== null) {
+        const clientIndex = this.clients.findIndex(c => c.idCliente === clientToEdit.idCliente);
+        if (clientIndex > -1) {
+          this.clients[clientIndex].observaciones = result;
+          this.clients = [...this.clients];
+          this.pristineClient = false;
+
+          this.updateClientsOnBackend();
+        }
+      }
+    });
   }
 
   public deleteClient(row: any): void {
@@ -656,6 +718,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   private updateClientsOnBackend(): void {
     let body = this.clients.map((client: any) => ({
       idCliente: client.idCliente,
+      observaciones: client.observaciones,
     }));
 
     this._molds.putClient(this.currentId, body).subscribe({

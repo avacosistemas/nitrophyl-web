@@ -326,7 +326,7 @@
     <mat-tab label="Clientes">
       <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8 flex flex-col gap-2">
         <div *ngIf="mode === 'Edit'">
-          <div class="flex justify-center gap-2 w-full" [formGroup]="clientForm">
+          <div class="flex justify-center items-start gap-2 w-full" [formGroup]="clientForm">
             <mat-form-field class="w-1/3" appearance="outline">
               <mat-label>Cliente</mat-label>
               <input type="text" placeholder="Buscar por código o nombre" matInput formControlName="client"
@@ -336,6 +336,10 @@
                   {{ client.codigo ? client.codigo + ' - ' : '' }}{{ client.nombre }}
                 </mat-option>
               </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field class="w-1/3" appearance="outline">
+              <mat-label>Observaciones</mat-label>
+              <input matInput formControlName="observaciones" placeholder="Ingrese observaciones">
             </mat-form-field>
             <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent form-client__btn mt-3"
               mat-flat-button (click)="addClient()" [disabled]="clientForm.invalid">
@@ -350,12 +354,21 @@
             <th mat-header-cell *matHeaderCellDef> Nombre </th>
             <td mat-cell *matCellDef="let element">{{ element.nombre }}</td>
           </ng-container>
+          <ng-container matColumnDef="observaciones">
+            <th mat-header-cell *matHeaderCellDef> Observaciones </th>
+            <td mat-cell *matCellDef="let element">{{ element.observaciones }}</td>
+          </ng-container>
           <ng-container matColumnDef="acciones">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let row" class="text-right">
-              <button *ngIf="mode === 'Edit'" (click)="deleteClient(row)">
-                <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar"></mat-icon>
-              </button>
+              <div class="flex items-center justify-end">
+                <button *ngIf="mode === 'Edit'" mat-icon-button (click)="editClientObservation(row)">
+                  <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar Observación"></mat-icon>
+                </button>
+                <button *ngIf="mode === 'Edit'" mat-icon-button (click)="deleteClient(row)">
+                  <mat-icon svgIcon="heroicons_solid:trash" matTooltip="Eliminar"></mat-icon>
+                </button>
+              </div>
             </td>
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumnsClients"></tr>
