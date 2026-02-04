@@ -52,7 +52,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       observations: [null],
       location: [null],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
-      
+
       tipoMolde: ['RECTANGULAR', Validators.required],
       alto: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
       ancho: [null, [Validators.pattern("^[0-9]*$")]],
@@ -128,7 +128,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     anchoCtrl.clearValidators();
     profCtrl.clearValidators();
     diametroCtrl.clearValidators();
-    
+
     const numberPattern = Validators.pattern("^[0-9]*$");
 
     if (tipoMolde === 'RECTANGULAR') {
@@ -136,12 +136,12 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       profCtrl.setValidators([Validators.required, numberPattern]);
       diametroCtrl.setValidators([numberPattern]);
       diametroCtrl.setValue(null);
-    } else { 
+    } else {
       diametroCtrl.setValidators([Validators.required, numberPattern]);
       anchoCtrl.setValidators([numberPattern]);
       profCtrl.setValidators([numberPattern]);
       anchoCtrl.setValue(null);
-      profCtrl.setValue(null); 
+      profCtrl.setValue(null);
     }
 
     anchoCtrl.updateValueAndValidity();
@@ -179,12 +179,9 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     }
 
     const isPropio = this.moldeForm.get('propio').value;
-    let selectedClient = null;
 
-    if (!isPropio) {
-      const selectedClientId = this.moldeForm.controls.client.value;
-      selectedClient = this.clients$.find((element: any) => element.id === selectedClientId);
-    }
+    const selectedClientId = this.moldeForm.controls.client.value;
+    const selectedClient = this.clients$.find((element: any) => element.id === selectedClientId);
 
     const selectedTiposPieza = this.moldeForm.value.piezaTipos
       .map((checked, i) => checked ? {
@@ -217,8 +214,8 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       piezaTipos: selectedTiposPieza,
 
       propio: isPropio,
-      idClienteDuenio: isPropio ? null : (selectedClient ? selectedClient.id : null),
-      clienteDuenio: isPropio ? null : (selectedClient ? selectedClient.nombre : null),
+      idClienteDuenio: selectedClient?.id || null,
+      clienteDuenio: selectedClient?.nombre || null,
 
       tipoMolde: tipoMolde,
       alto: alto,
