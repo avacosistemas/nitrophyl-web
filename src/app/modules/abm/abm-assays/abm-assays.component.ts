@@ -40,6 +40,7 @@ export class ABMAssaysComponent
   private subscription: Subscription;
   public isModalOpen: boolean = false;
   public selectedMachineName: string = '';
+  public actualMachineId: number | null = null;
 
   constructor(
     private configTestService: ConfigTestService,
@@ -96,8 +97,10 @@ export class ABMAssaysComponent
           const selectedMachine = machines.find(machine => machine.id === selectedMachineId);
           if (selectedMachine) {
             this.selectedMachineName = selectedMachine.maquina;
+            this.actualMachineId = Number(selectedMachine.idMaquina);
           } else {
             this.selectedMachineName = '';
+            this.actualMachineId = null;
           }
         });
 
@@ -134,6 +137,7 @@ export class ABMAssaysComponent
     this.assayService.openModal.next({
       mode: 'create',
       machineId: this.assayService.machine,
+      actualMachineId: this.actualMachineId,
       machineName: this.selectedMachineName
     });
   }

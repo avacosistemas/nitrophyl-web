@@ -53,15 +53,17 @@
 
                             <mat-form-field appearance="outline" class="w-1/4">
                                 <mat-label> Código / Denominación /Código Cliente </mat-label>
-                                <input matInput formControlName="nombre" placeholder="Código o Denominación o Código Cliente">
+                                <input matInput formControlName="nombre"
+                                    placeholder="Código o Denominación o Código Cliente">
                             </mat-form-field>
-                            
-                           <mat-form-field appearance="outline" class="w-1/4">
+
+                            <mat-form-field appearance="outline" class="w-1/4">
                                 <mat-label>Cliente</mat-label>
                                 <input type="text" placeholder="Cliente" matInput formControlName="idCliente"
                                     [matAutocomplete]="autoCliente">
-                                
-                                <button *ngIf="searchForm.get('idCliente').value" matSuffix mat-icon-button aria-label="Limpiar" (click)="clearCliente($event)">
+
+                                <button *ngIf="searchForm.get('idCliente').value" matSuffix mat-icon-button
+                                    aria-label="Limpiar" (click)="clearCliente($event)">
                                     <mat-icon>close</mat-icon>
                                 </button>
 
@@ -70,9 +72,9 @@
                                         {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
                                     </mat-option>
                                 </mat-autocomplete>
-                                
+
                             </mat-form-field>
-                            
+
                         </div>
 
                         <div class="w-full justify-between flex">
@@ -107,11 +109,24 @@
 
                 <table mat-table [dataSource]="dataSource" matSort class="border-2 rounded-2xl mt-5 w-full">
                     <ng-container matColumnDef="vigente">
-                        <th mat-header-cell *matHeaderCellDef class="w-16"> </th>
-                        <td mat-cell *matCellDef="let element" class="w-16">
+                        <th mat-header-cell *matHeaderCellDef class="w-10"> </th>
+                        <td mat-cell *matCellDef="let element" class="w-10">
                             <mat-icon *ngIf="element.vigente" style="color: green;" matTooltip="Vigente">
                                 check_circle
                             </mat-icon>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="alertas">
+                        <th mat-header-cell *matHeaderCellDef class="w-10 text-center"></th>
+                        <td mat-cell *matCellDef="let element" class="w-10 text-center px-2">
+                            <ng-container *ngIf="element.faltantes">
+                                <mat-icon style="color: #ef4444; cursor: help;"
+                                    [matTooltip]="getTooltipFaltantes(element.faltantes)"
+                                    matTooltipClass="tooltip-multiline">
+                                    error
+                                </mat-icon>
+                            </ng-container>
                         </td>
                     </ng-container>
 

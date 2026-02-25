@@ -3,9 +3,11 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, FormArray, FormControl, AbstractControl } from '@angular/forms';
 import { AssayService } from 'app/shared/services/assay.service';
 import { ConfigTestService } from 'app/shared/services/config-test.service';
+import { MachinesService } from 'app/shared/services/machines.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { IAssay, IAssayCreate, IAssayDetail, IAssayDetailsResponse, IAssayDetailResponse } from 'app/shared/models/assay.interface';
 import { IConfigTest, IParams } from 'app/shared/models/config-test.interface';
+import { IMachineResponse, IMachine } from 'app/shared/models/machine.model';
 import { DatePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
@@ -13,6 +15,7 @@ import { map } from 'rxjs';
 import { DateAdapter } from '@angular/material/core';
 import { AssayDialogComponent } from '../assay-dialog/assay-dialog.component';
 import { AssayDialogAlertComponent } from '../assay-dialog-alert/assay-dialog-alert.component';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
 interface Icon {
     color: string;
@@ -31,6 +34,7 @@ export class AssayModalComponent implements OnInit {
     mode: string;
     lotId: number;
     machineId: number;
+    actualMachineId: number;
     assayData: IAssay;
     selectedAssayId: number;
     public machineName: string;
@@ -61,6 +65,7 @@ export class AssayModalComponent implements OnInit {
         private fb: FormBuilder,
         private assayService: AssayService,
         private configTestService: ConfigTestService,
+        private machinesService: MachinesService,
         private snackBar: MatSnackBar,
         private _dPipe: DatePipe,
         private dialog: MatDialog,
@@ -73,6 +78,7 @@ export class AssayModalComponent implements OnInit {
         this.mode = this.data.mode;
         this.lotId = this.data.lotId;
         this.machineId = this.data.machineId;
+        this.actualMachineId = this.data.actualMachineId;
         this.assayData = this.data.assay;
         this.machineName = this.data.machineName;
 
@@ -82,6 +88,16 @@ export class AssayModalComponent implements OnInit {
             this.form = this.fb.group({
                 fecha: new FormControl(new Date(), Validators.required),
                 params: this.fb.array([]),
+            });
+
+            this.machinesService.get({ id: this.actualMachineId }).subscribe({
+                next: (res: IMachineResponse) => {
+                    if (res.status === 'OK' && res.data) {
+                        const machineData = Array.isArray(res.data) ? res.data[0] : res.data;
+                        this._checkCalibration(machineData);
+                    }
+                },
+                error: (err) => console.error('Error fetching machine details for calibration check', err)
             });
         } else if (this.mode === 'view') {
             this.title = `Ver Ensayo ${this.assayData?.maquina}`;
@@ -137,10 +153,8 @@ export class AssayModalComponent implements OnInit {
 
             let failed: boolean = false;
 
-            const date: string = this._dPipe.transform(
-                this.form.controls['fecha'].value,
-                'dd/MM/yyyy'
-            );
+            const dateValue = this.form.controls['fecha'].value;
+            const date: string = dateValue instanceof Date ? dateValue.toISOString() : dateValue;
 
             const assay: IAssayCreate = {
                 idLote: this.lotId,
@@ -189,10 +203,8 @@ export class AssayModalComponent implements OnInit {
 
             let failed: boolean = false;
 
-            const date: string = this._dPipe.transform(
-                this.form.controls['fecha'].value,
-                'dd/MM/yyyy'
-            );
+            const dateValue = this.form.controls['fecha'].value;
+            const date: string = dateValue instanceof Date ? dateValue.toISOString() : dateValue;
 
             this.assayService.get(this.lotId).subscribe({
                 next: (assayRes: any) => {
@@ -331,7 +343,10 @@ export class AssayModalComponent implements OnInit {
 
     private _parseDate(dateStr: string): Date {
         if (!dateStr) return new Date();
-
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+            return date;
+        }
         const parts = dateStr.split('/');
         if (parts.length === 3) {
             return new Date(+parts[2], +parts[1] - 1, +parts[0]);
@@ -497,5 +512,58 @@ export class AssayModalComponent implements OnInit {
                 callback();
             }
         });
+    }
+
+    private _checkCalibration(machine: IMachine): void {
+        if (!machine || !machine.fechaUltimaCalibracion || !machine.periodicidad) {
+            setTimeout(() => {
+                this.dialog.open(GenericModalComponent, {
+                    width: '450px',
+                    data: {
+                        title: 'Falta información de calibración',
+                        message: 'No hay fecha de última calibración de la máquina o no se ha definido su periodicidad.',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Aceptar',
+                        type: 'warning'
+                    }
+                });
+            }, 500);
+            return;
+        }
+
+        let lastCalibrationDate: Date;
+        if (typeof machine.fechaUltimaCalibracion === 'string') {
+            const parts = machine.fechaUltimaCalibracion.split('/');
+            if (parts.length === 3) {
+                lastCalibrationDate = new Date(+parts[2], +parts[1] - 1, +parts[0]);
+            } else {
+                lastCalibrationDate = new Date(machine.fechaUltimaCalibracion);
+            }
+        } else {
+            lastCalibrationDate = new Date(machine.fechaUltimaCalibracion);
+        }
+
+        const expirationDate = new Date(lastCalibrationDate);
+        expirationDate.setDate(expirationDate.getDate() + machine.periodicidad);
+        const today = new Date();
+
+        today.setHours(0, 0, 0, 0);
+        expirationDate.setHours(0, 0, 0, 0);
+
+        if (today > expirationDate) {
+            const diffTime = Math.abs(today.getTime() - expirationDate.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            this.dialog.open(GenericModalComponent, {
+                width: '450px',
+                data: {
+                    title: 'Calibración vencida',
+                    message: `La última fecha de calibración expiró hace ${diffDays} días. Sugerimos realizar una nueva calibración.`,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Aceptar',
+                    type: 'warning'
+                }
+            });
+        }
     }
 }

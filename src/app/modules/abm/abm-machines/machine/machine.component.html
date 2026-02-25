@@ -44,11 +44,29 @@
           </mat-error>
         </mat-form-field>
 
-        <div class="w-1/2">
+        <div class="w-1/2 flex items-center">
           <mat-checkbox [formControlName]="'versionable'">
             Versionable
           </mat-checkbox>
         </div>
+      </div>
+
+      <div class="row flex gap-3 justify-around">
+        <mat-form-field class="w-1/2" appearance="outline">
+          <mat-label>Fecha última calibración</mat-label>
+          <input matInput [matDatepicker]="calibracionPicker" formControlName="fechaUltimaCalibracion"
+            placeholder="Fecha última calibración" readonly>
+          <mat-datepicker-toggle matSuffix [for]="calibracionPicker"></mat-datepicker-toggle>
+          <mat-datepicker #calibracionPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field class="w-1/2" appearance="outline">
+          <mat-label>Periodicidad (Días)</mat-label>
+          <input matInput type="number" min="1" [formControlName]="'periodicidad'" placeholder="Periodicidad">
+          <mat-error class="mb-1" *ngIf="form.get('periodicidad').hasError('min')">
+            Debe ser un número positivo.
+          </mat-error>
+        </mat-form-field>
       </div>
 
       <mat-form-field appearance="outline" class="w-full">

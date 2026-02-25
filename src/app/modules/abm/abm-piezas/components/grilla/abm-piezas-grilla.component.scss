@@ -1,1 +1,6 @@
 @import '../../styles/_classes.scss';
+
+::ng-deep .tooltip-multiline {
+    white-space: pre-line !important;
+    font-size: 13px;
+}

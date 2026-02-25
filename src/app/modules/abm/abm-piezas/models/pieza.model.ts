@@ -20,6 +20,7 @@ export interface Pieza {
     fechaRevision: number;
     puedeMarcarVigente: boolean;
     puedeGenerarRevision: boolean;
+    faltantes?: string | null;
 }
 
 export interface Espesor {
@@ -54,6 +55,9 @@ export interface PiezaProceso {
     desmoldante: string | null;
     postCura: string | null;
     hojaProceso: string | null;
+    requiereInsumos?: boolean;
+    cantidadInsumos?: number;
+    formaDimension?: 'RECTANGULAR' | 'CIRCULAR' | null;
 }
 
 export interface PiezaCreateDTO {
@@ -114,6 +118,9 @@ export interface PiezaDimension {
     idPieza: number;
     tipo: string;
     valor: number;
+    minimo?: number;
+    maximo?: number;
+    controlar: boolean;
     observaciones?: string;
 }
 
@@ -183,14 +190,22 @@ export interface IInsumoTratado {
     insumo: string;
     idInsumo: number;
     tipo: ITipoInsumoJerarquico;
-    observaciones: string | null;
+    medida1?: number;
+    medida2?: number;
+    unidadMedidaLongitud?: 'MM' | 'CM' | 'M' | null;
+    observaciones: string | IInsumoTratadoObservacion[] | null;
     tratamientos: ITratamiento[];
     adhesivos: IAdhesivo[];
     unidades?: number;
     unidadMedida?: 'DIAMETRO' | 'SUPERFICIE' | null;
-    medida1?: number;
-    medida2?: number;
-    unidadMedidaLongitud?: 'MM' | 'CM' | 'M' | null;
+}
+
+export interface IInsumoTratadoObservacion {
+    id?: number;
+    observacion: string;
+    controlar: boolean;
+    usuarioCreacion?: string;
+    fechaCreacion?: number;
 }
 
 export interface ITipoInsumoJerarquico {

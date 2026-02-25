@@ -26,6 +26,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTable } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DateAdapter } from '@angular/material/core';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
@@ -60,8 +61,10 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     private dialog: MatDialog,
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
-    private router: Router
+    private router: Router,
+    private dateAdapter: DateAdapter<Date>
   ) {
+    this.dateAdapter.setLocale('es');
     if (!this._machines.getMode()) { this.router.navigate(['/maquinas/grid']); }
     this.mode = this._machines.getMode();
     if (this.mode === 'Edit' || this.mode === 'View' || this.mode === 'Test') {
@@ -309,6 +312,15 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.form.controls.norma.setValue(data[0].norma);
           this.form.controls.versionable.setValue(!!data[0].versionable);
           this.form.controls.observacionesReporte.setValue(data[0].observacionesReporte);
+
+          if (data[0].fechaUltimaCalibracion) {
+            const dateObj = new Date(data[0].fechaUltimaCalibracion as string);
+            if (!isNaN(dateObj.getTime())) {
+              this.form.controls.fechaUltimaCalibracion.setValue(dateObj);
+            }
+          }
+          this.form.controls.periodicidad.setValue(data[0].periodicidad);
+
           this.cd.detectChanges();
         }
       },
@@ -317,12 +329,20 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private post(): void {
+    let fechaCalibracionStr = null;
+    const fechaObj = this.form.controls.fechaUltimaCalibracion.value;
+    if (fechaObj instanceof Date) {
+      fechaCalibracionStr = fechaObj.toISOString();
+    }
+
     const body: IMachine = {
       nombre: this.form.controls.name.value,
       estado: this.form.controls.status.value,
       norma: this.form.controls.norma.value,
       versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
+      fechaUltimaCalibracion: fechaCalibracionStr,
+      periodicidad: this.form.controls.periodicidad.value,
     };
     this._machines.post(body).subscribe({
       next: (res: IMachineResponse) => {
@@ -345,6 +365,14 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private put(): void {
+    let fechaCalibracionStr = null;
+    const fechaObj = this.form.controls.fechaUltimaCalibracion.value;
+    if (fechaObj instanceof Date) {
+      fechaCalibracionStr = fechaObj.toISOString();
+    } else if (typeof fechaObj === 'string' && fechaObj) {
+      fechaCalibracionStr = fechaObj;
+    }
+
     const body: IMachine = {
       id: this.id,
       nombre: this.form.controls.name.value,
@@ -352,6 +380,8 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       norma: this.form.controls.norma.value,
       versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
+      fechaUltimaCalibracion: fechaCalibracionStr,
+      periodicidad: this.form.controls.periodicidad.value,
     };
     this._machines.put(body).subscribe({
       next: (res: IMachineResponse) => {
@@ -406,6 +436,13 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       ],
       observacionesReporte: [
         { value: '', disabled: this.mode === 'View' }
+      ],
+      fechaUltimaCalibracion: [
+        { value: null, disabled: this.mode === 'View' }
+      ],
+      periodicidad: [
+        { value: null, disabled: this.mode === 'View' },
+        Validators.min(1)
       ],
     });
   }

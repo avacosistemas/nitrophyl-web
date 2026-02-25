@@ -4,7 +4,7 @@
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
   </div>
 
-  <form [formGroup]="insumoForm" class="mat-form-without-wrapper">
+  <form [formGroup]="insumoForm" class="mat-form-without-wrapper modal-container">
     <mat-tab-group animationDuration="0ms">
       <mat-tab label="Datos del Insumo">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -145,10 +145,59 @@
         </div>
       </mat-tab>
       <mat-tab label="Observaciones">
-        <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Observaciones Generales</mat-label>
-          <textarea matInput formControlName="observaciones" rows="8"></textarea>
-        </mat-form-field>
+        <div class="flex flex-col gap-4 mt-4">
+          <div class="flex items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200" [formGroup]="obsForm">
+            <mat-form-field appearance="outline" class="flex-grow hide-subscript">
+              <mat-label>Nueva Observación</mat-label>
+              <input matInput formControlName="observacion" placeholder="Ingrese observación..."
+                (keyup.enter)="addObservacion()" />
+            </mat-form-field>
+
+            <div class="flex items-center gap-2">
+              <mat-slide-toggle formControlName="controlar" color="accent">
+                Controlar
+              </mat-slide-toggle>
+            </div>
+
+            <button mat-mini-fab color="primary" (click)="addObservacion()" [disabled]="obsForm.invalid">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+
+          <div class="border rounded-xl overflow-hidden observations-table-container">
+            <table mat-table [dataSource]="observacionesLista" class="w-full">
+              <ng-container matColumnDef="observacion">
+                <th mat-header-cell *matHeaderCellDef>Observación</th>
+                <td mat-cell *matCellDef="let element">{{ element.observacion }}</td>
+              </ng-container>
+
+              <ng-container matColumnDef="controlar">
+                <th mat-header-cell *matHeaderCellDef class="w-24">Controlar</th>
+                <td mat-cell *matCellDef="let element; let i = index">
+                  <mat-slide-toggle [checked]="element.controlar" (change)="updateControlar(i, $event)" color="accent">
+                  </mat-slide-toggle>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef class="w-16"></th>
+                <td mat-cell *matCellDef="let i = index">
+                  <button mat-icon-button color="warn" (click)="removeObservacion(i)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumnsObs"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumnsObs"></tr>
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell text-center p-4 text-gray-500" colspan="3">
+                  No hay observaciones cargadas.
+                </td>
+              </tr>
+            </table>
+          </div>
+        </div>
       </mat-tab>
     </mat-tab-group>
   </form>

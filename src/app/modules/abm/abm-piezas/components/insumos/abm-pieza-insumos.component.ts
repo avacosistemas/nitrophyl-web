@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { IInsumoTratado, ITipoInsumoJerarquico, IAdhesivo, ITratamiento } from '../../models/pieza.model';
@@ -24,6 +24,8 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   insumosPieza = new MatTableDataSource<IInsumoTratado>([]);
   sinDatos: boolean = false;
   isLoading: boolean = false;
+  insumosForm: FormGroup;
+  initialRequiereInsumos: boolean = false;
 
   displayedColumns: string[];
 
@@ -40,10 +42,31 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   }
 
   ngOnInit(): void {
+    this.initInsumosForm();
     this.setDisplayedColumns();
     if (this.piezaId) {
       this.loadInsumosPieza();
+      this.loadPiezaData();
     }
+  }
+
+  private initInsumosForm(): void {
+    this.insumosForm = this.fb.group({
+      requiereInsumos: [{ value: false, disabled: this.mode === 'view' }],
+      cantidadInsumos: [{ value: null, disabled: this.mode === 'view' }]
+    });
+  }
+
+  private loadPiezaData(): void {
+    this.abmPiezaService.getPieza(this.piezaId).subscribe(pieza => {
+      if (pieza) {
+        this.initialRequiereInsumos = !!pieza.requiereInsumos;
+        this.insumosForm.patchValue({
+          requiereInsumos: !!pieza.requiereInsumos,
+          cantidadInsumos: pieza.cantidadInsumos
+        }, { emitEvent: false });
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -56,7 +79,7 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   }
 
   setDisplayedColumns(): void {
-    const baseCols = ['nombreInsumo', 'tipo', 'unidades', 'medidaDetallada', 'tratamiento', 'adhesivos', 'observaciones'];
+    const baseCols = ['nombreInsumo', 'tipo', 'unidades', 'medidaDetallada', 'tratamiento', 'adhesivos'];
     this.displayedColumns = this.mode === 'view' ? baseCols : [...baseCols, 'acciones'];
   }
 
@@ -112,6 +135,34 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
     });
   }
 
+  hasControllingObservation(obsData: string | any[]): boolean {
+    if (!obsData) return false;
+    let observaciones: any[] = [];
+    if (typeof obsData === 'string') {
+      try {
+        observaciones = JSON.parse(obsData);
+      } catch (e) {
+        return false;
+      }
+    } else {
+      observaciones = obsData;
+    }
+    return observaciones?.some(obs => obs.controlar) || false;
+  }
+
+  getObservationsCount(obsData: string | any[]): number {
+    if (!obsData) return 0;
+    if (typeof obsData === 'string') {
+      try {
+        const parsed = JSON.parse(obsData);
+        return Array.isArray(parsed) ? parsed.length : 1;
+      } catch (e) {
+        return 1;
+      }
+    }
+    return Array.isArray(obsData) ? obsData.length : 0;
+  }
+
   eliminarInsumo(insumo: IInsumoTratado): void {
     const mensaje = this.sanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar el insumo <span class="font-bold">${insumo.insumo}</span>?`);
 
@@ -155,25 +206,97 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
     return tratamientos.map(t => t.nombre).join(', ');
   }
 
-  openConfirmationModal(message: SafeHtml): Observable<boolean> {
+  onRequiereInsumosChange(event: any): void {
+    const newValue = event.checked;
+    if (!newValue && this.initialRequiereInsumos && this.insumosPieza.data.length > 0) {
+      const message = this.sanitizer.bypassSecurityTrustHtml(
+        'Al desactivar "Requiere Insumos", se perderán todos los insumos cargados para esta pieza. <br><br> ¿Desea continuar?'
+      );
+
+      this.openConfirmationModal(message, 'Atención', 'Continuar', 'warning').subscribe(confirmed => {
+        if (!confirmed) {
+          this.insumosForm.get('requiereInsumos').setValue(true, { emitEvent: false });
+        } else {
+          this.initialRequiereInsumos = false;
+        }
+      });
+    } else {
+      this.initialRequiereInsumos = newValue;
+    }
+  }
+
+  guardarCantidad(): void {
+    if (this.insumosForm.invalid) return;
+
+    this.isLoading = true;
+    const data = this.insumosForm.value;
+    this.abmPiezaService.updateInsumosTratadosCantidad(this.piezaId, data).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Datos de insumos actualizados correctamente.');
+        this.isLoading = false;
+        this.loadInsumosPieza();
+      },
+      error: (err) => {
+        console.error("Error al actualizar cantidad de insumos:", err);
+        this.notificationService.showError("Error al guardar los datos.");
+        this.isLoading = false;
+      }
+    });
+  }
+
+  openConfirmationModal(message: SafeHtml, title: string = 'Confirmar eliminación', confirmText: string = 'Eliminar', type: string = 'warning'): Observable<boolean> {
     const dialogRef = this.dialog.open(GenericModalComponent, {
       width: '400px',
       data: {
-        title: 'Confirmar eliminación',
+        title: title,
         message: message,
         showConfirmButton: true,
-        confirmButtonText: 'Eliminar',
+        confirmButtonText: confirmText,
         cancelButtonText: 'Cancelar',
-        type: 'warning'
+        type: type
       }
     });
     return dialogRef.afterClosed();
   }
 
-  openObservacionModal(observacion: string, nombreInsumo: string): void {
+  openObservacionModal(obsData: string | any[], insumo: string): void {
+    if (!obsData) return;
+
+    let observaciones: any[] = [];
+    if (typeof obsData === 'string') {
+      try {
+        observaciones = JSON.parse(obsData);
+      } catch (e) {
+        observaciones = [{ observacion: obsData, controlar: false }];
+      }
+    } else {
+      observaciones = obsData;
+    }
+
+    if (observaciones.length === 0) return;
+
+    let messageHtml = '<div class="flex flex-col gap-3">';
+    observaciones.forEach(obs => {
+      const controllingStyle = obs.controlar ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-100';
+      const controllingIcon = obs.controlar ? '<span class="text-amber-600 font-bold">[CONTROL]</span> ' : '';
+
+      messageHtml += `
+        <div class="p-3 border rounded-lg ${controllingStyle}">
+          <p class="text-sm">${controllingIcon}${obs.observacion}</p>
+        </div>
+      `;
+    });
+    messageHtml += '</div>';
+
     this.dialog.open(GenericModalComponent, {
       width: '500px',
-      data: { title: `Observaciones: ${nombreInsumo}`, message: observacion, icon: 'chat', showCloseButton: true, showConfirmButton: false, type: 'info' }
+      data: {
+        title: `Observaciones: ${insumo}`,
+        message: this.sanitizer.bypassSecurityTrustHtml(messageHtml),
+        type: 'info',
+        showConfirmButton: true,
+        confirmButtonText: 'Cerrar'
+      }
     });
   }
 }

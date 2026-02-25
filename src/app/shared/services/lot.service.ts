@@ -206,13 +206,13 @@ export class LotService {
     return this.http.get<IResponse<number>>(url);
   }
 
-  enviarInformePorCorreo(idCliente: number, idLote: string, archivo: string | null = null, observaciones: string = '', observacionesInforme: string = ''): Observable<any> {
+  enviarInformePorCorreo(idCliente: number, idLote: string, archivos: any[] = [], observaciones: string = '', observacionesInforme: string = ''): Observable<any> {
     const body = {
       idCliente: idCliente,
       idLote: idLote,
       observaciones: observaciones,
       observacionesInforme: observacionesInforme,
-      archivo: archivo
+      archivos: archivos
     };
 
     const url = `${this._apiUrl}loteReporte/enviar`;

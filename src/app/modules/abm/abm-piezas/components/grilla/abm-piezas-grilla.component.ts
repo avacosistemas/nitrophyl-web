@@ -33,12 +33,10 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   private _destroying$ = new Subject<void>();
 
   displayedColumns: string[] = [
-    'vigente', 'tipo', 'material',
+    'vigente', 'alertas', 'tipo', 'material',
     'formula', 'codigo', 'denominacion', 'cliente', 'piezaPersonalizada', 'acciones'
   ];
-
-// 'revision', 'fechaRevision',
-
+  
   searchForm: FormGroup;
   dataSource = new MatTableDataSource<Pieza>([]);
   totalReg: number = 0;
@@ -148,23 +146,23 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     };
 
     if (formValues.tiposPieza && formValues.tiposPieza.length > 0) {
-        params.idTipoPieza = formValues.tiposPieza.join(',');
+      params.idTipoPieza = formValues.tiposPieza.join(',');
     }
 
     Object.keys(params).forEach(key => {
-        const value = params[key];
-        if (value === null || value === undefined || value === '') {
-            delete params[key];
-        }
+      const value = params[key];
+      if (value === null || value === undefined || value === '') {
+        delete params[key];
+      }
     });
 
     return params;
   }
 
   clearCliente(event: Event): void {
-        event.stopPropagation();
-        this.searchForm.get('idCliente').setValue(null);
-    }
+    event.stopPropagation();
+    this.searchForm.get('idCliente').setValue(null);
+  }
 
   private refreshGrid(): void {
     this.paginator.page.emit();
@@ -262,31 +260,31 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   loadClientesDropdown(): void {
-      this._clientesService.getClientes().pipe(takeUntil(this._destroying$)).subscribe({
-          next: (res: any) => {
-              this.clientesDisponibles = res?.data || [];
-              this.filteredClientes$ = this.searchForm.get('idCliente').valueChanges.pipe(
-                  startWith(''),
-                  map(value => this._filterClientes(value))
-              );
-          },
-          error: (err) => {
-              console.error('Error al cargar la lista de clientes:', err);
-              this._notificationService.showError('Error al cargar la lista de clientes.');
-          }
-      });
+    this._clientesService.getClientes().pipe(takeUntil(this._destroying$)).subscribe({
+      next: (res: any) => {
+        this.clientesDisponibles = res?.data || [];
+        this.filteredClientes$ = this.searchForm.get('idCliente').valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterClientes(value))
+        );
+      },
+      error: (err) => {
+        console.error('Error al cargar la lista de clientes:', err);
+        this._notificationService.showError('Error al cargar la lista de clientes.');
+      }
+    });
   }
 
   private _filterClientes(value: string | Cliente): Cliente[] {
-      if (!value) {
-          return this.clientesDisponibles;
-      }
-      const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+    if (!value) {
+      return this.clientesDisponibles;
+    }
+    const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
 
-      return this.clientesDisponibles.filter(cliente =>
-          cliente.nombre.toLowerCase().includes(filterValue) ||
-          (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
-      );
+    return this.clientesDisponibles.filter(cliente =>
+      cliente.nombre.toLowerCase().includes(filterValue) ||
+      (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
+    );
   }
 
   loadAutocompleteData(): void {
@@ -310,11 +308,11 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
         })
       ),
       tiposPieza: this.abmPiezaService.getPiezaTipo().pipe(
-          catchError((err: any) => {
-              console.error(errorMsg, 'Error en getPiezaTipo', err);
-              this.notificationService.showError('No se pudieron cargar los tipos de pieza.');
-              return of([]);
-          })
+        catchError((err: any) => {
+          console.error(errorMsg, 'Error en getPiezaTipo', err);
+          this.notificationService.showError('No se pudieron cargar los tipos de pieza.');
+          return of([]);
+        })
       )
     }).pipe(takeUntil(this._destroying$))
       .subscribe(({ materials, formulas, tiposPieza }) => {
@@ -351,5 +349,13 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   private _filterMaterials(value: string): any[] {
     const filterValue = value.toLowerCase();
     return this.allMaterials.filter(material => material.nombre.toLowerCase().includes(filterValue));
+  }
+
+  getTooltipFaltantes(faltantes: string): string {
+    if (!faltantes) return '';
+    return faltantes
+      .split(',')
+      .map(item => `• ${item.trim()}`)
+      .join('\n');
   }
 }

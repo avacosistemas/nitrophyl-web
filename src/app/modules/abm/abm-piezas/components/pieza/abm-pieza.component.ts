@@ -49,7 +49,6 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
     @ViewChild(ABMPiezaDimensionesComponent) abmPiezaDimensionesComponent: ABMPiezaDimensionesComponent;
     @ViewChild(ABMPiezaClientesComponent) abmPiezaClientesComponent: ABMPiezaClientesComponent;
 
-
     piezaId: number | null = null;
     mode: 'create' | 'view' | 'edit' = 'create';
     subscriptions: Subscription[] = [];
@@ -116,7 +115,6 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
         const formsToCheck = [
             this.abmPiezaCrearEditarComponent?.piezaForm,
             this.abmPiezaMoldesComponent?.moldeForm,
-            this.abmPiezaDimensionesComponent?.dimensionForm,
             this.abmPiezaMoldeoComponent?.moldeoForm,
             this.abmPiezaDesmoldantePostcuraComponent?.form,
             this.abmPiezaFinalizacionComponent?.form
@@ -127,7 +125,6 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
     private markAllFormsPristine(): void {
         this.abmPiezaCrearEditarComponent?.piezaForm?.markAsPristine();
         this.abmPiezaMoldesComponent?.moldeForm?.markAsPristine();
-        this.abmPiezaDimensionesComponent?.dimensionForm?.markAsPristine();
         this.abmPiezaMoldeoComponent?.moldeoForm?.markAsPristine();
         this.abmPiezaDesmoldantePostcuraComponent?.form?.markAsPristine();
         this.abmPiezaFinalizacionComponent?.form?.markAsPristine();
@@ -206,10 +203,11 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Pieza Terminada';
                     break;
-                case 8: // Clientes
+                case 7: // Dimensiones
                     this.mostrarBotonEdicion = true;
-                    this.botonEdicionTexto = 'Agregar Cliente';
+                    this.botonEdicionTexto = 'Guardar';
                     break;
+                case 8: // Clientes
                 case 9: // Planos
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Subir Plano';
@@ -245,6 +243,9 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                 break;
             case 6:
                 this.onGuardarFinalizacion();
+                break;
+            case 7:
+                this.abrirModalConfigurarDimensiones();
                 break;
             case 8:
                 this.abrirModalAgregarCliente();
@@ -323,5 +324,11 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                 this.abmPiezaPlanosComponent.loadPlanos();
             }
         });
+    }
+
+    abrirModalConfigurarDimensiones(): void {
+        if (this.abmPiezaDimensionesComponent) {
+            this.abmPiezaDimensionesComponent.openConfigurarModal();
+        }
     }
 }

@@ -35,6 +35,7 @@ export class AssayService {
   public openModal = new Subject<{
     mode: string;
     machineId: any;
+    actualMachineId?: number;
     machineName: string;
   }>();
 

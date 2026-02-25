@@ -13,6 +13,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSortModule } from '@angular/material/sort';
 import { MatSelectModule } from '@angular/material/select';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ABMPiezasComponent } from './abm-piezas.component';
 import { ABMPiezasGrillaComponent } from './components/grilla/abm-piezas-grilla.component';
@@ -76,7 +77,7 @@ export const MY_DATE_FORMATS = {
     ABMPiezaDesmoldantePostcuraComponent,
     ABMPiezaEsquemaComponent,
     ABMPiezaFinalizacionComponent,
-    ABMPiezaClienteModalComponent, 
+    ABMPiezaClienteModalComponent
   ],
   imports: [
     CommonModule,
@@ -92,6 +93,7 @@ export const MY_DATE_FORMATS = {
     MatAutocompleteModule,
     MatTabsModule,
     MatSelectModule,
+    MatRadioModule,
     MatTooltipModule,
     MatSortModule,
     MatCheckboxModule,

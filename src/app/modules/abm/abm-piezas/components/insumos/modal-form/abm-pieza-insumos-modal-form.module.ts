@@ -11,6 +11,9 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ABMPiezaInsumoModalFormComponent } from './abm-pieza-insumo-modal-form.component';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTableModule } from '@angular/material/table';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [ABMPiezaInsumoModalFormComponent],
@@ -26,6 +29,9 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatChipsModule,
     MatDialogModule,
     MatTabsModule,
+    MatTableModule,
+    MatSlideToggleModule,
+    MatProgressSpinnerModule,
   ],
   exports: [ABMPiezaInsumoModalFormComponent],
 })

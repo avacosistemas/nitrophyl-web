@@ -8,25 +8,34 @@
         Enviar {{ isMultiple ? 'Informes' : 'Informe' }} al correo:
         <strong class="font-extrabold">{{email}}</strong>
     </h1>
-    
+
     <form [formGroup]="graphicForm" class="flex flex-col">
-        <label for="file-upload" class="cursor-pointer mb-4 relative">
+        <label for="file-upload" class="cursor-pointer mb-2 relative">
             <div
                 class="flex flex-col items-center justify-center p-4 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
                 <div class="flex flex-col items-center justify-center">
-                    <mat-icon class="text-gray-500" svgIcon="heroicons_outline:upload" *ngIf="!selectedFile"
+                    <mat-icon class="text-gray-500" svgIcon="heroicons_outline:upload"
                         style="font-size: 2rem;"></mat-icon>
-                    <span class="text-sm text-gray-600" *ngIf="!selectedFile">Seleccionar archivo PDF</span>
-                    <span class="text-sm text-green-500" *ngIf="selectedFile">{{ selectedFile?.name }}</span>
+                    <span class="text-sm text-gray-600">Seleccionar archivos PDF</span>
                 </div>
-                <input id="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept=".pdf">
+                <input id="file-upload" type="file" class="sr-only" (change)="onFileSelected($event)" accept=".pdf"
+                    multiple>
             </div>
-
-            <button *ngIf="selectedFile" type="button" mat-icon-button class="absolute top-2 right-2"
-                (click)="removeSelectedFile()">
-                <mat-icon>cancel</mat-icon>
-            </button>
         </label>
+
+        <div *ngIf="selectedFiles.length > 0"
+            class="flex flex-col mb-4 max-h-40 overflow-y-auto bg-gray-50 rounded-lg border border-gray-200 p-2">
+            <div *ngFor="let file of selectedFiles; let i = index"
+                class="flex items-center justify-between p-2 border-b last:border-0 border-gray-200">
+                <div class="flex items-center overflow-hidden">
+                    <mat-icon class="text-secondary mr-2" svgIcon="heroicons_outline:document-text"></mat-icon>
+                    <span class="text-sm text-gray-600 truncate mr-2" [title]="file.name">{{ file.name }}</span>
+                </div>
+                <button type="button" mat-icon-button class="text-red-500" (click)="removeSelectedFile(i)">
+                    <mat-icon>cancel</mat-icon>
+                </button>
+            </div>
+        </div>
 
         <mat-form-field appearance="outline">
             <mat-label>Observaciones</mat-label>

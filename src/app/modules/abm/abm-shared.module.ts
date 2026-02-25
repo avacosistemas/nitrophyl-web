@@ -16,10 +16,12 @@ import { FuseScrollbarModule } from "@fuse/directives/scrollbar";
 import { MatTabsModule } from '@angular/material/tabs';
 import { ScrollingModule } from "@angular/cdk/scrolling";
 import { MatTooltipModule } from "@angular/material/tooltip";
-import { MatRadioModule }  from '@angular/material/radio';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatAutocompleteModule } from "@angular/material/autocomplete";
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 
 
 @NgModule({
@@ -45,7 +47,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
         FormsModule,
         ReactiveFormsModule,
         ScrollingModule,
-        MatExpansionModule
+        MatExpansionModule,
+        MatDatepickerModule,
+        MatNativeDateModule
     ],
 })
 

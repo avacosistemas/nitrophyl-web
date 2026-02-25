@@ -47,6 +47,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   private lot: number;
   private selectedAssayId: number;
   private selectedAssayName: string;
+  private actualMachineId: number;
 
   constructor(
     private assayService: AssayService,
@@ -67,6 +68,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
     this.openModalSubscription = this.assayService.openModal.subscribe(modalData => {
       if (modalData.mode === 'create') {
         this.machine = modalData.machineId;
+        this.actualMachineId = modalData.actualMachineId;
         this.machineName = modalData.machineName;
         this.openAssayModal('create');
       }
@@ -100,6 +102,7 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
   public edit(assay: IAssay): void {
     this.selectedAssayId = assay.id;
     this.machine = assay.id;
+    this.actualMachineId = assay.idMaquina;
     this.selectedAssayName = assay.maquina;
 
     this.openAssayAlert('edit', assay, () => {
@@ -109,13 +112,14 @@ export class AssaysComponent implements OnInit, AfterViewInit, OnDestroy {
 
   public view(assay: IAssay): void {
     this.machine = assay.id;
+    this.actualMachineId = assay.idMaquina;
     this.title = assay?.maquina;
 
     this.openAssayModal('view', assay);
   }
 
   private openAssayModal(mode: string, assayData?: IAssay): void {
-    let data: any = { mode: mode, lotId: this.lot, machineId: this.machine, machineName: this.machineName };
+    let data: any = { mode: mode, lotId: this.lot, machineId: this.machine, actualMachineId: this.actualMachineId, machineName: this.machineName };
 
     if (assayData) {
       data.assay = assayData;

@@ -11,7 +11,7 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 })
 export class ConfirmSendEmailDialogComponent implements OnInit {
     graphicForm: FormGroup;
-    selectedFile: File | null = null;
+    selectedFiles: File[] = [];
     formSubmitted: boolean = false;
     email: string;
     isMultiple: boolean = false;
@@ -37,57 +37,72 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
 
     private buildForm(): void {
         this.graphicForm = this.formBuilder.group({
-            archivo: [null],
             observaciones: ['']
         });
     }
 
     onFileSelected(event: any): void {
-        const file: File = event.target.files[0];
+        const files: FileList = event.target.files;
 
-        if (file && file.type === 'application/pdf') {
-            this.selectedFile = file;
-            this.graphicForm.updateValueAndValidity();
-            this.cdRef.detectChanges();
-        } else {
-            this.selectedFile = null;
-            this.openSnackBar(false, 'Por favor, seleccione un archivo PDF.');
-
-            const input = event.target as HTMLInputElement;
-            input.value = '';
-            this.graphicForm.updateValueAndValidity();
-            this.cdRef.detectChanges();
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file && file.type === 'application/pdf') {
+                this.selectedFiles.push(file);
+            } else {
+                this.openSnackBar(false, `El archivo "${file.name}" no es un PDF válido.`);
+            }
         }
+
+        const input = event.target as HTMLInputElement;
+        input.value = '';
+        this.graphicForm.updateValueAndValidity();
+        this.cdRef.detectChanges();
     }
 
     onNoClick(): void {
         this.dialogRef.close();
     }
 
-    onEnviarInforme(): void {
+    async onEnviarInforme(): Promise<void> {
         this.formSubmitted = true;
 
         const idCliente = this.data.idCliente;
         const idLote = this.data.idLote;
         const observaciones = this.graphicForm.get('observaciones').value;
         const observacionesInforme = this.data.observacionesInforme;
-        let base64Content: string | null = null;
+        const archivosPayload: any[] = [];
 
-        if (this.selectedFile) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                base64Content = (reader.result as string).split(',')[1];
-                this.sendEmail(idCliente, idLote, base64Content, observaciones, observacionesInforme);
-            };
-            reader.readAsDataURL(this.selectedFile);
-        } else {
-            this.sendEmail(idCliente, idLote, base64Content, observaciones, observacionesInforme);
+        try {
+            for (const file of this.selectedFiles) {
+                const base64 = await this.fileToBase64(file);
+                archivosPayload.push({
+                    nombre: file.name,
+                    base64: base64
+                });
+            }
+
+            this.sendEmail(idCliente, idLote, archivosPayload, observaciones, observacionesInforme);
+        } catch (error) {
+            console.error('Error procesando archivos', error);
+            this.openSnackBar(false, 'Error al procesar los archivos adjuntos');
         }
     }
 
+    private fileToBase64(file: File): Promise<string> {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = (reader.result as string).split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        });
+    }
 
-    sendEmail(idCliente: number, idLote: string, archivo: string | null, observaciones: string, observacionesInforme: string): void {
-        this.lotService.enviarInformePorCorreo(idCliente, idLote, archivo, observaciones, observacionesInforme).subscribe({
+
+    sendEmail(idCliente: number, idLote: string, archivos: any[], observaciones: string, observacionesInforme: string): void {
+        this.lotService.enviarInformePorCorreo(idCliente, idLote, archivos, observaciones, observacionesInforme).subscribe({
             next: (response: any) => {
                 if (response && response.status === 'ERROR') {
                     this.openSnackBar(false, response.error || 'Error al enviar el informe');
@@ -103,16 +118,8 @@ export class ConfirmSendEmailDialogComponent implements OnInit {
         });
     }
 
-    removeSelectedFile(): void {
-        this.selectedFile = null;
-        this.graphicForm.patchValue({
-            archivo: null
-        });
-
-        const input = document.getElementById('file-upload') as HTMLInputElement;
-        if (input) {
-            input.value = '';
-        }
+    removeSelectedFile(index: number): void {
+        this.selectedFiles.splice(index, 1);
         this.graphicForm.updateValueAndValidity();
         this.cdRef.detectChanges();
     }

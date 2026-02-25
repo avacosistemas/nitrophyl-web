@@ -12,6 +12,8 @@ export interface IMachine {
   versionable?: boolean;
   observacionesReporte?: string;
   idMaquina?: number;
+  fechaUltimaCalibracion?: string | Date;
+  periodicidad?: number;
 }
 
 export type IMachineResponse = IResponse<IMachine[]>;

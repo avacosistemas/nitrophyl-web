@@ -24,6 +24,10 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
   isEditMode = false;
   isLoading = false;
 
+  obsForm: FormGroup;
+  observacionesLista: any[] = [];
+  displayedColumnsObs: string[] = ['observacion', 'controlar', 'acciones'];
+
   private allTiposInsumo: ITipoInsumoJerarquico[] = [];
   nivelesTipoInsumo: ITipoInsumoJerarquico[][] = [];
   private listaInsumos$ = new BehaviorSubject<Insumo[]>([]);
@@ -57,12 +61,16 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       insumo: [{ value: null, disabled: true }, Validators.required],
       tratamientos: [[]],
       adhesivos: [[]],
-      observaciones: [''],
       unidades: [null],
       unidadMedida: [null],
       medida1: [null],
       medida2: [null],
       unidadMedidaLongitud: [null]
+    });
+
+    this.obsForm = this.fb.group({
+      observacion: ['', Validators.required],
+      controlar: [false]
     });
   }
 
@@ -226,7 +234,12 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     const dto = {
       idPieza: this.data.idPieza,
       idInsumo: insumoSeleccionado.id,
-      observaciones: formValue.observaciones || null,
+      observaciones: this.observacionesLista.length > 0
+        ? JSON.stringify(this.observacionesLista.map(o => ({
+          observacion: o.observacion,
+          controlar: !!o.controlar
+        })))
+        : null,
       tratamientos: this.tratamientosSeleccionados.map(t => ({ id: t.id })),
       adhesivos: this.adhesivosSeleccionados.map(a => ({ id: a.id })),
       unidades: formValue.unidades || null,
@@ -275,13 +288,25 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
 
       this.insumoForm.patchValue({
         insumo: insumoObj,
-        observaciones: insumoData.observaciones,
         unidades: insumoData.unidades,
         unidadMedida: insumoData.unidadMedida,
         medida1: insumoData.medida1,
         medida2: insumoData.medida2,
         unidadMedidaLongitud: insumoData.unidadMedidaLongitud
       });
+
+      if (typeof insumoData.observaciones === 'string' && insumoData.observaciones.trim() !== '') {
+        try {
+          this.observacionesLista = JSON.parse(insumoData.observaciones);
+        } catch (e) {
+          console.warn('Error parsing observations JSON, falling back to string:', insumoData.observaciones);
+          this.observacionesLista = [{ observacion: insumoData.observaciones, controlar: false }];
+        }
+      } else if (Array.isArray(insumoData.observaciones)) {
+        this.observacionesLista = [...insumoData.observaciones];
+      } else {
+        this.observacionesLista = [];
+      }
 
       this.updateValidatorsByStockType(false);
       this.updateTratamientosFormControl();
@@ -448,6 +473,24 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
 
   compareWithId(o1: any, o2: any): boolean {
     return o1 && o2 ? o1.id === o2.id : o1 === o2;
+  }
+
+  addObservacion(): void {
+    if (this.obsForm.invalid) return;
+    this.observacionesLista = [...this.observacionesLista, this.obsForm.value];
+    this.obsForm.reset({ observacion: '', controlar: false });
+    this.cdr.markForCheck();
+  }
+
+  removeObservacion(index: number): void {
+    this.observacionesLista.splice(index, 1);
+    this.observacionesLista = [...this.observacionesLista];
+    this.cdr.markForCheck();
+  }
+
+  updateControlar(index: number, event: any): void {
+    this.observacionesLista[index].controlar = event.checked;
+    this.cdr.markForCheck();
   }
 
   onCancel(): void {

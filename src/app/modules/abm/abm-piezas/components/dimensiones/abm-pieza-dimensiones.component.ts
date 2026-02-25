@@ -1,15 +1,12 @@
 import { Component, OnInit, Input, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { PiezaDimension } from '../../models/pieza.model';
-import { Observable, Subscription, of } from 'rxjs';
+import { Observable, Subscription, of, forkJoin } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { MatTableDataSource } from '@angular/material/table';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
 @Component({
     selector: 'app-abm-pieza-dimensiones',
@@ -20,17 +17,9 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     @Input() piezaId: number;
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
-    dimensionForm: FormGroup;
-    dimensiones = new MatTableDataSource<PiezaDimension>([]);
-    tiposDimension$: Observable<string[]>;
-    sinDatos: boolean = false;
+    dimensionesForm: FormGroup;
     isLoading: boolean = false;
-    editMode: boolean = false;
-    dimensionToEdit: PiezaDimension | null = null;
     private subscription: Subscription = new Subscription();
-
-    baseDisplayedColumns: string[] = ['tipo', 'valor', 'observaciones'];
-    displayedColumnsDimensiones: string[];
 
     constructor(
         protected fb: FormBuilder,
@@ -38,35 +27,19 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         protected route: ActivatedRoute,
         protected abmPiezaService: ABMPiezaService,
         private notificationService: NotificationService,
-        public dialog: MatDialog,
-        private domSanitizer: DomSanitizer
+        public dialog: MatDialog
     ) {
         super(fb, router, route, abmPiezaService, dialog);
-
-        this.dimensionForm = this.fb.group({
-            tipo: [null, Validators.required],
-            valor: [null, Validators.required],
-            observaciones: [null]
-        });
+        this.initMainForm();
     }
 
     ngOnInit(): void {
-        this.setDisplayedColumns();
-        this.tiposDimension$ = this.abmPiezaService.getTiposDimension();
         if (this.piezaId) {
             this.loadDimensiones();
         }
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.mode) {
-            this.setDisplayedColumns();
-            if (this.mode === 'view') {
-                this.dimensionForm.disable();
-            } else {
-                this.dimensionForm.enable();
-            }
-        }
         if (changes.piezaId && changes.piezaId.currentValue) {
             this.loadDimensiones();
         }
@@ -76,128 +49,178 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         this.subscription.unsubscribe();
     }
 
-    setDisplayedColumns(): void {
-        this.displayedColumnsDimensiones = this.mode === 'view'
-            ? this.baseDisplayedColumns
-            : [...this.baseDisplayedColumns, 'acciones'];
+    private initMainForm(): void {
+        this.dimensionesForm = this.fb.group({
+            forma: ['RECTANGULAR', Validators.required],
+            dimensiones: this.fb.array([])
+        });
+
+        this.subscription.add(
+            this.dimensionesForm.get('forma').valueChanges.subscribe(forma => {
+                this.initDimensiones(forma);
+            })
+        );
+    }
+
+    get dimensionesArray(): FormArray {
+        return this.dimensionesForm.get('dimensiones') as FormArray;
     }
 
     loadDimensiones(): void {
         if (!this.piezaId) return;
         this.isLoading = true;
+
+        const pieza$ = this.abmPiezaService.getByIdEdicion(this.piezaId);
+        const dimensiones$ = this.abmPiezaService.getDimensionesPorPieza(this.piezaId);
+
         this.subscription.add(
-            this.abmPiezaService.getDimensionesPorPieza(this.piezaId).subscribe({
-                next: (response) => {
-                    const dimensionesData = response.data || [];
-                    this.dimensiones.data = dimensionesData;
-                    this.sinDatos = dimensionesData.length === 0;
+            forkJoin([pieza$, dimensiones$]).subscribe({
+                next: ([pieza, responseDim]) => {
+                    const forma = pieza.formaDimension || 'RECTANGULAR';
+                    const dimensionesData = responseDim.data || [];
+
+                    this.dimensionesForm.patchValue({ forma }, { emitEvent: false });
+                    this.initDimensiones(forma, dimensionesData);
                     this.isLoading = false;
                 },
                 error: (err) => {
                     this.notificationService.showError('Error al cargar las dimensiones.');
                     this.isLoading = false;
-                    this.sinDatos = true;
                 }
             })
         );
     }
 
-    addOrUpdateDimension(): void {
-        if (this.dimensionForm.invalid) {
-            this.notificationService.showError('Por favor, complete todos los campos requeridos.');
+    initDimensiones(forma: 'RECTANGULAR' | 'CIRCULAR', existingData: PiezaDimension[] = []): void {
+        this.dimensionesArray.clear();
+        const tipos = forma === 'RECTANGULAR'
+            ? ['ALTO', 'ANCHO', 'PROFUNDIDAD']
+            : ['DIAMETRO', 'PROFUNDIDAD'];
+
+        tipos.forEach(tipo => {
+            const existing = existingData.find(d => d.tipo === tipo);
+
+            let toleranceData: any = {};
+            if (existing?.observaciones) {
+                try {
+                    toleranceData = JSON.parse(existing.observaciones);
+                } catch (e) {
+                    console.warn('Could not parse observations JSON for dimension:', existing.tipo);
+                }
+            }
+
+            const group = this.fb.group({
+                id: [existing?.id || null],
+                tipo: [tipo],
+                controlar: [existing?.controlar || toleranceData.controlar || false],
+                valor: [existing?.valor || null, Validators.required],
+                margen: [toleranceData.margen || null],
+                minimo: [existing?.minimo || toleranceData.minimo || null],
+                maximo: [existing?.maximo || toleranceData.maximo || null]
+            });
+
+            if (tipo !== 'PROFUNDIDAD') {
+                group.get('margen').valueChanges.subscribe(val => {
+                    this.calculateMinMax(group, val);
+                });
+
+                group.get('valor').valueChanges.subscribe(() => {
+                    const m = group.get('margen').value;
+                    if (m != null) this.calculateMinMax(group, m);
+                });
+            }
+
+            this.dimensionesArray.push(group);
+        });
+    }
+
+    calculateMinMax(group: FormGroup, margen: number | null): void {
+        if (margen == null || margen < 0) return;
+        const valor = group.get('valor').value;
+        if (valor == null) return;
+
+        const min = parseFloat((valor - margen).toFixed(3));
+        const max = parseFloat((valor + margen).toFixed(3));
+
+        group.patchValue({
+            minimo: min,
+            maximo: max
+        }, { emitEvent: false });
+    }
+
+    clearMargen(group: FormGroup): void {
+        group.get('margen').setValue(null, { emitEvent: false });
+    }
+
+    onSave(): void {
+        if (this.dimensionesForm.invalid) {
+            this.notificationService.showError('Por favor complete todos los valores requeridos.');
             return;
         }
 
         this.isLoading = true;
-        const formValue = this.dimensionForm.value;
-        const dto = { ...formValue, idPieza: this.piezaId };
+        const formValue = this.dimensionesForm.getRawValue();
+        const dimensionsToSave = formValue.dimensiones;
+        const formaToSave = formValue.forma;
 
-        if (this.editMode && this.dimensionToEdit) {
-            this.subscription.add(
-                this.abmPiezaService.actualizarDimensionDePieza(this.dimensionToEdit.id, dto).subscribe({
+        this.abmPiezaService.getDimensionesPorPieza(this.piezaId).subscribe({
+            next: (response) => {
+                const currentServerDimensions = response.data || [];
+                const allowedTypes = formaToSave === 'RECTANGULAR'
+                    ? ['ALTO', 'ANCHO', 'PROFUNDIDAD']
+                    : ['DIAMETRO', 'PROFUNDIDAD'];
+
+                const requests = [];
+
+                const toDelete = currentServerDimensions.filter(d => !allowedTypes.includes(d.tipo));
+                toDelete.forEach(d => requests.push(this.abmPiezaService.eliminarDimensionDePieza(d.id)));
+
+                dimensionsToSave.forEach(d => {
+                    const obsData = d.tipo === 'PROFUNDIDAD' ? null : JSON.stringify({
+                        controlar: !!d.controlar,
+                        margen: d.margen,
+                        minimo: d.minimo,
+                        maximo: d.maximo
+                    });
+
+                    const dto = {
+                        idPieza: this.piezaId,
+                        tipo: d.tipo,
+                        valor: d.valor,
+                        observaciones: obsData
+                    };
+
+                    const existingOnServer = currentServerDimensions.find(sd => sd.tipo === d.tipo);
+
+                    if (existingOnServer) {
+                        requests.push(this.abmPiezaService.actualizarDimensionDePieza(existingOnServer.id, dto));
+                    } else {
+                        requests.push(this.abmPiezaService.agregarDimensionAPieza(dto));
+                    }
+                });
+
+                requests.push(this.abmPiezaService.updatePiezaFormaDimension(this.piezaId, formaToSave));
+
+                forkJoin(requests).subscribe({
                     next: () => {
-                        this.notificationService.showSuccess('Dimensión actualizada correctamente.');
-                        this.cancelEdit();
+                        this.isLoading = false;
+                        this.notificationService.showSuccess('Configuración de dimensiones guardada correctamente.');
                         this.loadDimensiones();
                     },
-                    error: (err) => {
-                        this.notificationService.showError('Error al actualizar la dimensión.');
+                    error: () => {
                         this.isLoading = false;
+                        this.notificationService.showError('Error al guardar las dimensiones.');
                     }
-                })
-            );
-        } else {
-            this.subscription.add(
-                this.abmPiezaService.agregarDimensionAPieza(dto).subscribe({
-                    next: () => {
-                        this.notificationService.showSuccess('Dimensión agregada correctamente.');
-                        this.dimensionForm.reset();
-                        this.loadDimensiones();
-                    },
-                    error: (err) => {
-                        this.notificationService.showError('Error al agregar la dimensión.');
-                        this.isLoading = false;
-                    }
-                })
-            );
-        }
-    }
-
-    eliminarDimension(row: PiezaDimension): void {
-        const mensaje = this.domSanitizer.bypassSecurityTrustHtml(`¿Estás seguro de que quieres eliminar la dimensión <span class="font-bold">${row.tipo}</span>?`);
-
-        const sub = this.openConfirmationModal(mensaje).subscribe(confirmed => {
-            if (confirmed) {
-                this.isLoading = true;
-                this.subscription.add(
-                    this.abmPiezaService.eliminarDimensionDePieza(row.id).subscribe({
-                        next: () => {
-                            this.notificationService.showSuccess('Dimensión eliminada correctamente.');
-                            this.loadDimensiones();
-                        },
-                        error: (err) => {
-                            this.notificationService.showError('Error al eliminar la dimensión.');
-                            this.isLoading = false;
-                        }
-                    })
-                );
+                });
+            },
+            error: () => {
+                this.isLoading = false;
+                this.notificationService.showError('Error al sincronizar datos antes de guardar.');
             }
         });
-        this.subscription.add(sub);
     }
 
-    openConfirmationModal(message: SafeHtml): Observable<boolean> {
-        const dialogRef = this.dialog.open(GenericModalComponent, {
-            width: '400px',
-            data: {
-                title: 'Confirmar eliminación',
-                message: message,
-                showConfirmButton: true,
-                confirmButtonText: 'Eliminar',
-                cancelButtonText: 'Cancelar',
-                type: 'warning'
-            }
-        });
-        return dialogRef.afterClosed();
-    }
-
-    startEdit(dimension: PiezaDimension): void {
-        this.editMode = true;
-        this.dimensionToEdit = { ...dimension };
-        this.dimensionForm.setValue({
-            tipo: dimension.tipo,
-            valor: dimension.valor,
-            observaciones: dimension.observaciones || null
-        });
-    }
-
-    cancelEdit(): void {
-        this.editMode = false;
-        this.dimensionToEdit = null;
-        this.dimensionForm.reset();
-    }
-
-    get buttonText(): string {
-        return this.editMode ? 'Actualizar' : 'Agregar';
+    openConfigurarModal(): void {
+        this.onSave();
     }
 }

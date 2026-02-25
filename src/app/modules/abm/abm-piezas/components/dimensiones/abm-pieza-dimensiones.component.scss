@@ -1,1 +1,30 @@
 @import '../../styles/_classes.scss';
+
+.mat-form-without-wrapper {
+    ::ng-deep .mat-form-field-subscript-wrapper {
+        display: none;
+    }
+
+    ::ng-deep .mat-form-field-wrapper {
+        padding-bottom: 0;
+    }
+}
+
+.relative.w-full {
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+
+        &:hover {
+            background: #cbd5e1;
+        }
+    }
+}

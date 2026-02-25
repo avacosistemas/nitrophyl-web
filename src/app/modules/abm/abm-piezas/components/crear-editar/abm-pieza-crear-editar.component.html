@@ -1,7 +1,7 @@
 <div>
     <form #piezaFormDirective [formGroup]="piezaForm" (ngSubmit)="guardarPieza()" class="flex flex-col gap-4">
         <div class="flex gap-4 grid grid-cols-2">
-            <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
+            <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Pieza
@@ -71,7 +71,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
+            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
                 *ngIf="mode === 'create'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Cliente
@@ -119,7 +119,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4 col-span-2 md:col-span-1"
+            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4 col-span-2 md:col-span-1"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Fórmula
@@ -222,7 +222,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4"
+            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
                 *ngIf="mode === 'create'">
                 <div class="flex justify-between items-center" formGroupName="plano">
                     <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
@@ -280,7 +280,7 @@
         </div>
 
         <div class="flex gap-4 w-full">
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-4 w-1/3"
+            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl  p-8 pt-4 w-1/3"
                 *ngIf="mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Revisión
@@ -310,7 +310,7 @@
                     </div>
                 </fuse-card>
             </div>
-            <div class="flex flex-col gap-3  border-2 bg-white border-gray-200 rounded-2xl p-4 w-2/3"
+            <div class="flex flex-col gap-3  border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4 w-2/3"
                 *ngIf="mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Observaciones de la revisión

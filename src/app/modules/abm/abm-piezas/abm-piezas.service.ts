@@ -65,6 +65,10 @@ export class ABMPiezaService {
         return this.http.put<any>(`${this.API_PIEZA_URL}/${id}`, dto);
     }
 
+    updatePiezaFormaDimension(idPieza: number, forma: string): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_URL}/formaDimension/${idPieza}`, { formaDimension: forma });
+    }
+
     clonarPieza(idPieza: number): Observable<any> {
         return this.http.put(`${this.API_PIEZA_URL}/clonar/${idPieza}`, {});
     }
@@ -124,6 +128,10 @@ export class ABMPiezaService {
 
     deleteInsumoTratado(id: number): Observable<any> {
         return this.http.delete(`${this.API_INSUMO_TRATADO_URL}/${id}`);
+    }
+
+    updateInsumosTratadosCantidad(idPieza: number, data: { requiereInsumos: boolean, cantidadInsumos: number }): Observable<any> {
+        return this.http.put(`${this.API_INSUMO_TRATADO_URL}/cantidad/${idPieza}`, data);
     }
 
     updateMoldeo(idProceso: number, moldeoData: any): Observable<any> {
