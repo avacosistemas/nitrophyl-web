@@ -1,4 +1,8 @@
 import { Component, Input, Output, EventEmitter, TemplateRef } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { HelpService } from 'app/core/services/help.service';
+import { DynamicHelpModalComponent } from 'app/shared/components/dynamic-help/dynamic-help-modal.component';
 
 export interface HeaderButton {
   type: 'flat' | 'stroked';
@@ -11,8 +15,8 @@ export interface HeaderButton {
 export interface Breadcrumb {
   title: string;
   label: string;
-  route?: string | any[]; // Hacemos la ruta opcional para mantener compatibilidad
-  condition?: boolean; // Agregamos condición opcional
+  route?: string | any[];
+  condition?: boolean;
 }
 
 @Component({
@@ -29,25 +33,41 @@ export class HeaderComponent {
 
   @Output() buttonAction = new EventEmitter<string>();
 
-  // Método para obtener las clases del botón
+  constructor(
+    private _matDialog: MatDialog,
+    private _router: Router,
+    private _helpService: HelpService
+  ) { }
+
   getButtonClass(type: 'flat' | 'stroked'): string {
     return type === 'flat'
       ? 'mat-focus-indicator mat-flat-button mat-button-base mat-accent'
       : 'mat-focus-indicator mat-stroked-button mat-button-base';
   }
 
-  // Método para manejar clics en los botones
   handleButtonClick(action: string): void {
     this.buttonAction.emit(action);
   }
 
-  // Método helper para verificar si una ruta es válida
   hasValidRoute(breadcrumb: Breadcrumb): boolean {
     return !!breadcrumb.route;
   }
 
-  // Método para filtrar los breadcrumbs con base en las condiciones
   getFilteredBreadcrumbs(): Breadcrumb[] {
     return this.breadcrumbs.filter(breadcrumb => breadcrumb.condition !== false);
+  }
+
+  openHelp(): void {
+    const currentUrl = this._router.url;
+    const normalizedPath = this._helpService.normalizeUrl(currentUrl);
+
+    this._matDialog.open(DynamicHelpModalComponent, {
+      width: '800px',
+      panelClass: 'help-modal-no-padding',
+      data: {
+        path: normalizedPath
+      },
+      autoFocus: false
+    });
   }
 }

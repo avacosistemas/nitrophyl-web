@@ -1,0 +1,59 @@
+<div class="flex flex-col max-h-screen-95 min-w-95 sm:min-w-120 md:min-w-180">
+    <div class="flex items-center justify-between px-8 py-5 border-b bg-gray-50 dark:bg-transparent">
+        <h2 class="text-2xl font-extrabold tracking-tight">Ayuda</h2>
+        <button mat-icon-button (click)="onClose()">
+            <mat-icon svgIcon="heroicons_outline:x"></mat-icon>
+        </button>
+    </div>
+
+    <div class="relative flex-auto overflow-y-auto" [ngClass]="{'p-6': !isEditing, 'p-0': isEditing}"
+        style="min-height: 330px;max-height: calc(100vh - 300px);">
+        <div *ngIf="isLoading" class="absolute inset-0 bg-white bg-opacity-75 z-20 flex items-center justify-center">
+            <mat-progress-spinner color="primary" mode="indeterminate" [diameter]="48"></mat-progress-spinner>
+        </div>
+
+        <ng-container *ngIf="!isLoading || isEditing">
+            <ng-container *ngIf="!isEditing; else editingTemplate">
+                <div *ngIf="content; else noContent" [innerHTML]="content" class="prose max-w-none dark:prose-invert">
+                </div>
+                <ng-template #noContent>
+                    <div class="flex flex-col items-center justify-center py-20 text-secondary">
+                        <mat-icon class="icon-size-16 mb-4 opacity-50"
+                            svgIcon="heroicons_outline:document-search"></mat-icon>
+                        <span class="text-lg">No hay información de ayuda disponible para esta pantalla.</span>
+                    </div>
+                </ng-template>
+            </ng-container>
+
+            <ng-template #editingTemplate>
+                <quill-editor [(ngModel)]="editContent" [modules]="quillModules"
+                    placeholder="Escribe la ayuda para esta pantalla aquí..." class="w-full">
+                </quill-editor>
+            </ng-template>
+        </ng-container>
+    </div>
+
+    <div class="flex items-center justify-between px-8 py-5 border-t bg-gray-50 dark:bg-transparent">
+        <div *ngIf="isEditing" class="text-xs text-secondary italic opacity-60">
+            ID: {{ path }}
+        </div>
+        <div class="flex items-center gap-3 w-full justify-end">
+            <button *ngIf="!isEditing" mat-stroked-button (click)="onClose()" class="px-8 rounded-full">
+                Cerrar
+            </button>
+            <ng-container *ngIf="canEdit">
+                <button *ngIf="!isEditing" mat-flat-button color="accent" (click)="toggleEdit()">
+                    Editar Ayuda
+                </button>
+                <ng-container *ngIf="isEditing">
+                    <button mat-stroked-button (click)="toggleEdit()" class="px-8 rounded-full">
+                        Cancelar
+                    </button>
+                    <button mat-flat-button color="accent" (click)="saveHelp()">
+                        Guardar Cambios
+                    </button>
+                </ng-container>
+            </ng-container>
+        </div>
+    </div>
+</div>

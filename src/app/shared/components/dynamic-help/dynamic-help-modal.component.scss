@@ -1,0 +1,75 @@
+.help-modal-no-padding {
+    mat-dialog-container {
+        padding: 0 !important;
+        border-radius: 16px !important;
+        overflow: hidden !important;
+    }
+}
+
+app-dynamic-help-modal {
+    .ql-toolbar {
+        border-top: none !important;
+        border-left: none !important;
+        border-right: none !important;
+        background-color: #f8fafc;
+    }
+
+    .ql-container {
+        font-family: inherit !important;
+        border: none !important;
+    }
+
+    .ql-editor {
+        min-height: 100% !important;
+        max-height: 100% !important;
+        height: 340px !important;
+        border: 0px !important;
+        box-shadow: none !important;
+        font-size: 15px !important;
+    }
+
+    .prose,
+    .ql-editor {
+        h1 {
+            font-size: 1.875rem !important;
+            margin-top: 1.5rem !important;
+            margin-bottom: 0.75rem !important;
+            font-weight: 800 !important;
+            line-height: 1.2 !important;
+        }
+
+        h2 {
+            font-size: 1.5rem !important;
+            margin-top: 1.25rem !important;
+            margin-bottom: 0.5rem !important;
+            font-weight: 700 !important;
+        }
+
+        p {
+            margin-bottom: 1rem !important;
+            line-height: 1.6 !important;
+        }
+
+        ul,
+        ol {
+            margin-left: 1.5rem !important;
+            margin-bottom: 1.25rem !important;
+        }
+
+        ul {
+            list-style-type: disc !important;
+        }
+
+        ol {
+            list-style-type: decimal !important;
+        }
+
+        li {
+            margin-bottom: 0.5rem !important;
+        }
+    }
+
+    .prose {
+        max-width: none;
+    }
+}
