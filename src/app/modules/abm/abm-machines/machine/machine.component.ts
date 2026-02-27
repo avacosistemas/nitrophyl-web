@@ -312,14 +312,14 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.form.controls.norma.setValue(data[0].norma);
           this.form.controls.versionable.setValue(!!data[0].versionable);
           this.form.controls.observacionesReporte.setValue(data[0].observacionesReporte);
-
+          
           if (data[0].fechaUltimaCalibracion) {
             const dateObj = new Date(data[0].fechaUltimaCalibracion as string);
             if (!isNaN(dateObj.getTime())) {
               this.form.controls.fechaUltimaCalibracion.setValue(dateObj);
             }
           }
-          this.form.controls.periodicidad.setValue(data[0].periodicidad);
+          this.form.controls.perioricidadCalibracion.setValue(data[0].perioricidadCalibracion);
 
           this.cd.detectChanges();
         }
@@ -342,7 +342,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
       fechaUltimaCalibracion: fechaCalibracionStr,
-      periodicidad: this.form.controls.periodicidad.value,
+      perioricidadCalibracion: this.form.controls.perioricidadCalibracion.value,
     };
     this._machines.post(body).subscribe({
       next: (res: IMachineResponse) => {
@@ -381,7 +381,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       versionable: this.form.controls.versionable.value,
       observacionesReporte: this.form.controls.observacionesReporte.value,
       fechaUltimaCalibracion: fechaCalibracionStr,
-      periodicidad: this.form.controls.periodicidad.value,
+      perioricidadCalibracion: this.form.controls.perioricidadCalibracion.value,
     };
     this._machines.put(body).subscribe({
       next: (res: IMachineResponse) => {
@@ -440,7 +440,7 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
       fechaUltimaCalibracion: [
         { value: null, disabled: this.mode === 'View' }
       ],
-      periodicidad: [
+      perioricidadCalibracion: [
         { value: null, disabled: this.mode === 'View' },
         Validators.min(1)
       ],

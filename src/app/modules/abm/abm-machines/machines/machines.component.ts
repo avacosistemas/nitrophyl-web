@@ -24,7 +24,7 @@ export class MachinesComponent implements OnInit, AfterViewInit {
   public form: FormGroup;
 
   public machines$: BehaviorSubject<IMachine[]> = new BehaviorSubject<IMachine[]>([]);
-  public displayedColumns: string[] = ['position', 'name', 'status', 'actions'];
+  public displayedColumns: string[] = ['position', 'name', 'fechaUltimaCalibracion', 'perioricidadCalibracion', 'status', 'actions'];
 
   public showSuccess: boolean = false;
   public showError: boolean = false;

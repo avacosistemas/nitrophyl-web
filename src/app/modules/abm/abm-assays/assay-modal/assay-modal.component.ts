@@ -515,7 +515,7 @@ export class AssayModalComponent implements OnInit {
     }
 
     private _checkCalibration(machine: IMachine): void {
-        if (!machine || !machine.fechaUltimaCalibracion || !machine.periodicidad) {
+        if (!machine || !machine.fechaUltimaCalibracion || !machine.perioricidadCalibracion) {
             setTimeout(() => {
                 this.dialog.open(GenericModalComponent, {
                     width: '450px',
@@ -544,7 +544,7 @@ export class AssayModalComponent implements OnInit {
         }
 
         const expirationDate = new Date(lastCalibrationDate);
-        expirationDate.setDate(expirationDate.getDate() + machine.periodicidad);
+        expirationDate.setDate(expirationDate.getDate() + machine.perioricidadCalibracion);
         const today = new Date();
 
         today.setHours(0, 0, 0, 0);

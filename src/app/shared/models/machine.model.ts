@@ -13,7 +13,7 @@ export interface IMachine {
   observacionesReporte?: string;
   idMaquina?: number;
   fechaUltimaCalibracion?: string | Date;
-  periodicidad?: number;
+  perioricidadCalibracion?: number;
 }
 
 export type IMachineResponse = IResponse<IMachine[]>;
