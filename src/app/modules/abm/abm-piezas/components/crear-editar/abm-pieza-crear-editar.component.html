@@ -1,7 +1,7 @@
 <div>
     <form #piezaFormDirective [formGroup]="piezaForm" (ngSubmit)="guardarPieza()" class="flex flex-col gap-4">
-        <div class="flex gap-4 grid grid-cols-2">
-            <div class="flex flex-col gap-4 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
+        <div class="columns-1 lg:columns-2 gap-4">
+            <div class="break-inside-avoid mb-4 flex flex-col gap-4 border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Pieza
@@ -71,7 +71,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
+            <div class="break-inside-avoid mb-4 flex flex-col gap-3 border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
                 *ngIf="mode === 'create'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Cliente
@@ -119,7 +119,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4 col-span-2 md:col-span-1"
+            <div class="break-inside-avoid mb-4 flex flex-col gap-3 border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
                 *ngIf="mode === 'create' || mode === 'edit' || mode === 'view'">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Fórmula
@@ -222,7 +222,7 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
+            <div class="break-inside-avoid mb-4 flex flex-col gap-3 border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4"
                 *ngIf="mode === 'create'">
                 <div class="flex justify-between items-center" formGroupName="plano">
                     <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
@@ -278,56 +278,57 @@
                 </div>
             </div>
 
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4">
+            <div
+                class="break-inside-avoid mb-4 flex flex-col gap-3 border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4">
                 <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
                     Dimensiones
                 </span>
                 <app-abm-pieza-dimensiones [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-dimensiones>
             </div>
 
-        </div>
-
-        <div class="flex gap-4 w-full">
-            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl  p-8 pt-4 w-1/3"
-                *ngIf="mode === 'edit' || mode === 'view'">
-                <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
-                    Revisión
-                </span>
-                <fuse-card class="flex flex-col px-8 pb-4" #fuseCard>
-                    <div class="justify-between h-full items-center"
-                        [ngClass]="(pieza?.revision !== null && pieza?.revision >= 0) ? 'flex_col' : 'flex'">
-                        <div *ngIf="pieza?.revision !== null" class="mt-2 flex flex-col items-center">
-                            <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
-                                {{ pieza?.revision }}
-                            </div>
-                            <div class="text-secondary mt-1 flex w-full items-baseline justify-center">
-                                <div class="ml-1.5 text-lg font-semibold flex items-center gap-2">
-                                    <mat-icon [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
-                                    <p>{{ pieza?.fechaRevision | date: 'dd/MM/yyyy' }}</p>
+            <div class="flex gap-4 w-full">
+                <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl  p-8 pt-4 w-1/3"
+                    *ngIf="mode === 'edit' || mode === 'view'">
+                    <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                        Revisión
+                    </span>
+                    <fuse-card class="flex flex-col px-8 pb-4" #fuseCard>
+                        <div class="justify-between h-full items-center"
+                            [ngClass]="(pieza?.revision !== null && pieza?.revision >= 0) ? 'flex_col' : 'flex'">
+                            <div *ngIf="pieza?.revision !== null" class="mt-2 flex flex-col items-center">
+                                <div class="text-7xl font-bold leading-none tracking-tight text-blue-500 sm:text-8xl">
+                                    {{ pieza?.revision }}
+                                </div>
+                                <div class="text-secondary mt-1 flex w-full items-baseline justify-center">
+                                    <div class="ml-1.5 text-lg font-semibold flex items-center gap-2">
+                                        <mat-icon [svgIcon]="'heroicons_solid:calendar'"></mat-icon>
+                                        <p>{{ pieza?.fechaRevision | date: 'dd/MM/yyyy' }}</p>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="mt-2 flex justify-center w-full"
+                                *ngIf="mode === 'edit' && ('PROCESOS_PIEZAS_GENERAR_REVISION' | hasPermission)">
+                                <button type="button" mat-flat-button (click)="generarNuevaRevision()" style="min-width: auto !important;"
+                                    class="mat-focus-indicator mat-flat-button mat-button-base mat-accent">
+                                    <span class="mat-button-wrapper">Generar Nueva</span>
+                                    <span matripple="" class="mat-ripple mat-button-ripple"></span>
+                                </button>
+                            </div>
                         </div>
-                        <div class="mt-2 flex justify-center w-full"
-                            *ngIf="mode === 'edit' && ('PROCESOS_PIEZAS_GENERAR_REVISION' | hasPermission)">
-                            <button type="button" mat-flat-button (click)="generarNuevaRevision()"
-                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent">
-                                <span class="mat-button-wrapper">Generar Nueva Revisión</span>
-                                <span matripple="" class="mat-ripple mat-button-ripple"></span>
-                            </button>
-                        </div>
-                    </div>
-                </fuse-card>
-            </div>
-            <div class="flex flex-col gap-3  border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4 w-2/3"
-                *ngIf="mode === 'edit' || mode === 'view'">
-                <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
-                    Observaciones de la revisión
-                </span>
-                <mat-form-field appearance="outline" class="form-field w-full">
-                    <mat-label>Observaciones</mat-label>
-                    <textarea matInput formControlName="observacionesRevision" rows="4"></textarea>
-                </mat-form-field>
+                    </fuse-card>
+                </div>
+                <div class="flex flex-col gap-3  border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4 w-2/3"
+                    *ngIf="mode === 'edit' || mode === 'view'">
+                    <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                        Observaciones de la revisión
+                    </span>
+                    <mat-form-field appearance="outline" class="form-field w-full">
+                        <mat-label>Observaciones</mat-label>
+                        <textarea matInput formControlName="observacionesRevision" rows="4"></textarea>
+                    </mat-form-field>
+                </div>
             </div>
         </div>
+
     </form>
 </div>

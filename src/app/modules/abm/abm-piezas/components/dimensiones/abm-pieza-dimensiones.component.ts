@@ -121,16 +121,14 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
                 maximo: [existing?.maximo || toleranceData.maximo || null]
             });
 
-            if (tipo !== 'PROFUNDIDAD') {
-                group.get('margen').valueChanges.subscribe(val => {
-                    this.calculateMinMax(group, val);
-                });
+            group.get('margen').valueChanges.subscribe(val => {
+                this.calculateMinMax(group, val);
+            });
 
-                group.get('valor').valueChanges.subscribe(() => {
-                    const m = group.get('margen').value;
-                    if (m != null) this.calculateMinMax(group, m);
-                });
-            }
+            group.get('valor').valueChanges.subscribe(() => {
+                const m = group.get('margen').value;
+                if (m != null) this.calculateMinMax(group, m);
+            });
 
             this.dimensionesArray.push(group);
         });
@@ -187,9 +185,9 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
                         idPieza: this.piezaId,
                         tipo: d.tipo,
                         valor: d.valor,
-                        controlar: d.tipo === 'PROFUNDIDAD' ? false : !!d.controlar,
-                        minimo: d.tipo === 'PROFUNDIDAD' ? null : (d.minimo ?? null),
-                        maximo: d.tipo === 'PROFUNDIDAD' ? null : (d.maximo ?? null),
+                        controlar: !!d.controlar,
+                        minimo: d.minimo ?? null,
+                        maximo: d.maximo ?? null,
                         observaciones: null
                     };
 

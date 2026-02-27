@@ -201,19 +201,30 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
 
   onRequiereInsumosChange(event: any): void {
     const newValue = event.checked;
-    if (!newValue && this.initialRequiereInsumos && this.insumosPieza.data.length > 0) {
-      const message = this.sanitizer.bypassSecurityTrustHtml(
-        'Al desactivar "Requiere Insumos", se perderán todos los insumos cargados para esta pieza. <br><br> ¿Desea continuar?'
-      );
 
-      this.openConfirmationModal(message, 'Atención', 'Continuar', 'warning').subscribe(confirmed => {
-        if (!confirmed) {
-          this.insumosForm.get('requiereInsumos').setValue(true, { emitEvent: false });
-        } else {
-          this.initialRequiereInsumos = false;
-        }
+    if (!newValue && this.initialRequiereInsumos) {
+      if (this.insumosPieza.data.length > 0) {
+        const message = this.sanitizer.bypassSecurityTrustHtml(
+          'Al desactivar "Requiere Insumos", se perderán todos los insumos cargados para esta pieza. <br><br> ¿Desea continuar?'
+        );
+
+        this.openConfirmationModal(message, 'Atención', 'Continuar', 'warning').subscribe(confirmed => {
+          if (!confirmed) {
+            this.insumosForm.get('requiereInsumos').setValue(true, { emitEvent: false });
+            this.abmPiezaService.events.next({ refreshButtonState: true });
+          } else {
+            this.initialRequiereInsumos = false;
+            this.insumosForm.get('cantidadInsumos').setValue(null);
+            this.guardarCantidad();
+            this.abmPiezaService.events.next({ refreshButtonState: true });
+          }
+        });
+      } else {
+        this.initialRequiereInsumos = false;
+        this.insumosForm.get('cantidadInsumos').setValue(null);
+        this.guardarCantidad();
         this.abmPiezaService.events.next({ refreshButtonState: true });
-      });
+      }
     } else {
       this.initialRequiereInsumos = newValue;
       this.abmPiezaService.events.next({ refreshButtonState: true });
