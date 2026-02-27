@@ -277,6 +277,14 @@
                     </mat-form-field>
                 </div>
             </div>
+
+            <div class="flex flex-col gap-3 h-fit border-2 bg-white border-gray-200 rounded-2xl p-8 pt-4">
+                <span class="text-xl md:text-xl font-extrabold tracking-tight leading-7 sm:leading-10 truncate">
+                    Dimensiones
+                </span>
+                <app-abm-pieza-dimensiones [piezaId]="piezaId" [mode]="mode"></app-abm-pieza-dimensiones>
+            </div>
+
         </div>
 
         <div class="flex gap-4 w-full">

@@ -4,13 +4,15 @@ import {
     Input,
     OnDestroy,
     OnChanges,
-    SimpleChanges
+    SimpleChanges,
+    ViewChild
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { PiezaProceso, PiezaCreateDTO, PiezaUpdateDTO, Molde, Espesor } from '../../models/pieza.model';
+import { ABMPiezaDimensionesComponent } from '../dimensiones/abm-pieza-dimensiones.component';
 import { Observable, of, combineLatest, forkJoin, throwError, merge } from 'rxjs';
 import { map, startWith, catchError, debounceTime, switchMap, filter } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
@@ -40,6 +42,7 @@ interface ForkJoinResults {
 export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() piezaId: number | null = null;
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
+    @ViewChild(ABMPiezaDimensionesComponent) dimensionesComponent: ABMPiezaDimensionesComponent;
     piezaForm: FormGroup;
     espesorForm: FormGroup;
     espesoresDataSource = new MatTableDataSource<Espesor>([]);
@@ -540,6 +543,9 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             next: () => {
                 this.notificationService.showSuccess('Pieza actualizada correctamente.');
                 this.piezaForm.markAsPristine();
+                if (this.dimensionesComponent) {
+                    this.dimensionesComponent.onSave();
+                }
             },
             error: (error) => { this.notificationService.showError('Error al actualizar la pieza.'); }
         });

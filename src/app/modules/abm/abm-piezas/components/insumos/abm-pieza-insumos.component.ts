@@ -78,6 +78,10 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
     }
   }
 
+  get requiereInsumosActivo(): boolean {
+    return !!this.insumosForm?.get('requiereInsumos')?.value;
+  }
+
   setDisplayedColumns(): void {
     const baseCols = ['nombreInsumo', 'tipo', 'unidades', 'medidaDetallada', 'tratamiento', 'adhesivos'];
     this.displayedColumns = this.mode === 'view' ? baseCols : [...baseCols, 'acciones'];
@@ -137,30 +141,19 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
 
   hasControllingObservation(obsData: string | any[]): boolean {
     if (!obsData) return false;
-    let observaciones: any[] = [];
-    if (typeof obsData === 'string') {
-      try {
-        observaciones = JSON.parse(obsData);
-      } catch (e) {
-        return false;
-      }
-    } else {
-      observaciones = obsData;
-    }
+    const observaciones = Array.isArray(obsData) ? obsData : (() => {
+      try { return JSON.parse(obsData as string); } catch { return []; }
+    })();
     return observaciones?.some(obs => obs.controlar) || false;
   }
 
   getObservationsCount(obsData: string | any[]): number {
     if (!obsData) return 0;
-    if (typeof obsData === 'string') {
-      try {
-        const parsed = JSON.parse(obsData);
-        return Array.isArray(parsed) ? parsed.length : 1;
-      } catch (e) {
-        return 1;
-      }
-    }
-    return Array.isArray(obsData) ? obsData.length : 0;
+    if (Array.isArray(obsData)) return obsData.length;
+    try {
+      const parsed = JSON.parse(obsData as string);
+      return Array.isArray(parsed) ? parsed.length : 1;
+    } catch { return 1; }
   }
 
   eliminarInsumo(insumo: IInsumoTratado): void {
@@ -219,9 +212,11 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
         } else {
           this.initialRequiereInsumos = false;
         }
+        this.abmPiezaService.events.next({ refreshButtonState: true });
       });
     } else {
       this.initialRequiereInsumos = newValue;
+      this.abmPiezaService.events.next({ refreshButtonState: true });
     }
   }
 
@@ -263,14 +258,14 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
     if (!obsData) return;
 
     let observaciones: any[] = [];
-    if (typeof obsData === 'string') {
+    if (Array.isArray(obsData)) {
+      observaciones = obsData;
+    } else if (typeof obsData === 'string') {
       try {
         observaciones = JSON.parse(obsData);
       } catch (e) {
         observaciones = [{ observacion: obsData, controlar: false }];
       }
-    } else {
-      observaciones = obsData;
     }
 
     if (observaciones.length === 0) return;

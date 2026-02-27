@@ -235,10 +235,10 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       idPieza: this.data.idPieza,
       idInsumo: insumoSeleccionado.id,
       observaciones: this.observacionesLista.length > 0
-        ? JSON.stringify(this.observacionesLista.map(o => ({
+        ? this.observacionesLista.map(o => ({
           observacion: o.observacion,
           controlar: !!o.controlar
-        })))
+        }))
         : null,
       tratamientos: this.tratamientosSeleccionados.map(t => ({ id: t.id })),
       adhesivos: this.adhesivosSeleccionados.map(a => ({ id: a.id })),
@@ -295,15 +295,14 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
         unidadMedidaLongitud: insumoData.unidadMedidaLongitud
       });
 
-      if (typeof insumoData.observaciones === 'string' && insumoData.observaciones.trim() !== '') {
+      if (Array.isArray(insumoData.observaciones)) {
+        this.observacionesLista = [...insumoData.observaciones];
+      } else if (typeof insumoData.observaciones === 'string' && insumoData.observaciones.trim() !== '') {
         try {
           this.observacionesLista = JSON.parse(insumoData.observaciones);
         } catch (e) {
-          console.warn('Error parsing observations JSON, falling back to string:', insumoData.observaciones);
           this.observacionesLista = [{ observacion: insumoData.observaciones, controlar: false }];
         }
-      } else if (Array.isArray(insumoData.observaciones)) {
-        this.observacionesLista = [...insumoData.observaciones];
       } else {
         this.observacionesLista = [];
       }

@@ -13,14 +13,16 @@
                 </mat-slide-toggle>
             </div>
 
-            <mat-form-field appearance="outline" class="w-48 hide-subscript">
-                <mat-label>Cantidad de Insumos</mat-label>
-                <input matInput type="number" formControlName="cantidadInsumos" placeholder="123">
-            </mat-form-field>
+            <ng-container *ngIf="insumosForm.get('requiereInsumos').value">
+                <mat-form-field appearance="outline" class="w-48 hide-subscript">
+                    <mat-label>Cantidad de Insumos</mat-label>
+                    <input matInput type="number" formControlName="cantidadInsumos" placeholder="123">
+                </mat-form-field>
+            </ng-container>
         </div>
 
-        <button mat-flat-button color="primary" class="mat-accent" (click)="guardarCantidad()"
-            [disabled]="mode === 'view' || isLoading">
+        <button *ngIf="insumosForm.get('requiereInsumos').value" mat-flat-button color="primary" class="mat-accent"
+            (click)="guardarCantidad()" [disabled]="mode === 'view' || isLoading">
             Guardar
         </button>
     </div>

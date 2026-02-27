@@ -25,7 +25,6 @@ import { ABMPiezaEsquemaComponent } from '../esquema/abm-pieza-esquema.component
 import { ABMPiezaDesmoldantePostcuraComponent } from '../desmoldante-postcura/abm-pieza-desmoldante-postcura.component';
 import { ABMPiezaFinalizacionComponent } from '../finalizacion/abm-pieza-finalizacion.component';
 import { ABMPiezaMoldesComponent } from '../moldes/abm-pieza-moldes.component';
-import { ABMPiezaDimensionesComponent } from '../dimensiones/abm-pieza-dimensiones.component';
 import { ABMPiezaClientesComponent } from '../clientes/abm-pieza-clientes.component';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
@@ -46,7 +45,6 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
     @ViewChild(ABMPiezaFinalizacionComponent) abmPiezaFinalizacionComponent: ABMPiezaFinalizacionComponent;
 
     @ViewChild(ABMPiezaMoldesComponent) abmPiezaMoldesComponent: ABMPiezaMoldesComponent;
-    @ViewChild(ABMPiezaDimensionesComponent) abmPiezaDimensionesComponent: ABMPiezaDimensionesComponent;
     @ViewChild(ABMPiezaClientesComponent) abmPiezaClientesComponent: ABMPiezaClientesComponent;
 
     piezaId: number | null = null;
@@ -93,6 +91,12 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
             this.abmPiezaService.buttonState$.subscribe(state => {
                 if (state && state.nombrePieza) {
                     this.nombrePieza = state.nombrePieza;
+                }
+            }),
+
+            this.abmPiezaService.events.subscribe(event => {
+                if (event && event.refreshButtonState) {
+                    this.actualizarEstadoBotones();
                 }
             })
         );
@@ -184,8 +188,10 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                     this.botonEdicionTexto = this.mode === 'create' ? 'Crear Pieza' : 'Guardar Pieza';
                     break;
                 case 2: // Insumos
-                    this.mostrarBotonEdicion = true;
-                    this.botonEdicionTexto = 'Añadir Insumo';
+                    if (this.abmPiezaInsumosComponent?.requiereInsumosActivo) {
+                        this.mostrarBotonEdicion = true;
+                        this.botonEdicionTexto = 'Añadir Insumo';
+                    }
                     break;
                 case 3: // Moldeo
                     this.mostrarBotonEdicion = true;
@@ -203,12 +209,11 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Pieza Terminada';
                     break;
-                case 7: // Dimensiones
+                case 7: // Clientes
                     this.mostrarBotonEdicion = true;
-                    this.botonEdicionTexto = 'Guardar';
+                    this.botonEdicionTexto = 'Agregar Cliente';
                     break;
-                case 8: // Clientes
-                case 9: // Planos
+                case 8: // Planos
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Subir Plano';
                     break;
@@ -245,12 +250,9 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                 this.onGuardarFinalizacion();
                 break;
             case 7:
-                this.abrirModalConfigurarDimensiones();
-                break;
-            case 8:
                 this.abrirModalAgregarCliente();
                 break;
-            case 9:
+            case 8:
                 this.abrirModalSubirPlano();
                 break;
         }
@@ -326,9 +328,4 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
         });
     }
 
-    abrirModalConfigurarDimensiones(): void {
-        if (this.abmPiezaDimensionesComponent) {
-            this.abmPiezaDimensionesComponent.openConfigurarModal();
-        }
-    }
 }

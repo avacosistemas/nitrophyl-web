@@ -36,6 +36,8 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     ngOnInit(): void {
         if (this.piezaId) {
             this.loadDimensiones();
+        } else {
+            this.initDimensiones(this.dimensionesForm.get('forma').value as 'RECTANGULAR' | 'CIRCULAR');
         }
     }
 
@@ -153,6 +155,11 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     }
 
     onSave(): void {
+        if (!this.piezaId) {
+            this.notificationService.showError('Debe guardar la pieza primero para poder guardar dimensiones.');
+            return;
+        }
+
         if (this.dimensionesForm.invalid) {
             this.notificationService.showError('Por favor complete todos los valores requeridos.');
             return;
@@ -176,18 +183,14 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
                 toDelete.forEach(d => requests.push(this.abmPiezaService.eliminarDimensionDePieza(d.id)));
 
                 dimensionsToSave.forEach(d => {
-                    const obsData = d.tipo === 'PROFUNDIDAD' ? null : JSON.stringify({
-                        controlar: !!d.controlar,
-                        margen: d.margen,
-                        minimo: d.minimo,
-                        maximo: d.maximo
-                    });
-
                     const dto = {
                         idPieza: this.piezaId,
                         tipo: d.tipo,
                         valor: d.valor,
-                        observaciones: obsData
+                        controlar: d.tipo === 'PROFUNDIDAD' ? false : !!d.controlar,
+                        minimo: d.tipo === 'PROFUNDIDAD' ? null : (d.minimo ?? null),
+                        maximo: d.tipo === 'PROFUNDIDAD' ? null : (d.maximo ?? null),
+                        observaciones: null
                     };
 
                     const existingOnServer = currentServerDimensions.find(sd => sd.tipo === d.tipo);
