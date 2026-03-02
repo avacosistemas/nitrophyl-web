@@ -3,7 +3,7 @@ import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { PiezaDimension } from '../../models/pieza.model';
-import { Observable, Subscription, of, forkJoin } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
@@ -72,14 +72,11 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         if (!this.piezaId) return;
         this.isLoading = true;
 
-        const pieza$ = this.abmPiezaService.getByIdEdicion(this.piezaId);
-        const dimensiones$ = this.abmPiezaService.getDimensionesPorPieza(this.piezaId);
-
         this.subscription.add(
-            forkJoin([pieza$, dimensiones$]).subscribe({
-                next: ([pieza, responseDim]) => {
+            this.abmPiezaService.getByIdEdicion(this.piezaId).subscribe({
+                next: (pieza) => {
                     const forma = pieza.formaDimension || 'RECTANGULAR';
-                    const dimensionesData = responseDim.data || [];
+                    const dimensionesData = pieza.dimensiones || [];
 
                     this.dimensionesForm.patchValue({ forma }, { emitEvent: false });
                     this.initDimensiones(forma, dimensionesData);
@@ -152,76 +149,22 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         group.get('margen').setValue(null, { emitEvent: false });
     }
 
-    onSave(): void {
-        if (!this.piezaId) {
-            this.notificationService.showError('Debe guardar la pieza primero para poder guardar dimensiones.');
-            return;
-        }
-
-        if (this.dimensionesForm.invalid) {
-            this.notificationService.showError('Por favor complete todos los valores requeridos.');
-            return;
-        }
-
-        this.isLoading = true;
+    getDimensionesData(): { dimensions: PiezaDimension[], forma: string } {
         const formValue = this.dimensionesForm.getRawValue();
-        const dimensionsToSave = formValue.dimensiones;
-        const formaToSave = formValue.forma;
+        return {
+            dimensions: formValue.dimensiones.map(d => {
+                const { id, idPieza, ...rest } = d;
+                return rest;
+            }),
+            forma: formValue.forma
+        };
+    }
 
-        this.abmPiezaService.getDimensionesPorPieza(this.piezaId).subscribe({
-            next: (response) => {
-                const currentServerDimensions = response.data || [];
-                const allowedTypes = formaToSave === 'RECTANGULAR'
-                    ? ['ALTO', 'ANCHO', 'PROFUNDIDAD']
-                    : ['DIAMETRO', 'PROFUNDIDAD'];
-
-                const requests = [];
-
-                const toDelete = currentServerDimensions.filter(d => !allowedTypes.includes(d.tipo));
-                toDelete.forEach(d => requests.push(this.abmPiezaService.eliminarDimensionDePieza(d.id)));
-
-                dimensionsToSave.forEach(d => {
-                    const dto = {
-                        idPieza: this.piezaId,
-                        tipo: d.tipo,
-                        valor: d.valor,
-                        controlar: !!d.controlar,
-                        minimo: d.minimo ?? null,
-                        maximo: d.maximo ?? null,
-                        observaciones: null
-                    };
-
-                    const existingOnServer = currentServerDimensions.find(sd => sd.tipo === d.tipo);
-
-                    if (existingOnServer) {
-                        requests.push(this.abmPiezaService.actualizarDimensionDePieza(existingOnServer.id, dto));
-                    } else {
-                        requests.push(this.abmPiezaService.agregarDimensionAPieza(dto));
-                    }
-                });
-
-                requests.push(this.abmPiezaService.updatePiezaFormaDimension(this.piezaId, formaToSave));
-
-                forkJoin(requests).subscribe({
-                    next: () => {
-                        this.isLoading = false;
-                        this.notificationService.showSuccess('Configuración de dimensiones guardada correctamente.');
-                        this.loadDimensiones();
-                    },
-                    error: () => {
-                        this.isLoading = false;
-                        this.notificationService.showError('Error al guardar las dimensiones.');
-                    }
-                });
-            },
-            error: () => {
-                this.isLoading = false;
-                this.notificationService.showError('Error al sincronizar datos antes de guardar.');
-            }
-        });
+    onSave(): void {
+        //
     }
 
     openConfigurarModal(): void {
-        this.onSave();
+        //
     }
 }

@@ -28,6 +28,18 @@ export interface Espesor {
     max: number;
 }
 
+export interface PiezaDimension {
+    id?: number;
+    idPieza?: number;
+    tipo: string;
+    valor: number;
+    minimo?: number;
+    maximo?: number;
+    controlar: boolean;
+    observaciones?: string;
+    margen?: number;
+}
+
 export interface PiezaProceso {
     id: number;
     denominacion: string;
@@ -58,6 +70,7 @@ export interface PiezaProceso {
     requiereInsumos?: boolean;
     cantidadInsumos?: number;
     formaDimension?: 'RECTANGULAR' | 'CIRCULAR' | null;
+    dimensiones?: PiezaDimension[];
 }
 
 export interface PiezaCreateDTO {
@@ -85,6 +98,8 @@ export interface PiezaCreateDTO {
     revisionIncial: number;
     unidadDureza: string;
     hojaProceso?: string;
+    dimensiones?: PiezaDimension[];
+    formaDimension?: string;
 }
 
 export interface PiezaUpdateDTO {
@@ -99,6 +114,8 @@ export interface PiezaUpdateDTO {
     observacionesPesoCrudo: string | null;
     observacionesRevision: string | null;
     hojaProceso?: string;
+    dimensiones?: PiezaDimension[];
+    formaDimension?: string;
 }
 
 export interface PiezaCliente {
@@ -113,16 +130,6 @@ export interface PiezaCliente {
     observacionesCotizacion?: string;
 }
 
-export interface PiezaDimension {
-    id: number;
-    idPieza: number;
-    tipo: string;
-    valor: number;
-    minimo?: number;
-    maximo?: number;
-    controlar: boolean;
-    observaciones?: string;
-}
 
 export interface Plano {
     id: number;

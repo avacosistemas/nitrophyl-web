@@ -457,6 +457,10 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.notificationService.showError('Debe seleccionar un archivo de plano o marcar "No hay plano".');
             return;
         }
+        if (this.dimensionesComponent && this.dimensionesComponent.dimensionesForm.invalid) {
+            this.notificationService.showError('Por favor, complete todos los campos requeridos en dimensiones.');
+            return;
+        }
 
         if (this.mode === 'create') {
             this.openInitialRevisionModal();
@@ -500,6 +504,8 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 revisionIncial: revisionInicial,
                 unidadDureza: formValues.unidadDureza,
                 hojaProceso: formValues.hojaProceso,
+                dimensiones: this.dimensionesComponent?.getDimensionesData().dimensions,
+                formaDimension: this.dimensionesComponent?.getDimensionesData().forma,
             };
 
             this.abmPiezaService.agregarPieza(dto).subscribe({
@@ -537,15 +543,14 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             observacionesPesoCrudo: formValues.observacionesPesoCrudo,
             observacionesRevision: formValues.observacionesRevision,
             hojaProceso: formValues.hojaProceso,
+            dimensiones: this.dimensionesComponent?.getDimensionesData().dimensions,
+            formaDimension: this.dimensionesComponent?.getDimensionesData().forma,
         };
 
         this.abmPiezaService.updatePieza(this.piezaId, dto as PiezaUpdateDTO).subscribe({
             next: () => {
                 this.notificationService.showSuccess('Pieza actualizada correctamente.');
                 this.piezaForm.markAsPristine();
-                if (this.dimensionesComponent) {
-                    this.dimensionesComponent.onSave();
-                }
             },
             error: (error) => { this.notificationService.showError('Error al actualizar la pieza.'); }
         });
