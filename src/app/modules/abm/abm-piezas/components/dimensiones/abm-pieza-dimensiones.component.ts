@@ -29,7 +29,7 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     dimensionToEdit: PiezaDimension | null = null;
     private subscription: Subscription = new Subscription();
 
-    baseDisplayedColumns: string[] = ['controlar', 'tipo', 'valor', 'minimo', 'maximo', 'acciones'];
+    baseDisplayedColumns: string[] = ['controlar', 'tipo', 'valor', 'minimo', 'maximo', 'observaciones', 'acciones'];
     displayedColumnsDimensiones: string[];
 
     constructor(
