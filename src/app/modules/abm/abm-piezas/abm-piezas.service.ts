@@ -26,6 +26,7 @@ export class ABMPiezaService {
     private readonly API_PIEZA_URL = `${this.API_BASE_URL}pieza`;
     private readonly API_PIEZA_PLANO_URL = `${this.API_BASE_URL}piezaPlano`;
     private readonly API_PIEZA_CLIENTE_URL = `${this.API_BASE_URL}piezaCliente`;
+    private readonly API_PIEZA_DIMENSION_URL = `${this.API_BASE_URL}piezaDimension`;
     private readonly API_PIEZA_TIPO_URL = `${this.API_BASE_URL}piezaTipo`;
     private readonly API_MOLDE_URL = `${this.API_BASE_URL}molde`;
     private readonly API_PIEZA_MOLDE_URL = `${this.API_BASE_URL}piezaMolde`;
@@ -62,6 +63,10 @@ export class ABMPiezaService {
 
     updatePieza(id: number, dto: PiezaUpdateDTO): Observable<any> {
         return this.http.put<any>(`${this.API_PIEZA_URL}/${id}`, dto);
+    }
+
+    updatePiezaFormaDimension(idPieza: number, forma: string): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_URL}/formaDimension/${idPieza}`, { formaDimension: forma });
     }
 
     clonarPieza(idPieza: number): Observable<any> {
@@ -161,6 +166,21 @@ export class ABMPiezaService {
         return this.http.put(`${this.API_TERMINACION_URL}/${idProceso}`, data);
     }
 
+    getDimensionesPorPieza(idPieza: number): Observable<ApiResponse<PiezaDimension[]>> {
+        return this.http.get<ApiResponse<PiezaDimension[]>>(`${this.API_PIEZA_DIMENSION_URL}/${idPieza}`);
+    }
+
+    agregarDimensionAPieza(dto: any): Observable<any> {
+        return this.http.post(this.API_PIEZA_DIMENSION_URL, dto);
+    }
+
+    actualizarDimensionDePieza(id: number, dto: any): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_DIMENSION_URL}/${id}`, dto);
+    }
+
+    eliminarDimensionDePieza(id: number): Observable<any> {
+        return this.http.delete(`${this.API_PIEZA_DIMENSION_URL}/${id}`);
+    }
 
     getClientesPorPieza(idPieza: number): Observable<ApiResponse<PiezaCliente[]>> {
         return this.http.get<ApiResponse<PiezaCliente[]>>(`${this.API_PIEZA_CLIENTE_URL}/${idPieza}`);

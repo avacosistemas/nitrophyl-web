@@ -4,15 +4,13 @@ import {
     Input,
     OnDestroy,
     OnChanges,
-    SimpleChanges,
-    ViewChild
+    SimpleChanges
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { PiezaProceso, PiezaCreateDTO, PiezaUpdateDTO, Molde, Espesor } from '../../models/pieza.model';
-import { ABMPiezaDimensionesComponent } from '../dimensiones/abm-pieza-dimensiones.component';
 import { Observable, of, combineLatest, forkJoin, throwError, merge } from 'rxjs';
 import { map, startWith, catchError, debounceTime, switchMap, filter } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
@@ -42,7 +40,6 @@ interface ForkJoinResults {
 export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implements OnInit, OnDestroy, OnChanges {
     @Input() piezaId: number | null = null;
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
-    @ViewChild(ABMPiezaDimensionesComponent) dimensionesComponent: ABMPiezaDimensionesComponent;
     piezaForm: FormGroup;
     espesorForm: FormGroup;
     espesoresDataSource = new MatTableDataSource<Espesor>([]);
@@ -457,10 +454,6 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             this.notificationService.showError('Debe seleccionar un archivo de plano o marcar "No hay plano".');
             return;
         }
-        if (this.dimensionesComponent && this.dimensionesComponent.dimensionesForm.invalid) {
-            this.notificationService.showError('Por favor, complete todos los campos requeridos en dimensiones.');
-            return;
-        }
 
         if (this.mode === 'create') {
             this.openInitialRevisionModal();
@@ -504,8 +497,6 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 revisionIncial: revisionInicial,
                 unidadDureza: formValues.unidadDureza,
                 hojaProceso: formValues.hojaProceso,
-                dimensiones: this.dimensionesComponent?.getDimensionesData().dimensions,
-                formaDimension: this.dimensionesComponent?.getDimensionesData().forma,
             };
 
             this.abmPiezaService.agregarPieza(dto).subscribe({
@@ -543,8 +534,6 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             observacionesPesoCrudo: formValues.observacionesPesoCrudo,
             observacionesRevision: formValues.observacionesRevision,
             hojaProceso: formValues.hojaProceso,
-            dimensiones: this.dimensionesComponent?.getDimensionesData().dimensions,
-            formaDimension: this.dimensionesComponent?.getDimensionesData().forma,
         };
 
         this.abmPiezaService.updatePieza(this.piezaId, dto as PiezaUpdateDTO).subscribe({
