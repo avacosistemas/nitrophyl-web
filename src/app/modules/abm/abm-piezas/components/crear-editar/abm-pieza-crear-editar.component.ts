@@ -97,7 +97,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             idCliente: [{ value: null, disabled: false }],
             nombrePiezaCliente: [{ value: null, disabled: false }],
             cotizacionCliente: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')],
-            fechaCotizacionCliente: [null],
+            cotizacionFecha: [null],
             observacionesCotizacionCliente: [{ value: null, disabled: true }],
             revision: [{ value: null, disabled: true }],
             fechaRevision: [{ value: null, disabled: true }],
@@ -209,7 +209,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     private setupCotizacionValidation(): void {
         const cotizacionCtrl = this.piezaForm.get('cotizacionCliente');
-        const fechaCtrl = this.piezaForm.get('fechaCotizacionCliente');
+        const fechaCtrl = this.piezaForm.get('cotizacionFecha');
         const obsCtrl = this.piezaForm.get('observacionesCotizacionCliente');
 
         this.subscriptions.push(
@@ -467,9 +467,9 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             const formValues = this.piezaForm.getRawValue();
 
             let fechaCotizacionISO = null;
-            if (formValues.fechaCotizacionCliente) {
-                const dateObj = new Date(formValues.fechaCotizacionCliente);
-                fechaCotizacionISO = dateObj.toISOString();
+            if (formValues.cotizacionFecha) {
+                const dateObj = new Date(formValues.cotizacionFecha);
+                fechaCotizacionISO =new Intl.DateTimeFormat('es-AR').format(dateObj);
             }
 
             const dto: PiezaCreateDTO = {
@@ -484,7 +484,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 idTipoPieza: formValues.idTipoPieza?.id,
                 nombrePiezaCliente: formValues.nombrePiezaCliente,
                 cotizacionCliente: formValues.cotizacionCliente,
-                fechaCotizacionCliente: fechaCotizacionISO,
+                cotizacionFecha: fechaCotizacionISO,
                 observacionesCotizacionCliente: formValues.observacionesCotizacionCliente,
                 observacionesMolde: formValues.observacionesMolde,
                 observacionesPesoCrudo: formValues.observacionesPesoCrudo,

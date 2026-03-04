@@ -72,7 +72,7 @@ export interface PiezaCreateDTO {
     idTipoPieza: number;
     nombrePiezaCliente?: string;
     cotizacionCliente?: number;
-    fechaCotizacionCliente?: string;
+    cotizacionFecha?: string;
     observacionesCotizacionCliente?: string;
     observacionesMolde?: string;
     observacionesPesoCrudo?: string;

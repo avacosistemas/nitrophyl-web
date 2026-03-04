@@ -172,11 +172,11 @@
                             <mat-form-field appearance="outline" class="form-field w-1/2">
                                 <mat-label>Fecha Cotización</mat-label>
                                 <input matInput [matDatepicker]="pickerCotizacion"
-                                    formControlName="fechaCotizacionCliente">
+                                    formControlName="cotizacionFecha">
                                 <mat-datepicker-toggle matSuffix [for]="pickerCotizacion"></mat-datepicker-toggle>
                                 <mat-datepicker #pickerCotizacion></mat-datepicker>
                                 <mat-error
-                                    *ngIf="piezaForm.get('fechaCotizacionCliente').hasError('required')">Requerido si
+                                    *ngIf="piezaForm.get('cotizacionFecha').hasError('required')">Requerido si
                                     hay valor.</mat-error>
                             </mat-form-field>
                         </div>
