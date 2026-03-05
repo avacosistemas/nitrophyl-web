@@ -209,11 +209,11 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Guardar Pieza Terminada';
                     break;
-                case 7: // Clientes
+                case 8: // Clientes
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Agregar Cliente';
                     break;
-                case 8: // Planos
+                case 9: // Planos
                     this.mostrarBotonEdicion = true;
                     this.botonEdicionTexto = 'Subir Plano';
                     break;
@@ -249,10 +249,10 @@ export class ABMPiezaComponent extends ABMPiezaBaseComponent implements OnInit, 
             case 6:
                 this.onGuardarFinalizacion();
                 break;
-            case 7:
+            case 8:
                 this.abrirModalAgregarCliente();
                 break;
-            case 8:
+            case 9:
                 this.abrirModalSubirPlano();
                 break;
         }

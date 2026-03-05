@@ -55,14 +55,18 @@
         <mat-form-field class="w-1/2" appearance="outline">
           <mat-label>Fecha última calibración</mat-label>
           <input matInput [matDatepicker]="calibracionPicker" formControlName="fechaUltimaCalibracion"
-            placeholder="Fecha última calibración" readonly>
+            placeholder="DD/MM/AAAA">
           <mat-datepicker-toggle matSuffix [for]="calibracionPicker"></mat-datepicker-toggle>
           <mat-datepicker #calibracionPicker></mat-datepicker>
+          <mat-error class="mb-1" *ngIf="form.get('fechaUltimaCalibracion').hasError('matDatepickerParse')">
+            Formato de fecha inválido. (DD/MM/AAAA)
+          </mat-error>
         </mat-form-field>
 
         <mat-form-field class="w-1/2" appearance="outline">
           <mat-label>Perioricidad (Días)</mat-label>
-          <input matInput type="number" min="1" [formControlName]="'perioricidadCalibracion'" placeholder="Periodicidad">
+          <input matInput type="number" min="1" [formControlName]="'perioricidadCalibracion'"
+            placeholder="Periodicidad">
           <mat-error class="mb-1" *ngIf="form.get('perioricidadCalibracion').hasError('min')">
             Debe ser un número positivo.
           </mat-error>
