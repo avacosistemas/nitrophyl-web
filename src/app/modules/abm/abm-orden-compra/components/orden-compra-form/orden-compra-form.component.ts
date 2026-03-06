@@ -8,6 +8,8 @@ import { AbmOrdenCompraService } from '../../abm-orden-compra.service';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatDialog } from '@angular/material/dialog';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import * as moment from 'moment';
 
 @Component({
@@ -19,6 +21,7 @@ import * as moment from 'moment';
 export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     @ViewChild('splitContainer') splitContainer: ElementRef;
     @ViewChild('clienteInput', { read: MatAutocompleteTrigger }) clienteAutocompleteTrigger: MatAutocompleteTrigger;
+    @ViewChild('piezaInput', { read: MatAutocompleteTrigger }) piezaAutocompleteTrigger: MatAutocompleteTrigger;
 
     step: 'header' | 'items' = 'header';
     splitDirection: 'row' | 'column' = 'row';
@@ -48,13 +51,13 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         private _sanitizer: DomSanitizer,
         private _notification: NotificationService,
         private _router: Router,
-        private _cdr: ChangeDetectorRef
+        private _cdr: ChangeDetectorRef,
+        private _dialog: MatDialog
     ) {
         this.form = this._fb.group({
             cliente: [null, Validators.required],
             fecha: [new Date(), Validators.required],
-            nroComprobante: ['', Validators.required],
-            nroInterno: ['', Validators.required]
+            nroComprobante: ['', Validators.required]
         });
 
         this.piezaForm = this._fb.group({
@@ -62,8 +65,10 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             pieza: [null, Validators.required],
             soloDelCliente: [true],
             cantidadSolicitada: [null, [Validators.required, Validators.min(1)]],
+            fechaEntrega: [null, Validators.required],
             cotizacionValor: [null],
-            cotizacionFecha: [null]
+            cotizacionFecha: [null],
+            actualizarCotizacion: [false]
         });
     }
 
@@ -99,12 +104,27 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 );
             })
         );
+
+        this.piezaForm.get('actualizarCotizacion').valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((isUpdating) => {
+            if (isUpdating) {
+                this.piezaForm.patchValue({
+                    cotizacionValor: null,
+                    cotizacionFecha: null
+                });
+            } else if (this.piezaCotizacionInfo) {
+                this.piezaForm.patchValue({
+                    cotizacionValor: this.piezaCotizacionInfo.valor,
+                    cotizacionFecha: this.piezaCotizacionInfo.fecha
+                });
+            }
+            this.updateCotizacionValidators();
+        });
     }
 
     onConfirmHeader(): void {
         if (this.form.invalid) { this.form.markAllAsTouched(); return; }
         if (!this.selectedFile) { this._notification.showError("Debe subir un archivo PDF"); return; }
-        
+
         this.pdfPreviewUrl = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(this.selectedFile));
         this.step = 'items';
         this.updateHeaderUI();
@@ -112,9 +132,26 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
     onPiezaSelected(event: any): void {
         const pieza = event.option.value;
+        const exists = this.piezasAgregadas.find(g => g.idPieza === pieza.id);
+
         this.isLoading = true;
         this._service.getPiezaCotizacion(pieza.id, this.form.get('cliente').value?.id).subscribe(res => {
             this.piezaCotizacionInfo = res.data;
+
+            if (exists) {
+                // Si ya existe la pieza en la orden, forzamos que use la cotización ya definida
+                this.piezaCotizacionInfo.tieneCotizacion = true;
+                this.piezaCotizacionInfo.valor = exists.precio;
+                this.piezaCotizacionInfo.fecha = exists.fechaCotizacion ? moment(exists.fechaCotizacion, 'DD-MM-YYYY').toDate() : null;
+            }
+
+            // Patch the form with quotation info
+            this.piezaForm.patchValue({
+                cotizacionValor: this.piezaCotizacionInfo.valor,
+                cotizacionFecha: this.piezaCotizacionInfo.fecha,
+                actualizarCotizacion: false
+            }, { emitEvent: false });
+
             this.updateCotizacionValidators();
             this.isLoading = false;
             this._cdr.detectChanges();
@@ -124,44 +161,79 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     addOrUpdatePieza(continueAdding: boolean): void {
         if (this.piezaForm.invalid) { this.piezaForm.markAllAsTouched(); return; }
         const p = this.piezaForm.getRawValue();
-        const item = {
+
+        let grupo = this.piezasAgregadas.find(g => g.idPieza === p.pieza.id);
+
+        const precio = p.cotizacionValor;
+
+        const batch = {
             idTemp: p.idTemp || Date.now(),
-            idPieza: p.pieza.id,
-            codigo: p.pieza.codigo,
-            denominacion: p.pieza.denominacion,
             cantidadSolicitada: p.cantidadSolicitada,
-            precio: this.piezaCotizacionInfo.tieneCotizacion ? this.piezaCotizacionInfo.valor : p.cotizacionValor,
-            fechaCotizacion: this.piezaCotizacionInfo.tieneCotizacion ? this.piezaCotizacionInfo.fecha : (p.cotizacionFecha ? moment(p.cotizacionFecha).format('DD/MM/YYYY') : '')
+            fechaEntrega: p.fechaEntrega ? moment(p.fechaEntrega).format('DD-MM-YYYY') : '',
+            isEditing: false
         };
 
-        const index = this.piezasAgregadas.findIndex(x => x.idTemp === item.idTemp);
-        if (index > -1) this.piezasAgregadas[index] = item;
-        else this.piezasAgregadas.push(item);
+        const fechaCotiz = p.cotizacionFecha ? moment(p.cotizacionFecha).format('DD-MM-YYYY') : '';
+
+        if (grupo) {
+            const batchIndex = grupo.batches.findIndex(b => b.idTemp === batch.idTemp);
+            if (batchIndex > -1) {
+                grupo.batches[batchIndex] = batch;
+            } else {
+                grupo.batches.push(batch);
+            }
+        } else {
+            grupo = {
+                idPieza: p.pieza.id,
+                codigo: p.pieza.codigo,
+                denominacion: p.pieza.denominacion,
+                precio: precio,
+                fechaCotizacion: fechaCotiz,
+                batches: [batch]
+            };
+            this.piezasAgregadas.push(grupo);
+        }
 
         this.piezasAgregadas = [...this.piezasAgregadas];
-        this.resetItemForm(continueAdding);
+        this.resetItemForm(continueAdding, false);
+
+        if (continueAdding) {
+            this.piezaForm.patchValue({
+                pieza: p.pieza,
+                soloDelCliente: p.soloDelCliente
+            });
+            this.onPiezaSelected({ option: { value: p.pieza } });
+        }
     }
 
     onSaveAll(): void {
         if (this.piezasAgregadas.length === 0) { this._notification.showError("Agregue ítems a la orden"); return; }
-        
+
         const reader = new FileReader();
         reader.onload = () => {
             const base64 = (reader.result as string).split(',')[1];
             const header = this.form.getRawValue();
+
+            const flattenedItems = [];
+            this.piezasAgregadas.forEach(g => {
+                g.batches.forEach(b => {
+                    flattenedItems.push({
+                        idPieza: g.idPieza,
+                        cantidad: b.cantidadSolicitada,
+                        precio: g.precio,
+                        fechaCotizacion: g.fechaCotizacion,
+                        fechaEntrega: b.fechaEntrega
+                    });
+                });
+            });
+
             const dto = {
                 idCliente: header.cliente.id,
                 fecha: moment(header.fecha).format('DD/MM/YYYY'),
                 nroComprobante: header.nroComprobante,
-                nroInterno: header.nroInterno,
                 archivoNombre: this.selectedFile.name,
                 archivoContenido: base64,
-                items: this.piezasAgregadas.map(i => ({
-                    idPieza: i.idPieza,
-                    cantidad: i.cantidadSolicitada,
-                    precio: i.precio,
-                    fechaCotizacion: i.fechaCotizacion
-                }))
+                items: flattenedItems
             };
             this._service.createOrdenCompra(dto).subscribe(() => {
                 this._notification.showSuccess("Orden Guardada Correctamente");
@@ -204,7 +276,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             ];
             const cli = this.form.get('cliente').value.nombre;
             const comp = this.form.get('nroComprobante').value;
-            this._service.updateHeaderSubtitle(`${cli} | Comp: ${comp}`);
+            this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
         }
         this._service.updateHeaderButtons(btns);
     }
@@ -227,7 +299,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     updateCotizacionValidators(): void {
         const val = this.piezaForm.get('cotizacionValor');
         const fec = this.piezaForm.get('cotizacionFecha');
-        if (this.piezaCotizacionInfo && !this.piezaCotizacionInfo.tieneCotizacion) {
+        const isUpdating = this.piezaForm.get('actualizarCotizacion').value;
+
+        if (this.piezaCotizacionInfo && (!this.piezaCotizacionInfo.tieneCotizacion || isUpdating)) {
             val.setValidators([Validators.required, Validators.min(0.01)]);
             fec.setValidators([Validators.required]);
         } else {
@@ -236,27 +310,124 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         val.updateValueAndValidity(); fec.updateValueAndValidity();
     }
 
-    resetItemForm(show: boolean): void {
+    resetItemForm(show: boolean, openAutocomplete: boolean = true): void {
         this.piezaForm.reset({ soloDelCliente: true });
         this.isEditingItem = false;
         this.showItemForm = show;
         this.piezaCotizacionInfo = null;
+        if (show && openAutocomplete) {
+            setTimeout(() => {
+                this.piezaAutocompleteTrigger?.openPanel();
+            });
+        }
     }
 
-    editItem(item: any): void {
-        this.isEditingItem = true;
-        this.showItemForm = true;
-        this.piezaForm.patchValue({
-            idTemp: item.idTemp,
-            pieza: { id: item.idPieza, codigo: item.codigo, denominacion: item.denominacion },
-            cantidadSolicitada: item.cantidadSolicitada
+    clearPiezaSelection(): void {
+        this.piezaForm.get('pieza').setValue('');
+        this.piezaCotizacionInfo = null;
+        setTimeout(() => {
+            this.piezaAutocompleteTrigger?.openPanel();
         });
-        this.onPiezaSelected({ option: { value: { id: item.idPieza } } });
     }
 
-    clearPiezaSelection(): void { this.piezaForm.get('pieza').setValue(''); this.piezaCotizacionInfo = null; }
     clearClientSelection(): void { this.form.get('cliente').setValue(''); }
-    removePieza(i: number): void { this.piezasAgregadas.splice(i, 1); }
+
+    removePieza(indexGrupo: number): void {
+        const dialogRef = this._dialog.open(GenericModalComponent, {
+            width: '400px',
+            data: {
+                title: 'Eliminar ítem',
+                message: '¿Está seguro de que desea eliminar todos los registros de esta pieza?',
+                showConfirmButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                type: 'warning'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(confirmed => {
+            if (confirmed) {
+                this.piezasAgregadas.splice(indexGrupo, 1);
+                this.piezasAgregadas = [...this.piezasAgregadas];
+                this._notification.showSuccess("Pieza eliminada");
+            }
+        });
+    }
+
+    removeBatch(grupo: any, indexBatch: number): void {
+        const dialogRef = this._dialog.open(GenericModalComponent, {
+            width: '400px',
+            data: {
+                title: 'Eliminar entrega',
+                message: '¿Está seguro de que desea eliminar esta entrega específica?',
+                showConfirmButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                type: 'warning'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(confirmed => {
+            if (confirmed) {
+                grupo.batches.splice(indexBatch, 1);
+                if (grupo.batches.length === 0) {
+                    const idx = this.piezasAgregadas.indexOf(grupo);
+                    this.piezasAgregadas.splice(idx, 1);
+                }
+                this.piezasAgregadas = [...this.piezasAgregadas];
+                this._notification.showSuccess("Entrega eliminada");
+            }
+        });
+    }
+
+    editBatch(batch: any): void {
+        batch.isEditing = true;
+        batch.tempCantidad = batch.cantidadSolicitada;
+        batch.tempFecha = batch.fechaEntrega ? moment(batch.fechaEntrega, 'DD-MM-YYYY') : null;
+    }
+
+    saveBatch(batch: any): void {
+        if (batch.tempCantidad > 0 && batch.tempFecha) {
+            batch.cantidadSolicitada = batch.tempCantidad;
+            batch.fechaEntrega = moment(batch.tempFecha).format('DD-MM-YYYY');
+            batch.isEditing = false;
+        } else {
+            this._notification.showError("Cantidad y Fecha de entrega son requeridas");
+        }
+    }
+
+    selectPieceFromCard(grupo: any): void {
+        this.showItemForm = true;
+        this.piezaForm.reset({ soloDelCliente: true });
+        this.piezaForm.patchValue({
+            pieza: { id: grupo.idPieza, codigo: grupo.codigo, denominacion: grupo.denominacion },
+            cantidadSolicitada: null,
+            fechaEntrega: null
+        });
+        this.onPiezaSelected({ option: { value: { id: grupo.idPieza } } });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    editQuotation(grupo: any): void {
+        grupo.isEditingQuotation = true;
+        grupo.tempPrecio = grupo.precio;
+        grupo.tempFecha = grupo.fechaCotizacion ? moment(grupo.fechaCotizacion, 'DD-MM-YYYY') : null;
+    }
+
+    saveQuotation(grupo: any): void {
+        grupo.precio = grupo.tempPrecio;
+        grupo.fechaCotizacion = grupo.tempFecha ? moment(grupo.tempFecha).format('DD-MM-YYYY') : '';
+        grupo.isEditingQuotation = false;
+    }
+
+    cancelQuotationEdit(grupo: any): void {
+        grupo.isEditingQuotation = false;
+    }
+    formatCurrency(value: number): string {
+        if (value === null || value === undefined) return '$ 0,00';
+        return '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
     displayFn(i: any): string { return i ? (i.nombre || i.denominacion) : ''; }
     get precioUnitarioActual(): number { return this.piezaCotizacionInfo?.tieneCotizacion ? this.piezaCotizacionInfo.valor : (this.piezaForm.get('cotizacionValor').value || 0); }
     get precioTotalItem(): number { return (this.piezaForm.get('cantidadSolicitada').value || 0) * this.precioUnitarioActual; }

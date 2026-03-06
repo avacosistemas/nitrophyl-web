@@ -1,4 +1,4 @@
-<h2 mat-dialog-title class="font-bold text-gray-800">Asignar Prensa y Tarea</h2>
+<h2 mat-dialog-title class="font-bold text-gray-800">Enviar a Fábrica</h2>
 
 <mat-dialog-content [formGroup]="form" class="flex flex-col gap-6 pt-2 pb-4">
     <div class="flex flex-row gap-4 w-full">
@@ -24,12 +24,10 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="flex-1 w-1/2">
                     <mat-label>Tomar de Stock</mat-label>
-                    <input matInput type="number" formControlName="cantStock" min="0">
+                    <input matInput type="number" formControlName="cantStock" min="0" [max]="data.stockDisponible">
                     <mat-error *ngIf="form.get('cantStock').hasError('min')">No puede ser negativo</mat-error>
-                    <mat-hint align="end" *ngIf="form.get('cantStock').value > data.stockDisponible"
-                        class="text-red-500">
-                        Supera stock disponible
-                    </mat-hint>
+                    <mat-error *ngIf="form.get('cantStock').hasError('max')">No hay suficiente stock (Máx:
+                        {{data.stockDisponible}})</mat-error>
                 </mat-form-field>
             </div>
         </div>
@@ -43,29 +41,34 @@
 
     <div class="flex gap-4">
         <mat-form-field appearance="outline" class="flex-1">
-            <mat-label>Nro. Prensa</mat-label>
-            <input matInput formControlName="prensa">
+            <mat-label>Máquina</mat-label>
+            <input matInput formControlName="maquina">
             <mat-error>Requerido</mat-error>
         </mat-form-field>
         <mat-form-field appearance="outline" class="flex-1">
             <mat-label>Operario</mat-label>
-            <input matInput formControlName="operario">
-            <mat-error>Requerido</mat-error>
+            <input type="text" matInput formControlName="operario" [matAutocomplete]="autoOp">
+            <mat-autocomplete #autoOp="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let op of filteredOperarios$ | async" [value]="op">
+                    {{ op.nombre }}
+                </mat-option>
+            </mat-autocomplete>
         </mat-form-field>
     </div>
 
-    <mat-form-field appearance="outline" class="w-full">
-        <mat-label>Fecha Estimada Entrega</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="fechaEstimada">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-        <mat-error>Requerido</mat-error>
-    </mat-form-field>
+    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <mat-icon class="text-blue-500 icon-size-5" svgIcon="heroicons_outline:calendar"></mat-icon>
+            <span class="text-sm font-medium text-blue-800 uppercase tracking-wide">Fecha Entrega Estimada</span>
+        </div>
+        <span class="text-lg font-bold text-blue-900">{{ (data.fechaEstimada | date:'dd-MM-yyyy') || '-' }}</span>
+    </div>
+
 </mat-dialog-content>
 
-<mat-dialog-actions align="end" class="pb-6 pr-6">
+<mat-dialog-actions align="end" class="pb-6">
     <button mat-button mat-dialog-close class="mr-2">Cancelar</button>
-    <button mat-flat-button color="primary" [disabled]="form.invalid" class="rounded-full px-6" (click)="save()">
-        Asignar
+    <button mat-flat-button color="accent" [disabled]="form.invalid" class="rounded-full px-6" (click)="save()">
+        Enviar
     </button>
 </mat-dialog-actions>

@@ -25,7 +25,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <mat-form-field appearance="outline" class="w-full">
-                        <mat-label>Nro. Comprobante</mat-label>
+                        <mat-label>Comprobante</mat-label>
                         <input matInput formControlName="nroComprobante">
                     </mat-form-field>
 
@@ -37,17 +37,16 @@
                     </mat-form-field>
                 </div>
 
-                <mat-form-field appearance="outline">
-                    <mat-label>Nro. Interno</mat-label>
-                    <input matInput formControlName="nroInterno">
-                </mat-form-field>
+
 
                 <div class="relative border-2 border-dashed rounded-xl p-6 transition-all duration-200 flex flex-col items-center justify-center cursor-pointer"
                     [ngClass]="selectedFile ? 'border-green-400 bg-green-50 text-green-600' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600'"
                     (click)="fileInput.click()">
                     <input type="file" #fileInput (change)="onFileSelected($event)" accept="application/pdf" hidden>
-                    <mat-icon *ngIf="!selectedFile" class="icon-size-10 text-gray-400 mb-2" svgIcon="heroicons_outline:upload"></mat-icon>
-                    <mat-icon *ngIf="selectedFile" class="icon-size-10 text-green-500 mb-2" svgIcon="heroicons_solid:check-circle"></mat-icon>
+                    <mat-icon *ngIf="!selectedFile" class="icon-size-10 text-gray-400 mb-2"
+                        svgIcon="heroicons_outline:upload"></mat-icon>
+                    <mat-icon *ngIf="selectedFile" class="icon-size-10 text-green-500 mb-2"
+                        svgIcon="heroicons_solid:check-circle"></mat-icon>
                     <p class="text-sm font-semibold">
                         {{ selectedFile ? selectedFile.name : 'Haz clic para subir el PDF de la Orden' }}
                     </p>
@@ -67,17 +66,19 @@
                 <iframe *ngIf="pdfPreviewUrl" [src]="pdfPreviewUrl" class="w-full h-full border-none"></iframe>
             </div>
 
-            <div class="resizer-gutter" [ngClass]="splitDirection === 'row' ? 'horizontal' : 'vertical'" (mousedown)="startResizing($event)">
+            <div class="resizer-gutter" [ngClass]="splitDirection === 'row' ? 'horizontal' : 'vertical'"
+                (mousedown)="startResizing($event)">
             </div>
 
             <div class="flex flex-col overflow-y-auto p-4 sm:p-6 bg-gray-100/50 flex-auto"
                 [style.width.%]="splitDirection === 'row' ? (100 - splitSize) : 100"
                 [style.height.%]="splitDirection === 'column' ? (100 - splitSize) : 100">
 
-                <button *ngIf="!showItemForm" mat-flat-button color="accent"
-                    class="w-full py-5 mb-4 rounded-3xl shadow-md" (click)="showItemForm = true">
-                    <mat-icon svgIcon="heroicons_solid:plus-circle" class="mr-2"></mat-icon>
-                    Añadir otro producto a la orden
+                <button *ngIf="!showItemForm" mat-flat-button
+                    class="w-full py-6 mb-6 rounded-3xl shadow-lg bg-green-600 text-white hover:bg-green-700 transition-all font-black uppercase tracking-widest text-sm"
+                    (click)="showItemForm = true">
+                    <mat-icon svgIcon="heroicons_solid:plus-circle" class="mr-2 text-white"></mat-icon>
+                    Añadir Producto a la Orden
                 </button>
 
                 <div class="space-y-3">
@@ -95,86 +96,93 @@
                             </button>
                         </div>
 
-                        <div class="p-6 pt-4 space-y-6">
-                            <form [formGroup]="piezaForm" class="flex flex-col gap-6">
+                        <div class="p-6 space-y-6">
+                            <form [formGroup]="piezaForm" class="flex flex-col gap-4">
 
                                 <div class="flex flex-col gap-2">
                                     <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
                                         <mat-label>Producto seleccionado</mat-label>
-                                        <mat-icon matPrefix class="icon-size-5 mr-2" svgIcon="heroicons_outline:cube"></mat-icon>
+                                        <mat-icon matPrefix class="icon-size-5 mr-2"
+                                            svgIcon="heroicons_outline:cube"></mat-icon>
                                         <input type="text" matInput formControlName="pieza" [matAutocomplete]="autoP"
-                                            placeholder="Seleccione una pieza..." #piezaInput>
+                                            placeholder="Seleccione una pieza..." #piezaInput
+                                            #piezaInputTrigger="matAutocompleteTrigger"
+                                            (focus)="piezaInputTrigger.openPanel()"
+                                            (click)="piezaInputTrigger.openPanel()">
                                         <button *ngIf="piezaForm.get('pieza').value" matSuffix mat-icon-button
                                             (click)="clearPiezaSelection()">
                                             <mat-icon> close </mat-icon>
                                         </button>
-                                        <mat-autocomplete #autoP="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onPiezaSelected($event)">
+                                        <mat-autocomplete #autoP="matAutocomplete" [displayWith]="displayFn"
+                                            (optionSelected)="onPiezaSelected($event)">
                                             <mat-option *ngFor="let p of filteredPiezas$ | async" [value]="p">
-                                                <span class="font-bold">{{p.codigo}}</span> - <span class="text-secondary">{{p.denominacion}}</span>
+                                                <span class="font-bold">{{p.codigo}}</span> - <span
+                                                    class="text-secondary">{{p.denominacion}}</span>
                                             </mat-option>
                                         </mat-autocomplete>
                                     </mat-form-field>
-                                    <mat-checkbox formControlName="soloDelCliente" color="primary" class="ml-1 text-[10px] font-bold uppercase text-secondary tracking-tight">
+                                    <mat-checkbox formControlName="soloDelCliente" color="primary"
+                                        class="ml-1 text-[10px] font-bold uppercase text-secondary tracking-tight">
                                         Restringir a piezas del cliente
                                     </mat-checkbox>
                                 </div>
 
-                                <div class="flex gap-4">
-                                    <div class="flex items-center bg-gray-100 rounded-2xl p-2 border border-gray-200">
-                                        <div class="flex-1 flex flex-col items-center px-2">
-                                            <span class="text-[9px] font-black text-secondary uppercase">Pedido</span>
-                                            <input type="number" formControlName="cantidadSolicitada"
-                                                class="w-full bg-transparent text-center font-black text-xl border-b border-gray-300 focus:ring-0">
-                                        </div>
-                                    </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Cantidad</mat-label>
+                                        <input type="number" matInput formControlName="cantidadSolicitada"
+                                            placeholder="0">
+                                    </mat-form-field>
 
-                                    <div class="flex-1 min-w-[240px] flex flex-col justify-center px-6 py-3 bg-gray-900 text-white rounded-2xl shadow-lg border border-gray-700">
-                                        <div class="flex justify-between items-baseline mb-1">
-                                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cotización ($)</span>
-                                            <span class="text-lg font-bold text-green-400">{{ precioUnitarioActual | currency:'USD':'symbol':'1.0-2' }}</span>
-                                        </div>
-                                        <div class="flex justify-between items-baseline border-t border-gray-700 pt-1">
-                                            <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Fecha Cotiz.</span>
-                                            <span class="text-lg font-black text-white leading-none">
-                                                <ng-container *ngIf="piezaCotizacionInfo?.tieneCotizacion">
-                                                    {{ piezaCotizacionInfo.fecha | date:'dd/MM/yyyy' }}
-                                                </ng-container>
-                                                <ng-container *ngIf="!piezaCotizacionInfo?.tieneCotizacion">
-                                                    {{ piezaForm.get('cotizacionFecha').value ? (piezaForm.get('cotizacionFecha').value | date:'dd/MM/yyyy') : '--/--/----' }}
-                                                </ng-container>
-                                            </span>
-                                        </div>
-                                    </div>
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Fecha Entrega</mat-label>
+                                        <input matInput [matDatepicker]="pe" formControlName="fechaEntrega"
+                                            placeholder="dd-mm-aaaa">
+                                        <mat-datepicker-toggle matSuffix [for]="pe"></mat-datepicker-toggle>
+                                        <mat-datepicker #pe></mat-datepicker>
+                                    </mat-form-field>
                                 </div>
 
-                                <div *ngIf="piezaCotizacionInfo && !piezaCotizacionInfo.tieneCotizacion" class="animate-in">
-                                    <div class="flex items-center mb-3 text-red-700 font-bold text-xs uppercase">
-                                        <mat-icon class="icon-size-5 mr-2" svgIcon="heroicons_solid:currency-dollar"></mat-icon>
-                                        <span>Cotización requerida</span>
+                                <div class="flex flex-col gap-2" *ngIf="piezaCotizacionInfo">
+                                    <div class="col-span-2" *ngIf="piezaCotizacionInfo.tieneCotizacion">
+                                        <mat-checkbox formControlName="actualizarCotizacion" color="primary"
+                                            class="text-xs font-bold uppercase text-secondary">
+                                            Actualizar cotización existente
+                                        </mat-checkbox>
                                     </div>
-                                    <div class="flex gap-4">
-                                        <mat-form-field appearance="outline" class="flex-1 bg-white rounded-xl">
-                                            <mat-label>Precio ($)</mat-label>
-                                            <input matInput type="number" formControlName="cotizacionValor">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>{{ !piezaForm.get('actualizarCotizacion').value ? 'Precio Cotización
+                                                Actual ($)' : 'Precio Nueva Cotización ($)' }}</mat-label>
+                                            <input type="number" matInput formControlName="cotizacionValor"
+                                                [readonly]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value">
                                         </mat-form-field>
-                                        <mat-form-field appearance="outline" class="flex-1 bg-white rounded-xl">
-                                            <mat-label>Vigencia</mat-label>
-                                            <input matInput [matDatepicker]="pc" formControlName="cotizacionFecha">
-                                            <mat-datepicker-toggle matSuffix [for]="pc"></mat-datepicker-toggle>
+
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>{{ !piezaForm.get('actualizarCotizacion').value ? 'Fecha
+                                                Cotización Actual' : 'Fecha Nueva Cotización' }}</mat-label>
+                                            <input matInput [matDatepicker]="pc" formControlName="cotizacionFecha"
+                                                [readonly]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value">
+                                            <mat-datepicker-toggle matSuffix [for]="pc"
+                                                [disabled]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value"></mat-datepicker-toggle>
                                             <mat-datepicker #pc></mat-datepicker>
                                         </mat-form-field>
                                     </div>
                                 </div>
+
+
                             </form>
                         </div>
 
                         <div class="flex items-center justify-between px-4 py-4 bg-gray-50 border-t">
-                            <button mat-button (click)="resetItemForm(false)">Descartar</button>
+                            <button mat-button (click)="resetItemForm(true)">Limpiar</button>
                             <div class="flex gap-3">
-                                <button mat-stroked-button color="primary" [disabled]="piezaForm.invalid" (click)="addOrUpdatePieza(true)">
+                                <button mat-stroked-button color="primary" [disabled]="piezaForm.invalid"
+                                    (click)="addOrUpdatePieza(true)">
                                     {{ isEditingItem ? 'Guardar y continuar' : 'Añadir y continuar' }}
                                 </button>
-                                <button mat-flat-button color="primary" class="px-8" [disabled]="piezaForm.invalid" (click)="addOrUpdatePieza(false)">
+                                <button mat-flat-button color="primary" class="px-8" [disabled]="piezaForm.invalid"
+                                    (click)="addOrUpdatePieza(false)">
                                     {{ isEditingItem ? 'Guardar' : 'Añadir' }}
                                 </button>
                             </div>
@@ -189,46 +197,145 @@
                     </div>
 
                     <div class="space-y-4 pb-24">
-                        <div *ngFor="let item of piezasAgregadas; let i = index"
+                        <div *ngFor="let grupo of piezasAgregadas; let i = index"
                             class="group relative bg-card shadow-sm hover:shadow-xl transition-all duration-300 rounded-3xl border border-gray-200 overflow-hidden flex flex-col md:flex-row items-stretch">
 
                             <div class="w-1.5 bg-primary/40 group-hover:bg-primary"></div>
 
                             <div class="flex-1 p-5 flex flex-col gap-4">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <span class="bg-gray-100 text-gray-800 text-[10px] font-black px-2 py-0.5 rounded-md border uppercase">{{item.codigo}}</span>
-                                    <h4 class="font-extrabold text-base truncate text-gray-800 uppercase tracking-tight">{{item.denominacion}}</h4>
+                                <div class="flex flex-col items-start gap-1 relative">
+                                    <span
+                                        class="bg-gray-100 text-gray-800 text-[10px] font-black px-2 py-0.5 rounded-md border uppercase">{{grupo.codigo}}</span>
+                                    <h4 class="font-extrabold text-base text-gray-800 uppercase tracking-tight">
+                                        {{grupo.denominacion}}</h4>
+
+                                    <div class="absolute top-0 right-0 flex gap-1">
+                                        <button mat-icon-button (click)="selectPieceFromCard(grupo)"
+                                            matTooltip="Añadir más a esta pieza">
+                                            <mat-icon svgIcon="heroicons_solid:plus-circle"
+                                                class="text-green-600"></mat-icon>
+                                        </button>
+                                        <button mat-icon-button (click)="removePieza(i)" color="warn"
+                                            matTooltip="Borrar pieza completa">
+                                            <mat-icon svgIcon="heroicons_solid:trash"></mat-icon>
+                                        </button>
+                                    </div>
                                 </div>
-                                <div class="flex flex-wrap items-center gap-4">
-                                    <div class="flex flex-col">
-                                        <span class="text-[9px] font-black text-secondary uppercase">Solicitado</span>
-                                        <span class="text-4xl font-bold">{{item.cantidadSolicitada}}</span>
+
+                                <div class="grid grid-cols-[60px_1fr] gap-4 px-2 border-b pb-2">
+                                    <span
+                                        class="text-[9px] font-black text-secondary uppercase text-center">Cant.</span>
+                                    <span class="text-[9px] font-black text-secondary uppercase">Fecha Entrega</span>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div *ngFor="let batch of grupo.batches; let bi = index"
+                                        class="grid grid-cols-[60px_1fr] gap-4 items-center group/item hover:bg-gray-50 p-1 rounded-xl transition-colors">
+
+                                        <div class="flex items-center justify-center">
+                                            <mat-form-field *ngIf="batch.isEditing" appearance="outline"
+                                                class="fuse-mat-dense fuse-mat-no-subscript w-16 text-center">
+                                                <input matInput type="number" [(ngModel)]="batch.tempCantidad"
+                                                    class="text-center font-bold">
+                                            </mat-form-field>
+                                            <span *ngIf="!batch.isEditing"
+                                                class="font-black text-xl text-gray-800">{{batch.cantidadSolicitada}}</span>
+                                        </div>
+
+                                        <div class="flex items-center justify-between gap-4">
+                                            <div *ngIf="batch.isEditing" class="flex items-center flex-1">
+                                                <mat-form-field appearance="outline"
+                                                    class="fuse-mat-dense fuse-mat-no-subscript w-full max-w-[180px]">
+                                                    <input matInput [matDatepicker]="pe2" [(ngModel)]="batch.tempFecha">
+                                                    <mat-datepicker-toggle matSuffix
+                                                        [for]="pe2"></mat-datepicker-toggle>
+                                                    <mat-datepicker #pe2></mat-datepicker>
+                                                </mat-form-field>
+                                            </div>
+                                            <span *ngIf="!batch.isEditing"
+                                                class="font-bold text-md text-gray-600 flex-1">{{batch.fechaEntrega}}</span>
+
+                                            <div class="flex items-center gap-1 group-hover/item:opacity-100 transition-opacity"
+                                                [ngClass]="{'opacity-100': batch.isEditing}">
+                                                <button *ngIf="!batch.isEditing" mat-icon-button
+                                                    (click)="editBatch(batch)"
+                                                    class="text-primary opacity-40 hover:opacity-100 hover:bg-primary/10 rounded-full"
+                                                    matTooltip="Editar">
+                                                    <mat-icon class="icon-size-5"
+                                                        svgIcon="heroicons_solid:pencil-alt"></mat-icon>
+                                                </button>
+
+                                                <button *ngIf="batch.isEditing" mat-icon-button matTooltip="Confirmar"
+                                                    (click)="saveBatch(batch)">
+                                                    <mat-icon svgIcon="heroicons_solid:check"
+                                                        class="text-green-600"></mat-icon>
+                                                </button>
+
+                                                <button *ngIf="!batch.isEditing" mat-icon-button
+                                                    (click)="removeBatch(grupo, bi)"
+                                                    class="hover:bg-warn/10 opacity-40 hover:opacity-100 rounded-full"
+                                                    matTooltip="Eliminar entrega">
+                                                    <mat-icon class="text-red-500 icon-size-5"
+                                                        svgIcon="heroicons_solid:trash"></mat-icon>
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="w-full md:w-56 bg-gray-50 border-t md:border-t-0 md:border-l border-gray-200 flex flex-col justify-center p-6 space-y-3 relative">
-                                <div class="flex absolute right-1 top-1">
-                                    <button mat-icon-button (click)="editItem(item)" color="primary"><mat-icon class="icon-size-4" svgIcon="heroicons_solid:pencil-alt"></mat-icon></button>
-                                    <button mat-icon-button (click)="removePieza(i)" color="warn"><mat-icon class="icon-size-4" svgIcon="heroicons_solid:trash"></mat-icon></button>
+                            <div
+                                class="w-full md:w-56 bg-gray-50 border-t md:border-t-0 md:border-l border-gray-200 flex flex-col p-6 space-y-3 relative text-right md:text-left">
+                                <button *ngIf="!grupo.isEditingQuotation" mat-icon-button (click)="editQuotation(grupo)"
+                                    class="absolute right-1 top-1 text-primary">
+                                    <mat-icon class="icon-size-5" svgIcon="heroicons_solid:pencil-alt"></mat-icon>
+                                </button>
+
+                                <div *ngIf="!grupo.isEditingQuotation" class="flex flex-col gap-3">
+                                    <div class="flex justify-between md:flex-col">
+                                        <span
+                                            class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cotización
+                                            ($)</span>
+                                        <span class="text-xl font-bold text-gray-800">{{ formatCurrency(grupo.precio)
+                                            }}</span>
+                                    </div>
+                                    <div class="h-px bg-gray-200 w-full hidden md:block"></div>
+                                    <div class="flex justify-between md:flex-col">
+                                        <span class="text-[9px] font-black text-blue-600 uppercase">Fecha Cotiz.</span>
+                                        <span class="text-lg font-black text-blue-600">{{ grupo.fechaCotizacion
+                                            }}</span>
+                                    </div>
                                 </div>
-                                <div class="flex justify-between md:flex-col mb-1">
-                                    <span class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cotización ($)</span>
-                                    <span class="text-lg font-bold text-gray-700">{{ item.precio | currency:'USD':'symbol':'1.0-2' }}</span>
-                                </div>
-                                <div class="h-px bg-gray-200 w-full hidden md:block"></div>
-                                <div class="flex justify-between md:flex-col">
-                                    <span class="text-[9px] font-black text-blue-600 uppercase">Fecha Cotiz.</span>
-                                    <span class="text-lg font-black text-blue-600">
-                                        {{ item.fechaCotizacion | date:'dd/MM/yyyy' }}
-                                    </span>
+
+                                <div *ngIf="grupo.isEditingQuotation" class="flex flex-col gap-2 p-1">
+                                    <mat-form-field appearance="outline" class="fuse-mat-dense fuse-mat-no-subscript">
+                                        <mat-label>Precio ($)</mat-label>
+                                        <input matInput type="number" [(ngModel)]="grupo.tempPrecio">
+                                    </mat-form-field>
+                                    <mat-form-field appearance="outline" class="fuse-mat-dense fuse-mat-no-subscript">
+                                        <mat-label>Fecha</mat-label>
+                                        <input matInput [matDatepicker]="pqe" [(ngModel)]="grupo.tempFecha"
+                                            placeholder="dd-mm-aaaa">
+                                        <mat-datepicker-toggle matSuffix [for]="pqe"></mat-datepicker-toggle>
+                                        <mat-datepicker #pqe></mat-datepicker>
+                                    </mat-form-field>
+                                    <div class="flex justify-end gap-1">
+                                        <button mat-icon-button (click)="cancelQuotationEdit(grupo)"
+                                            color="warn"><mat-icon svgIcon="heroicons_solid:x"></mat-icon></button>
+                                        <button mat-icon-button (click)="saveQuotation(grupo)">
+                                            <mat-icon svgIcon="heroicons_solid:check"
+                                                class="text-green-600"></mat-icon></button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <div *ngIf="piezasAgregadas.length === 0" class="flex flex-col items-center justify-center p-12 bg-white/50 rounded-3xl border-2 border-dashed border-gray-300">
-                            <mat-icon class="icon-size-16 text-gray-300 mb-2" svgIcon="heroicons_outline:shopping-bag"></mat-icon>
-                            <p class="text-gray-400 font-bold uppercase tracking-widest text-xs">Sin productos cargados</p>
+                        <div *ngIf="piezasAgregadas.length === 0"
+                            class="flex flex-col items-center justify-center p-12 bg-white/50 rounded-3xl border-2 border-dashed border-gray-300">
+                            <mat-icon class="icon-size-16 text-gray-300 mb-2"
+                                svgIcon="heroicons_outline:shopping-bag"></mat-icon>
+                            <p class="text-gray-400 font-bold uppercase tracking-widest text-xs">Sin productos cargados
+                            </p>
                         </div>
                     </div>
                 </div>

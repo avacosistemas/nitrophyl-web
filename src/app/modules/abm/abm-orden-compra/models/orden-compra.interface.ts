@@ -4,7 +4,7 @@ export interface IOrdenCompra {
     clienteNombre: string;
     idCliente: number;
     nroComprobante: string;
-    nroInterno: string;
+    nroInterno?: string;
     estado: string;
     archivoNombre?: string;
 }
@@ -17,13 +17,14 @@ export interface IOrdenCompraItem {
     cantidad: number;
     precio: number;
     fechaCotizacion?: string;
+    fechaEntrega?: string;
 }
 
 export interface IOrdenCompraCreateDTO {
     fecha: string;
     idCliente: number;
     nroComprobante: string;
-    nroInterno: string;
+    nroInterno?: string;
     archivoNombre?: string;
     archivoContenido?: string | null;
     items: {
@@ -31,6 +32,7 @@ export interface IOrdenCompraCreateDTO {
         cantidad: number;
         precio: number;
         fechaCotizacion?: string;
+        fechaEntrega?: string;
     }[];
 }
 

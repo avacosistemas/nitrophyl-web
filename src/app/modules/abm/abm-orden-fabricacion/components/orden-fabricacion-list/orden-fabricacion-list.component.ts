@@ -29,8 +29,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
     displayedColumns: string[] = [
-        'ocNro', 'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
-        'ofNro', 'ofFecha', 'estado', 'deFabrica', 'deStock', 'prensa', 'operario', 'estimada', 'entregada', 'acciones'
+        'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
+        'ofFecha', 'estado', 'deFabrica', 'deStock', 'maquina', 'operario', 'saldo', 'facturada', 'entregadas', 'acciones'
     ];
     totalReg: number = 0;
 
@@ -52,7 +52,6 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             cliente: [null],
             fechaDesde: [null],
             fechaHasta: [null],
-            nroOrden: [''],
             estado: ['']
         });
     }
@@ -97,10 +96,11 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
 
                             cantFabrica: piezaPrincipal.cantidadAFabricar || 0,
                             cantStock: piezaPrincipal.stockActual || 0,
-                            prensa: orden.prensa || null,
-                            operario: orden.operario || null,
-                            fechaEstimada: orden.fechaEstimada || null,
-                            fechaEntregada: orden.fechaEntregada || null
+                            maquina: orden.prensa || '-',
+                            operario: orden.operario || '-',
+                            saldo: 0,
+                            facturada: 0,
+                            entregadas: 0
                         });
                     });
 
@@ -127,7 +127,6 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             idCliente: formValues.cliente?.id,
             fechaDesde: formValues.fechaDesde ? new Date(formValues.fechaDesde).toLocaleDateString('en-GB') : null,
             fechaHasta: formValues.fechaHasta ? new Date(formValues.fechaHasta).toLocaleDateString('en-GB') : null,
-            nroOrden: formValues.nroOrden,
             estado: formValues.estado
         };
         return params;
@@ -185,7 +184,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                 cantidadSolicitada: pieza ? pieza.cantidadSolicitada : 0,
                 stockDisponible: pieza ? pieza.stockActual : 0,
                 sugeridoFabrica: pieza ? pieza.cantidadAFabricar : 0,
-                sugeridoStock: 0
+                sugeridoStock: 0,
+                fechaEstimada: orden.fechaEstimada || null
             }
         });
 
@@ -202,17 +202,19 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         });
     }
 
-    finalizarOrden(orden: IOrdenFabricacion): void {
+    finalizarOrden(el: any): void {
         const dialogRef = this._dialog.open(FinalizarOrdenDialogComponent, {
             width: '400px',
-            data: {}
+            data: {
+                saldoPendiente: el.saldo || el.ocCantidad
+            }
         });
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.isLoading = true;
 
-                console.log('Finalizar con fecha:', result.fechaEntregada);
+                console.log('Producción parcial:', result.cantidad, 'Fecha:', result.fechaEntregada);
 
                 setTimeout(() => {
                     this._notificationService.showSuccess('Orden finalizada correctamente');
@@ -226,7 +228,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         switch (estado) {
             case 'EN_PROCESO': return 'En Proceso';
             case 'PENDIENTE': return 'Pendiente';
-            case 'FINALIZADA': return 'Finalizada';
+            case 'FINALIZADA': return 'Producida';
             default: return estado;
         }
     }

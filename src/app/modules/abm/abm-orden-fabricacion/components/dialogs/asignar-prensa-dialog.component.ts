@@ -1,8 +1,8 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, Observable } from 'rxjs';
+import { takeUntil, startWith, map } from 'rxjs/operators';
 
 @Component({
     selector: 'app-asignar-prensa-dialog',
@@ -15,6 +15,15 @@ export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
     totalColorClass: string = 'bg-gray-100 border-gray-200';
     totalTextClass: string = 'text-gray-800';
 
+    filteredOperarios$: Observable<any[]>;
+    operarios: any[] = [
+        { id: 1, nombre: 'Juan Pérez' },
+        { id: 2, nombre: 'Ana García' },
+        { id: 3, nombre: 'Carlos López' },
+        { id: 4, nombre: 'Roberto Gómez' },
+        { id: 5, nombre: 'Luisa Fernández' }
+    ];
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
@@ -24,15 +33,18 @@ export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
             cantidadSolicitada: number,
             stockDisponible: number,
             sugeridoFabrica: number,
-            sugeridoStock: number
+            sugeridoStock: number,
+            fechaEstimada: string
         }
     ) {
+        const suggestedStock = Math.min(data.cantidadSolicitada, data.stockDisponible);
+        const suggestedFabrica = Math.max(0, data.cantidadSolicitada - suggestedStock);
+
         this.form = this.fb.group({
-            cantFabrica: [data.sugeridoFabrica || 0, [Validators.required, Validators.min(0)]],
-            cantStock: [data.sugeridoStock || 0, [Validators.required, Validators.min(0)]],
-            prensa: ['', Validators.required],
-            operario: ['', Validators.required],
-            fechaEstimada: [null, Validators.required]
+            cantFabrica: [suggestedFabrica, [Validators.required, Validators.min(0)]],
+            cantStock: [suggestedStock, [Validators.required, Validators.min(0), Validators.max(data.stockDisponible)]],
+            maquina: ['', Validators.required],
+            operario: ['']
         });
     }
 
@@ -44,6 +56,20 @@ export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
             .subscribe(() => {
                 this.calculateTotal();
             });
+
+        this.filteredOperarios$ = this.form.get('operario').valueChanges.pipe(
+            startWith(''),
+            map(value => this._filterOperarios(value))
+        );
+    }
+
+    private _filterOperarios(value: any): any[] {
+        const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+        return this.operarios.filter(o => o.nombre.toLowerCase().includes(filterValue));
+    }
+
+    displayFn(operario: any): string {
+        return operario?.nombre || '';
     }
 
     ngOnDestroy(): void {
@@ -71,6 +97,12 @@ export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
     }
 
     save() {
-        if (this.form.valid) this.dialogRef.close(this.form.value);
+        if (this.form.valid) {
+            const result = {
+                ...this.form.value,
+                fechaEstimada: this.data.fechaEstimada
+            };
+            this.dialogRef.close(result);
+        }
     }
 }

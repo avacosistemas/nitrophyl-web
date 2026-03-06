@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ABMOrdenCompraRoutingModule } from './abm-orden-compra-routing.module';
 
 import { MatTableModule } from '@angular/material/table';
@@ -48,6 +48,7 @@ export const MY_DATE_FORMATS = {
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule,
         ABMOrdenCompraRoutingModule,
         HeaderSharedModule,
         PromptsModule,
