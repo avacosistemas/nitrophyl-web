@@ -85,12 +85,16 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     private calculateMinMax(): void {
         const aux = this.dimensionForm.get('toleranciaAux')?.value;
         const valor = this.dimensionForm.get('valor')?.value;
+
         if (aux !== null && aux !== '' && valor !== null && valor !== '') {
             const auxNum = parseFloat(aux.toString().replace(',', '.'));
             const valorNum = parseFloat(valor.toString().replace(',', '.'));
+
             if (!isNaN(auxNum) && !isNaN(valorNum)) {
-                const m = (valorNum - auxNum).toFixed(4);
-                const M = (valorNum + auxNum).toFixed(4);
+
+                const m = parseFloat((valorNum - auxNum).toFixed(4));
+                const M = parseFloat((valorNum + auxNum).toFixed(4));
+
                 this.dimensionForm.patchValue({
                     minimo: m,
                     maximo: M
