@@ -53,34 +53,50 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
             controlar: [false]
         });
 
-        this.dimensionForm.get('toleranciaAux')?.valueChanges.subscribe(aux => {
-            if (aux !== null && aux !== '') {
-                const valor = this.dimensionForm.get('valor')?.value;
-                if (valor !== null && valor !== '') {
-                    const auxNum = parseFloat(aux);
-                    const valorNum = parseFloat(valor);
-                    if (!isNaN(auxNum) && !isNaN(valorNum)) {
-                        this.dimensionForm.patchValue({
-                            minimo: valorNum - auxNum,
-                            maximo: valorNum + auxNum
-                        }, { emitEvent: false });
-                    }
-                }
-            }
+        this.dimensionForm.get('valor')?.valueChanges.subscribe(val => this.handlePointSubstitution('valor', val));
+        this.dimensionForm.get('toleranciaAux')?.valueChanges.subscribe(val => {
+            this.handlePointSubstitution('toleranciaAux', val);
+            this.calculateMinMax();
         });
 
-        this.dimensionForm.get('minimo')?.valueChanges.subscribe(() => {
+        this.dimensionForm.get('minimo')?.valueChanges.subscribe(val => {
+            this.handlePointSubstitution('minimo', val);
             if (this._clearingAux) return;
             this._clearingAux = true;
             this.dimensionForm.patchValue({ toleranciaAux: null }, { emitEvent: false });
             this._clearingAux = false;
         });
-        this.dimensionForm.get('maximo')?.valueChanges.subscribe(() => {
+        this.dimensionForm.get('maximo')?.valueChanges.subscribe(val => {
+            this.handlePointSubstitution('maximo', val);
             if (this._clearingAux) return;
             this._clearingAux = true;
             this.dimensionForm.patchValue({ toleranciaAux: null }, { emitEvent: false });
             this._clearingAux = false;
         });
+    }
+
+    private handlePointSubstitution(controlName: string, value: any): void {
+        if (typeof value === 'string' && value.includes(',')) {
+            const newValue = value.replace(',', '.');
+            this.dimensionForm.get(controlName).setValue(newValue, { emitEvent: false });
+        }
+    }
+
+    private calculateMinMax(): void {
+        const aux = this.dimensionForm.get('toleranciaAux')?.value;
+        const valor = this.dimensionForm.get('valor')?.value;
+        if (aux !== null && aux !== '' && valor !== null && valor !== '') {
+            const auxNum = parseFloat(aux.toString().replace(',', '.'));
+            const valorNum = parseFloat(valor.toString().replace(',', '.'));
+            if (!isNaN(auxNum) && !isNaN(valorNum)) {
+                const m = (valorNum - auxNum).toFixed(4);
+                const M = (valorNum + auxNum).toFixed(4);
+                this.dimensionForm.patchValue({
+                    minimo: m,
+                    maximo: M
+                }, { emitEvent: false });
+            }
+        }
     }
 
     private _clearingAux = false;
@@ -146,7 +162,14 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
 
         this.isLoading = true;
         const { toleranciaAux, ...formValue } = this.dimensionForm.value;
-        const dto = { ...formValue, idPieza: this.piezaId };
+
+        const dto = {
+            ...formValue,
+            valor: parseFloat(formValue.valor.toString().replace(',', '.')),
+            minimo: formValue.minimo ? parseFloat(formValue.minimo.toString().replace(',', '.')) : null,
+            maximo: formValue.maximo ? parseFloat(formValue.maximo.toString().replace(',', '.')) : null,
+            idPieza: this.piezaId
+        };
 
         if (this.editMode && this.dimensionToEdit) {
             this.subscription.add(

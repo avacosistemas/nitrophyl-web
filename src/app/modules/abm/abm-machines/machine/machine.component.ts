@@ -27,6 +27,7 @@ import { MatTable } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DateAdapter } from '@angular/material/core';
+import * as moment from 'moment';
 
 // * Components.
 import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
@@ -62,9 +63,9 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     private formBuilder: FormBuilder,
     private snackBar: MatSnackBar,
     private router: Router,
-    private dateAdapter: DateAdapter<Date>
+    private dateAdapter: DateAdapter<any>
   ) {
-    this.dateAdapter.setLocale('es');
+    this.dateAdapter.setLocale('es-AR');
     if (!this._machines.getMode()) { this.router.navigate(['/maquinas/grid']); }
     this.mode = this._machines.getMode();
     if (this.mode === 'Edit' || this.mode === 'View' || this.mode === 'Test') {
@@ -312,11 +313,11 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
           this.form.controls.norma.setValue(data[0].norma);
           this.form.controls.versionable.setValue(!!data[0].versionable);
           this.form.controls.observacionesReporte.setValue(data[0].observacionesReporte);
-          
+
           if (data[0].fechaUltimaCalibracion) {
-            const dateObj = new Date(data[0].fechaUltimaCalibracion as string);
-            if (!isNaN(dateObj.getTime())) {
-              this.form.controls.fechaUltimaCalibracion.setValue(dateObj);
+            const dateMoment = moment(data[0].fechaUltimaCalibracion as string);
+            if (dateMoment.isValid()) {
+              this.form.controls.fechaUltimaCalibracion.setValue(dateMoment);
             }
           }
           this.form.controls.perioricidadCalibracion.setValue(data[0].perioricidadCalibracion);
@@ -331,8 +332,8 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   private post(): void {
     let fechaCalibracionStr = null;
     const fechaObj = this.form.controls.fechaUltimaCalibracion.value;
-    if (fechaObj instanceof Date) {
-      fechaCalibracionStr = fechaObj.toISOString();
+    if (fechaObj) {
+      fechaCalibracionStr = moment(fechaObj).toISOString();
     }
 
     const body: IMachine = {
@@ -367,10 +368,8 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
   private put(): void {
     let fechaCalibracionStr = null;
     const fechaObj = this.form.controls.fechaUltimaCalibracion.value;
-    if (fechaObj instanceof Date) {
-      fechaCalibracionStr = fechaObj.toISOString();
-    } else if (typeof fechaObj === 'string' && fechaObj) {
-      fechaCalibracionStr = fechaObj;
+    if (fechaObj) {
+      fechaCalibracionStr = moment(fechaObj).toISOString();
     }
 
     const body: IMachine = {
