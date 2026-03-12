@@ -54,7 +54,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
 
       tipoMolde: ['RECTANGULAR', Validators.required],
-      alto: [null, [Validators.required, Validators.pattern("^[0-9]*$")]],
+      alto: [null, [Validators.pattern("^[0-9]*$")]],
       ancho: [null, [Validators.pattern("^[0-9]*$")]],
       profundidad: [null, [Validators.pattern("^[0-9]*$")]],
       diametro: [null, [Validators.pattern("^[0-9]*$")]]
@@ -132,12 +132,12 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     const numberPattern = Validators.pattern("^[0-9]*$");
 
     if (tipoMolde === 'RECTANGULAR') {
-      anchoCtrl.setValidators([Validators.required, numberPattern]);
-      profCtrl.setValidators([Validators.required, numberPattern]);
+      anchoCtrl.setValidators([numberPattern]);
+      profCtrl.setValidators([numberPattern]);
       diametroCtrl.setValidators([numberPattern]);
       diametroCtrl.setValue(null);
     } else {
-      diametroCtrl.setValidators([Validators.required, numberPattern]);
+      diametroCtrl.setValidators([numberPattern]);
       anchoCtrl.setValidators([numberPattern]);
       profCtrl.setValidators([numberPattern]);
       anchoCtrl.setValue(null);
