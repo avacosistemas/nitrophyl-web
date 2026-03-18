@@ -14,6 +14,7 @@ import { MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { MatDialog } from '@angular/material/dialog';
 import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog.component';
 import { FinalizarOrdenDialogComponent } from '../dialogs/finalizar-orden-dialog.component';
+import moment from 'moment';
 
 type ClienteNitrophyl = Partial<Cliente> & { id: number | null; nombre: string };
 
@@ -29,8 +30,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
     displayedColumns: string[] = [
-        'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
-        'ofFecha', 'estado', 'deFabrica', 'deStock', 'maquina', 'operario', 'saldo', 'facturada', 'entregadas', 'acciones'
+        'ocFecha', 'ocComprobante', 'cliente', 'pieza', 'formula', 'ocCantidad',
+        'ofFecha', 'fechaEntrega', 'estado', 'deFabrica', 'deStock', 'maquina', 'saldo', 'facturada', 'entregadas', 'acciones'
     ];
     totalReg: number = 0;
 
@@ -50,6 +51,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
+            comprobante: [''],
             fechaDesde: [null],
             fechaHasta: [null],
             estado: ['']
@@ -86,21 +88,21 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
 
                         filasPlanas.push({
                             ...orden,
-
                             ocNro: orden.ordenCompraNro,
                             ocFecha: orden.ordenCompraFecha,
-
+                            piezas: orden.piezas, 
                             piezaNombre: piezaPrincipal.nombrePieza || '-',
-                            piezaFormula: 'NK',
+                            piezaFormula: piezaPrincipal.codigoPieza || 'NK',
                             ocCantidad: piezaPrincipal.cantidadSolicitada || 0,
+
+                            entregadas: orden.entregadas || 0,
+                            saldo: orden.saldo || 0,
+                            fechaEstimada: orden.fechaEstimada || null,
 
                             cantFabrica: piezaPrincipal.cantidadAFabricar || 0,
                             cantStock: piezaPrincipal.stockActual || 0,
                             maquina: orden.prensa || '-',
-                            operario: orden.operario || '-',
-                            saldo: 0,
-                            facturada: 0,
-                            entregadas: 0
+                            facturada: 0
                         });
                     });
 
@@ -119,17 +121,17 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
 
     private buildRequestParams(): any {
         const formValues = this.searchForm.value;
-        const params: any = {
+        return {
             first: this.paginator.pageIndex * this.paginator.pageSize,
             rows: this.paginator.pageSize,
             asc: this.sort.direction !== 'desc',
             idx: this.sort.active || 'fecha',
             idCliente: formValues.cliente?.id,
-            fechaDesde: formValues.fechaDesde ? new Date(formValues.fechaDesde).toLocaleDateString('en-GB') : null,
-            fechaHasta: formValues.fechaHasta ? new Date(formValues.fechaHasta).toLocaleDateString('en-GB') : null,
+            comprobante: formValues.comprobante,
+            fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null,
+            fechaHasta: formValues.fechaHasta ? moment(formValues.fechaHasta).format('DD/MM/YYYY') : null,
             estado: formValues.estado
         };
-        return params;
     }
 
     loadClientes(): void {
@@ -203,23 +205,36 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     finalizarOrden(el: any): void {
+        const pieza = el.piezas[0];
         const dialogRef = this._dialog.open(FinalizarOrdenDialogComponent, {
             width: '400px',
             data: {
-                saldoPendiente: el.saldo || el.ocCantidad
+                saldoPendiente: el.saldo,
+                idFormula: pieza.idFormula || pieza.id
             }
         });
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.isLoading = true;
+                const payload = {
+                    idOrden: el.id,
+                    cantidad: result.cantidad,
+                    fecha: moment(result.fechaEntregada).format('DD/MM/YYYY'),
+                    idLote: result.lote.id,
+                    excedente: result.excedente
+                };
 
-                console.log('Producción parcial:', result.cantidad, 'Fecha:', result.fechaEntregada);
-
-                setTimeout(() => {
-                    this._notificationService.showSuccess('Orden finalizada correctamente');
-                    this.search();
-                }, 1000);
+                this._ordenFabricacionService.registrarProduccion(payload).subscribe({
+                    next: () => {
+                        this._notificationService.showSuccess('Producción registrada correctamente');
+                        this.search();
+                    },
+                    error: () => {
+                        this.isLoading = false;
+                        this._notificationService.showError('Error al registrar la producción');
+                    }
+                });
             }
         });
     }

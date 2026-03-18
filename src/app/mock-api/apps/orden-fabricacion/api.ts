@@ -2,11 +2,7 @@ import { Injectable } from '@angular/core';
 import { cloneDeep } from 'lodash-es';
 import { FuseMockApiService } from '@fuse/lib/mock-api/mock-api.service';
 import {
-    ordenesFabricacion as ordenesFabricacionData,
-    piezas as piezasData,
-    stockPiezas as stockPiezasData,
-    cotizacionesPiezas as cotizacionesData,
-    ordenesCompraCliente as ordenesCompraClienteData
+    ordenesFabricacion as ordenesFabricacionData
 } from 'app/mock-api/apps/orden-fabricacion/data';
 import * as moment from 'moment';
 
@@ -15,10 +11,6 @@ import * as moment from 'moment';
 })
 export class OrdenFabricacionMockApi {
     private _ordenesFabricacion: any[] = ordenesFabricacionData;
-    private _piezas: any[] = piezasData;
-    private _stockPiezas: any[] = stockPiezasData;
-    private _cotizaciones: any[] = cotizacionesData;
-    private _ordenesCompraCliente: any = ordenesCompraClienteData;
 
     constructor(private _fuseMockApiService: FuseMockApiService) {
         this.registerHandlers();
@@ -105,42 +97,42 @@ export class OrdenFabricacionMockApi {
             return [201, { status: 'OK', data: newOrder }];
         });
 
-        this._fuseMockApiService.onGet('api/ordenesCompra/porCliente/:idCliente').reply(({ request }) => {
-            const idCliente = +request.params.get('idCliente');
-            const ordenes = this._ordenesCompraCliente[idCliente] || [];
-            return [200, { status: 'OK', data: ordenes }];
-        });
+        // this._fuseMockApiService.onGet('api/ordenesCompra/porCliente/:idCliente').reply(({ request }) => {
+        //     const idCliente = +request.params.get('idCliente');
+        //     const ordenes = this._ordenesCompraCliente[idCliente] || [];
+        //     return [200, { status: 'OK', data: ordenes }];
+        // });
 
 
 
 
-        this._fuseMockApiService.onGet('api/piezas/paraFabricacion').reply(({ request }) => {
-            const idCliente = request.params.get('idCliente');
-            const soloDelCliente = request.params.get('soloDelCliente') === 'true';
+    //     this._fuseMockApiService.onGet('api/piezas/paraFabricacion').reply(({ request }) => {
+    //         const idCliente = request.params.get('idCliente');
+    //         const soloDelCliente = request.params.get('soloDelCliente') === 'true';
 
-            let piezasFiltradas = cloneDeep(this._piezas);
+    //         let piezasFiltradas = cloneDeep(this._piezas);
 
-            if (idCliente && soloDelCliente) {
-                piezasFiltradas = piezasFiltradas.filter(p => p.idCliente == idCliente);
-            }
-            return [200, { status: 'OK', data: piezasFiltradas }];
-        });
+    //         if (idCliente && soloDelCliente) {
+    //             piezasFiltradas = piezasFiltradas.filter(p => p.idCliente == idCliente);
+    //         }
+    //         return [200, { status: 'OK', data: piezasFiltradas }];
+    //     });
 
-        this._fuseMockApiService.onGet('api/piezas/stock/:idPieza').reply(({ request }) => {
-            const idPieza = +request.params.get('idPieza');
-            const stockInfo = this._stockPiezas.find(s => s.idPieza === idPieza);
-            return [200, { status: 'OK', data: stockInfo || { idPieza, stock: 0 } }];
-        });
+    //     this._fuseMockApiService.onGet('api/piezas/stock/:idPieza').reply(({ request }) => {
+    //         const idPieza = +request.params.get('idPieza');
+    //         const stockInfo = this._stockPiezas.find(s => s.idPieza === idPieza);
+    //         return [200, { status: 'OK', data: stockInfo || { idPieza, stock: 0 } }];
+    //     });
 
-        this._fuseMockApiService.onGet('api/piezas/cotizacion/:idPieza/:idCliente').reply(({ request }) => {
-            const idPieza = +request.params.get('idPieza');
-            const idCliente = +request.params.get('idCliente');
-            const cotizacion = this._cotizaciones.find(c => c.idPieza === idPieza && c.idCliente === idCliente);
+    //     this._fuseMockApiService.onGet('api/piezas/cotizacion/:idPieza/:idCliente').reply(({ request }) => {
+    //         const idPieza = +request.params.get('idPieza');
+    //         const idCliente = +request.params.get('idCliente');
+    //         const cotizacion = this._cotizaciones.find(c => c.idPieza === idPieza && c.idCliente === idCliente);
 
-            if (cotizacion) {
-                return [200, { status: 'OK', data: cotizacion }];
-            }
-            return [200, { status: 'OK', data: { tieneCotizacion: false } }];
-        });
+    //         if (cotizacion) {
+    //             return [200, { status: 'OK', data: cotizacion }];
+    //         }
+    //         return [200, { status: 'OK', data: { tieneCotizacion: false } }];
+    //     });
     }
 }

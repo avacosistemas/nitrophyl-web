@@ -35,7 +35,7 @@
                     </mat-form-field>
                     <mat-form-field appearance="outline">
                         <mat-label>Comprobante</mat-label>
-                        <input matInput formControlName="searchText" placeholder="Buscar...">
+                        <input matInput formControlName="comprobante" placeholder="Buscar...">
                     </mat-form-field>
                     <div class="flex justify-end items-center gap-2">
                         <button mat-stroked-button type="button" (click)="limpiarFiltros()">Limpiar</button>
@@ -56,41 +56,39 @@
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha</th>
                 <td mat-cell *matCellDef="let element">{{ element.fecha }}</td>
             </ng-container>
-            <ng-container matColumnDef="clienteNombre">
+            <ng-container matColumnDef="cliente">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
-                <td mat-cell *matCellDef="let element">{{ element.clienteNombre }}</td>
+                <td mat-cell *matCellDef="let element">{{ element.cliente }}</td>
             </ng-container>
-            <ng-container matColumnDef="nroComprobante">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nro. Comprobante</th>
-                <td mat-cell *matCellDef="let element">{{ element.nroComprobante }}</td>
+            <ng-container matColumnDef="comprobante">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Comprobante</th>
+                <td mat-cell *matCellDef="let element">{{ element.comprobante }}</td>
             </ng-container>
 
 
             <ng-container matColumnDef="estado">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
                 <td mat-cell *matCellDef="let element">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide" [ngClass]="{
-                        'bg-yellow-100 text-yellow-800': element.estado === 'Pendiente',
-                        'bg-blue-100 text-blue-800': element.estado === 'Iniciada',
-                        'bg-green-100 text-green-800': element.estado === 'Finalizada'
-                        }">
+                    <span
+                        class="px-2 py-1 text-[10px] font-bold rounded-full uppercase tracking-wide inline-block w-24 text-center"
+                        [ngClass]="{
+                        'bg-yellow-100 text-yellow-800': element.estado === 'PENDIENTE',
+                        'bg-blue-100 text-blue-800': element.estado === 'EN_PROCESO',
+                        'bg-green-100 text-green-800': element.estado === 'FINALIZADA',
+                        'bg-red-100 text-red-800': element.estado === 'CANCELADA'
+                    }">
                         {{ element.estado }}
                     </span>
                 </td>
             </ng-container>
 
             <ng-container matColumnDef="archivo">
-                <th mat-header-cell *matHeaderCellDef class="text-right">Archivo</th>
-                <td mat-cell *matCellDef="let element" class="text-right">
-                    <div *ngIf="element.archivoNombre" class="flex justify-end">
-                        <button mat-icon-button matTooltip="Previsualizar" (click)="previewArchivo(element)">
-                            <mat-icon svgIcon="heroicons_outline:eye"></mat-icon>
-                        </button>
-                        <button mat-icon-button matTooltip="Descargar" (click)="downloadArchivo(element)">
-                            <mat-icon svgIcon="heroicons_outline:download"></mat-icon>
-                        </button>
-                    </div>
-                    <span *ngIf="!element.archivoNombre">-</span>
+                <th mat-header-cell *matHeaderCellDef class="text-center">Archivo</th>
+                <td mat-cell *matCellDef="let element" class="text-center">
+                    <button mat-icon-button color="primary" matTooltip="Ver PDF de la Orden"
+                        (click)="previewArchivo(element)">
+                        <mat-icon svgIcon="heroicons_outline:document-text"></mat-icon>
+                    </button>
                 </td>
             </ng-container>
 

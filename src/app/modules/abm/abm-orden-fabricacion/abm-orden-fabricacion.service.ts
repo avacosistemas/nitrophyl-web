@@ -47,10 +47,6 @@ export class AbmOrdenFabricacionService {
         return this.http.post<any>(this.apiUrl, dto);
     }
 
-    getOrdenesCompraPorCliente(idCliente: number): Observable<any> {
-        return this.http.get<any>(`${environment.server}ordenesCompra/porCliente/${idCliente}`);
-    }
-
     getPiezas(idCliente?: number | null, soloDelCliente: boolean = true): Observable<any> {
         let params = new HttpParams().set('soloDelCliente', soloDelCliente.toString());
         if (idCliente) params = params.set('idCliente', idCliente.toString());
@@ -61,12 +57,25 @@ export class AbmOrdenFabricacionService {
     //     return this.http.get<any>(`${environment.server}piezas/stock/${idPieza}`);
     // }
 
+    getLotes(idFormula: any, nroLote: string): Observable<any> {
+        let params = new HttpParams();
+
+        if (idFormula) {
+            params = params.set('idFormula', idFormula.toString());
+        }
+        if (nroLote) {
+            params = params.set('nroLote', nroLote);
+        }
+
+        return this.http.get<any>(`${environment.server}lote/formula`, { params });
+    }
+
     getPiezaStock(idPieza: number): Observable<any> {
         return of({
             status: 'OK',
             data: {
                 idPieza: idPieza,
-                stock: 22 
+                stock: 22
             }
         });
     }
@@ -74,5 +83,14 @@ export class AbmOrdenFabricacionService {
     getPiezaCotizacion(idPieza: number, idCliente: number | null): Observable<any> {
         if (idCliente === null) return of({ data: { tieneCotizacion: true, valor: 0, fecha: null } });
         return this.http.get<any>(`${environment.server}piezas/cotizacion/${idPieza}/${idCliente}`);
+    }
+
+    registrarProduccion(payload: any): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/registrarProduccion`, payload);
+    }
+
+    getOrdenesCompraPorCliente(idCliente: number): Observable<any> {
+        let params = new HttpParams().set('idCliente', idCliente.toString());
+        return this.http.get<any>(`${environment.server}ordenCompra`, { params });
     }
 }

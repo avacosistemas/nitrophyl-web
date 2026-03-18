@@ -1,10 +1,9 @@
 export interface IOrdenCompra {
     id: number;
-    fecha: string;
-    clienteNombre: string;
     idCliente: number;
-    nroComprobante: string;
-    nroInterno?: string;
+    cliente: string;
+    comprobante: string;
+    fecha: string;
     estado: string;
     archivoNombre?: string;
 }
@@ -21,18 +20,24 @@ export interface IOrdenCompraItem {
 }
 
 export interface IOrdenCompraCreateDTO {
-    fecha: string;
+    archivo: {
+        archivo: string;
+        nombre: string;
+    };
+    cliente?: string;
     idCliente: number;
-    nroComprobante: string;
-    nroInterno?: string;
-    archivoNombre?: string;
-    archivoContenido?: string | null;
-    items: {
+    comprobante: string;
+    fecha: string;
+    detalle: {
         idPieza: number;
-        cantidad: number;
-        precio: number;
-        fechaCotizacion?: string;
-        fechaEntrega?: string;
+        pieza?: string;
+        idCotizacion?: number | null;
+        fechaCotizacion?: string | null;
+        valorCotizacion?: number | null;
+        entregasSolicitadas: {
+            cantidad: number;
+            fechaEntregaSolicitada: string;
+        }[];
     }[];
 }
 

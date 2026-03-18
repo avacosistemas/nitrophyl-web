@@ -7,12 +7,11 @@ import { environment } from 'environments/environment';
 export class MockRedirectInterceptor implements HttpInterceptor {
 
     private mockEndpoints: string[] = [
-        '/ordenCompra',
         '/ordenFabricacion',
-        '/ordenesCompra/porCliente',
-        '/piezas/paraFabricacion',
-        '/piezas/stock',
-        '/piezas/cotizacion'
+        // '/ordenesCompra/porCliente',
+        // '/piezas/paraFabricacion',
+        // '/piezas/stock',
+        // '/piezas/cotizacion'
     ];
 
     constructor() { }
@@ -29,7 +28,6 @@ export class MockRedirectInterceptor implements HttpInterceptor {
             const mockReq = req.clone({ url: newUrl });
             return next.handle(mockReq);
         }
-
         return next.handle(req);
     }
 }

@@ -19,6 +19,8 @@ export interface IOrdenFabricacion {
     operario?: string;
     fechaEstimada?: string;
     fechaEntregada?: string;
+    entregadas: number;
+    saldo?: number;
 
     piezas: IOrdenFabricacionPieza[];
 }
@@ -29,6 +31,7 @@ export interface IOrdenFabricacionPieza {
     idPieza: number;
     codigoPieza: string;
     nombrePieza: string;
+    idFormula?: number;
     cantidadSolicitada: number;
     stockActual: number;
     cantidadAFabricar: number;
@@ -58,4 +61,11 @@ export interface IPiezaCotizacionInfo {
     tieneCotizacion: boolean;
     valor?: number;
     fecha?: string;
+}
+
+export interface IProduccionDTO {
+    cantidad: number;
+    fechaEntregada: string;
+    lote: any;
+    excedente: 'FACTURA' | 'STOCK' | null;
 }

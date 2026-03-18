@@ -10,6 +10,7 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatDialog } from '@angular/material/dialog';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { IOrdenCompraApiResponse, IOrdenCompraCreateDTO } from '../../models/orden-compra.interface';
 import * as moment from 'moment';
 
 @Component({
@@ -99,8 +100,10 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             debounceTime(300),
             switchMap(([val, solo]) => {
                 const term = typeof val === 'string' ? val : '';
-                return this._service.getPiezas(this.form.get('cliente').value?.id, solo).pipe(
-                    map(res => this._filter(term, res.data || []))
+                const clienteId = this.form.get('cliente').value?.id;
+
+                return this._service.getPiezasCombo(solo ? clienteId : null, term).pipe(
+                    map(res => res.data || [])
                 );
             })
         );
@@ -132,20 +135,35 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
     onPiezaSelected(event: any): void {
         const pieza = event.option.value;
+        const clienteId = this.form.get('cliente').value?.id;
         const exists = this.piezasAgregadas.find(g => g.idPieza === pieza.id);
 
-        this.isLoading = true;
-        this._service.getPiezaCotizacion(pieza.id, this.form.get('cliente').value?.id).subscribe(res => {
-            this.piezaCotizacionInfo = res.data;
+        if (!clienteId) {
+            this._notification.showError("Debe seleccionar un cliente primero");
+            return;
+        }
 
-            if (exists) {
-                // Si ya existe la pieza en la orden, forzamos que use la cotización ya definida
-                this.piezaCotizacionInfo.tieneCotizacion = true;
-                this.piezaCotizacionInfo.valor = exists.precio;
-                this.piezaCotizacionInfo.fecha = exists.fechaCotizacion ? moment(exists.fechaCotizacion, 'DD-MM-YYYY').toDate() : null;
+        this.isLoading = true;
+        this._service.getCotizaciones(pieza.id, clienteId).subscribe(res => {
+            const cotizacion = res.data?.page && res.data.page.length > 0 ? res.data.page[0] : null;
+
+            if (cotizacion) {
+                this.piezaCotizacionInfo = {
+                    id: cotizacion.id,
+                    tieneCotizacion: true,
+                    valor: cotizacion.valor,
+                    fecha: cotizacion.fecha ? moment(cotizacion.fecha, 'DD/MM/YYYY').toDate() : null
+                };
+            } else {
+                this.piezaCotizacionInfo = { tieneCotizacion: false, valor: null, fecha: null };
             }
 
-            // Patch the form with quotation info
+            if (exists) {
+                this.piezaCotizacionInfo.tieneCotizacion = true;
+                this.piezaCotizacionInfo.valor = exists.precio;
+                this.piezaCotizacionInfo.fecha = exists.fechaCotizacion ? moment(exists.fechaCotizacion, 'DD/MM/YYYY').toDate() : null;
+            }
+
             this.piezaForm.patchValue({
                 cotizacionValor: this.piezaCotizacionInfo.valor,
                 cotizacionFecha: this.piezaCotizacionInfo.fecha,
@@ -155,25 +173,29 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             this.updateCotizacionValidators();
             this.isLoading = false;
             this._cdr.detectChanges();
+        }, () => {
+            this.isLoading = false;
+            this._notification.showError("Error al obtener la cotización");
         });
     }
 
     addOrUpdatePieza(continueAdding: boolean): void {
         if (this.piezaForm.invalid) { this.piezaForm.markAllAsTouched(); return; }
+
         const p = this.piezaForm.getRawValue();
+        const precio = p.cotizacionValor;
+        const idCotiz = p.actualizarCotizacion ? null : (this.piezaCotizacionInfo?.id || null);
 
         let grupo = this.piezasAgregadas.find(g => g.idPieza === p.pieza.id);
-
-        const precio = p.cotizacionValor;
 
         const batch = {
             idTemp: p.idTemp || Date.now(),
             cantidadSolicitada: p.cantidadSolicitada,
-            fechaEntrega: p.fechaEntrega ? moment(p.fechaEntrega).format('DD-MM-YYYY') : '',
+            fechaEntrega: p.fechaEntrega ? moment(p.fechaEntrega).format('DD/MM/YYYY') : '',
             isEditing: false
         };
 
-        const fechaCotiz = p.cotizacionFecha ? moment(p.cotizacionFecha).format('DD-MM-YYYY') : '';
+        const fechaCotiz = p.cotizacionFecha ? moment(p.cotizacionFecha).format('DD/MM/YYYY') : '';
 
         if (grupo) {
             const batchIndex = grupo.batches.findIndex(b => b.idTemp === batch.idTemp);
@@ -182,13 +204,19 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             } else {
                 grupo.batches.push(batch);
             }
+            grupo.idCotizacion = idCotiz;
+            grupo.precio = precio;
+            grupo.fechaCotizacion = fechaCotiz;
+            grupo.esActualizacion = p.actualizarCotizacion;
         } else {
             grupo = {
                 idPieza: p.pieza.id,
                 codigo: p.pieza.codigo,
                 denominacion: p.pieza.denominacion,
+                idCotizacion: idCotiz,
                 precio: precio,
                 fechaCotizacion: fechaCotiz,
+                esActualizacion: p.actualizarCotizacion,
                 batches: [batch]
             };
             this.piezasAgregadas.push(grupo);
@@ -214,30 +242,31 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             const base64 = (reader.result as string).split(',')[1];
             const header = this.form.getRawValue();
 
-            const flattenedItems = [];
-            this.piezasAgregadas.forEach(g => {
-                g.batches.forEach(b => {
-                    flattenedItems.push({
-                        idPieza: g.idPieza,
-                        cantidad: b.cantidadSolicitada,
-                        precio: g.precio,
-                        fechaCotizacion: g.fechaCotizacion,
-                        fechaEntrega: b.fechaEntrega
-                    });
-                });
-            });
-
-            const dto = {
+            const dto: IOrdenCompraCreateDTO = {
                 idCliente: header.cliente.id,
+                cliente: header.cliente.nombre,
                 fecha: moment(header.fecha).format('DD/MM/YYYY'),
-                nroComprobante: header.nroComprobante,
-                archivoNombre: this.selectedFile.name,
-                archivoContenido: base64,
-                items: flattenedItems
+                comprobante: header.nroComprobante,
+                archivo: { nombre: this.selectedFile.name, archivo: base64 },
+                detalle: this.piezasAgregadas.map(g => ({
+                    idPieza: g.idPieza,
+                    pieza: g.denominacion,
+                    idCotizacion: (!g.esActualizacion && g.idCotizacion) ? g.idCotizacion : null,
+                    valorCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.precio,
+                    fechaCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.fechaCotizacion,
+                    entregasSolicitadas: g.batches.map(b => ({
+                        cantidad: b.cantidadSolicitada,
+                        fechaEntregaSolicitada: b.fechaEntrega
+                    }))
+                }))
             };
+
             this._service.createOrdenCompra(dto).subscribe(() => {
                 this._notification.showSuccess("Orden Guardada Correctamente");
                 this._router.navigate(['/orden-compra/list']);
+            }, (error) => {
+                console.error(error);
+                this._notification.showError(error.error?.message || "Error al guardar");
             });
         };
         reader.readAsDataURL(this.selectedFile);
@@ -313,7 +342,6 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     resetItemForm(show: boolean, openAutocomplete: boolean = true): void {
         this.piezaForm.reset({ soloDelCliente: true });
         this.isEditingItem = false;
-        this.showItemForm = show;
         this.piezaCotizacionInfo = null;
         if (show && openAutocomplete) {
             setTimeout(() => {
@@ -383,13 +411,13 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     editBatch(batch: any): void {
         batch.isEditing = true;
         batch.tempCantidad = batch.cantidadSolicitada;
-        batch.tempFecha = batch.fechaEntrega ? moment(batch.fechaEntrega, 'DD-MM-YYYY') : null;
+        batch.tempFecha = batch.fechaEntrega ? moment(batch.fechaEntrega, 'DD/MM/YYYY') : null;
     }
 
     saveBatch(batch: any): void {
         if (batch.tempCantidad > 0 && batch.tempFecha) {
             batch.cantidadSolicitada = batch.tempCantidad;
-            batch.fechaEntrega = moment(batch.tempFecha).format('DD-MM-YYYY');
+            batch.fechaEntrega = moment(batch.tempFecha).format('DD/MM/YYYY');
             batch.isEditing = false;
         } else {
             this._notification.showError("Cantidad y Fecha de entrega son requeridas");
@@ -411,12 +439,12 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     editQuotation(grupo: any): void {
         grupo.isEditingQuotation = true;
         grupo.tempPrecio = grupo.precio;
-        grupo.tempFecha = grupo.fechaCotizacion ? moment(grupo.fechaCotizacion, 'DD-MM-YYYY') : null;
+        grupo.tempFecha = grupo.fechaCotizacion ? moment(grupo.fechaCotizacion, 'DD/MM/YYYY') : null;
     }
 
     saveQuotation(grupo: any): void {
         grupo.precio = grupo.tempPrecio;
-        grupo.fechaCotizacion = grupo.tempFecha ? moment(grupo.tempFecha).format('DD-MM-YYYY') : '';
+        grupo.fechaCotizacion = grupo.tempFecha ? moment(grupo.tempFecha).format('DD/MM/YYYY') : '';
         grupo.isEditingQuotation = false;
     }
 

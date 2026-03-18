@@ -10,12 +10,7 @@ export class FuseLoadingInterceptor implements HttpInterceptor
     handleRequestsAutomatically: boolean;
 
     private mockEndpoints: string[] = [
-        '/ordenCompra',
-        '/ordenesCompra/porCliente',
         '/ordenFabricacion',
-        '/piezas/paraFabricacion',
-        '/piezas/stock',
-        '/piezas/cotizacion'
     ];
 
     /**

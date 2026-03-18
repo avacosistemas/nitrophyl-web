@@ -27,11 +27,16 @@ export class AbmOrdenCompraService {
 
     getOrdenesCompra(params: any): Observable<IOrdenCompraApiResponse> {
         let httpParams = new HttpParams();
-        Object.keys(params).forEach(key => {
-            if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
-                httpParams = httpParams.set(key, params[key].toString());
-            }
-        });
+        if (params.asc !== undefined) httpParams = httpParams.set('asc', params.asc.toString());
+        if (params.comprobante) httpParams = httpParams.set('comprobante', params.comprobante);
+        if (params.estado) httpParams = httpParams.set('estado', params.estado);
+        if (params.fechaDesde) httpParams = httpParams.set('fechaDesde', params.fechaDesde);
+        if (params.fechaHasta) httpParams = httpParams.set('fechaHasta', params.fechaHasta);
+        if (params.first !== undefined) httpParams = httpParams.set('first', params.first.toString());
+        if (params.idCliente) httpParams = httpParams.set('idCliente', params.idCliente.toString());
+        if (params.idx) httpParams = httpParams.set('idx', params.idx);
+        if (params.rows) httpParams = httpParams.set('rows', params.rows.toString());
+
         return this.http.get<IOrdenCompraApiResponse>(this.apiUrl, { params: httpParams });
     }
 
@@ -39,10 +44,30 @@ export class AbmOrdenCompraService {
         return this.http.post<any>(this.apiUrl, dto);
     }
 
-    downloadArchivo(id: number): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/archivo/${id}`);
+    createOrdenCompraDetalle(dto: any): Observable<any> {
+        return this.http.post<any>(`${environment.server}ordenCompraDetalle`, dto);
     }
 
+    updateOrdenCompraDetalle(id: number, dto: any): Observable<any> {
+        return this.http.put<any>(`${environment.server}ordenCompraDetalle/${id}`, dto);
+    }
+
+    deleteOrdenCompraDetalle(id: number): Observable<any> {
+        return this.http.delete<any>(`${environment.server}ordenCompraDetalle/${id}`);
+    }
+
+    createOrdenCompraDetallePedido(dto: any): Observable<any> {
+        return this.http.post<any>(`${environment.server}ordenCompraDetallePedido`, dto);
+    }
+
+    updateOrdenCompraDetallePedido(id: number, dto: any): Observable<any> {
+        return this.http.put<any>(`${environment.server}ordenCompraDetallePedido/${id}`, dto);
+    }
+
+    deleteOrdenCompraDetallePedido(id: number): Observable<any> {
+        return this.http.delete<any>(`${environment.server}ordenCompraDetallePedido/${id}`);
+    }
+    
     getPiezas(idCliente?: number | null, soloDelCliente: boolean = true): Observable<any> {
         let params = new HttpParams().set('soloDelCliente', soloDelCliente.toString());
         if (idCliente) params = params.set('idCliente', idCliente.toString());
@@ -51,5 +76,26 @@ export class AbmOrdenCompraService {
 
     getPiezaCotizacion(idPieza: number, idCliente: number | null): Observable<any> {
         return this.http.get<any>(`${environment.server}piezas/cotizacion/${idPieza}/${idCliente}`);
+    }
+
+    getPiezasCombo(idCliente?: number | null, nombre?: string): Observable<any> {
+        let params = new HttpParams();
+        if (idCliente) params = params.set('idCliente', idCliente.toString());
+        if (nombre) params = params.set('nombre', nombre);
+
+        return this.http.get<any>(`${environment.server}pieza/combo`, { params });
+    }
+
+    getCotizaciones(idPieza: number, idCliente: number): Observable<any> {
+        const params = new HttpParams()
+            .set('idCliente', idCliente.toString())
+            .set('idPieza', idPieza.toString())
+            .set('soloVigentes', 'true');
+
+        return this.http.get<any>(`${environment.server}cotizacion`, { params });
+    }
+
+    getArchivoOrdenCompra(id: number): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}Archivo/${id}`);
     }
 }

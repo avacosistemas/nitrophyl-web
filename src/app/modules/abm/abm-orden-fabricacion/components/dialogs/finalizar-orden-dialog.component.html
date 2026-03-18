@@ -1,0 +1,35 @@
+<h2 mat-dialog-title class="font-bold text-gray-800">Confirmar Producción</h2>
+<mat-dialog-content [formGroup]="form" class="flex flex-col gap-4">
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center mb-2">
+        <span class="text-xs font-bold text-gray-500 uppercase">Saldo Pendiente</span>
+        <span class="text-xl font-bold text-primary">{{ data.saldoPendiente }}</span>
+    </div>
+
+    <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Lote</mat-label>
+        <input type="text" matInput formControlName="lote" [matAutocomplete]="autoLote">
+        <mat-autocomplete #autoLote="matAutocomplete" [displayWith]="displayFn">
+            <mat-option *ngFor="let lote of filteredLotes$ | async" [value]="lote">
+                {{ lote.nombre }} (Cód: {{ lote.codigo }})
+            </mat-option>
+        </mat-autocomplete>
+    </mat-form-field>
+
+    <div class="grid grid-cols-2 gap-4">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Cantidad</mat-label>
+            <input type="number" matInput formControlName="cantidad" min="1" [max]="data.saldoPendiente">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Fecha</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="fechaEntregada">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+    </div>
+</mat-dialog-content>
+<mat-dialog-actions align="end" class="pb-6">
+    <button mat-button mat-dialog-close>Cancelar</button>
+    <button mat-flat-button color="accent" [disabled]="form.invalid" (click)="save()">Confirmar Producción</button>
+</mat-dialog-actions>

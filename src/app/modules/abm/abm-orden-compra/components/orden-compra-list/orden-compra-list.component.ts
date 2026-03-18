@@ -15,6 +15,7 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { Cliente } from 'app/shared/models/cliente.model';
 import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import moment from 'moment';
 
 @Component({
     selector: 'app-orden-compra-list',
@@ -27,7 +28,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenCompra>([]);
-    displayedColumns: string[] = ['fecha', 'clienteNombre', 'nroComprobante', 'estado', 'archivo'];
+    displayedColumns: string[] = ['fecha', 'cliente', 'comprobante', 'estado', 'archivo'];
     totalReg: number = 0;
 
     searchForm: FormGroup;
@@ -49,7 +50,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
             cliente: [null],
             fechaDesde: [null],
             fechaHasta: [null],
-            searchText: ['']
+            comprobante: ['']
         });
     }
 
@@ -89,19 +90,18 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     private buildRequestParams(): any {
         const formValues = this.searchForm.value;
-        const params: any = {
+        return {
             first: this.paginator.pageIndex * this.paginator.pageSize,
             rows: this.paginator.pageSize,
             asc: this.sort.direction !== 'desc',
             idx: this.sort.active || 'fecha',
+            comprobante: formValues.comprobante,
+            fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null,
+            fechaHasta: formValues.fechaHasta ? moment(formValues.fechaHasta).format('DD/MM/YYYY') : null,
             idCliente: formValues.cliente?.id,
-            fechaDesde: formValues.fechaDesde ? new Date(formValues.fechaDesde).toLocaleDateString('en-GB') : null,
-            fechaHasta: formValues.fechaHasta ? new Date(formValues.fechaHasta).toLocaleDateString('en-GB') : null,
-            busqueda: formValues.searchText
         };
-        return params;
     }
-
+    
     loadClientes(): void {
         this._clientesService.getClientes().pipe(takeUntil(this._destroying$)).subscribe({
             next: (res) => {
@@ -131,18 +131,37 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     previewArchivo(element: IOrdenCompra): void {
-        this._ordenCompraService.downloadArchivo(element.id).subscribe(res => {
-            const base64Pdf = res.data.archivoContenido;
-            this.dialog.open(PDFModalDialogComponent, {
-                width: '80vw',
-                height: '90vh',
-                data: { src: base64Pdf, title: res.data.archivoNombre, showDownloadButton: true }
-            });
+        this.isLoading = true;
+
+        this._ordenCompraService.getArchivoOrdenCompra(element.id).subscribe({
+            next: (res) => {
+                this.isLoading = false;
+                if (res.status === 'OK' && res.data) {
+                    const base64Pdf = res.data.archivoContenido;
+                    const nombreArchivo = res.data.archivoNombre || 'orden_compra.pdf';
+
+                    this.dialog.open(PDFModalDialogComponent, {
+                        width: '80vw',
+                        height: '90vh',
+                        data: {
+                            src: base64Pdf,
+                            title: nombreArchivo,
+                            showDownloadButton: true
+                        }
+                    });
+                } else {
+                    this._notificationService.showError('No se encontró el archivo adjunto.');
+                }
+            },
+            error: (err) => {
+                this.isLoading = false;
+                this._notificationService.showError('Error al recuperar el archivo del servidor.');
+            }
         });
     }
 
     downloadArchivo(element: IOrdenCompra): void {
-        this._ordenCompraService.downloadArchivo(element.id).subscribe(res => {
+        this._ordenCompraService.getArchivoOrdenCompra(element.id).subscribe(res => {
             const byteCharacters = atob(res.data.archivoContenido);
             const byteNumbers = new Array(byteCharacters.length);
             for (let i = 0; i < byteCharacters.length; i++) {
