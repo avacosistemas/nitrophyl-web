@@ -16,6 +16,12 @@ export class AbmOrdenCompraService {
     private _headerSubtitle = new BehaviorSubject<string>('');
     headerSubtitle$ = this._headerSubtitle.asObservable();
 
+    private _headerTitle = new BehaviorSubject<string>('');
+    headerTitle$ = this._headerTitle.asObservable();
+
+    private _headerBreadcrumbs = new BehaviorSubject<any[]>([]);
+    headerBreadcrumbs$ = this._headerBreadcrumbs.asObservable();
+
     private _actionTriggered = new Subject<string>();
     actionTriggered$ = this._actionTriggered.asObservable();
 
@@ -23,6 +29,8 @@ export class AbmOrdenCompraService {
 
     updateHeaderButtons(buttons: any[]): void { this._headerButtons.next(buttons); }
     updateHeaderSubtitle(subtitle: string): void { this._headerSubtitle.next(subtitle); }
+    updateHeaderTitle(title: string): void { this._headerTitle.next(title); }
+    updateHeaderBreadcrumbs(breadcrumbs: any[]): void { this._headerBreadcrumbs.next(breadcrumbs); }
     triggerAction(action: string): void { this._actionTriggered.next(action); }
 
     getOrdenesCompra(params: any): Observable<IOrdenCompraApiResponse> {
@@ -38,6 +46,10 @@ export class AbmOrdenCompraService {
         if (params.rows) httpParams = httpParams.set('rows', params.rows.toString());
 
         return this.http.get<IOrdenCompraApiResponse>(this.apiUrl, { params: httpParams });
+    }
+
+    getOrdenCompra(id: number): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/${id}`);
     }
 
     createOrdenCompra(dto: IOrdenCompraCreateDTO): Observable<any> {

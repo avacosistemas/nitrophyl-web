@@ -82,12 +82,12 @@
                 </td>
             </ng-container>
 
-            <ng-container matColumnDef="archivo">
-                <th mat-header-cell *matHeaderCellDef class="text-center">Archivo</th>
-                <td mat-cell *matCellDef="let element" class="text-center">
-                    <button mat-icon-button color="primary" matTooltip="Ver PDF de la Orden"
-                        (click)="previewArchivo(element)">
-                        <mat-icon svgIcon="heroicons_outline:document-text"></mat-icon>
+            <ng-container matColumnDef="acciones">
+                <th mat-header-cell *matHeaderCellDef></th>
+                <td mat-cell *matCellDef="let element" class="text-right">
+                    <button mat-icon-button matTooltip="Ver Orden de Compra"
+                        (click)="viewOrdenCompra(element)">
+                        <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
                     </button>
                 </td>
             </ng-container>

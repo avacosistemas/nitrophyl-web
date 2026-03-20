@@ -1,4 +1,5 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -13,7 +14,6 @@ import { IOrdenCompra } from '../../models/orden-compra.interface';
 import { AbmOrdenCompraService } from '../../abm-orden-compra.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { Cliente } from 'app/shared/models/cliente.model';
-import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import moment from 'moment';
 
@@ -28,7 +28,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenCompra>([]);
-    displayedColumns: string[] = ['fecha', 'cliente', 'comprobante', 'estado', 'archivo'];
+    displayedColumns: string[] = ['fecha', 'cliente', 'comprobante', 'estado', 'acciones'];
     totalReg: number = 0;
 
     searchForm: FormGroup;
@@ -44,7 +44,8 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         private _notificationService: NotificationService,
         private _sanitizer: DomSanitizer,
         private _fb: FormBuilder,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _router: Router
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
@@ -55,6 +56,13 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
     }
 
     ngOnInit(): void {
+        this._ordenCompraService.updateHeaderTitle('Órdenes de Compra');
+        this._ordenCompraService.updateHeaderSubtitle('');
+        this._ordenCompraService.updateHeaderBreadcrumbs([
+            { title: 'Administración', route: [], condition: true },
+            { title: 'Órdenes de Compra', route: ['/orden-compra'], condition: true }
+        ]);
+        this._ordenCompraService.updateHeaderButtons([{ type: 'flat', label: 'Crear Orden de Compra', action: 'create', condition: true }]);
         this.loadClientes();
     }
 
@@ -130,34 +138,8 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         this.search();
     }
 
-    previewArchivo(element: IOrdenCompra): void {
-        this.isLoading = true;
-
-        this._ordenCompraService.getArchivoOrdenCompra(element.id).subscribe({
-            next: (res) => {
-                this.isLoading = false;
-                if (res.status === 'OK' && res.data) {
-                    const base64Pdf = res.data.archivoContenido;
-                    const nombreArchivo = res.data.archivoNombre || 'orden_compra.pdf';
-
-                    this.dialog.open(PDFModalDialogComponent, {
-                        width: '80vw',
-                        height: '90vh',
-                        data: {
-                            src: base64Pdf,
-                            title: nombreArchivo,
-                            showDownloadButton: true
-                        }
-                    });
-                } else {
-                    this._notificationService.showError('No se encontró el archivo adjunto.');
-                }
-            },
-            error: (err) => {
-                this.isLoading = false;
-                this._notificationService.showError('Error al recuperar el archivo del servidor.');
-            }
-        });
+    viewOrdenCompra(element: IOrdenCompra): void {
+        this._router.navigate(['/orden-compra/view', element.id]);
     }
 
     downloadArchivo(element: IOrdenCompra): void {

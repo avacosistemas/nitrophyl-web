@@ -1,16 +1,16 @@
 import { Component, OnDestroy, OnInit, ViewEncapsulation, ChangeDetectorRef, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { Subject, Observable, combineLatest } from 'rxjs';
 import { takeUntil, startWith, map, debounceTime, switchMap } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AbmOrdenCompraService } from '../../abm-orden-compra.service';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatDialog } from '@angular/material/dialog';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
-import { IOrdenCompraApiResponse, IOrdenCompraCreateDTO } from '../../models/orden-compra.interface';
+import { IOrdenCompraCreateDTO } from '../../models/orden-compra.interface';
 import * as moment from 'moment';
 
 @Component({
@@ -24,6 +24,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     @ViewChild('clienteInput', { read: MatAutocompleteTrigger }) clienteAutocompleteTrigger: MatAutocompleteTrigger;
     @ViewChild('piezaInput', { read: MatAutocompleteTrigger }) piezaAutocompleteTrigger: MatAutocompleteTrigger;
 
+    mode: 'create' | 'view' = 'create';
+    orderId: number | null = null;
     step: 'header' | 'items' = 'header';
     splitDirection: 'row' | 'column' = 'row';
     showItemForm: boolean = true;
@@ -36,6 +38,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     selectedFile: File | null = null;
     pdfPreviewUrl: SafeResourceUrl | null = null;
     isLoading: boolean = false;
+    isInitialLoading: boolean = false;
 
     clientes: any[] = [];
     filteredClientes$: Observable<any[]>;
@@ -52,6 +55,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         private _sanitizer: DomSanitizer,
         private _notification: NotificationService,
         private _router: Router,
+        private _activatedRoute: ActivatedRoute,
         private _cdr: ChangeDetectorRef,
         private _dialog: MatDialog
     ) {
@@ -74,9 +78,74 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        const id = this._activatedRoute.snapshot.params['id'];
+        if (id) {
+            this.isInitialLoading = true;
+        }
+
         this.loadClientes();
         this.setupObservers();
-        this.updateHeaderUI();
+
+        this._activatedRoute.params.pipe(takeUntil(this._unsubscribeAll)).subscribe(params => {
+            if (params['id']) {
+                this.mode = 'view';
+                this.orderId = +params['id'];
+                this.loadOrderData();
+            } else {
+                this.updateHeaderUI();
+            }
+        });
+    }
+
+    private loadOrderData(): void {
+        this.isInitialLoading = true;
+        this._service.getOrdenCompra(this.orderId).subscribe({
+            next: (res) => {
+                const data = res.data;
+                this.form.patchValue({
+                    cliente: { id: data.idCliente, nombre: data.cliente },
+                    fecha: moment(data.fecha, 'YYYY-MM-DD').toDate(),
+                    nroComprobante: data.comprobante
+                });
+
+                if (data.archivo?.archivo) {
+                    const byteCharacters = atob(data.archivo.archivo);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    const blob = new Blob([byteArray], { type: 'application/pdf' });
+                    this.pdfPreviewUrl = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
+                }
+
+                this.piezasAgregadas = data.detalle.map(d => ({
+                    idPieza: d.idPieza,
+                    denominacion: d.pieza,
+                    precio: d.valorCotizacion,
+                    fechaCotizacion: d.fechaCotizacion ? moment(d.fechaCotizacion).format('DD/MM/YYYY') : '',
+                    batches: d.entregasSolicitadas.map(e => ({
+                        idTemp: e.id,
+                        cantidadSolicitada: e.cantidad,
+                        fechaEntrega: moment(e.fechaEntregaSolicitada, 'YYYY-MM-DD').format('DD/MM/YYYY'),
+                        isEditing: false
+                    }))
+                }));
+
+                this.form.disable();
+                this.piezaForm.disable();
+                this.step = 'items';
+                this.showItemForm = false;
+                this.isInitialLoading = false;
+                this.updateHeaderUI();
+                this._cdr.detectChanges();
+            },
+            error: () => {
+                this.isInitialLoading = false;
+                this._notification.showError('Error al cargar los datos de la orden.');
+                this._router.navigate(['/orden-compra/list']);
+            }
+        });
     }
 
     private setupObservers(): void {
@@ -291,12 +360,33 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
     updateHeaderUI(): void {
         let btns = [];
+        const baseBreadcrumbs = [
+            { title: 'Administración', route: [], condition: true },
+            { title: 'Órdenes de Compra', route: ['/orden-compra'], condition: true }
+        ];
+
+        if (this.mode === 'view') {
+            btns = [
+                { type: 'stroked', label: 'Volver a la lista', action: 'goBack', condition: true },
+                { type: 'stroked', label: 'Invertir Vista', action: 'toggleSplit', condition: true }
+            ];
+            const cli = this.form.get('cliente').value?.nombre || '';
+            const comp = this.form.get('nroComprobante').value;
+            this._service.updateHeaderTitle('Ver Orden');
+            this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
+            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: 'Ver', route: [], condition: true }]);
+            this._service.updateHeaderButtons(btns);
+            return;
+        }
+
         if (this.step === 'header') {
             btns = [
                 { type: 'stroked', label: 'Cancelar', action: 'goBack', condition: true },
                 { type: 'flat', label: 'Confirmar y Continuar', action: 'confirmHeader', condition: true }
             ];
+            this._service.updateHeaderTitle('Generar Orden');
             this._service.updateHeaderSubtitle('');
+            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: 'Nueva', route: [], condition: true }]);
         } else {
             btns = [
                 { type: 'stroked', label: 'Volver Atrás', action: 'editHeader', condition: true },
@@ -305,7 +395,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             ];
             const cli = this.form.get('cliente').value.nombre;
             const comp = this.form.get('nroComprobante').value;
+            this._service.updateHeaderTitle('Generar Orden');
             this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
+            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: 'Nueva', route: [], condition: true }]);
         }
         this._service.updateHeaderButtons(btns);
     }
