@@ -168,7 +168,7 @@ export interface Prensa {
 
 export interface Bombeo {
     id?: number;
-    tipo: 'AUTOMATICO' | 'ESCALONADO' | 'FONDO' | 'SUAVE';
+    tipo: string;
     cantidad: number;
     presion: number;
 }
@@ -236,12 +236,14 @@ export interface Esquema {
     pasos?: PasoEsquema[];
     imagen?: string;
     safeImagenUrl?: any;
+    posicion?: number;
 }
 
 export interface PasoEsquema {
     id?: number;
     paso: number;
     descripcion: string;
+    posicion?: number;
 }
 
 export interface Finalizacion {

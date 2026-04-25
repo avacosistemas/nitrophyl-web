@@ -11,6 +11,7 @@ import { ABMPiezaEsquemaModalComponent } from './modal-form/abm-pieza-esquema-mo
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-abm-pieza-esquema',
@@ -22,7 +23,7 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
   @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
   esquemas: Esquema[] = [];
-  baseDisplayedColumns: string[] = ['imagen', 'tituloPasos'];
+  baseDisplayedColumns: string[] = ['reorder', 'imagen', 'tituloPasos'];
   displayedColumns: string[];
   sinDatos: boolean = false;
   isLoading: boolean = false;
@@ -88,7 +89,8 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
       width: '600px',
       data: {
         esquema: esquema ? { ...esquema } : null,
-        idProceso: this.piezaId
+        idProceso: this.piezaId,
+        posicion: esquema ? esquema.posicion : this.esquemas.length + 1
       }
     });
 
@@ -147,5 +149,28 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
       width: '80%',
       maxWidth: '800px'
     });
+  }
+
+  drop(event: CdkDragDrop<Esquema[]>): void {
+    const previousIndex = this.esquemas.findIndex(e => e === event.item.data);
+    if (previousIndex !== event.currentIndex) {
+      moveItemInArray(this.esquemas, previousIndex, event.currentIndex);
+      this.reordenarEsquema(event.item.data.id, event.currentIndex + 1);
+    }
+  }
+
+  reordenarEsquema(idEsquema: number, posicion: number): void {
+    const sub = this.abmPiezaService.reordenarEsquema(idEsquema, posicion).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Orden actualizado correctamente.');
+        this.loadEsquemas();
+      },
+      error: err => {
+        console.error('Error al reordenar esquema:', err);
+        this.notificationService.showError('Ocurrió un error al reordenar el esquema.');
+        this.loadEsquemas();
+      }
+    });
+    this.subscriptions.push(sub);
   }
 }

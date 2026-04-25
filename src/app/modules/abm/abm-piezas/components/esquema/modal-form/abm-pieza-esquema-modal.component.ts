@@ -1,4 +1,5 @@
 import { Component, Inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
@@ -22,7 +23,7 @@ export class ABMPiezaEsquemaModalComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<ABMPiezaEsquemaModalComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { esquema?: Esquema, idProceso: number },
+    @Inject(MAT_DIALOG_DATA) public data: { esquema?: Esquema, idProceso: number, posicion: number },
     private cdRef: ChangeDetectorRef,
     private notificationService: NotificationService,
     private sanitizer: DomSanitizer,
@@ -57,20 +58,38 @@ export class ABMPiezaEsquemaModalComponent implements OnInit {
     return this.formEsquema.get('pasos') as FormArray;
   }
 
-  agregarPaso(paso: PasoEsquema = { paso: this.pasosFormArray.length + 1, descripcion: '' }): void {
+  agregarPaso(paso: PasoEsquema = { paso: this.pasosFormArray.length + 1, descripcion: '', posicion: this.pasosFormArray.length + 1 }): void {
     const pasoGroup = this.fb.group({
       id: [paso.id],
       paso: [paso.paso],
-      descripcion: [paso.descripcion, Validators.required]
+      descripcion: [paso.descripcion, Validators.required],
+      posicion: [paso.posicion || paso.paso]
     });
     this.pasosFormArray.push(pasoGroup);
   }
 
+  drop(event: CdkDragDrop<any[]>): void {
+    const previousIndex = event.previousIndex;
+    const currentIndex = event.currentIndex;
+
+    if (previousIndex !== currentIndex) {
+      const control = this.pasosFormArray.at(previousIndex);
+      this.pasosFormArray.removeAt(previousIndex);
+      this.pasosFormArray.insert(currentIndex, control);
+      this.updatePositions();
+    }
+  }
+
+  updatePositions(): void {
+    this.pasosFormArray.controls.forEach((group, i) => {
+      group.get('paso').setValue(i + 1);
+      group.get('posicion').setValue(i + 1);
+    });
+  }
+
   quitarPaso(index: number): void {
     this.pasosFormArray.removeAt(index);
-    this.pasosFormArray.controls.forEach((group, i) => {
-      (group as FormGroup).get('paso').setValue(i + 1);
-    });
+    this.updatePositions();
   }
 
   onCancel(): void {
@@ -92,9 +111,12 @@ export class ABMPiezaEsquemaModalComponent implements OnInit {
         idProceso: this.data.idProceso,
         titulo: formValue.titulo,
         imagen: base64Image,
+        posicion: this.data.posicion,
         pasos: formValue.pasos.map(p => ({
+          id: p.id,
           paso: p.paso,
-          descripcion: p.descripcion
+          descripcion: p.descripcion,
+          posicion: p.posicion
         })),
       };
 

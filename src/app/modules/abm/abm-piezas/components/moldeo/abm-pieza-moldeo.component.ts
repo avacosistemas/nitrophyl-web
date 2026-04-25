@@ -23,10 +23,7 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
 
     prensasDisponibles$: Observable<Prensa[]>;
 
-    tiposBombeo: any[] = [{ value: 'AUTOMATICO', label: 'Automático' },
-    { value: 'ESCALONADO', label: 'Escalonado' },
-    { value: 'SUAVE', label: 'Suave' },
-    { value: 'FONDO', label: 'A Fondo' }];
+    tiposBombeo: any[] = [];
 
     moldeoForm = this.fb.group({
         precalentamientoHabilitado: [false],
@@ -93,6 +90,16 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
 
         this.moldeoForm.get('precalentamientoHabilitado').valueChanges.subscribe(habilitado => {
             this.togglePrecalentamientoControls(habilitado);
+        });
+
+        this.abmPiezaService.getTiposBombeo().subscribe(response => {
+            if (response && response.data) {
+                this.tiposBombeo = response.data.map(item => ({
+                    value: item.clave,
+                    label: item.label,
+                    observaciones: item.observaciones
+                }));
+            }
         });
     }
 
@@ -279,5 +286,10 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
 
     get bombeoFormCompleto(): boolean {
         return !!(this.cantidadCtrl.value && this.tipoCtrl.value);
+    }
+
+    getObservacionesBombeo(tipoCode: string): string {
+        const tipo = this.tiposBombeo.find(t => t.value === tipoCode);
+        return tipo ? tipo.observaciones : '';
     }
 }

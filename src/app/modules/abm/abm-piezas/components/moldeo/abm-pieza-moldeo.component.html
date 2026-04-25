@@ -92,7 +92,8 @@
                 <mat-form-field appearance="outline" class="w-full md:w-1/6">
                     <mat-label>Tipo</mat-label>
                     <mat-select [formControl]="tipoCtrl">
-                        <mat-option *ngFor="let tipo of tiposBombeo" [value]="tipo.value">
+                        <mat-option *ngFor="let tipo of tiposBombeo" [value]="tipo.value"
+                            [matTooltip]="tipo.observaciones">
                             {{ tipo.label }}
                         </mat-option>
                     </mat-select>
@@ -114,7 +115,8 @@
             <div class="flex flex-wrap gap-2 mt-4">
                 <mat-chip-list aria-label="Bombeos">
                     <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" (removed)="quitarBombeo(i)"
-                        [removable]="mode !== 'view'" class="bg-gray-200">
+                        [removable]="mode !== 'view'" class="bg-gray-200"
+                        [matTooltip]="getObservacionesBombeo(bombeo.tipo)">
                         {{ bombeo.cantidad }} {{ bombeo.tipo }}
                         <ng-container *ngIf="bombeo.presion">
                             a {{ bombeo.presion }} kg/cm2

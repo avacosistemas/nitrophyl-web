@@ -296,12 +296,15 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
       });
 
       if (Array.isArray(insumoData.observaciones)) {
-        this.observacionesLista = [...insumoData.observaciones];
+        this.observacionesLista = insumoData.observaciones.map(o => ({ ...o, isExpanded: false }));
       } else if (typeof insumoData.observaciones === 'string' && insumoData.observaciones.trim() !== '') {
         try {
-          this.observacionesLista = JSON.parse(insumoData.observaciones);
+          const parsed = JSON.parse(insumoData.observaciones);
+          this.observacionesLista = Array.isArray(parsed) 
+            ? parsed.map(o => ({ ...o, isExpanded: false }))
+            : [{ observacion: insumoData.observaciones, controlar: false, isExpanded: false }];
         } catch (e) {
-          this.observacionesLista = [{ observacion: insumoData.observaciones, controlar: false }];
+          this.observacionesLista = [{ observacion: insumoData.observaciones, controlar: false, isExpanded: false }];
         }
       } else {
         this.observacionesLista = [];
@@ -476,7 +479,13 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
 
   addObservacion(): void {
     if (this.obsForm.invalid) return;
-    this.observacionesLista = [...this.observacionesLista, this.obsForm.value];
+    const formValue = this.obsForm.value;
+    const nuevaObs = { 
+      ...formValue, 
+      observacion: (formValue.observacion || '').trim(),
+      isExpanded: false 
+    };
+    this.observacionesLista = [...this.observacionesLista, nuevaObs];
     this.obsForm.reset({ observacion: '', controlar: false });
     this.cdr.markForCheck();
   }
@@ -490,6 +499,32 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
   updateControlar(index: number, event: any): void {
     this.observacionesLista[index].controlar = event.checked;
     this.cdr.markForCheck();
+  }
+  
+  toggleExpand(index: number): void {
+    this.observacionesLista[index].isExpanded = !this.observacionesLista[index].isExpanded;
+    this.cdr.markForCheck();
+  }
+
+  needsExpand(text: string): boolean {
+    if (!text) return false;
+    return text.length > 150 || text.split('\n').length > 3;
+  }
+
+  getDisplayObs(element: any): string {
+    if (!element.observacion) return '';
+    if (element.isExpanded) return element.observacion;
+    
+    const lines = element.observacion.split('\n');
+    if (lines.length > 3) {
+      return lines.slice(0, 3).join('\n') + '...';
+    }
+    
+    if (element.observacion.length > 150) {
+      return element.observacion.slice(0, 150) + '...';
+    }
+    
+    return element.observacion;
   }
 
   onCancel(): void {

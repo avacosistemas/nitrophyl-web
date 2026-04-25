@@ -126,6 +126,7 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
   openAddInsumoModal(insumoTratado?: IInsumoTratado): void {
     const dialogRef = this.dialog.open(ABMPiezaInsumoModalFormComponent, {
       width: '800px',
+      disableClose: true,
       data: {
         idPieza: this.piezaId,
         insumoTratado: insumoTratado
@@ -281,14 +282,14 @@ export class ABMPiezaInsumosComponent extends ABMPiezaBaseComponent implements O
 
     if (observaciones.length === 0) return;
 
-    let messageHtml = '<div class="flex flex-col gap-3">';
+    let messageHtml = '<div class="flex flex-col gap-3" style="max-height: 60vh; overflow-y: auto; padding-right: 8px;">';
     observaciones.forEach(obs => {
       const controllingStyle = obs.controlar ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-100';
       const controllingIcon = obs.controlar ? '<span class="text-amber-600 font-bold">[CONTROL]</span> ' : '';
 
       messageHtml += `
         <div class="p-3 border rounded-lg ${controllingStyle}">
-          <p class="text-sm">${controllingIcon}${obs.observacion}</p>
+          <p class="text-sm" style="white-space: pre-wrap;">${controllingIcon}${obs.observacion}</p>
         </div>
       `;
     });

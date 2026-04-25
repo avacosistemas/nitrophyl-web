@@ -12,6 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
   declarations: [ABMPiezaEsquemaModalComponent],
@@ -27,7 +28,8 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatAutocompleteModule,
     MatChipsModule,
     MatSnackBarModule,
-    MatTabsModule
+    MatTabsModule,
+    DragDropModule
   ],
   exports: [ABMPiezaEsquemaModalComponent]
 })

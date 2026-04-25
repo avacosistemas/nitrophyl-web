@@ -38,6 +38,7 @@ export class ABMPiezaService {
     private readonly API_INSUMO_URL = `${this.API_BASE_URL}insumo`;
     private readonly API_TRATAMIENTO_URL = `${this.API_BASE_URL}tratamiento`;
     private readonly API_ADHESIVO_URL = `${this.API_BASE_URL}adhesivo`;
+    private readonly API_BOMBEO_URL = `${this.API_BASE_URL}bombeo`;
 
     constructor(private http: HttpClient) { }
 
@@ -158,6 +159,11 @@ export class ABMPiezaService {
         return this.http.delete(`${this.API_ESQUEMA_URL}/${idEsquema}`);
     }
 
+    reordenarEsquema(idEsquema: number, posicion: number): Observable<any> {
+        const params = new HttpParams().set('posicion', posicion.toString());
+        return this.http.get(`${this.API_ESQUEMA_URL}/reordenar/${idEsquema}`, { params });
+    }
+
     getTerminacion(idProceso: number): Observable<ApiResponse<Finalizacion>> {
         return this.http.get<ApiResponse<Finalizacion>>(`${this.API_TERMINACION_URL}/${idProceso}`);
     }
@@ -251,6 +257,10 @@ export class ABMPiezaService {
     buscarAdhesivos(nombre: string): Observable<ApiResponse<IAdhesivo[]>> {
         const params = new HttpParams().set('nombre', nombre);
         return this.http.get<ApiResponse<IAdhesivo[]>>(this.API_ADHESIVO_URL, { params });
+    }
+
+    getTiposBombeo(): Observable<ApiResponse<any[]>> {
+        return this.http.get<ApiResponse<any[]>>(`${this.API_BOMBEO_URL}/tipos`);
     }
 
     triggerAction(): void {
