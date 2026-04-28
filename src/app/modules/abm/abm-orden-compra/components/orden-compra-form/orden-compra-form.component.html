@@ -39,6 +39,11 @@
                         <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
                         <mat-datepicker #p1></mat-datepicker>
                     </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-full md:col-span-2">
+                        <mat-label>Método de Despacho</mat-label>
+                        <input matInput formControlName="metodoDespacho" placeholder="Ej: Camión, Retira en fábrica, etc.">
+                    </mat-form-field>
                 </div>
 
 
@@ -46,13 +51,13 @@
                 <div class="relative border-2 border-dashed rounded-xl p-6 transition-all duration-200 flex flex-col items-center justify-center cursor-pointer"
                     [ngClass]="selectedFile ? 'border-green-400 bg-green-50 text-green-600' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600'"
                     (click)="fileInput.click()">
-                    <input type="file" #fileInput (change)="onFileSelected($event)" accept="application/pdf" hidden>
+                    <input type="file" #fileInput (change)="onFileSelected($event)" accept="application/pdf,image/*" hidden>
                     <mat-icon *ngIf="!selectedFile" class="icon-size-10 text-gray-400 mb-2"
                         svgIcon="heroicons_outline:upload"></mat-icon>
                     <mat-icon *ngIf="selectedFile" class="icon-size-10 text-green-500 mb-2"
                         svgIcon="heroicons_solid:check-circle"></mat-icon>
                     <p class="text-sm font-semibold">
-                        {{ selectedFile ? selectedFile.name : 'Haz clic para subir el PDF de la Orden' }}
+                        {{ selectedFile ? selectedFile.name : (mode === 'edit' ? 'Haz clic para reemplazar el archivo de la Orden' : 'Haz clic para subir el archivo de la Orden') }}
                     </p>
                 </div>
             </form>
@@ -63,11 +68,42 @@
 
         <div class="flex flex-auto h-full w-full" [ngClass]="splitDirection === 'row' ? 'flex-row' : 'flex-col'">
 
-            <div class="bg-gray-800 relative overflow-hidden flex-shrink-0"
+            <div class="bg-gray-800 relative overflow-hidden flex-shrink-0 group"
                 [style.width.%]="splitDirection === 'row' ? splitSize : 100"
                 [style.height.%]="splitDirection === 'column' ? splitSize : 100">
 
-                <iframe *ngIf="pdfPreviewUrl" [src]="pdfPreviewUrl" class="w-full h-full border-none"></iframe>
+                <iframe *ngIf="pdfPreviewUrl && !isImagePreview" [src]="pdfPreviewUrl" class="w-full h-full border-none"></iframe>
+                
+                <ng-container *ngIf="pdfPreviewUrl && isImagePreview">
+                    <div class="w-full h-full overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing bg-gray-900"
+                         (wheel)="onImageWheel($event)"
+                         (mousedown)="onImageMouseDown($event)">
+                        <img [src]="pdfPreviewUrl" 
+                             class="max-w-none transition-transform duration-75 origin-center pointer-events-none"
+                             [style.transform]="'translate(' + imagePanX + 'px, ' + imagePanY + 'px) scale(' + imageZoom + ') rotate(' + imageRotation + 'deg)'">
+                    </div>
+                    
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-gray-800/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button mat-icon-button (click)="zoomOutImage()" matTooltip="Alejar" class="text-white">
+                            <mat-icon svgIcon="heroicons_outline:zoom-out"></mat-icon>
+                        </button>
+                        <span class="text-white/80 font-mono text-xs w-12 text-center">{{ imageZoomPercent }}</span>
+                        <button mat-icon-button (click)="zoomInImage()" matTooltip="Acercar" class="text-white">
+                            <mat-icon svgIcon="heroicons_outline:zoom-in"></mat-icon>
+                        </button>
+                        <div class="w-px h-6 bg-white/20 mx-1"></div>
+                        <button mat-icon-button (click)="rotateImageLeft()" matTooltip="Rotar Izquierda" class="text-white">
+                            <mat-icon style="transform: scaleX(-1);" svgIcon="heroicons_outline:refresh"></mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="rotateImageRight()" matTooltip="Rotar Derecha" class="text-white">
+                            <mat-icon svgIcon="heroicons_outline:refresh"></mat-icon>
+                        </button>
+                        <div class="w-px h-6 bg-white/20 mx-1"></div>
+                        <button mat-icon-button (click)="resetImageView()" matTooltip="Restablecer" class="text-white">
+                            <mat-icon svgIcon="heroicons_outline:arrows-expand"></mat-icon>
+                        </button>
+                    </div>
+                </ng-container>
             </div>
 
             <div class="resizer-gutter" [ngClass]="splitDirection === 'row' ? 'horizontal' : 'vertical'"
@@ -156,7 +192,7 @@
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <mat-form-field appearance="outline" class="w-full">
-                                            <mat-label>{{ (piezaCotizacionInfo?.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value) ? 'Precio Cotización Actual ($)' : 'Precio Nueva Cotización ($)' }}</mat-label>
+                                            <mat-label>{{ (piezaCotizacionInfo?.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value) ? 'Precio Cotización Actual (U$D)' : 'Precio Nueva Cotización (U$D)' }}</mat-label>
                                             <input type="number" matInput formControlName="cotizacionValor"
                                                 [readonly]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value">
                                         </mat-form-field>
@@ -296,7 +332,7 @@
                                     <div class="flex justify-between md:flex-col">
                                         <span
                                             class="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Cotización
-                                            ($)</span>
+                                            (U$D)</span>
                                         <span class="text-xl font-bold text-gray-800">{{ formatCurrency(grupo.precio)
                                             }}</span>
                                     </div>
@@ -310,7 +346,7 @@
 
                                 <div *ngIf="grupo.isEditingQuotation" class="flex flex-col gap-2 p-1">
                                     <mat-form-field appearance="outline" class="fuse-mat-dense fuse-mat-no-subscript">
-                                        <mat-label>Precio ($)</mat-label>
+                                        <mat-label>Precio (U$D)</mat-label>
                                         <input matInput type="number" [(ngModel)]="grupo.tempPrecio">
                                     </mat-form-field>
                                     <mat-form-field appearance="outline" class="fuse-mat-dense fuse-mat-no-subscript">

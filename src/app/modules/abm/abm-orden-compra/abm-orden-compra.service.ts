@@ -56,6 +56,18 @@ export class AbmOrdenCompraService {
         return this.http.post<any>(this.apiUrl, dto);
     }
 
+    updateOrdenCompra(id: number, dto: IOrdenCompraCreateDTO): Observable<any> {
+        return this.http.put<any>(`${this.apiUrl}/${id}`, dto);
+    }
+
+    cancelOrdenCompra(id: number, observaciones: string): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/cancelar/${id}`, { observaciones });
+    }
+
+    deleteOrdenCompra(id: number): Observable<any> {
+        return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    }
+
     createOrdenCompraDetalle(dto: any): Observable<any> {
         return this.http.post<any>(`${environment.server}ordenCompraDetalle`, dto);
     }

@@ -1,0 +1,8 @@
+<form [formGroup]="form">
+    <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Motivo de cancelación</mat-label>
+        <textarea matInput formControlName="observaciones" rows="4" placeholder="Escriba aquí los motivos..."></textarea>
+        <mat-error *ngIf="form.get('observaciones').hasError('required')">El motivo es obligatorio</mat-error>
+        <mat-error *ngIf="form.get('observaciones').hasError('minlength')">Debe ingresar al menos 5 caracteres</mat-error>
+    </mat-form-field>
+</form>

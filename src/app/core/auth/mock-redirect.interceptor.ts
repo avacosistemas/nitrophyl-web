@@ -7,11 +7,9 @@ import { environment } from 'environments/environment';
 export class MockRedirectInterceptor implements HttpInterceptor {
 
     private mockEndpoints: string[] = [
-        '/ordenFabricacion',
-        // '/ordenesCompra/porCliente',
-        // '/piezas/paraFabricacion',
-        // '/piezas/stock',
-        // '/piezas/cotizacion'
+        'ordenFabricacion',
+        'ordenCompra',
+        'transportes'
     ];
 
     constructor() { }
@@ -21,13 +19,29 @@ export class MockRedirectInterceptor implements HttpInterceptor {
             return next.handle(req);
         }
 
-        const isMockable = this.mockEndpoints.some(endpoint => req.url.includes(endpoint));
+        const foundEndpoint = this.mockEndpoints.find(endpoint => req.url.includes(endpoint));
 
-        if (isMockable) {
-            const newUrl = req.url.replace(environment.server, environment.mockServer);
+        if (foundEndpoint) {
+            const index = req.url.indexOf(foundEndpoint);
+            let pathSuffix = req.url.substring(index);
+            
+            if (pathSuffix.startsWith('/')) {
+                pathSuffix = pathSuffix.substring(1);
+            }
+
+            let mockServer = environment.mockServer;
+            if (!mockServer.endsWith('/')) {
+                mockServer += '/';
+            }
+            
+            const newUrl = mockServer + pathSuffix;
+            
+            console.log(`[MockRedirect] Redirecting ${req.url} to ${newUrl}`);
+            
             const mockReq = req.clone({ url: newUrl });
             return next.handle(mockReq);
         }
+        
         return next.handle(req);
     }
 }

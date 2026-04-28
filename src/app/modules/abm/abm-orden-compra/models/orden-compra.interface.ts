@@ -6,6 +6,7 @@ export interface IOrdenCompra {
     fecha: string;
     estado: string;
     archivoNombre?: string;
+    metodoDespacho?: string;
 }
 
 export interface IOrdenCompraItem {
@@ -28,6 +29,7 @@ export interface IOrdenCompraCreateDTO {
     idCliente: number;
     comprobante: string;
     fecha: string;
+    metodoDespacho?: string;
     detalle: {
         idPieza: number;
         pieza?: string;

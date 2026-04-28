@@ -24,7 +24,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     @ViewChild('clienteInput', { read: MatAutocompleteTrigger }) clienteAutocompleteTrigger: MatAutocompleteTrigger;
     @ViewChild('piezaInput', { read: MatAutocompleteTrigger }) piezaAutocompleteTrigger: MatAutocompleteTrigger;
 
-    mode: 'create' | 'view' = 'create';
+    mode: 'create' | 'view' | 'edit' = 'create';
     orderId: number | null = null;
     step: 'header' | 'items' = 'header';
     splitDirection: 'row' | 'column' = 'row';
@@ -37,8 +37,19 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     piezaForm: FormGroup;
     selectedFile: File | null = null;
     pdfPreviewUrl: SafeResourceUrl | null = null;
+    isImagePreview: boolean = false;
     isLoading: boolean = false;
     isInitialLoading: boolean = false;
+
+    imageZoom: number = 1;
+    imageRotation: number = 0;
+    imagePanX: number = 0;
+    imagePanY: number = 0;
+    isDraggingImage: boolean = false;
+    startDragX: number = 0;
+    startDragY: number = 0;
+
+    get imageZoomPercent(): string { return Math.round(this.imageZoom * 100) + '%'; }
 
     clientes: any[] = [];
     filteredClientes$: Observable<any[]>;
@@ -62,7 +73,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         this.form = this._fb.group({
             cliente: [null, Validators.required],
             fecha: [new Date(), Validators.required],
-            nroComprobante: ['', Validators.required]
+            nroComprobante: ['', Validators.required],
+            metodoDespacho: ['']
         });
 
         this.piezaForm = this._fb.group({
@@ -86,12 +98,16 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         this.loadClientes();
         this.setupObservers();
 
-        this._activatedRoute.params.pipe(takeUntil(this._unsubscribeAll)).subscribe(params => {
-            if (params['id']) {
-                this.mode = 'view';
-                this.orderId = +params['id'];
+        this._activatedRoute.url.pipe(takeUntil(this._unsubscribeAll)).subscribe(url => {
+            const isEdit = url.some(segment => segment.path === 'edit');
+            const id = this._activatedRoute.snapshot.params['id'];
+            
+            if (id) {
+                this.mode = isEdit ? 'edit' : 'view';
+                this.orderId = +id;
                 this.loadOrderData();
             } else {
+                this.mode = 'create';
                 this.updateHeaderUI();
             }
         });
@@ -105,7 +121,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 this.form.patchValue({
                     cliente: { id: data.idCliente, nombre: data.cliente },
                     fecha: moment(data.fecha, 'YYYY-MM-DD').toDate(),
-                    nroComprobante: data.comprobante
+                    nroComprobante: data.comprobante,
+                    metodoDespacho: data.metodoDespacho || ''
                 });
 
                 if (data.archivo?.archivo) {
@@ -115,7 +132,22 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                         byteNumbers[i] = byteCharacters.charCodeAt(i);
                     }
                     const byteArray = new Uint8Array(byteNumbers);
-                    const blob = new Blob([byteArray], { type: 'application/pdf' });
+                    
+                    let type = 'application/pdf';
+                    this.isImagePreview = false;
+                    const nombreArchivo = data.archivo.nombre?.toLowerCase() || '';
+                    if (nombreArchivo.endsWith('.jpg') || nombreArchivo.endsWith('.jpeg')) {
+                        type = 'image/jpeg';
+                        this.isImagePreview = true;
+                    } else if (nombreArchivo.endsWith('.png')) {
+                        type = 'image/png';
+                        this.isImagePreview = true;
+                    } else if (nombreArchivo.endsWith('.webp')) {
+                        type = 'image/webp';
+                        this.isImagePreview = true;
+                    }
+
+                    const blob = new Blob([byteArray], { type: type });
                     this.pdfPreviewUrl = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
                 }
 
@@ -132,8 +164,13 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                     }))
                 }));
 
-                this.form.disable();
-                this.piezaForm.disable();
+                if (this.mode === 'view') {
+                    this.form.disable();
+                    this.piezaForm.disable();
+                } else {
+                    this.form.enable();
+                    this.piezaForm.enable();
+                }
                 this.step = 'items';
                 this.showItemForm = false;
                 this.isInitialLoading = false;
@@ -195,9 +232,12 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
     onConfirmHeader(): void {
         if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-        if (!this.selectedFile) { this._notification.showError("Debe subir un archivo PDF"); return; }
+        if (!this.selectedFile && this.mode === 'create') { this._notification.showError("Debe subir un archivo (PDF o Imagen)"); return; }
 
-        this.pdfPreviewUrl = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(this.selectedFile));
+        if (this.selectedFile) {
+            this.pdfPreviewUrl = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(this.selectedFile));
+            this.isImagePreview = this.selectedFile.type.startsWith('image/');
+        }
         this.step = 'items';
         this.updateHeaderUI();
     }
@@ -308,54 +348,104 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
         const reader = new FileReader();
         reader.onload = () => {
-            const base64 = (reader.result as string).split(',')[1];
-            const header = this.form.getRawValue();
-
-            const dto: IOrdenCompraCreateDTO = {
-                idCliente: header.cliente.id,
-                cliente: header.cliente.nombre,
-                fecha: moment(header.fecha).format('DD/MM/YYYY'),
-                comprobante: header.nroComprobante,
-                archivo: { nombre: this.selectedFile.name, archivo: base64 },
-                detalle: this.piezasAgregadas.map(g => ({
-                    idPieza: g.idPieza,
-                    pieza: g.denominacion,
-                    idCotizacion: (!g.esActualizacion && g.idCotizacion) ? g.idCotizacion : null,
-                    valorCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.precio,
-                    fechaCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.fechaCotizacion,
-                    entregasSolicitadas: g.batches.map(b => ({
-                        cantidad: b.cantidadSolicitada,
-                        fechaEntregaSolicitada: b.fechaEntrega
-                    }))
-                }))
-            };
-
-            this._service.createOrdenCompra(dto).subscribe(() => {
-                this._notification.showSuccess("Orden Guardada Correctamente");
-                this._router.navigate(['/orden-compra/list']);
-            }, (error) => {
-                console.error(error);
-                this._notification.showError(error.error?.message || "Error al guardar");
-            });
+            const base64 = reader.result ? (reader.result as string).split(',')[1] : null;
+            this.saveData(base64);
         };
-        reader.readAsDataURL(this.selectedFile);
+
+        if (this.selectedFile) {
+            reader.readAsDataURL(this.selectedFile);
+        } else {
+            this.saveData(null);
+        }
+    }
+
+    private saveData(base64: string | null): void {
+        const header = this.form.getRawValue();
+
+        const dto: IOrdenCompraCreateDTO = {
+            idCliente: header.cliente.id,
+            cliente: header.cliente.nombre,
+            fecha: moment(header.fecha).format('DD/MM/YYYY'),
+            comprobante: header.nroComprobante,
+            metodoDespacho: header.metodoDespacho,
+            archivo: base64 ? { nombre: this.selectedFile.name, archivo: base64 } : null,
+            detalle: this.piezasAgregadas.map(g => ({
+                idPieza: g.idPieza,
+                pieza: g.denominacion,
+                idCotizacion: (!g.esActualizacion && g.idCotizacion) ? g.idCotizacion : null,
+                valorCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.precio,
+                fechaCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.fechaCotizacion,
+                entregasSolicitadas: g.batches.map(b => ({
+                    cantidad: b.cantidadSolicitada,
+                    fechaEntregaSolicitada: b.fechaEntrega
+                }))
+            }))
+        };
+
+        const request$ = this.mode === 'edit' 
+            ? this._service.updateOrdenCompra(this.orderId, dto)
+            : this._service.createOrdenCompra(dto);
+
+        request$.subscribe(() => {
+            this._notification.showSuccess(this.mode === 'edit' ? "Orden Actualizada Correctamente" : "Orden Guardada Correctamente");
+            this._router.navigate(['/orden-compra/list']);
+        }, (error) => {
+            console.error(error);
+            this._notification.showError(error.error?.message || "Error al guardar");
+        });
     }
 
     startResizing(event: MouseEvent): void { event.preventDefault(); this.isResizing = true; }
+    
     @HostListener('window:mousemove', ['$event'])
     onMouseMove(event: MouseEvent): void {
-        if (!this.isResizing || !this.splitContainer) return;
-        const rect = this.splitContainer.nativeElement.getBoundingClientRect();
-        if (this.splitDirection === 'row') {
-            const perc = ((event.clientX - rect.left) / rect.width) * 100;
-            if (perc > 10 && perc < 90) this.splitSize = perc;
-        } else {
-            const perc = ((event.clientY - rect.top) / rect.height) * 100;
-            if (perc > 10 && perc < 90) this.splitSize = perc;
+        if (this.isResizing && this.splitContainer) {
+            const rect = this.splitContainer.nativeElement.getBoundingClientRect();
+            if (this.splitDirection === 'row') {
+                const perc = ((event.clientX - rect.left) / rect.width) * 100;
+                if (perc > 10 && perc < 90) this.splitSize = perc;
+            } else {
+                const perc = ((event.clientY - rect.top) / rect.height) * 100;
+                if (perc > 10 && perc < 90) this.splitSize = perc;
+            }
+            this._cdr.markForCheck();
         }
-        this._cdr.markForCheck();
+
+        if (this.isDraggingImage) {
+            this.imagePanX = event.clientX - this.startDragX;
+            this.imagePanY = event.clientY - this.startDragY;
+            this._cdr.markForCheck();
+        }
     }
-    @HostListener('window:mouseup') onMouseUp(): void { this.isResizing = false; }
+
+    @HostListener('window:mouseup') 
+    onMouseUp(): void { 
+        this.isResizing = false; 
+        this.isDraggingImage = false;
+    }
+
+    onImageWheel(event: WheelEvent): void {
+        const zoomDelta = event.deltaY > 0 ? -0.1 : 0.1;
+        this.imageZoom = Math.max(0.1, Math.min(this.imageZoom + zoomDelta, 5));
+    }
+
+    onImageMouseDown(event: MouseEvent): void {
+        event.preventDefault();
+        this.isDraggingImage = true;
+        this.startDragX = event.clientX - this.imagePanX;
+        this.startDragY = event.clientY - this.imagePanY;
+    }
+
+    zoomInImage(): void { this.imageZoom = Math.min(this.imageZoom + 0.2, 5); }
+    zoomOutImage(): void { this.imageZoom = Math.max(this.imageZoom - 0.2, 0.1); }
+    rotateImageLeft(): void { this.imageRotation -= 90; }
+    rotateImageRight(): void { this.imageRotation += 90; }
+    resetImageView(): void {
+        this.imageZoom = 1;
+        this.imageRotation = 0;
+        this.imagePanX = 0;
+        this.imagePanY = 0;
+    }
     toggleSplit(): void { this.splitDirection = this.splitDirection === 'row' ? 'column' : 'row'; this.splitSize = 50; }
 
     updateHeaderUI(): void {
@@ -372,9 +462,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             ];
             const cli = this.form.get('cliente').value?.nombre || '';
             const comp = this.form.get('nroComprobante').value;
-            this._service.updateHeaderTitle('Ver Orden');
+            this._service.updateHeaderTitle(this.mode === 'view' ? 'Ver Orden' : 'Editar Orden');
             this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
-            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: 'Ver', route: [], condition: true }]);
+            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: this.mode === 'view' ? 'Ver' : 'Editar', route: [], condition: true }]);
             this._service.updateHeaderButtons(btns);
             return;
         }
@@ -384,28 +474,34 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 { type: 'stroked', label: 'Cancelar', action: 'goBack', condition: true },
                 { type: 'flat', label: 'Confirmar y Continuar', action: 'confirmHeader', condition: true }
             ];
-            this._service.updateHeaderTitle('Generar Orden');
+            this._service.updateHeaderTitle(this.mode === 'edit' ? 'Editar Orden' : 'Generar Orden');
             this._service.updateHeaderSubtitle('');
-            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: 'Nueva', route: [], condition: true }]);
+            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: this.mode === 'edit' ? 'Editar' : 'Nueva', route: [], condition: true }]);
         } else {
             btns = [
                 { type: 'stroked', label: 'Volver Atrás', action: 'editHeader', condition: true },
                 { type: 'stroked', label: 'Invertir Vista', action: 'toggleSplit', condition: true },
-                { type: 'flat', label: 'Finalizar Orden', action: 'saveAll', condition: true }
+                { type: 'flat', label: this.mode === 'edit' ? 'Actualizar Orden' : 'Finalizar Orden', action: 'saveAll', condition: true }
             ];
-            const cli = this.form.get('cliente').value.nombre;
+            const cli = this.form.get('cliente').value?.nombre || '';
             const comp = this.form.get('nroComprobante').value;
-            this._service.updateHeaderTitle('Generar Orden');
+            this._service.updateHeaderTitle(this.mode === 'edit' ? 'Editar Orden' : 'Generar Orden');
             this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
-            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: 'Nueva', route: [], condition: true }]);
+            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: this.mode === 'edit' ? 'Editar' : 'Nueva', route: [], condition: true }]);
         }
         this._service.updateHeaderButtons(btns);
     }
 
     onFileSelected(event: any): void {
         const file = event.target.files[0];
-        if (file?.type === 'application/pdf') this.selectedFile = file;
-        else this._notification.showError("Solo PDF");
+        if (file) {
+            if (file.type === 'application/pdf' || file.type.startsWith('image/')) {
+                this.selectedFile = file;
+                this.isImagePreview = file.type.startsWith('image/');
+            } else {
+                this._notification.showError("Solo PDF o Imágenes");
+            }
+        }
     }
 
     loadClientes(): void {
@@ -544,8 +640,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         grupo.isEditingQuotation = false;
     }
     formatCurrency(value: number): string {
-        if (value === null || value === undefined) return '$ 0,00';
-        return '$ ' + value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (value === null || value === undefined) return 'U$D 0,00';
+        return 'U$D ' + value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
     displayFn(i: any): string { return i ? (i.nombre || i.denominacion) : ''; }

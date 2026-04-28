@@ -28,6 +28,7 @@ import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 import { ABMOrdenCompraComponent } from './abm-orden-compra.component';
 import { OrdenCompraListComponent } from './components/orden-compra-list/orden-compra-list.component';
 import { OrdenCompraFormComponent } from './components/orden-compra-form/orden-compra-form.component';
+import { OrdenCompraCancelModalComponent } from './components/orden-compra-cancel-modal/orden-compra-cancel-modal.component';
 
 export const MY_DATE_FORMATS = {
     parse: { dateInput: 'DD/MM/YYYY' },
@@ -43,7 +44,8 @@ export const MY_DATE_FORMATS = {
     declarations: [
         ABMOrdenCompraComponent,
         OrdenCompraListComponent,
-        OrdenCompraFormComponent
+        OrdenCompraFormComponent,
+        OrdenCompraCancelModalComponent
     ],
     imports: [
         CommonModule,

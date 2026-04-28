@@ -102,7 +102,16 @@ export class NavegacionService {
           type: 'basic',
         },
         {
+          icon: 'heroicons_outline:truck',
+          id: 'transportes',
+          link: '/transportes/grid',
+          title: 'Transportes',
+          // permissionCode: 'MENU_ADMINISTRACION_TRANSPORTES',
+          type: 'basic',
+        },
+        {
           icon: 'heroicons_solid:currency-dollar',
+
           id: 'cotizaciones',
           link: '/cotizaciones',
           title: 'Cotizaciones y Precios',

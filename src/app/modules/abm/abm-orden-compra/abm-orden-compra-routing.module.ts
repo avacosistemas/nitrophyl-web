@@ -12,6 +12,7 @@ const routes: Route[] = [
             { path: '', redirectTo: 'list', pathMatch: 'full' },
             { path: 'list', component: OrdenCompraListComponent },
             { path: 'create', component: OrdenCompraFormComponent },
+            { path: 'edit/:id', component: OrdenCompraFormComponent },
             { path: 'view/:id', component: OrdenCompraFormComponent }
         ],
     },
