@@ -292,4 +292,9 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
         const tipo = this.tiposBombeo.find(t => t.value === tipoCode);
         return tipo ? tipo.observaciones : '';
     }
+
+    getLabelBombeo(tipoCode: string): string {
+        const tipo = this.tiposBombeo.find(t => t.value === tipoCode);
+        return tipo ? tipo.label : tipoCode;
+    }
 }

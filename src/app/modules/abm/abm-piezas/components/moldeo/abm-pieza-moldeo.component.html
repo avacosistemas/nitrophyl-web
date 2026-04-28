@@ -117,7 +117,7 @@
                     <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" (removed)="quitarBombeo(i)"
                         [removable]="mode !== 'view'" class="bg-gray-200"
                         [matTooltip]="getObservacionesBombeo(bombeo.tipo)">
-                        {{ bombeo.cantidad }} {{ bombeo.tipo }}
+                        {{ bombeo.cantidad }} {{ getLabelBombeo(bombeo.tipo) }}
                         <ng-container *ngIf="bombeo.presion">
                             a {{ bombeo.presion }} kg/cm2
                         </ng-container>
