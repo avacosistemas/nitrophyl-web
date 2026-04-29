@@ -43,7 +43,7 @@
                     <div formArrayName="pasos" cdkDropList (cdkDropListDropped)="drop($event)">
                         <div *ngFor="let pasoGroup of pasosFormArray.controls; let i = index" [formGroup]="pasoGroup"
                             cdkDrag class="flex items-start gap-2 bg-white mb-2 p-2 border rounded shadow-sm">
-                            <div class="mt-3 cursor-move" cdkDragHandle>
+                            <div class="cursor-move" cdkDragHandle>
                                 <mat-icon class="text-gray-400">reorder</mat-icon>
                             </div>
                             <mat-form-field appearance="outline" class="w-full">

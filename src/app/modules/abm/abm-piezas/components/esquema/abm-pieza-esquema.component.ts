@@ -155,6 +155,7 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
     const previousIndex = this.esquemas.findIndex(e => e === event.item.data);
     if (previousIndex !== event.currentIndex) {
       moveItemInArray(this.esquemas, previousIndex, event.currentIndex);
+      this.esquemas = [...this.esquemas];
       this.reordenarEsquema(event.item.data.id, event.currentIndex + 1);
     }
   }
@@ -163,7 +164,6 @@ export class ABMPiezaEsquemaComponent extends ABMPiezaBaseComponent implements O
     const sub = this.abmPiezaService.reordenarEsquema(idEsquema, posicion).subscribe({
       next: () => {
         this.notificationService.showSuccess('Orden actualizado correctamente.');
-        this.loadEsquemas();
       },
       error: err => {
         console.error('Error al reordenar esquema:', err);

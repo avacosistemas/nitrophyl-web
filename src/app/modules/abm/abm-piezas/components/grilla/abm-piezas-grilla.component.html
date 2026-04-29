@@ -10,10 +10,10 @@
                         </mat-panel-title>
                     </mat-expansion-panel-header>
 
-                    <form [formGroup]="searchForm" class="flex flex-col gap-2">
-                        <div class="row flex gap-3 justify-around">
+                    <form [formGroup]="searchForm" class="flex flex-col gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
 
-                            <mat-form-field appearance="outline" class="w-1/4">
+                            <mat-form-field appearance="outline" class="w-full">
                                 <mat-label>Tipo de Pieza</mat-label>
                                 <mat-select formControlName="tiposPieza" multiple>
                                     <mat-option *ngFor="let tipo of tiposPieza" [value]="tipo.id">{{ tipo.nombre
@@ -21,7 +21,7 @@
                                 </mat-select>
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/4">
+                            <mat-form-field appearance="outline" class="w-full">
                                 <mat-label>Material</mat-label>
                                 <input type="text" matInput formControlName="idMaterial"
                                     [matAutocomplete]="autoMaterial" placeholder="Material" #materialInput>
@@ -36,7 +36,7 @@
                                 </mat-autocomplete>
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/4">
+                            <mat-form-field appearance="outline" class="w-full">
                                 <mat-label>Fórmula</mat-label>
                                 <input type="text" matInput formControlName="idFormula" [matAutocomplete]="autoFormula"
                                     placeholder="Fórmula" #formulaInput>
@@ -51,13 +51,13 @@
                                 </mat-autocomplete>
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/4">
+                            <mat-form-field appearance="outline" class="w-full">
                                 <mat-label> Código / Denominación /Código Cliente </mat-label>
                                 <input matInput formControlName="nombre"
                                     placeholder="Código o Denominación o Código Cliente">
                             </mat-form-field>
 
-                            <mat-form-field appearance="outline" class="w-1/4">
+                            <mat-form-field appearance="outline" class="w-full">
                                 <mat-label>Cliente</mat-label>
                                 <input type="text" placeholder="Cliente" matInput formControlName="idCliente"
                                     [matAutocomplete]="autoCliente">
@@ -72,28 +72,29 @@
                                         {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
                                     </mat-option>
                                 </mat-autocomplete>
+                            </mat-form-field>
 
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Vigentes</mat-label>
+                                <mat-select formControlName="soloVigentes">
+                                    <mat-option value="">Todos</mat-option>
+                                    <mat-option [value]="true">Vigentes</mat-option>
+                                    <mat-option [value]="false">No Vigentes</mat-option>
+                                </mat-select>
                             </mat-form-field>
 
                         </div>
+                        <div class="flex items-center justify-end w-full">
+                            <div class="row flex justify-end gap-2">
+                            <button mat-stroked-button (click)="limpiarFiltros()"
+                                class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full">
+                                <span> Limpiar </span>
+                            </button>
 
-                        <div class="w-full justify-between flex">
-                            <div class="row flex gap-3 items-center">
-                                <mat-checkbox formControlName="soloVigentes">Solo Vigentes</mat-checkbox>
-                            </div>
-
-                            <div class="flex shrink-0 items-center gap-2 flex-row-reverse">
-                                <button mat-flat-button (click)="search()"
-                                    class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full max-w-30">
-                                    <span class="mat-button-wrapper">
-                                        Buscar
-                                    </span>
-                                </button>
-
-                                <button mat-stroked-button (click)="limpiarFiltros()"
-                                    class="mat-focus-indicator mat-stroked-button mat-button-base min-w-max w-full max-w-30">
-                                    <span class="mat-button-wrapper"> Limpiar </span>
-                                </button>
+                            <button mat-flat-button (click)="search()"
+                                class="mat-focus-indicator mat-flat-button mat-button-base mat-accent min-w-max w-full">
+                                <span> Buscar </span>
+                            </button>
                             </div>
                         </div>
                     </form>

@@ -48,7 +48,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
   clientesDisponibles: Cliente[] = [];
 
-  soloVigentes = new FormControl(true);
+  soloVigentes = new FormControl('');
 
   private allFormulas: IFormula[] = [];
   private allMaterials: any[] = [];
@@ -74,7 +74,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       idFormula: [null],
       idMaterial: [null],
       tiposPieza: [null],
-      soloVigentes: [true],
+      soloVigentes: [''],
       idCliente: [null]
     });
   }
@@ -175,9 +175,9 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
   limpiarFiltros(): void {
     this.searchForm.reset({
-      soloVigentes: true
+      soloVigentes: ''
     });
-    this.soloVigentes.setValue(true);
+    this.soloVigentes.setValue('');
   }
 
   goToEdit(rowId: number): void {
