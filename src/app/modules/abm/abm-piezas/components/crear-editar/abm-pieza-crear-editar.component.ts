@@ -96,7 +96,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             observacionesMolde: [{ value: null, disabled: false }],
             idCliente: [{ value: null, disabled: false }],
             nombrePiezaCliente: [{ value: null, disabled: false }],
-            cotizacionCliente: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')],
+            cotizacionCliente: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')],
             cotizacionFecha: [null],
             observacionesCotizacionCliente: [{ value: null, disabled: true }],
             revision: [{ value: null, disabled: true }],
@@ -228,10 +228,10 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                         }
 
                         if (hasFecha && !cotizacionCtrl.hasValidator(Validators.required)) {
-                            cotizacionCtrl.setValidators([Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                            cotizacionCtrl.setValidators([Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')]);
                             cotizacionCtrl.updateValueAndValidity({ emitEvent: false });
                         } else if (!hasFecha && cotizacionCtrl.hasValidator(Validators.required)) {
-                            cotizacionCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                            cotizacionCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')]);
                             cotizacionCtrl.updateValueAndValidity({ emitEvent: false });
                         }
                     } else {
@@ -241,7 +241,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                         }
 
                         if (cotizacionCtrl.hasValidator(Validators.required)) {
-                            cotizacionCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                            cotizacionCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')]);
                             cotizacionCtrl.updateValueAndValidity({ emitEvent: false });
                         }
                     }

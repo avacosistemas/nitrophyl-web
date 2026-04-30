@@ -136,10 +136,10 @@ export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
                 }
 
                 if (hasFec && !cotCtrl.hasValidator(Validators.required)) {
-                    cotCtrl.setValidators([Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                    cotCtrl.setValidators([Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')]);
                     cotCtrl.updateValueAndValidity({ emitEvent: false });
                 } else if (!hasFec && cotCtrl.hasValidator(Validators.required)) {
-                    cotCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]);
+                    cotCtrl.setValidators([Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')]);
                     cotCtrl.updateValueAndValidity({ emitEvent: false });
                 }
 

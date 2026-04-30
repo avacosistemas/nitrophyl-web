@@ -28,8 +28,8 @@
 
         <div class="flex gap-4">
             <mat-form-field appearance="outline" class="w-1/2">
-                <mat-label>Cotización ($)</mat-label>
-                <input matInput type="number" formControlName="cotizacion">
+                <mat-label>Cotización (U$D)</mat-label>
+                <input matInput type="number" step="0.001" formControlName="cotizacion">
                 <mat-error *ngIf="form.get('cotizacion').hasError('pattern')">Valor numérico inválido</mat-error>
                 <mat-error *ngIf="form.get('cotizacion').hasError('required')">Requerido si hay fecha</mat-error>
             </mat-form-field>

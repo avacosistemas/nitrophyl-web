@@ -17,8 +17,8 @@
 
       <ng-container matColumnDef="cotizacion">
         <th mat-header-cell *matHeaderCellDef> Cotización </th>
-        <td mat-cell *matCellDef="let element">
-          <span *ngIf="element.cotizacion">{{ element.cotizacion | currency }}</span>
+        <td mat-cell *matCellDef="let element" style="text-align: right; padding-right: 20px;">
+          <span *ngIf="element.cotizacion">U$D {{ element.cotizacion.toFixed(3) }}</span>
           <span *ngIf="!element.cotizacion">-</span>
         </td>
       </ng-container>

@@ -42,8 +42,8 @@
 
         <div class="flex w-full gap-3">
             <mat-form-field appearance="outline" class="w-1/2">
-                <mat-label>Precio</mat-label>
-                <input matInput type="number" formControlName="valor" required>
+                <mat-label>Precio (U$D)</mat-label>
+                <input matInput type="number" step="0.001" formControlName="valor" required>
                 <mat-error *ngIf="form.get('valor').hasError('required')">El precio es requerido.</mat-error>
                 <mat-error *ngIf="form.get('valor').hasError('pattern')">Debe ser un valor numérico.</mat-error>
             </mat-form-field>
