@@ -44,7 +44,7 @@ export class ABMPiezaClienteModalComponent implements OnInit, OnDestroy {
         this.form = this.fb.group({
             cliente: [null, Validators.required],
             nombrePiezaPersonalizado: [''],
-            cotizacion: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')],
+            cotizacion: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')],
             fechaCotizacion: [null],
             observacionesCotizacion: [{ value: '', disabled: true }]
         });

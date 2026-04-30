@@ -49,7 +49,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
             pieza: [null, Validators.required],
             cliente: [null, Validators.required],
             soloPiezasCliente: [{ value: false, disabled: true }],
-            valor: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,2})?$')]],
+            valor: [null, [Validators.required, Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')]],
             fecha: [new Date(), Validators.required],
             observaciones: ['']
         });
