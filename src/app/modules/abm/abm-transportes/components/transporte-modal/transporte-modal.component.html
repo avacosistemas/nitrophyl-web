@@ -1,0 +1,63 @@
+<h1 mat-dialog-title>{{ title }}</h1>
+
+<div mat-dialog-content>
+    <form [formGroup]="form" class="mat-form-without-wrapper flex flex-col gap-4 mt-4">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Nombre</mat-label>
+            <input matInput formControlName="nombre" required>
+            <mat-error *ngIf="form.get('nombre').hasError('required')">El nombre es requerido.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Dirección</mat-label>
+            <input matInput formControlName="direccion" required>
+            <mat-error *ngIf="form.get('direccion').hasError('required')">La dirección es requerida.</mat-error>
+        </mat-form-field>
+
+        <div class="flex gap-4">
+            <mat-form-field appearance="outline" class="flex-auto">
+                <mat-label>Teléfono</mat-label>
+                <input matInput formControlName="telefono" required>
+                <mat-error *ngIf="form.get('telefono').hasError('required')">El teléfono es requerido.</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-auto">
+                <mat-label>Email</mat-label>
+                <input matInput formControlName="email" type="email" required>
+                <mat-error *ngIf="form.get('email').hasError('required')">El email es requerido.</mat-error>
+                <mat-error *ngIf="form.get('email').hasError('email')">Formato de email inválido.</mat-error>
+            </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Horario de Atención</mat-label>
+            <input matInput formControlName="horarioAtencion" required>
+            <mat-error *ngIf="form.get('horarioAtencion').hasError('required')">El horario es requerido.</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput formControlName="observaciones" rows="3"></textarea>
+        </mat-form-field>
+
+        <div class="flex flex-col gap-2">
+            <span class="font-semibold text-secondary">Medios de Envío</span>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <ng-container *ngFor="let option of mediosEnvioOptions; let i = index">
+                    <mat-checkbox [formControl]="mediosEnvioFormArray.at(i)">
+                        {{ option.label }}
+                    </mat-checkbox>
+                </ng-container>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div mat-dialog-actions class="flex justify-end gap-2 pt-2">
+    <button mat-stroked-button (click)='onCancel()'>Cancelar</button>
+    <button mat-flat-button color="accent"
+        [disabled]="form.invalid || isLoading" (click)="onSave()">
+        <span *ngIf="!isLoading">Guardar</span>
+        <mat-progress-spinner *ngIf="isLoading" diameter="24" mode="indeterminate"></mat-progress-spinner>
+    </button>
+</div>

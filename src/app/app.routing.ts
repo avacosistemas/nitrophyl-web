@@ -274,11 +274,39 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'transportes',
+        canActivate: [PermissionGuard],
+        data: { permission: 'MENU_ADMINISTRACION_TRANSPORTES' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-transportes/abm-transportes.module').then(
+            (m: any) => m.ABMTransportesModule
+          ),
+      },
+      {
         path: 'cotizaciones',
+
         data: { permission: 'MENU_ADMINISTRACION_COTIZACION' },
         loadChildren: () =>
           import('app/modules/abm/abm-cotizaciones/cotizaciones.module').then(
             (m: any) => m.CotizacionesModule
+          ),
+      },
+      {
+        path: 'orden-compra',
+        canActivate: [PermissionGuard],
+        data: { permission: 'MENU_ADMINISTRACION_ORDEN_COMPRA' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-orden-compra/abm-orden-compra.module').then(
+            (m: any) => m.ABMOrdenCompraModule
+          ),
+      },
+      {
+        path: 'orden-fabricacion',
+        canActivate: [PermissionGuard],
+        data: { permission: 'MENU_ADMINISTRACION_ORDEN_FABRICACION' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-orden-fabricacion/abm-orden-fabricacion.module').then(
+            (m: any) => m.ABMOrdenFabricacionModule
           ),
       },
       {

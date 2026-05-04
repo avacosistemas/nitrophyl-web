@@ -1,0 +1,74 @@
+<h2 mat-dialog-title class="font-bold text-gray-800">Enviar a Fábrica</h2>
+
+<mat-dialog-content [formGroup]="form" class="flex flex-col gap-6 pt-2 pb-4">
+    <div class="flex flex-row gap-4 w-full">
+        <div class="flex flex-col gap-4 w-2/3">
+            <div class="flex flex-1 gap-4">
+                <div
+                    class="flex-1 bg-gray-100 rounded-xl p-4 flex flex-col items-center justify-center border border-gray-200">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Solicitadas</span>
+                    <span class="text-3xl font-bold text-gray-800">{{ data.cantidadSolicitada }}</span>
+                </div>
+                <div
+                    class="flex-1 bg-gray-100 rounded-xl p-4 flex flex-col items-center justify-center border border-gray-200">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">En Stock</span>
+                    <span class="text-3xl font-bold text-gray-800">{{ data.stockDisponible }}</span>
+                </div>
+            </div>
+
+            <div class="flex gap-4 pr-4 w-full">
+                <mat-form-field appearance="outline" class="flex-1 w-1/2">
+                    <mat-label>Cant. a Fabricar</mat-label>
+                    <input matInput type="number" formControlName="cantFabrica" min="0">
+                    <mat-error *ngIf="form.get('cantFabrica').hasError('min')">No puede ser negativo</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-1 w-1/2">
+                    <mat-label>Tomar de Stock</mat-label>
+                    <input matInput type="number" formControlName="cantStock" min="0" [max]="data.stockDisponible">
+                    <mat-error *ngIf="form.get('cantStock').hasError('min')">No puede ser negativo</mat-error>
+                    <mat-error *ngIf="form.get('cantStock').hasError('max')">No hay suficiente stock (Máx:
+                        {{data.stockDisponible}})</mat-error>
+                </mat-form-field>
+            </div>
+        </div>
+
+        <div class="flex-1 rounded-xl p-4 flex flex-col items-center justify-center border transition-colors duration-300"
+            [ngClass]="totalColorClass">
+            <span class="text-xs font-bold uppercase tracking-wider mb-1" [ngClass]="totalTextClass">TOTAL</span>
+            <span class="text-4xl font-extrabold" [ngClass]="totalTextClass">{{ currentTotal }}</span>
+        </div>
+    </div>
+
+    <div class="flex gap-4">
+        <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Máquina</mat-label>
+            <input matInput formControlName="maquina">
+            <mat-error>Requerido</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Operario</mat-label>
+            <input type="text" matInput formControlName="operario" [matAutocomplete]="autoOp">
+            <mat-autocomplete #autoOp="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let op of filteredOperarios$ | async" [value]="op">
+                    {{ op.nombre }}
+                </mat-option>
+            </mat-autocomplete>
+        </mat-form-field>
+    </div>
+
+    <div class="bg-blue-50 border border-blue-100 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <mat-icon class="text-blue-500 icon-size-5" svgIcon="heroicons_outline:calendar"></mat-icon>
+            <span class="text-sm font-medium text-blue-800 uppercase tracking-wide">Fecha Entrega Estimada</span>
+        </div>
+        <span class="text-lg font-bold text-blue-900">{{ (data.fechaEstimada | date:'dd-MM-yyyy') || '-' }}</span>
+    </div>
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="pb-6">
+    <button mat-button mat-dialog-close class="mr-2">Cancelar</button>
+    <button mat-flat-button color="accent" [disabled]="form.invalid" class="rounded-full px-6" (click)="save()">
+        Enviar
+    </button>
+</mat-dialog-actions>
