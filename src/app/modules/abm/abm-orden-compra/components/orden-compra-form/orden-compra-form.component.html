@@ -289,20 +289,20 @@
                             <div class="w-1.5 bg-primary/40 group-hover:bg-primary"></div>
 
                             <div class="flex flex-1 flex-col gap-3 p-4">
-                                <div class="flex flex-col items-start gap-1 relative">
+                                <div class="flex items-start justify-between gap-4">
                                     <span
-                                        class="bg-gray-100 text-gray-800 text-sm font-black px-2 py-0.5 rounded-md border uppercase">
+                                        class="bg-gray-100 text-gray-800 text-sm font-black px-2 py-0.5 rounded-md border uppercase flex-1">
                                         {{grupo.denominacion}}</span>
 
-                                    <div class="absolute top-0 right-0 flex gap-1" *ngIf="mode !== 'view'">
+                                    <div class="flex items-center gap-1 shrink-0" *ngIf="mode !== 'view'">
                                         <button mat-icon-button (click)="selectPieceFromCard(grupo)"
-                                            matTooltip="Añadir más a esta pieza">
+                                            matTooltip="Añadir más a esta pieza" class="w-8 h-8">
                                             <mat-icon svgIcon="heroicons_solid:plus-circle"
-                                                class="text-green-600"></mat-icon>
+                                                class="text-green-600 icon-size-5"></mat-icon>
                                         </button>
                                         <button mat-icon-button (click)="removePieza(i)" color="warn"
-                                            matTooltip="Borrar pieza completa">
-                                            <mat-icon svgIcon="heroicons_solid:trash"></mat-icon>
+                                            matTooltip="Borrar pieza completa" class="w-8 h-8">
+                                            <mat-icon svgIcon="heroicons_solid:trash" class="icon-size-5"></mat-icon>
                                         </button>
                                     </div>
                                 </div>

@@ -185,7 +185,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                     this.form.enable();
                     this.piezaForm.enable();
                 }
-                this.step = 'items';
+                this.step = 'header';
                 this.showItemForm = false;
                 this.isInitialLoading = false;
                 this.updateHeaderUI();
@@ -505,46 +505,41 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     toggleSplit(): void { this.splitDirection = this.splitDirection === 'row' ? 'column' : 'row'; this.splitSize = 50; }
 
     updateHeaderUI(): void {
-        let btns = [];
         const baseBreadcrumbs = [
             { title: 'Administración', route: [], condition: true },
             { title: 'Órdenes de Compra', route: ['/orden-compra'], condition: true }
         ];
 
-        if (this.mode === 'view') {
-            btns = [
-                { type: 'stroked', label: 'Volver a la lista', action: 'goBack', condition: true },
-                { type: 'stroked', label: 'Invertir Vista', action: 'toggleSplit', condition: true }
-            ];
-            const cli = this.form.get('cliente').value?.nombre || '';
-            const comp = this.form.get('nroComprobante').value;
-            this._service.updateHeaderTitle(this.mode === 'view' ? 'Ver Orden' : 'Editar Orden');
-            this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
-            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: this.mode === 'view' ? 'Ver' : 'Editar', route: [], condition: true }]);
-            this._service.updateHeaderButtons(btns);
-            return;
-        }
+        const isView = this.mode === 'view';
+        const isEdit = this.mode === 'edit';
+        const title = isView ? 'Ver Orden' : (isEdit ? 'Editar Orden' : 'Generar Orden');
+        const cli = this.form.get('cliente').value?.nombre || '';
+        const comp = this.form.get('nroComprobante').value;
+        const breadcrumbTitle = isView ? 'Ver' : (isEdit ? 'Editar' : 'Nueva');
 
+        let btns = [];
         if (this.step === 'header') {
             btns = [
-                { type: 'stroked', label: 'Cancelar', action: 'goBack', condition: true },
-                { type: 'flat', label: 'Confirmar y Continuar', action: 'confirmHeader', condition: true }
+                { type: 'stroked', label: isView ? 'Volver a la lista' : 'Cancelar', action: 'goBack', condition: true },
+                { type: 'flat', label: isView ? 'Ver Ítems' : 'Confirmar y Continuar', action: 'confirmHeader', condition: true }
             ];
-            this._service.updateHeaderTitle(this.mode === 'edit' ? 'Editar Orden' : 'Generar Orden');
-            this._service.updateHeaderSubtitle('');
-            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: this.mode === 'edit' ? 'Editar' : 'Nueva', route: [], condition: true }]);
+            this._service.updateHeaderSubtitle(isView ? `${cli} | Comprobante: ${comp}` : '');
         } else {
             btns = [
-                { type: 'stroked', label: 'Volver Atrás', action: 'editHeader', condition: true },
-                { type: 'stroked', label: 'Invertir Vista', action: 'toggleSplit', condition: true },
-                { type: 'flat', label: this.mode === 'edit' ? 'Actualizar Orden' : 'Finalizar Orden', action: 'saveAll', condition: true }
+                { type: 'stroked', label: isView ? 'Volver a la lista' : 'Volver Atrás', action: isView ? 'goBack' : 'editHeader', condition: true },
+                { type: 'stroked', label: 'Invertir Vista', action: 'toggleSplit', condition: true }
             ];
-            const cli = this.form.get('cliente').value?.nombre || '';
-            const comp = this.form.get('nroComprobante').value;
-            this._service.updateHeaderTitle(this.mode === 'edit' ? 'Editar Orden' : 'Generar Orden');
+            
+            if (isView) {
+                btns.splice(1, 0, { type: 'stroked', label: 'Volver a Cabecera', action: 'editHeader', condition: true });
+            } else {
+                btns.push({ type: 'flat', label: isEdit ? 'Actualizar Orden' : 'Finalizar Orden', action: 'saveAll', condition: true });
+            }
             this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
-            this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: this.mode === 'edit' ? 'Editar' : 'Nueva', route: [], condition: true }]);
         }
+
+        this._service.updateHeaderTitle(title);
+        this._service.updateHeaderBreadcrumbs([...baseBreadcrumbs, { title: breadcrumbTitle, route: [], condition: true }]);
         this._service.updateHeaderButtons(btns);
     }
 
