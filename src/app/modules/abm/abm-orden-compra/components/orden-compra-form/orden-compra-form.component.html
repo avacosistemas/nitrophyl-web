@@ -62,7 +62,7 @@
                             </mat-form-field>
                             
                             <div *ngIf="mediosEnvioDisponibles.length > 0" class="mt-2">
-                                <mat-label class="text-[10px] font-bold uppercase text-secondary mb-3 block tracking-wider">Medios de Envío Disponibles</mat-label>
+                                <mat-label class="text-[10px] font-bold uppercase text-secondary mb-3 block tracking-wider">Medio de Envío</mat-label>
                                 <div class="flex flex-wrap gap-x-6 gap-y-2">
                                     <mat-checkbox *ngFor="let m of mediosEnvioDisponibles" 
                                         [checked]="form.get('mediosEnvio').value.includes(m)"
