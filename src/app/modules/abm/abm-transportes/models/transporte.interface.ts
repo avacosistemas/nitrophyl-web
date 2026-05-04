@@ -6,12 +6,15 @@ export interface ITransporte {
     email: string;
     horarioAtencion: string;
     observaciones: string;
-    mediosEnvio: string;
+    mediosEnvio: string[];
 }
 
 export interface ITransporteApiResponse {
     status: string;
-    data: ITransporte[];
+    data: {
+        page: ITransporte[];
+        totalReg: number;
+    };
 }
 
 export interface ITransporteSingleApiResponse {
@@ -26,7 +29,7 @@ export interface ITransporteDto {
     email: string;
     horarioAtencion: string;
     observaciones: string;
-    mediosEnvio: string;
+    mediosEnvio: string[];
 }
 
 export interface IErrorResponse {

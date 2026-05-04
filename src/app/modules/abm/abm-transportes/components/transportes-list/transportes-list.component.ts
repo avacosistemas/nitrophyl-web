@@ -41,7 +41,7 @@ export class TransportesListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const sub = this.abmTransportesService.getTransportes().subscribe({
             next: (response) => {
-                this.originalData = response.data || [];
+                this.originalData = response.data?.page || [];
                 this.dataSource.data = this.originalData;
                 this.isLoading = false;
             },
@@ -116,5 +116,14 @@ export class TransportesListComponent implements OnInit, OnDestroy {
             }
         });
         this.subscriptions.add(sub);
+    }
+    formatMediosEnvio(medios: any): string {
+        if (!medios) return '-';
+        const arr = Array.isArray(medios) ? medios : String(medios).split(',');
+        return arr.map(m => {
+            const trimmed = m.trim();
+            if (!trimmed) return '';
+            return trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
+        }).filter(m => m !== '').join(', ');
     }
 }

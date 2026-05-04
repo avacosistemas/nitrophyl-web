@@ -1,48 +1,41 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
-import { ITransporteApiResponse, ITransporteDto, ITransporteSingleApiResponse } from './models/transporte.interface';
-
 @Injectable({
     providedIn: 'root'
 })
 export class AbmTransportesService {
-    private readonly apiUrl = `${environment.server}transporte`;
+    private readonly apiUrl = `${environment.server}empresaTransporte`;
 
     constructor(private http: HttpClient) { }
 
-    getTransportes(): Observable<ITransporteApiResponse> {
-        let params = new HttpParams();
-        params = params.set('nombre', '');
-        return this.http.get<ITransporteApiResponse>(this.apiUrl, { params }).pipe(
-            catchError(this.handleError)
-        );
+    getTransportes(params: any = {}): Observable<any> {
+        let httpParams = new HttpParams();
+        if (params.asc !== undefined) httpParams = httpParams.set('asc', params.asc.toString());
+        if (params.direccion) httpParams = httpParams.set('direccion', params.direccion);
+        if (params.first !== undefined) httpParams = httpParams.set('first', params.first.toString());
+        if (params.idx) httpParams = httpParams.set('idx', params.idx);
+        if (params.nombre) httpParams = httpParams.set('nombre', params.nombre);
+        if (params.rows) httpParams = httpParams.set('rows', params.rows.toString());
+        if (params.mediosEnvio) {
+            params.mediosEnvio.forEach(m => {
+                httpParams = httpParams.append('mediosEnvio', m);
+            });
+        }
+
+        return this.http.get<any>(this.apiUrl, { params: httpParams });
     }
 
-    createTransporte(dto: ITransporteDto): Observable<ITransporteSingleApiResponse> {
-        return this.http.post<ITransporteSingleApiResponse>(this.apiUrl, dto).pipe(
-            catchError(this.handleError)
-        );
+    createTransporte(dto: any): Observable<any> {
+        return this.http.post<any>(this.apiUrl, dto);
     }
 
-    updateTransporte(id: number, dto: ITransporteDto): Observable<any> {
-        return this.http.put(`${this.apiUrl}/${id}`, dto).pipe(
-            catchError(this.handleError)
-        );
+    updateTransporte(id: number, dto: any): Observable<any> {
+        return this.http.put<any>(`${this.apiUrl}/${id}`, dto);
     }
 
     deleteTransporte(id: number): Observable<any> {
-        return this.http.delete(`${this.apiUrl}/${id}`).pipe(
-            catchError((error: HttpErrorResponse) => {
-                return throwError(() => error);
-            })
-        );
-    }
-
-    private handleError(error: HttpErrorResponse) {
-        console.error('API Error:', error);
-        return throwError(() => new Error('Ocurrió un error en la comunicación con el servidor.'));
+        return this.http.delete<any>(`${this.apiUrl}/${id}`);
     }
 }

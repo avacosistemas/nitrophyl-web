@@ -8,7 +8,6 @@ export class MockRedirectInterceptor implements HttpInterceptor {
 
     private mockEndpoints: string[] = [
         'ordenFabricacion',
-        'ordenCompra',
         'transportes'
     ];
 

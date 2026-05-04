@@ -67,7 +67,7 @@ export class TransporteModalComponent implements OnInit {
                 observaciones: transporte.observaciones
             });
 
-            const selectedMedios = transporte.mediosEnvio ? transporte.mediosEnvio.split(',').map(s => s.trim()) : [];
+            const selectedMedios = transporte.mediosEnvio || [];
             const formArray = this.form.get('mediosEnvio') as FormArray;
             this.mediosEnvioOptions.forEach((option, index) => {
                 if (selectedMedios.includes(option.value)) {
@@ -94,8 +94,7 @@ export class TransporteModalComponent implements OnInit {
 
         const selectedMediosValues = this.form.value.mediosEnvio
             .map((checked, i) => checked ? this.mediosEnvioOptions[i].value : null)
-            .filter(value => value !== null)
-            .join(', ');
+            .filter(value => value !== null);
 
         this.isLoading = true;
         const dto: ITransporteDto = {

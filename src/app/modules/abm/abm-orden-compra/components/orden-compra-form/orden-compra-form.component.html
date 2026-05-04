@@ -9,8 +9,8 @@
     </div>
 
     <div *ngIf="step === 'header'"
-        class="flex flex-col items-center justify-center p-6 h-full overflow-y-auto bg-gray-50">
-        <div class="w-full max-w-2xl bg-card shadow-2xl rounded-3xl p-10 border border-gray-200 animate-in">
+        class="flex flex-col items-center p-6 h-full overflow-y-auto bg-gray-50">
+        <div class="w-full max-w-2xl bg-card shadow-2xl rounded-3xl p-10 border border-gray-200 animate-in my-auto">
             <form [formGroup]="form" class="grid grid-cols-1 gap-6">
                 <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Cliente / Propietario</mat-label>
@@ -40,10 +40,57 @@
                         <mat-datepicker #p1></mat-datepicker>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="w-full md:col-span-2">
-                        <mat-label>Método de Despacho</mat-label>
-                        <input matInput formControlName="metodoDespacho" placeholder="Ej: Camión, Retira en fábrica, etc.">
-                    </mat-form-field>
+                    <div class="md:col-span-2 flex flex-col gap-6 p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
+                        <mat-label class="text-xs font-black uppercase tracking-widest text-secondary">Tipo de Despacho</mat-label>
+                        <mat-radio-group formControlName="tipoDespacho" class="flex flex-col sm:flex-row gap-8">
+                            <mat-radio-button value="RETIRO_CLIENTE" color="primary">Retira Cliente</mat-radio-button>
+                            <mat-radio-button value="RETIRO_TRANSPORTE" color="primary">Retira Empresa de Transporte</mat-radio-button>
+                            <mat-radio-button value="ENVIA_NITRO" color="primary">Envía Nitro</mat-radio-button>
+                        </mat-radio-group>
+                    
+                        <div *ngIf="form.get('tipoDespacho').value === 'RETIRO_TRANSPORTE' || form.get('tipoDespacho').value === 'ENVIA_NITRO'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Seleccionar Empresa de Transporte</mat-label>
+                                <mat-icon matPrefix class="icon-size-5 mr-2 text-secondary">local_shipping</mat-icon>
+                                <mat-select formControlName="idEmpresaTransporte">
+                                    <mat-option *ngFor="let t of transportes" [value]="t.id">{{t.nombre}}</mat-option>
+                                </mat-select>
+                                <button matSuffix *ngIf="form.get('idEmpresaTransporte').value && mode !== 'view'"  matSuffix mat-icon-button aria-label="Clear"
+                                    (click)="$event.stopPropagation(); form.get('idEmpresaTransporte').setValue(null)">
+                                    <mat-icon> close </mat-icon>
+                                </button>
+                            </mat-form-field>
+                            
+                            <div *ngIf="mediosEnvioDisponibles.length > 0" class="mt-2">
+                                <mat-label class="text-[10px] font-bold uppercase text-secondary mb-3 block tracking-wider">Medios de Envío Disponibles</mat-label>
+                                <div class="flex flex-wrap gap-x-6 gap-y-2">
+                                    <mat-checkbox *ngFor="let m of mediosEnvioDisponibles" 
+                                        [checked]="form.get('mediosEnvio').value.includes(m)"
+                                        (change)="onMedioEnvioToggle(m, $event.checked)"
+                                        color="primary">
+                                        <span class="text-sm font-semibold capitalize">{{m}}</span>
+                                    </mat-checkbox>
+                                </div>
+                            </div>
+                        </div>
+                    
+                        <div *ngIf="form.get('tipoDespacho').value === 'ENVIA_NITRO'" class="animate-in fade-in slide-in-from-top-2 duration-300">
+                            <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                                <mat-label>Seleccionar Destino (Domicilio)</mat-label>
+                                <mat-icon matPrefix class="icon-size-5 mr-2 text-secondary">location_on</mat-icon>
+                                <mat-select formControlName="idDomicilioEnvio">
+                                    <mat-option *ngFor="let d of domicilios" [value]="d.id">
+                                        <span>{{d.domicilio}}</span>
+                                    </mat-option>
+                                </mat-select>
+                                <button mat-icon-button matSuffix *ngIf="form.get('idDomicilioEnvio').value && mode !== 'view'" 
+                                    (click)="$event.stopPropagation(); form.get('idDomicilioEnvio').setValue(null)"
+                                    type="button">
+                                    <mat-icon class="icon-size-4">close</mat-icon>
+                                </button>
+                            </mat-form-field>
+                        </div>
+                    </div>
                 </div>
 
 
@@ -193,7 +240,8 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <mat-form-field appearance="outline" class="w-full">
                                             <mat-label>{{ (piezaCotizacionInfo?.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value) ? 'Precio Cotización Actual (U$D)' : 'Precio Nueva Cotización (U$D)' }}</mat-label>
-                                            <input type="number" matInput formControlName="cotizacionValor"
+                                            <input type="text" matInput formControlName="cotizacionValor"
+                                                (input)="onPriceInput($event, 'cotizacionValor')"
                                                 [readonly]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value">
                                         </mat-form-field>
 
@@ -347,7 +395,8 @@
                                 <div *ngIf="grupo.isEditingQuotation" class="flex flex-col gap-2 p-1">
                                     <mat-form-field appearance="outline" class="fuse-mat-dense fuse-mat-no-subscript">
                                         <mat-label>Precio (U$D)</mat-label>
-                                        <input matInput type="number" [(ngModel)]="grupo.tempPrecio">
+                                        <input matInput type="text" [(ngModel)]="grupo.tempPrecio"
+                                            (input)="onPriceInputCard($event, grupo)">
                                     </mat-form-field>
                                     <mat-form-field appearance="outline" class="fuse-mat-dense fuse-mat-no-subscript">
                                         <mat-label>Fecha</mat-label>

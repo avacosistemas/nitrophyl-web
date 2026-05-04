@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'environments/environment';
 import { Observable } from 'rxjs';
 import {
@@ -87,10 +87,12 @@ export class ClientesService {
     return this.http.get<any>(`${environment.server}cliente/correoinforme/${idCliente}`);
   }
 
-  public getDomicilios(idCliente: number): Observable<ResponseDomicilios> {
-    return this.http.get<ResponseDomicilios>(
-      `${environment.server}clienteDomicilio?idCliente=${idCliente}`
-    );
+  public getDomicilios(idCliente: number, tipoDomicilio?: string): Observable<ResponseDomicilios> {
+    let params = new HttpParams().set('idCliente', idCliente.toString());
+    if (tipoDomicilio) {
+      params = params.set('tipoDomicilio', tipoDomicilio);
+    }
+    return this.http.get<ResponseDomicilios>(`${environment.server}clienteDomicilio`, { params });
   }
 
   public getDomicilioById(id: number): Observable<ResponseDomicilio> {

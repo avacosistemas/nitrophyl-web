@@ -329,7 +329,7 @@ export class OrdenFabricacionFormComponent implements OnInit, OnDestroy {
         if (this.piezaCotizacionInfo?.tieneCotizacion) {
             return this.piezaCotizacionInfo.valor;
         }
-        return this.piezaForm.get('cotizacionValor').value || 0;
+        return parseFloat(this.piezaForm.get('cotizacionValor').value || 0);
     }
 
     private updateCotizacionValidators(): void {
@@ -361,7 +361,7 @@ export class OrdenFabricacionFormComponent implements OnInit, OnDestroy {
             cantidadSolicitada: p.cantidadSolicitada,
             stock: this.piezaStockInfo?.stock || 0,
             cantidadAFabricar: p.cantidadAFabricar,
-            precio: this.piezaCotizacionInfo?.tieneCotizacion ? this.piezaCotizacionInfo.valor : p.cotizacionValor,
+            precio: this.piezaCotizacionInfo?.tieneCotizacion ? this.piezaCotizacionInfo.valor : parseFloat(p.cotizacionValor || 0),
             fechaCotizacion: this.piezaCotizacionInfo?.tieneCotizacion ? this.piezaCotizacionInfo.fecha : (p.cotizacionFecha ? moment(p.cotizacionFecha).format('DD/MM/YYYY') : '')
         };
 
@@ -423,5 +423,16 @@ export class OrdenFabricacionFormComponent implements OnInit, OnDestroy {
         const cantidad = this.piezaForm.get('cantidadSolicitada').value || 0;
         const precio = this.precioUnitarioActual || 0;
         return cantidad * precio;
+    }
+    formatCurrency(value: number): string {
+        if (value === null || value === undefined) return 'U$D 0.000';
+        return 'U$D ' + value.toFixed(3);
+    }
+    onPriceInput(event: any, controlName: string): void {
+        let val = event.target.value;
+        if (val.includes(',')) {
+            val = val.replace(',', '.');
+            this.piezaForm.get(controlName).setValue(val, { emitEvent: false });
+        }
     }
 }

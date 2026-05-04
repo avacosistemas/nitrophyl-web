@@ -39,7 +39,7 @@
 
             <ng-container matColumnDef="mediosEnvio">
                 <th mat-header-cell *matHeaderCellDef> Medios de Envío </th>
-                <td mat-cell *matCellDef="let element"> {{element.mediosEnvio}} </td>
+                <td mat-cell *matCellDef="let element"> {{formatMediosEnvio(element.mediosEnvio)}} </td>
             </ng-container>
 
             <ng-container matColumnDef="acciones">

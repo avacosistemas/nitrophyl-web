@@ -12,7 +12,6 @@ import { DomSanitizer } from '@angular/platform-browser';
 import * as FileSaver from 'file-saver';
 import { IOrdenCompra } from '../../models/orden-compra.interface';
 import { AbmOrdenCompraService } from '../../abm-orden-compra.service';
-import { OrdenCompraCancelModalComponent } from '../orden-compra-cancel-modal/orden-compra-cancel-modal.component';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { Cliente } from 'app/shared/models/cliente.model';
@@ -150,25 +149,23 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     cancelOrdenCompra(element: IOrdenCompra): void {
         const dialogRef = this.dialog.open(GenericModalComponent, {
-            width: '500px',
+            width: '400px',
             data: {
-                title: 'Cancelar Orden de Compra',
-                message: `Está por cancelar la orden <strong>${element.comprobante}</strong>. Por favor, indique el motivo o las observaciones para la cancelación.`,
+                title: 'Cancelar Orden',
+                message: `¿Está seguro de que desea cancelar la orden <strong>${element.comprobante}</strong>?`,
                 icon: 'x-circle',
-                type: 'warn',
+                type: 'warning',
                 showConfirmButton: true,
-                confirmButtonText: 'Confirmar Cancelación',
+                confirmButtonText: 'Confirmar',
                 showCloseButton: true,
-                cancelButtonText: 'Volver',
-                customComponent: OrdenCompraCancelModalComponent,
-                componentData: { id: element.id, comprobante: element.comprobante }
+                cancelButtonText: 'Volver'
             }
         });
 
-        dialogRef.afterClosed().subscribe(observaciones => {
-            if (observaciones && typeof observaciones === 'string') {
+        dialogRef.afterClosed().subscribe(confirmed => {
+            if (confirmed) {
                 this.isLoading = true;
-                this._ordenCompraService.cancelOrdenCompra(element.id, observaciones).subscribe({
+                this._ordenCompraService.cancelOrdenCompra(element.id).subscribe({
                     next: () => {
                         this._notificationService.showSuccess('Orden cancelada correctamente.');
                         this.search();
@@ -186,12 +183,13 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         const dialogRef = this.dialog.open(GenericModalComponent, {
             width: '400px',
             data: {
-                title: 'Eliminar Orden de Compra',
+                title: 'Eliminar Orden',
                 message: `¿Está seguro de que desea eliminar la orden <strong>${element.comprobante}</strong>? Esta acción no se puede deshacer y se perderán todos los datos.`,
                 showConfirmButton: true,
+                icon: 'trash',
                 confirmButtonText: 'Eliminar',
                 cancelButtonText: 'Cancelar',
-                type: 'error'
+                type: 'warning'
             }
         });
 

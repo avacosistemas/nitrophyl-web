@@ -21,6 +21,7 @@ import { MatMomentDateModule, MomentDateAdapter } from '@angular/material-moment
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
@@ -70,7 +71,8 @@ export const MY_DATE_FORMATS = {
         MatDatepickerModule,
         MatMomentDateModule,
         MatSelectModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        MatRadioModule
     ],
     providers: [
         DatePipe,

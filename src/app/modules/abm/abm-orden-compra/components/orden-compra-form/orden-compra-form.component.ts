@@ -11,6 +11,7 @@ import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatDialog } from '@angular/material/dialog';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { IOrdenCompraCreateDTO } from '../../models/orden-compra.interface';
+import { AbmTransportesService } from 'app/modules/abm/abm-transportes/abm-transportes.service';
 import * as moment from 'moment';
 
 @Component({
@@ -57,6 +58,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
     piezasAgregadas: any[] = [];
     piezaCotizacionInfo: any = null;
+    transportes: any[] = [];
+    domicilios: any[] = [];
+    mediosEnvioDisponibles: string[] = [];
     private _unsubscribeAll: Subject<void> = new Subject<void>();
 
     constructor(
@@ -68,13 +72,17 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _activatedRoute: ActivatedRoute,
         private _cdr: ChangeDetectorRef,
-        private _dialog: MatDialog
+        private _dialog: MatDialog,
+        private _transportesService: AbmTransportesService
     ) {
         this.form = this._fb.group({
             cliente: [null, Validators.required],
             fecha: [new Date(), Validators.required],
             nroComprobante: ['', Validators.required],
-            metodoDespacho: ['']
+            tipoDespacho: ['RETIRO_CLIENTE', Validators.required],
+            idEmpresaTransporte: [null],
+            idDomicilioEnvio: [null],
+            mediosEnvio: [[]]
         });
 
         this.piezaForm = this._fb.group({
@@ -96,6 +104,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         }
 
         this.loadClientes();
+        this.loadTransportes();
         this.setupObservers();
 
         this._activatedRoute.url.pipe(takeUntil(this._unsubscribeAll)).subscribe(url => {
@@ -122,7 +131,10 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                     cliente: { id: data.idCliente, nombre: data.cliente },
                     fecha: moment(data.fecha, 'YYYY-MM-DD').toDate(),
                     nroComprobante: data.comprobante,
-                    metodoDespacho: data.metodoDespacho || ''
+                    tipoDespacho: data.tipoDespacho || 'RETIRO_CLIENTE',
+                    idEmpresaTransporte: data.idEmpresaTransporte,
+                    idDomicilioEnvio: data.idDomicilioEnvio,
+                    mediosEnvio: data.mediosEnvio || []
                 });
 
                 if (data.archivo?.archivo) {
@@ -152,11 +164,13 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 }
 
                 this.piezasAgregadas = data.detalle.map(d => ({
+                    id: d.id,
                     idPieza: d.idPieza,
                     denominacion: d.pieza,
                     precio: d.valorCotizacion,
                     fechaCotizacion: d.fechaCotizacion ? moment(d.fechaCotizacion).format('DD/MM/YYYY') : '',
                     batches: d.entregasSolicitadas.map(e => ({
+                        id: e.id,
                         idTemp: e.id,
                         cantidadSolicitada: e.cantidad,
                         fechaEntrega: moment(e.fechaEntregaSolicitada, 'YYYY-MM-DD').format('DD/MM/YYYY'),
@@ -213,6 +227,42 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 );
             })
         );
+        
+        this.form.get('cliente').valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(cliente => {
+            if (cliente?.id) {
+                this.loadDomicilios(cliente.id);
+            } else {
+                this.domicilios = [];
+                this.form.patchValue({ idDomicilioEnvio: null });
+            }
+        });
+
+        this.form.get('tipoDespacho').valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(tipo => {
+            this.form.patchValue({
+                idEmpresaTransporte: null,
+                idDomicilioEnvio: null,
+                mediosEnvio: []
+            }, { emitEvent: false });
+
+            this.form.get('idEmpresaTransporte').clearValidators();
+            this.form.get('idDomicilioEnvio').clearValidators();
+            
+            if (tipo === 'RETIRO_TRANSPORTE') {
+                this.form.get('idEmpresaTransporte').setValidators([Validators.required]);
+            } else if (tipo === 'ENVIA_NITRO') {
+                this.form.get('idEmpresaTransporte').setValidators([Validators.required]);
+                this.form.get('idDomicilioEnvio').setValidators([Validators.required]);
+            }
+            
+            this.form.get('idEmpresaTransporte').updateValueAndValidity();
+            this.form.get('idDomicilioEnvio').updateValueAndValidity();
+        });
+
+        this.form.get('idEmpresaTransporte').valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(id => {
+            const transporte = this.transportes.find(t => t.id === id);
+            this.mediosEnvioDisponibles = transporte?.mediosEnvio || [];
+            this.form.patchValue({ mediosEnvio: [] });
+        });
 
         this.piezaForm.get('actualizarCotizacion').valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((isUpdating) => {
             if (isUpdating) {
@@ -222,7 +272,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 });
             } else if (this.piezaCotizacionInfo) {
                 this.piezaForm.patchValue({
-                    cotizacionValor: this.piezaCotizacionInfo.valor,
+                    cotizacionValor: this.piezaCotizacionInfo.valor ? this.piezaCotizacionInfo.valor.toFixed(3) : null,
                     cotizacionFecha: this.piezaCotizacionInfo.fecha
                 });
             }
@@ -274,7 +324,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             }
 
             this.piezaForm.patchValue({
-                cotizacionValor: this.piezaCotizacionInfo.valor,
+                cotizacionValor: this.piezaCotizacionInfo.valor ? this.piezaCotizacionInfo.valor.toFixed(3) : null,
                 cotizacionFecha: this.piezaCotizacionInfo.fecha,
                 actualizarCotizacion: false
             }, { emitEvent: false });
@@ -292,7 +342,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         if (this.piezaForm.invalid) { this.piezaForm.markAllAsTouched(); return; }
 
         const p = this.piezaForm.getRawValue();
-        const precio = p.cotizacionValor;
+        const precio = parseFloat(p.cotizacionValor || 0);
         const idCotiz = p.actualizarCotizacion ? null : (this.piezaCotizacionInfo?.id || null);
 
         let grupo = this.piezasAgregadas.find(g => g.idPieza === p.pieza.id);
@@ -363,19 +413,25 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         const header = this.form.getRawValue();
 
         const dto: IOrdenCompraCreateDTO = {
+            id: this.mode === 'edit' ? this.orderId : null,
             idCliente: header.cliente.id,
             cliente: header.cliente.nombre,
             fecha: moment(header.fecha).format('DD/MM/YYYY'),
             comprobante: header.nroComprobante,
-            metodoDespacho: header.metodoDespacho,
+            tipoDespacho: header.tipoDespacho,
+            idEmpresaTransporte: header.idEmpresaTransporte,
+            idDomicilioEnvio: header.idDomicilioEnvio,
+            mediosEnvio: header.mediosEnvio,
             archivo: base64 ? { nombre: this.selectedFile.name, archivo: base64 } : null,
             detalle: this.piezasAgregadas.map(g => ({
+                id: g.id || null,
                 idPieza: g.idPieza,
                 pieza: g.denominacion,
                 idCotizacion: (!g.esActualizacion && g.idCotizacion) ? g.idCotizacion : null,
-                valorCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.precio,
-                fechaCotizacion: (!g.esActualizacion && g.idCotizacion) ? null : g.fechaCotizacion,
+                valorCotizacion: parseFloat(g.precio || 0),
+                fechaCotizacion: g.fechaCotizacion,
                 entregasSolicitadas: g.batches.map(b => ({
+                    id: b.id || null,
                     cantidad: b.cantidadSolicitada,
                     fechaEntregaSolicitada: b.fechaEntrega
                 }))
@@ -508,6 +564,27 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         this._clientesService.getClientes().subscribe(res => this.clientes = res.data || []);
     }
 
+    loadTransportes(): void {
+        this._transportesService.getTransportes({ rows: 100 }).subscribe(res => {
+            this.transportes = res.data?.page || [];
+        });
+    }
+
+    loadDomicilios(idCliente: number): void {
+        this._clientesService.getDomicilios(idCliente).subscribe(res => {
+            this.domicilios = (res.data || []).filter(d => d.tipo === 'EXPEDICION');
+        });
+    }
+
+    onMedioEnvioToggle(medio: string, checked: boolean): void {
+        const current = this.form.get('mediosEnvio').value as string[];
+        if (checked) {
+            this.form.get('mediosEnvio').setValue([...current, medio]);
+        } else {
+            this.form.get('mediosEnvio').setValue(current.filter(m => m !== medio));
+        }
+    }
+
     private _filter(val: any, list: any[]): any[] {
         const str = (typeof val === 'string' ? val : (val?.nombre || val?.denominacion || '')).toLowerCase();
         return list.filter(i => (i.nombre || i.denominacion || i.codigo || '').toLowerCase().includes(str));
@@ -626,12 +703,12 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
     editQuotation(grupo: any): void {
         grupo.isEditingQuotation = true;
-        grupo.tempPrecio = grupo.precio;
+        grupo.tempPrecio = grupo.precio ? grupo.precio.toFixed(3) : '0.000';
         grupo.tempFecha = grupo.fechaCotizacion ? moment(grupo.fechaCotizacion, 'DD/MM/YYYY') : null;
     }
 
     saveQuotation(grupo: any): void {
-        grupo.precio = grupo.tempPrecio;
+        grupo.precio = parseFloat(grupo.tempPrecio || 0);
         grupo.fechaCotizacion = grupo.tempFecha ? moment(grupo.tempFecha).format('DD/MM/YYYY') : '';
         grupo.isEditingQuotation = false;
     }
@@ -640,12 +717,33 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         grupo.isEditingQuotation = false;
     }
     formatCurrency(value: number): string {
-        if (value === null || value === undefined) return 'U$D 0,00';
-        return 'U$D ' + value.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (value === null || value === undefined) return 'U$D 0.000';
+        return 'U$D ' + value.toFixed(3);
     }
 
     displayFn(i: any): string { return i ? (i.nombre || i.denominacion) : ''; }
-    get precioUnitarioActual(): number { return this.piezaCotizacionInfo?.tieneCotizacion ? this.piezaCotizacionInfo.valor : (this.piezaForm.get('cotizacionValor').value || 0); }
+    get precioUnitarioActual(): number { 
+        const val = this.piezaForm.get('cotizacionValor').value;
+        return this.piezaCotizacionInfo?.tieneCotizacion && !this.piezaForm.get('actualizarCotizacion').value ? 
+            this.piezaCotizacionInfo.valor : 
+            parseFloat(val || 0); 
+    }
     get precioTotalItem(): number { return (this.piezaForm.get('cantidadSolicitada').value || 0) * this.precioUnitarioActual; }
+
+    onPriceInput(event: any, controlName: string): void {
+        let val = event.target.value;
+        if (val.includes(',')) {
+            val = val.replace(',', '.');
+            this.piezaForm.get(controlName).setValue(val, { emitEvent: false });
+        }
+    }
+
+    onPriceInputCard(event: any, grupo: any): void {
+        let val = event.target.value;
+        if (val.includes(',')) {
+            val = val.replace(',', '.');
+            grupo.tempPrecio = val;
+        }
+    }
     ngOnDestroy(): void { this._unsubscribeAll.next(); this._unsubscribeAll.complete(); }
 }
