@@ -247,9 +247,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             this.form.get('idEmpresaTransporte').clearValidators();
             this.form.get('idDomicilioEnvio').clearValidators();
             
-            if (tipo === 'RETIRO_TRANSPORTE') {
+            if (tipo === 'RETIRA_EMPRESA') {
                 this.form.get('idEmpresaTransporte').setValidators([Validators.required]);
-            } else if (tipo === 'ENVIA_NITRO') {
+            } else if (tipo === 'ENVIO') {
                 this.form.get('idEmpresaTransporte').setValidators([Validators.required]);
                 this.form.get('idDomicilioEnvio').setValidators([Validators.required]);
             }

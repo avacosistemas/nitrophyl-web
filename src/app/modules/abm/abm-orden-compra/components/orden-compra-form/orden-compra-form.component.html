@@ -44,11 +44,11 @@
                         <mat-label class="text-xs font-black uppercase tracking-widest text-secondary">Tipo de Despacho</mat-label>
                         <mat-radio-group formControlName="tipoDespacho" class="flex flex-col sm:flex-row gap-8">
                             <mat-radio-button value="RETIRO_CLIENTE" color="primary">Retira Cliente</mat-radio-button>
-                            <mat-radio-button value="RETIRO_TRANSPORTE" color="primary">Retira Empresa de Transporte</mat-radio-button>
-                            <mat-radio-button value="ENVIA_NITRO" color="primary">Envía Nitro</mat-radio-button>
+                            <mat-radio-button value="RETIRA_EMPRESA" color="primary">Retira Empresa de Transporte</mat-radio-button>
+                            <mat-radio-button value="ENVIO" color="primary">Se envia</mat-radio-button>
                         </mat-radio-group>
                     
-                        <div *ngIf="form.get('tipoDespacho').value === 'RETIRO_TRANSPORTE' || form.get('tipoDespacho').value === 'ENVIA_NITRO'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div *ngIf="form.get('tipoDespacho').value === 'RETIRA_EMPRESA' || form.get('tipoDespacho').value === 'ENVIO'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                             <mat-form-field appearance="outline" class="w-full">
                                 <mat-label>Seleccionar Empresa de Transporte</mat-label>
                                 <mat-icon matPrefix class="icon-size-5 mr-2 text-secondary">local_shipping</mat-icon>
@@ -74,7 +74,7 @@
                             </div>
                         </div>
                     
-                        <div *ngIf="form.get('tipoDespacho').value === 'ENVIA_NITRO'" class="animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div *ngIf="form.get('tipoDespacho').value === 'ENVIO'" class="animate-in fade-in slide-in-from-top-2 duration-300">
                             <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
                                 <mat-label>Seleccionar Destino (Domicilio)</mat-label>
                                 <mat-icon matPrefix class="icon-size-5 mr-2 text-secondary">location_on</mat-icon>
