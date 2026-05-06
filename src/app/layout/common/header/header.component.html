@@ -4,7 +4,6 @@
       <div class="hidden sm:flex flex-wrap items-center font-medium">
         <ng-container *ngFor="let breadcrumb of getFilteredBreadcrumbs(); let last = last; let first = first">
           <div [ngClass]="{'ml-1': !first}">
-            <!-- Si tiene ruta, usar routerLink -->
             <ng-container *ngIf="hasValidRoute(breadcrumb); else noRoute">
               <a [routerLink]="breadcrumb.route" 
                  [class.text-primary-500]="first"
@@ -13,7 +12,6 @@
                 {{ breadcrumb.title }}
               </a>
             </ng-container>
-            <!-- Si no tiene ruta, mostrar como texto -->
             <ng-template #noRoute>
               <span [class.text-primary-500]="first"
                     [class.text-secondary]="!first"
@@ -23,7 +21,6 @@
             </ng-template>
           </div>
           
-          <!-- Separador (chevron) excepto para el último elemento -->
           <ng-container *ngIf="!last">
             <mat-icon class="mat-icon notranslate icon-size-5 text-secondary mat-icon-no-color ml-1">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" fit="" height="100%" width="100%" preserveAspectRatio="xMidYMid meet" focusable="false">
@@ -48,13 +45,22 @@
     <ng-container *ngTemplateOutlet="extraContent"></ng-container>
   
     <ng-container *ngFor="let button of buttons">
-      <button mat-flat-button  *ngIf="button.condition"
-        [ngClass]="getButtonClass(button.type)"
-        [disabled]="button.isDisabled"
-        (click)="handleButtonClick(button.action)">
-        <span class="mat-button-wrapper">{{ button.label }}</span>
-        <span matripple class="mat-ripple mat-button-ripple"></span>
-      </button>
+      <ng-container *ngIf="button.condition">
+        <button *ngIf="button.type !== 'icon'" mat-flat-button
+          [ngClass]="getButtonClass(button.type)"
+          [disabled]="button.isDisabled"
+          (click)="handleButtonClick(button.action)">
+          <span class="mat-button-wrapper">{{ button.label }}</span>
+        </button>
+
+        <button *ngIf="button.type === 'icon'" mat-icon-button
+          [ngClass]="getButtonClass(button.type)"
+          [disabled]="button.isDisabled"
+          [matTooltip]="button.tooltip"
+          (click)="handleButtonClick(button.action)">
+          <mat-icon [svgIcon]="button.icon"></mat-icon>
+        </button>
+      </ng-container>
     </ng-container>
   </div>
 </div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { HeaderComponent } from 'app/layout/common/header/header.component';
 
 @NgModule({
@@ -13,7 +14,8 @@ import { HeaderComponent } from 'app/layout/common/header/header.component';
         CommonModule,
         RouterModule,
         MatIconModule,
-        MatButtonModule
+        MatButtonModule,
+        MatTooltipModule
     ],
     exports: [
         HeaderComponent

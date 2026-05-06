@@ -1,0 +1,100 @@
+<div class="w-full max-w-2xl bg-card shadow-2xl rounded-3xl p-10 border border-gray-200 animate-in my-auto">
+    <form [formGroup]="form" class="grid grid-cols-1 gap-6">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Cliente / Propietario</mat-label>
+            <input type="text" matInput formControlName="cliente" [matAutocomplete]="autoC"
+                placeholder="Buscar cliente..." #clienteInput="matAutocompleteTrigger">
+
+            <button *ngIf="form.get('cliente').value && mode !== 'view'" matSuffix mat-icon-button aria-label="Clear"
+                (click)="clearClientSelection(); $event.stopPropagation()">
+                <mat-icon> close </mat-icon>
+            </button>
+
+            <mat-autocomplete #autoC="matAutocomplete" [displayWith]="displayFn">
+                <mat-option *ngFor="let c of filteredClientes$ | async" [value]="c">{{c.nombre}}</mat-option>
+            </mat-autocomplete>
+        </mat-form-field>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Comprobante</mat-label>
+                <input matInput formControlName="nroComprobante">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Fecha Orden</mat-label>
+                <input matInput [matDatepicker]="p1" formControlName="fecha">
+                <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
+                <mat-datepicker #p1></mat-datepicker>
+            </mat-form-field>
+
+            <div class="md:col-span-2 flex flex-col gap-6 p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
+                <mat-label class="text-xs font-black uppercase tracking-widest text-secondary">Tipo de Despacho</mat-label>
+                <mat-radio-group formControlName="tipoDespacho" class="flex flex-col sm:flex-row gap-8">
+                    <mat-radio-button value="RETIRO_CLIENTE" color="primary">Retira Cliente</mat-radio-button>
+                    <mat-radio-button value="RETIRO_TRANSPORTE" color="primary">Retira Empresa de Transporte</mat-radio-button>
+                    <mat-radio-button value="ENVIO" color="primary">Envía Nitro</mat-radio-button>
+                </mat-radio-group>
+            
+                <div *ngIf="form.get('tipoDespacho').value === 'RETIRO_TRANSPORTE' || form.get('tipoDespacho').value === 'ENVIO'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Seleccionar Empresa de Transporte</mat-label>
+                        <mat-icon matPrefix class="icon-size-5 mr-2 text-secondary">local_shipping</mat-icon>
+                        <mat-select formControlName="idEmpresaTransporte">
+                            <mat-option *ngFor="let t of transportes" [value]="t.id">{{t.nombre}}</mat-option>
+                        </mat-select>
+                        <button matSuffix *ngIf="form.get('idEmpresaTransporte').value && mode !== 'view'" mat-icon-button aria-label="Clear"
+                            (click)="$event.stopPropagation(); form.get('idEmpresaTransporte').setValue(null)">
+                            <mat-icon> close </mat-icon>
+                        </button>
+                    </mat-form-field>
+                    
+                    <div *ngIf="mediosEnvioDisponibles.length > 0" class="mt-2">
+                        <mat-label class="text-[10px] font-bold uppercase text-secondary mb-3 block tracking-wider">Medio de Envío</mat-label>
+                        <div class="flex flex-wrap gap-x-6 gap-y-2">
+                            <mat-checkbox *ngFor="let m of mediosEnvioDisponibles" 
+                                [checked]="form.get('mediosEnvio').value.includes(m)"
+                                (change)="onMedioEnvioToggle(m, $event.checked)"
+                                [disabled]="mode === 'view'"
+                                color="primary">
+                                <span class="text-sm font-semibold capitalize">{{m}}</span>
+                            </mat-checkbox>
+                        </div>
+                    </div>
+                </div>
+            
+                <div *ngIf="form.get('tipoDespacho').value === 'ENVIO'" class="animate-in fade-in slide-in-from-top-2 duration-300">
+                    <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                        <mat-label>Seleccionar Destino (Domicilio)</mat-label>
+                        <mat-icon matPrefix class="icon-size-5 mr-2 text-secondary">location_on</mat-icon>
+                        <mat-select formControlName="idDomicilioEnvio">
+                            <mat-option *ngFor="let d of domicilios" [value]="d.id">
+                                <span>{{d.domicilio}}</span>
+                            </mat-option>
+                        </mat-select>
+                        <button mat-icon-button matSuffix *ngIf="form.get('idDomicilioEnvio').value && mode !== 'view'" 
+                            (click)="$event.stopPropagation(); form.get('idDomicilioEnvio').setValue(null)"
+                            type="button">
+                            <mat-icon class="icon-size-4">close</mat-icon>
+                        </button>
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="mode !== 'view'" 
+            class="relative border-2 border-dashed rounded-xl p-6 transition-all duration-200 flex flex-col items-center justify-center cursor-pointer"
+            [ngClass]="selectedFile ? 'border-green-400 bg-green-50 text-green-600' : 'border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600'"
+            (click)="fileInput.click()">
+            <input type="file" #fileInput (change)="onFileSelected($event)" accept="application/pdf,image/*" hidden>
+            <mat-icon *ngIf="!selectedFile" class="icon-size-10 text-gray-400 mb-2"
+                svgIcon="heroicons_outline:upload"></mat-icon>
+            <mat-icon *ngIf="selectedFile" class="icon-size-10 text-green-500 mb-2"
+                svgIcon="heroicons_solid:check-circle"></mat-icon>
+            <p class="text-sm font-semibold">
+                {{ selectedFile ? selectedFile.name : (mode === 'edit' ? 'Haz clic para reemplazar el archivo de la Orden' : 'Haz clic para subir el archivo de la Orden') }}
+            </p>
+            <p class="text-[10px] font-medium opacity-60 mt-1 uppercase tracking-wider">Formatos permitidos: PDF, JPG, PNG, WEBP</p>
+        </div>
+    </form>
+</div>
