@@ -257,6 +257,8 @@ export class OrdenCompraDetailsComponent implements OnInit, OnDestroy {
         grupo.precio = parseFloat(grupo.tempPrecio || 0);
         grupo.fechaCotizacion = grupo.tempFecha ? moment(grupo.tempFecha).format('DD/MM/YYYY') : '';
         grupo.isEditingQuotation = false;
+        grupo.esActualizacion = true;
+        grupo.idCotizacion = null;
         this.piecesChanged.emit([...this.piezasAgregadas]);
     }
 
