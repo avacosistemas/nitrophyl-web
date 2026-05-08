@@ -45,6 +45,11 @@ export class OrdenCompraDetailsComponent implements OnInit, OnDestroy {
 
     piezaCotizacionInfo: any = null;
     filteredPiezas$: Observable<any[]>;
+    minDate: Date = new Date();
+    
+    auxiliarValor: number | null = null;
+    auxiliarTexto: string = '';
+    private _isUpdatingDate: boolean = false;
 
     private _unsubscribeAll: Subject<void> = new Subject<void>();
 
@@ -85,6 +90,66 @@ export class OrdenCompraDetailsComponent implements OnInit, OnDestroy {
             }
             this.updateCotizacionValidators();
         });
+
+        this.piezaForm.get('fechaEntrega').valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe((date) => {
+            if (this._isUpdatingDate) return;
+            this.calculateAuxiliarFromDate(date);
+        });
+    }
+
+    onAuxiliarChange(): void {
+        if (this.auxiliarValor === null || this.auxiliarValor === undefined || this.auxiliarValor < 0) {
+            this.auxiliarTexto = '';
+            return;
+        }
+
+        this._isUpdatingDate = true;
+        const newDate = moment().startOf('day').add(this.auxiliarValor, 'days').toDate();
+        this.piezaForm.get('fechaEntrega').setValue(newDate);
+        this.updateAuxiliarTexto();
+        this._isUpdatingDate = false;
+    }
+
+    private updateAuxiliarTexto(): void {
+        if (this.auxiliarValor === null || this.auxiliarValor === undefined) {
+            this.auxiliarTexto = '';
+            return;
+        }
+
+        const days = this.auxiliarValor;
+        if (days === 0) {
+            this.auxiliarTexto = 'Hoy';
+            return;
+        }
+
+        if (days < 30) {
+            this.auxiliarTexto = 'Días';
+        } else {
+            const months = Math.floor(days / 30);
+            const remainingDays = days % 30;
+            
+            let text = months === 1 ? '1 Mes' : `${months} Meses`;
+            if (remainingDays > 0) {
+                text += remainingDays === 1 ? ' y 1 Día' : ` y ${remainingDays} Días`;
+            }
+            this.auxiliarTexto = text;
+        }
+    }
+
+    private calculateAuxiliarFromDate(date: any): void {
+        if (!date) {
+            this.auxiliarValor = null;
+            this.auxiliarTexto = '';
+            return;
+        }
+
+        const today = moment().startOf('day');
+        const deliveryDate = moment(date).startOf('day');
+        
+        this.auxiliarValor = deliveryDate.diff(today, 'days');
+        
+        if (this.auxiliarValor < 0) this.auxiliarValor = 0;
+        this.updateAuxiliarTexto();
     }
 
     onPiezaSelected(event: any): void {
@@ -268,6 +333,8 @@ export class OrdenCompraDetailsComponent implements OnInit, OnDestroy {
         this.piezaForm.reset({ soloDelCliente: true });
         this.isEditingItem = false;
         this.piezaCotizacionInfo = null;
+        this.auxiliarValor = null;
+        this.auxiliarTexto = '';
         this.showItemForm = show;
         if (show && openAutocomplete) {
             setTimeout(() => { this.piezaAutocompleteTrigger?.openPanel(); });
