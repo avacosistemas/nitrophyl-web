@@ -235,7 +235,7 @@ export class ABMPiezaService {
     }
 
     getTiposDimension(): Observable<string[]> {
-        return of(['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO', 'ESPESOR', 'LARGO']);
+        return of(['ALTO', 'ANCHO', 'PROFUNDIDAD', 'DIAMETRO', 'DIAMETRO_INTERIOR', 'DIAMETRO_EXTERIOR', 'ESPESOR', 'LARGO']);
     }
 
     getTiposInsumo(): Observable<ApiResponse<ITipoInsumoJerarquico[]>> {

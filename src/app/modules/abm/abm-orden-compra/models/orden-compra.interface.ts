@@ -7,6 +7,7 @@ export interface IOrdenCompra {
     estado: string;
     archivoNombre?: string;
     metodoDespacho?: string;
+    observaciones?: string;
 }
 
 export interface IOrdenCompraItem {
@@ -49,10 +50,34 @@ export interface IOrdenCompraCreateDTO {
     }[];
 }
 
-export interface IOrdenCompraApiResponse {
+export interface IOrdenCompraPendiente {
+    comprobante: string;
+    fechaOC: string;
+    cliente: string;
+    pieza: string;
+    cantidad: number;
+    formula: string;
+    fechaEntrega: string;
+}
+
+export interface IOrdenCompraPendientesParams {
+    first: number;
+    rows: number;
+    asc: boolean;
+    idx: string;
+    comprobante?: string;
+    idCliente?: number;
+    idPieza?: number;
+    fechaDesde?: string;     
+    fechaHasta?: string;        
+    fechaEntregaDesde?: string; 
+    fechaEntregaHasta?: string; 
+}
+
+export interface IOrdenCompraApiResponse<T> {
     status: string;
     data: {
-        page: IOrdenCompra[];
+        page: T[];
         totalReg: number;
     };
 }

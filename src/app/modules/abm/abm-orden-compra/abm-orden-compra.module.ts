@@ -32,6 +32,7 @@ import { OrdenCompraFormComponent } from './components/orden-compra-form/orden-c
 import { OrdenCompraCancelModalComponent } from './components/orden-compra-cancel-modal/orden-compra-cancel-modal.component';
 import { OrdenCompraHeaderComponent } from './components/orden-compra-form/headers/orden-compra-header.component';
 import { OrdenCompraDetailsComponent } from './components/orden-compra-form/details/orden-compra-details.component';
+import { OrdenCompraPendientesListComponent } from './components/orden-compra-pendientes-list/orden-compra-pendientes-list.component';
 
 export const MY_DATE_FORMATS = {
     parse: { dateInput: 'DD/MM/YYYY' },
@@ -50,7 +51,8 @@ export const MY_DATE_FORMATS = {
         OrdenCompraFormComponent,
         OrdenCompraCancelModalComponent,
         OrdenCompraHeaderComponent,
-        OrdenCompraDetailsComponent
+        OrdenCompraDetailsComponent,
+        OrdenCompraPendientesListComponent
     ],
     imports: [
         CommonModule,

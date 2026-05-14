@@ -170,6 +170,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     }
 
     onSaveAll(): void {
+        if (this.form.invalid) { this.form.markAllAsTouched(); this._notification.showError("Complete los campos obligatorios de la cabecera"); return; }
         if (this.piezasAgregadas.length === 0) { this._notification.showError("Agregue ítems a la orden"); return; }
 
         const reader = new FileReader();
@@ -233,6 +234,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 { type: 'stroked', label: isView ? 'Volver' : 'Cancelar', action: 'goBack', condition: true },
                 { type: 'flat', label: isView ? 'Ver Ítems' : 'Editar Ítems', action: 'confirmHeader', condition: true }
             ];
+            if (isEdit) {
+                btns.splice(1, 0, { type: 'flat', label: 'Actualizar', action: 'saveAll', condition: true });
+            }
             this._service.updateHeaderSubtitle(isView ? `${cli} | Comprobante: ${comp}` : '');
         } else {
             const isColumn = this.detailsComp?.splitDirection === 'column';

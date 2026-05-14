@@ -17,6 +17,7 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { Cliente } from 'app/shared/models/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import moment from 'moment';
+import { OrdenCompraCancelModalComponent } from '../orden-compra-cancel-modal/orden-compra-cancel-modal.component';
 
 @Component({
     selector: 'app-orden-compra-list',
@@ -29,7 +30,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenCompra>([]);
-    displayedColumns: string[] = ['fecha', 'cliente', 'comprobante', 'estado', 'acciones'];
+    displayedColumns: string[] = ['fecha', 'cliente', 'comprobante', 'observaciones', 'estado', 'acciones'];
     totalReg: number = 0;
 
     searchForm: FormGroup;
@@ -158,14 +159,19 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
                 showConfirmButton: true,
                 confirmButtonText: 'Confirmar',
                 showCloseButton: true,
-                cancelButtonText: 'Volver'
+                cancelButtonText: 'Volver',
+                customComponent: OrdenCompraCancelModalComponent,
+                componentData: {
+                    comprobante: element.comprobante,
+                    id: element.id
+                }
             }
         });
 
-        dialogRef.afterClosed().subscribe(confirmed => {
-            if (confirmed) {
+        dialogRef.afterClosed().subscribe(observaciones => {
+            if (observaciones) {
                 this.isLoading = true;
-                this._ordenCompraService.cancelOrdenCompra(element.id).subscribe({
+                this._ordenCompraService.cancelOrdenCompra(element.id, observaciones).subscribe({
                     next: () => {
                         this._notificationService.showSuccess('Orden cancelada correctamente.');
                         this.search();

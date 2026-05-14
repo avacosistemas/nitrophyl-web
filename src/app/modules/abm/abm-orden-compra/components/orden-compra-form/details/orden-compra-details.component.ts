@@ -47,8 +47,23 @@ export class OrdenCompraDetailsComponent implements OnInit, OnDestroy {
     filteredPiezas$: Observable<any[]>;
     minDate: Date = new Date();
     
-    auxiliarValor: number | null = null;
+    auxiliarValor: number | string | null = null;
     auxiliarTexto: string = '';
+    
+    deliveryOptions = [
+        { label: '15 días', value: 15, calculate: () => moment().startOf('day').add(15, 'days') },
+        { label: '30 días', value: 30, calculate: () => moment().startOf('day').add(30, 'days') },
+        { label: '45 días', value: 45, calculate: () => moment().startOf('day').add(45, 'days') },
+        { label: '60 días', value: 60, calculate: () => moment().startOf('day').add(60, 'days') },
+        { label: '90 días', value: 90, calculate: () => moment().startOf('day').add(90, 'days') },
+    ];
+
+    dateFilter = (d: any | null): boolean => {
+        if (!d) return true;
+        const day = moment(d).day();
+        return day !== 0 && day !== 6;
+    };
+
     private _isUpdatingDate: boolean = false;
 
     private _unsubscribeAll: Subject<void> = new Subject<void>();
@@ -98,42 +113,31 @@ export class OrdenCompraDetailsComponent implements OnInit, OnDestroy {
     }
 
     onAuxiliarChange(): void {
-        if (this.auxiliarValor === null || this.auxiliarValor === undefined || this.auxiliarValor < 0) {
-            this.auxiliarTexto = '';
+        if (!this.auxiliarValor) {
             return;
         }
+
+        const option = this.deliveryOptions.find(o => o.value === this.auxiliarValor);
+        if (!option) return;
 
         this._isUpdatingDate = true;
-        const newDate = moment().startOf('day').add(this.auxiliarValor, 'days').toDate();
-        this.piezaForm.get('fechaEntrega').setValue(newDate);
+        let newDate = option.calculate();
+        newDate = this.adjustToMonday(newDate);
+        
+        this.piezaForm.get('fechaEntrega').setValue(newDate.toDate());
         this.updateAuxiliarTexto();
         this._isUpdatingDate = false;
+        this._cdr.detectChanges();
     }
 
-    private updateAuxiliarTexto(): void {
-        if (this.auxiliarValor === null || this.auxiliarValor === undefined) {
-            this.auxiliarTexto = '';
-            return;
+    private adjustToMonday(m: moment.Moment): moment.Moment {
+        const day = m.day();
+        if (day === 6) { // Sábado
+            return m.add(2, 'days');
+        } else if (day === 0) { // Domingo
+            return m.add(1, 'days');
         }
-
-        const days = this.auxiliarValor;
-        if (days === 0) {
-            this.auxiliarTexto = 'Hoy';
-            return;
-        }
-
-        if (days < 30) {
-            this.auxiliarTexto = 'Días';
-        } else {
-            const months = Math.floor(days / 30);
-            const remainingDays = days % 30;
-            
-            let text = months === 1 ? '1 Mes' : `${months} Meses`;
-            if (remainingDays > 0) {
-                text += remainingDays === 1 ? ' y 1 Día' : ` y ${remainingDays} Días`;
-            }
-            this.auxiliarTexto = text;
-        }
+        return m;
     }
 
     private calculateAuxiliarFromDate(date: any): void {
@@ -143,13 +147,58 @@ export class OrdenCompraDetailsComponent implements OnInit, OnDestroy {
             return;
         }
 
+        let deliveryDate = moment(date).startOf('day');
+        const adjustedDate = this.adjustToMonday(moment(deliveryDate));
+        
+        if (!deliveryDate.isSame(adjustedDate, 'day')) {
+            this._isUpdatingDate = true;
+            this.piezaForm.get('fechaEntrega').setValue(adjustedDate.toDate());
+            this._isUpdatingDate = false;
+            deliveryDate = adjustedDate;
+        }
+
+        const matchedOption = this.deliveryOptions.find(opt => {
+            const optDate = this.adjustToMonday(opt.calculate());
+            return optDate.isSame(deliveryDate, 'day');
+        });
+
+        if (matchedOption) {
+            this.auxiliarValor = matchedOption.value;
+        } else {
+            this.auxiliarValor = 'custom';
+        }
+        
         const today = moment().startOf('day');
-        const deliveryDate = moment(date).startOf('day');
+        const diffDays = deliveryDate.diff(today, 'days');
+        this.updateAuxiliarTexto(diffDays);
+        this._cdr.detectChanges();
+    }
+
+    private updateAuxiliarTexto(days?: number): void {
+        const d = days !== undefined ? days : (moment(this.piezaForm.get('fechaEntrega').value).diff(moment().startOf('day'), 'days'));
         
-        this.auxiliarValor = deliveryDate.diff(today, 'days');
-        
-        if (this.auxiliarValor < 0) this.auxiliarValor = 0;
-        this.updateAuxiliarTexto();
+        if (isNaN(d) || d < 0) {
+            this.auxiliarTexto = '';
+            return;
+        }
+
+        if (d === 0) {
+            this.auxiliarTexto = 'Hoy';
+            return;
+        }
+
+        if (d < 30) {
+            this.auxiliarTexto = d === 1 ? '1 Día' : `${d} Días`;
+        } else {
+            const months = Math.floor(d / 30);
+            const remainingDays = d % 30;
+            
+            let text = months === 1 ? '1 Mes' : `${months} Meses`;
+            if (remainingDays > 0) {
+                text += remainingDays === 1 ? ' y 1 Día' : ` y ${remainingDays} Días`;
+            }
+            this.auxiliarTexto = text;
+        }
     }
 
     onPiezaSelected(event: any): void {

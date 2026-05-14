@@ -95,31 +95,34 @@
                                 </mat-checkbox>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <mat-form-field appearance="outline" class="w-full">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+                                <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
                                     <mat-label>Cantidad</mat-label>
                                     <input type="number" matInput formControlName="cantidadSolicitada"
                                         placeholder="0">
                                 </mat-form-field>
 
-                                <div class="flex flex-col gap-1">
-                                    <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
-                                        <mat-label>Fecha Entrega</mat-label>
-                                        <input matInput [matDatepicker]="pe" formControlName="fechaEntrega"
-                                            [min]="minDate" placeholder="dd-mm-aaaa">
-                                        <mat-datepicker-toggle matSuffix [for]="pe"></mat-datepicker-toggle>
-                                        <mat-datepicker #pe></mat-datepicker>
-                                    </mat-form-field>
-                                    <div class="flex items-center gap-2 px-1">
-                                        <span class="text-[10px] font-black uppercase text-secondary/60 tracking-tighter">Dentro de</span>
-                                        <input type="number" [(ngModel)]="auxiliarValor" [ngModelOptions]="{standalone: true}" 
-                                            (input)="onAuxiliarChange()" 
-                                            class="w-12 text-[10px] font-black border-b border-gray-400/30 focus:border-blue-600 outline-none text-center bg-transparent py-0.5">
-                                        <span class="text-[10px] font-black uppercase text-blue-600 min-w-[60px]">
-                                            {{ auxiliarTexto }}
-                                        </span>
-                                    </div>
-                                </div>
+                                <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                                    <mat-label>Plazo</mat-label>
+                                    <mat-select [(ngModel)]="auxiliarValor" [ngModelOptions]="{standalone: true}" 
+                                        (selectionChange)="onAuxiliarChange()">
+                                        <mat-select-trigger>
+                                            <span class="font-black uppercase text-blue-600">{{ auxiliarTexto }}</span>
+                                        </mat-select-trigger>
+                                        <mat-option value="custom" style="display: none;">Personalizado</mat-option>
+                                        <mat-option *ngFor="let opt of deliveryOptions" [value]="opt.value">
+                                            {{ opt.label }}
+                                        </mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+
+                                <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                                    <mat-label>Fecha Entrega</mat-label>
+                                    <input matInput [matDatepicker]="pe" [matDatepickerFilter]="dateFilter" formControlName="fechaEntrega"
+                                        [min]="minDate" placeholder="dd-mm-aaaa">
+                                    <mat-datepicker-toggle matSuffix [for]="pe"></mat-datepicker-toggle>
+                                    <mat-datepicker #pe></mat-datepicker>
+                                </mat-form-field>
                             </div>
 
                             <div class="flex flex-col gap-2" *ngIf="piezaCotizacionInfo">
@@ -221,7 +224,7 @@
                                         <div *ngIf="batch.isEditing" class="flex items-center flex-1">
                                             <mat-form-field appearance="outline"
                                                 class="fuse-mat-dense fuse-mat-no-subscript w-full max-w-[180px]">
-                                                <input matInput [matDatepicker]="pe2" [(ngModel)]="batch.tempFecha" [min]="minDate">
+                                                <input matInput [matDatepicker]="pe2" [matDatepickerFilter]="dateFilter" [(ngModel)]="batch.tempFecha" [min]="minDate">
                                                 <mat-datepicker-toggle matSuffix
                                                     [for]="pe2"></mat-datepicker-toggle>
                                                 <mat-datepicker #pe2></mat-datepicker>

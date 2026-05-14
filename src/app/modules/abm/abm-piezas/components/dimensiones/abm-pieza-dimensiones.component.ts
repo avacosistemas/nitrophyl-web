@@ -31,6 +31,16 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
 
     baseDisplayedColumns: string[] = ['controlar', 'tipo', 'valor', 'minimo', 'maximo', 'observaciones', 'acciones'];
     displayedColumnsDimensiones: string[];
+    tipoDimensionLabels: { [key: string]: string } = {
+        'ALTO': 'Alto',
+        'ANCHO': 'Ancho',
+        'PROFUNDIDAD': 'Profundidad',
+        'DIAMETRO': 'Diámetro',
+        'DIAMETRO_INTERIOR': 'Diámetro interior',
+        'DIAMETRO_EXTERIOR': 'Diámetro exterior',
+        'ESPESOR': 'Espesor',
+        'LARGO': 'Largo'
+    };
 
     constructor(
         protected fb: FormBuilder,
@@ -280,5 +290,9 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
 
     get buttonText(): string {
         return this.editMode ? 'Actualizar' : 'Agregar';
+    }
+
+    getTipoLabel(tipo: string): string {
+        return this.tipoDimensionLabels[tipo] || tipo;
     }
 }

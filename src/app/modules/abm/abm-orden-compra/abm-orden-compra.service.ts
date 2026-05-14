@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from 'environments/environment';
-import { IOrdenCompraApiResponse, IOrdenCompraCreateDTO } from './models/orden-compra.interface';
+import { IOrdenCompra, IOrdenCompraApiResponse, IOrdenCompraCreateDTO, IOrdenCompraPendiente, IOrdenCompraPendientesParams } from './models/orden-compra.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -33,7 +33,7 @@ export class AbmOrdenCompraService {
     updateHeaderBreadcrumbs(breadcrumbs: any[]): void { this._headerBreadcrumbs.next(breadcrumbs); }
     triggerAction(action: string): void { this._actionTriggered.next(action); }
 
-    getOrdenesCompra(params: any): Observable<IOrdenCompraApiResponse> {
+    getOrdenesCompra(params: any): Observable<IOrdenCompraApiResponse<IOrdenCompra>> {
         let httpParams = new HttpParams();
         if (params.asc !== undefined) httpParams = httpParams.set('asc', params.asc.toString());
         if (params.comprobante) httpParams = httpParams.set('comprobante', params.comprobante);
@@ -45,7 +45,24 @@ export class AbmOrdenCompraService {
         if (params.idx) httpParams = httpParams.set('idx', params.idx);
         if (params.rows) httpParams = httpParams.set('rows', params.rows.toString());
 
-        return this.http.get<IOrdenCompraApiResponse>(this.apiUrl, { params: httpParams });
+        return this.http.get<IOrdenCompraApiResponse<IOrdenCompra>>(this.apiUrl, { params: httpParams });
+    }
+
+    getOrdenesCompraPendientes(params: IOrdenCompraPendientesParams): Observable<IOrdenCompraApiResponse<IOrdenCompraPendiente>> {
+        let httpParams = new HttpParams();
+        if (params.asc !== undefined) httpParams = httpParams.set('asc', params.asc.toString());
+        if (params.comprobante) httpParams = httpParams.set('comprobante', params.comprobante);
+        if (params.fechaDesde) httpParams = httpParams.set('fechaDesde', params.fechaDesde);
+        if (params.fechaHasta) httpParams = httpParams.set('fechaHasta', params.fechaHasta);
+        if (params.fechaEntregaDesde) httpParams = httpParams.set('fechaEntregaDesde', params.fechaEntregaDesde);
+        if (params.fechaEntregaHasta) httpParams = httpParams.set('fechaEntregaHasta', params.fechaEntregaHasta);
+        if (params.first !== undefined) httpParams = httpParams.set('first', params.first.toString());
+        if (params.idCliente) httpParams = httpParams.set('idCliente', params.idCliente.toString());
+        if (params.idPieza) httpParams = httpParams.set('idPieza', params.idPieza.toString());
+        if (params.idx) httpParams = httpParams.set('idx', params.idx);
+        if (params.rows) httpParams = httpParams.set('rows', params.rows.toString());
+
+        return this.http.get<IOrdenCompraApiResponse<IOrdenCompraPendiente>>(`${this.apiUrl}/pendientes`, { params: httpParams });
     }
 
     getOrdenCompra(id: number): Observable<any> {
@@ -60,8 +77,8 @@ export class AbmOrdenCompraService {
         return this.http.put<any>(`${this.apiUrl}/${id}`, dto);
     }
 
-    cancelOrdenCompra(id: number): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/cancelar/${id}`);
+    cancelOrdenCompra(id: number, observaciones: string): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/cancelar/${id}`, { observaciones });
     }
 
     deleteOrdenCompra(id: number): Observable<any> {
