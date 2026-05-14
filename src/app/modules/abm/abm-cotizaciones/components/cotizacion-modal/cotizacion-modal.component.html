@@ -7,7 +7,7 @@
         <mat-form-field appearance="outline" class="w-full">
             <mat-label>Cliente</mat-label>
             <input type="text" placeholder="Buscar cliente por nombre o código..." matInput formControlName="cliente"
-                [matAutocomplete]="autoCliente" required>
+                [matAutocomplete]="autoCliente" #clienteTrigger="matAutocompleteTrigger" required>
             
             <button *ngIf="form.get('cliente').value" matSuffix mat-icon-button aria-label="Limpiar" (click)="clearCliente($event)">
                 <mat-icon>close</mat-icon>
@@ -30,10 +30,13 @@
         <mat-form-field appearance="outline" class="w-full">
             <mat-label>Pieza</mat-label>
             <input type="text" placeholder="Buscar pieza por nombre o código..." matInput formControlName="pieza"
-                [matAutocomplete]="autoPieza" required>
+                [matAutocomplete]="autoPieza" #piezaTrigger="matAutocompleteTrigger" required>
+            <button *ngIf="form.get('pieza').value" matSuffix mat-icon-button aria-label="Limpiar" (click)="clearPieza($event)">
+                <mat-icon>close</mat-icon>
+            </button>
             <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
                 <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
-                    {{ pieza.codigo }} - {{ pieza.denominacion }}
+                    {{ pieza.codigo }} - {{ pieza.denominacion }} <span *ngIf="pieza.formula" class="font-mono font-bold">({{ pieza.formula }})</span>
                 </mat-option>
             </mat-autocomplete>
             <mat-error *ngIf="form.get('pieza').hasError('required')">La pieza es requerida.</mat-error>

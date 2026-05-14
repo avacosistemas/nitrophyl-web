@@ -1,6 +1,7 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { Observable, of, Subject } from 'rxjs';
@@ -31,6 +32,8 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
     clientesDisponibles: Cliente[] = [];
     filteredClientes$: Observable<Cliente[]>;
     piezasCliente: any[] = [];
+    @ViewChild('clienteTrigger', { read: MatAutocompleteTrigger }) clienteTrigger: MatAutocompleteTrigger;
+    @ViewChild('piezaTrigger', { read: MatAutocompleteTrigger }) piezaTrigger: MatAutocompleteTrigger;
 
     private _destroying$ = new Subject<void>();
 
@@ -69,6 +72,17 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
     clearCliente(event: Event): void {
         event.stopPropagation();
         this.form.get('cliente').setValue(null);
+        setTimeout(() => {
+            this.clienteTrigger.openPanel();
+        }, 0);
+    }
+
+    clearPieza(event: Event): void {
+        event.stopPropagation();
+        this.form.get('pieza').setValue(null);
+        setTimeout(() => {
+            this.piezaTrigger.openPanel();
+        }, 0);
     }
 
     loadClientesDropdown(): void {
@@ -136,7 +150,8 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
                     this.piezasCliente = (res?.data || []).map(item => ({
                         id: item.idPieza,
                         codigo: item.codigo,
-                        denominacion: item.denominacion
+                        denominacion: item.denominacion,
+                        formula: item.formula
                     }));
 
                     this.isLoading = false;
@@ -264,7 +279,8 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
 
     displayFn(item: any): string {
         if (!item) { return ''; }
-        return item.codigo ? `${item.codigo} - ${item.denominacion || item.nombre}` : (item.denominacion || item.nombre);
+        const formulaStr = item.formula ? ` (${item.formula})` : '';
+        return (item.codigo ? `${item.codigo} - ${item.denominacion || item.nombre}` : (item.denominacion || item.nombre)) + formulaStr;
     }
 
     displayCliente(cliente: Cliente): string {

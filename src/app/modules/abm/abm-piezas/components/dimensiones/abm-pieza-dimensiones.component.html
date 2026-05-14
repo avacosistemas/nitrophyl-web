@@ -5,7 +5,7 @@
     <div class="flex flex-wrap items-center gap-3 mb-1">
       <mat-form-field appearance="outline">
         <mat-label>Dimensión</mat-label>
-        <mat-select formControlName="tipo">
+        <mat-select formControlName="tipo" [errorStateMatcher]="matcher">
           <mat-option *ngFor="let dimension of tiposDimension$ | async" [value]="dimension">
             {{ getTipoLabel(dimension) }}
           </mat-option>
@@ -14,7 +14,7 @@
 
       <mat-form-field class="w-1/6" appearance="outline">
         <mat-label>Valor en MM</mat-label>
-        <input matInput type="text" inputmode="decimal" placeholder="Valor" formControlName="valor">
+        <input matInput type="text" inputmode="decimal" placeholder="Valor" formControlName="valor" [errorStateMatcher]="matcher">
       </mat-form-field>
 
       <mat-form-field class="w-1/6" appearance="outline">

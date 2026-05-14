@@ -30,7 +30,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenCompra>([]);
-    displayedColumns: string[] = ['fecha', 'cliente', 'comprobante', 'observaciones', 'estado', 'acciones'];
+    displayedColumns: string[] = ['fecha', 'cliente', 'comprobante', 'estado', 'acciones'];
     totalReg: number = 0;
 
     searchForm: FormGroup;
@@ -148,9 +148,23 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         this._router.navigate(['/orden-compra/edit', element.id]);
     }
 
+    openObservacionesModal(element: IOrdenCompra): void {
+        this.dialog.open(GenericModalComponent, {
+            width: '500px',
+            data: {
+                title: `Observaciones - ${element.comprobante}`,
+                message: this._sanitizer.bypassSecurityTrustHtml(`<div class="p-3 bg-gray-50 border border-gray-100 rounded-lg"><p style="white-space: pre-wrap;">${element.observaciones}</p></div>`),
+                type: 'info',
+                showConfirmButton: true,
+                confirmButtonText: 'Cerrar'
+            }
+        });
+    }
+
     cancelOrdenCompra(element: IOrdenCompra): void {
         const dialogRef = this.dialog.open(GenericModalComponent, {
             width: '400px',
+            autoFocus: false,
             data: {
                 title: 'Cancelar Orden',
                 message: `¿Está seguro de que desea cancelar la orden <strong>${element.comprobante}</strong>?`,

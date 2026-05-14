@@ -1,5 +1,5 @@
-import { Component, OnInit, Input, OnDestroy, OnChanges, SimpleChanges } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, OnInit, Input, OnDestroy, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, FormGroupDirective } from '@angular/forms';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { PiezaDimension } from '../../models/pieza.model';
@@ -10,6 +10,13 @@ import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { ErrorStateMatcher } from '@angular/material/core';
+
+export class CrossFieldErrorStateMatcher implements ErrorStateMatcher {
+    isErrorState(control: any | null, form: any | null): boolean {
+        return !!(control && control.invalid && (control.dirty || control.touched));
+    }
+}
 
 @Component({
     selector: 'app-abm-pieza-dimensiones',
@@ -21,12 +28,14 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     @Input() mode: 'create' | 'edit' | 'view' = 'create';
 
     dimensionForm: FormGroup;
+    @ViewChild(FormGroupDirective) formDirective: FormGroupDirective;
     dimensiones = new MatTableDataSource<PiezaDimension>([]);
     tiposDimension$: Observable<string[]>;
     sinDatos: boolean = false;
     isLoading: boolean = false;
     editMode: boolean = false;
     dimensionToEdit: PiezaDimension | null = null;
+    matcher = new CrossFieldErrorStateMatcher();
     private subscription: Subscription = new Subscription();
 
     baseDisplayedColumns: string[] = ['controlar', 'tipo', 'valor', 'minimo', 'maximo', 'observaciones', 'acciones'];
@@ -204,7 +213,7 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
                 this.abmPiezaService.agregarDimensionAPieza(dto).subscribe({
                     next: () => {
                         this.notificationService.showSuccess('Dimensión agregada correctamente.');
-                        this.dimensionForm.reset({ controlar: false });
+                        this.formDirective.resetForm({ controlar: false });
                         this.loadDimensiones();
                     },
                     error: (err) => {
@@ -271,7 +280,7 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
     cancelEdit(): void {
         this.editMode = false;
         this.dimensionToEdit = null;
-        this.dimensionForm.reset({ controlar: false });
+        this.formDirective.resetForm({ controlar: false });
     }
 
     openObservacionModal(observacion: string, tipo: string): void {

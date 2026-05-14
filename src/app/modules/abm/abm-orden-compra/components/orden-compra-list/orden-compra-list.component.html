@@ -65,10 +65,7 @@
                 <td mat-cell *matCellDef="let element">{{ element.comprobante }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="observaciones">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Observaciones</th>
-                <td mat-cell *matCellDef="let element">{{ element.observaciones }}</td>
-            </ng-container>
+
 
 
             <ng-container matColumnDef="estado">
@@ -90,6 +87,10 @@
             <ng-container matColumnDef="acciones">
                 <th mat-header-cell *matHeaderCellDef></th>
                 <td mat-cell *matCellDef="let element" class="text-right">
+                    <button *ngIf="element.observaciones" mat-icon-button matTooltip="Ver Observaciones"
+                        (click)="openObservacionesModal(element)">
+                        <mat-icon class="text-primary">comment</mat-icon>
+                    </button>
                     <button mat-icon-button matTooltip="Ver Orden de Compra"
                         (click)="viewOrdenCompra(element)">
                         <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
@@ -103,11 +104,12 @@
                             (click)="cancelOrdenCompra(element)">
                             <mat-icon class="text-warn" svgIcon="heroicons_solid:x-circle"></mat-icon>
                         </button>
-                        <button mat-icon-button matTooltip="Eliminar Orden de Compra"
-                            (click)="deleteOrdenCompra(element)">
-                            <mat-icon class="text-red-500" svgIcon="heroicons_solid:trash"></mat-icon>
-                        </button>
                     </ng-container>
+                    <button *ngIf="element.estado === 'PENDIENTE' || element.estado === 'CANCELADA'" 
+                        mat-icon-button matTooltip="Eliminar Orden de Compra"
+                        (click)="deleteOrdenCompra(element)">
+                        <mat-icon class="text-red-500" svgIcon="heroicons_solid:trash"></mat-icon>
+                    </button>
                 </td>
             </ng-container>
 
