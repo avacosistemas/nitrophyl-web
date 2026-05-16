@@ -36,28 +36,45 @@
                 </mat-form-field>
             </div>
             <div class="row flex gap-3 justify-around">
-                <mat-form-field appearance="outline" class="w-2/5">
+                <mat-form-field appearance="outline" class="w-2/6">
                     <mat-label>Dirección</mat-label>
                     <input id="domicilio" matInput [formControlName]="'domicilio'" placeholder="Dirección">
                     <mat-error class="mb-1" *ngIf="clienteForm.get('domicilio').hasError('required')">
                         La dirección es requerida
                     </mat-error>
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="w-1/5">
+                <mat-form-field appearance="outline" class="w-1/6">
                     <mat-label>Localidad</mat-label>
                     <input id="localidad" matInput [formControlName]="'localidad'" placeholder="Localidad">
                     <mat-error class="mb-1" *ngIf="clienteForm.get('localidad').hasError('required')">
                         La localidad es requerida
                     </mat-error>
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="w-1/5">
+                <mat-form-field appearance="outline" class="w-1/6">
                     <mat-label>Código Postal</mat-label>
                     <input id="codigoPostal" matInput [formControlName]="'codigoPostal'" placeholder="Código Postal">
                     <mat-error class="mb-1" *ngIf="clienteForm.get('codigoPostal').hasError('required')">
                         El código postal es requerido
                     </mat-error>
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="w-1/5">
+                <mat-form-field appearance="outline" class="w-1/6">
+                    <mat-label>Pais</mat-label>
+                    <input type="text" matInput formControlName="paisDTO" [matAutocomplete]="auto">
+                    <button *ngIf="clienteForm.get('paisDTO').value" matSuffix mat-icon-button aria-label="Clear"
+                        (click)="clienteForm.get('paisDTO').setValue(null); $event.stopPropagation()">
+                        <mat-icon>close</mat-icon>
+                    </button>
+                    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayPais">
+                        <mat-option *ngFor="let pais of filteredPaises | async" [value]="pais">
+                            {{pais.nombre}}
+                        </mat-option>
+                    </mat-autocomplete>
+                    <mat-error class="mb-1" *ngIf="clienteForm.get('paisDTO').hasError('required')">
+                        El pais es requerido
+                    </mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-1/6"
+                    *ngIf="esArgentina">
                     <mat-label>Provincia</mat-label>
                     <mat-select [formControlName]="'provincia'" placeholder='Provincia'>
                         <mat-option *ngFor="let provincia of provincias"

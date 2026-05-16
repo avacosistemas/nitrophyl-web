@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
@@ -6,6 +6,9 @@ import { Cliente } from 'app/shared/models/cliente.model';
 import { ClientesService } from 'app/shared/services/clientes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Pais } from 'app/shared/models/cliente.model';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'abm-clientes-grilla',
@@ -39,6 +42,8 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   expandedElement: Cliente | null;
 
   provincias = [];
+  paises: Pais[] = [];
+  filteredPaises: Observable<Pais[]>;
   empresa = [{ nombre: 'NITROPHYL' }, { nombre: 'ELASINT' }];
   panelOpenState: boolean = false;
 
@@ -47,6 +52,7 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
     private formBuilder: FormBuilder,
     private router: Router,
     private notificationService: NotificationService,
+    private cdRef: ChangeDetectorRef
   ) {
     this._createForms();
   }
@@ -64,6 +70,10 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
 
     this.clientesService.getProvincias().subscribe((d) => {
       this.provincias = d.data;
+    });
+
+    this.clientesService.getPaises().subscribe((d) => {
+      this.paises = d.data;
     });
   }
 
@@ -115,10 +125,14 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   }
 
   public updateCliente(): void {
-    this.clienteForm.markAllAsTouched();
-    if (!this.clienteForm.valid) return;
-
-    const model: Cliente = { ...this.clienteForm.getRawValue() };
+    let formValue = this.clienteForm.getRawValue();
+    if (typeof formValue.paisDTO === 'string') {
+      formValue.paisDTO = { id: null, nombre: formValue.paisDTO };
+    }
+    if (formValue.paisDTO?.nombre?.toLowerCase() !== 'argentina' && formValue.paisDTO?.id !== 1000) {
+      formValue.provincia = null;
+    }
+    const model: Cliente = { ...formValue };
     this.clientesService.updateCliente(model.id, model).subscribe(
       (d) => {
         if (d.status === 'OK') {
@@ -152,6 +166,25 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
       observacionesFacturacion: [null],
       telefono: [null, [Validators.required]],
       activo: [null],
+      paisDTO: [null, [Validators.required]]
+    });
+
+    this.filteredPaises = this.clienteForm.get('paisDTO').valueChanges.pipe(
+      startWith(''),
+      map(value => typeof value === 'string' ? value : value?.nombre),
+      map(nombre => nombre ? this._filterPaises(nombre) : this.paises.slice())
+    );
+
+    this.clienteForm.get('paisDTO').valueChanges.subscribe(val => {
+      const paisNombre = (typeof val === 'string' ? val : val?.nombre)?.trim();
+      if (paisNombre?.toLowerCase() === 'argentina') {
+        this.clienteForm.get('provincia').setValidators([Validators.required]);
+      } else {
+        this.clienteForm.get('provincia').clearValidators();
+        this.clienteForm.get('provincia').setValue(null);
+      }
+      this.clienteForm.get('provincia').updateValueAndValidity();
+      this.cdRef.detectChanges();
     });
 
     this.filterForm = this.formBuilder.group({
@@ -164,14 +197,35 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
     this.clientesService.getProvincias().subscribe((d) => {
       this.provincias = d.data;
     });
+    this.clientesService.getPaises().subscribe((d) => {
+      this.paises = d.data;
+    });
+  }
+
+  private _filterPaises(nombre: string): Pais[] {
+    const filterValue = nombre.toLowerCase();
+    return this.paises.filter(pais => pais.nombre.toLowerCase().includes(filterValue));
+  }
+
+  displayPais(pais: Pais): string {
+    return pais && pais.nombre ? pais.nombre : '';
+  }
+
+  get esArgentina(): boolean {
+    const val = this.clienteForm.get('paisDTO')?.value;
+    const nombre = (typeof val === 'string' ? val : val?.nombre)?.trim();
+    return nombre?.toLowerCase() === 'argentina';
   }
 
   public expandRow(element): void {
     if (this.expandedElement === element) {
       this.expandedElement = null;
     } else {
-      this.clienteForm.patchValue({ ...element });
       this.expandedElement = element;
+      this.clienteForm.patchValue({ ...element });
+      setTimeout(() => {
+        this.cdRef.detectChanges();
+      }, 0);
     }
   }
 

@@ -1,4 +1,8 @@
 import { Component, Input, Output, EventEmitter, TemplateRef } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
+import { HelpService } from 'app/core/services/help.service';
+import { DynamicHelpModalComponent } from 'app/shared/components/dynamic-help/dynamic-help-modal.component';
 
 export interface HeaderButton {
   type: 'flat' | 'stroked' | 'icon';
@@ -31,6 +35,12 @@ export class HeaderComponent {
 
   @Output() buttonAction = new EventEmitter<string>();
 
+  constructor(
+    private _matDialog: MatDialog,
+    private _router: Router,
+    private _helpService: HelpService
+  ) { }
+
   getButtonClass(type: 'flat' | 'stroked' | 'icon'): string {
     if (type === 'flat') return 'mat-focus-indicator mat-flat-button mat-button-base mat-accent';
     if (type === 'stroked') return 'mat-focus-indicator mat-stroked-button mat-button-base';
@@ -47,5 +57,19 @@ export class HeaderComponent {
 
   getFilteredBreadcrumbs(): Breadcrumb[] {
     return this.breadcrumbs.filter(breadcrumb => breadcrumb.condition !== false);
+  }
+
+  openHelp(): void {
+    const currentUrl = this._router.url;
+    const normalizedPath = this._helpService.normalizeUrl(currentUrl);
+
+    this._matDialog.open(DynamicHelpModalComponent, {
+      width: '800px',
+      panelClass: 'help-modal-no-padding',
+      data: {
+        path: normalizedPath
+      },
+      autoFocus: false
+    });
   }
 }

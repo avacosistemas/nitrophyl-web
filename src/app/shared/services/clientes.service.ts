@@ -75,6 +75,10 @@ export class ClientesService {
     return this.http.get<any>(`${environment.server}provincias/`);
   }
 
+  public getPaises(): Observable<any> {
+    return this.http.get<any>(`${environment.server}pais`);
+  }
+
   public getMode(): string {
     return this.mode;
   }

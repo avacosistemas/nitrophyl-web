@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
@@ -8,6 +8,9 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { Subscription } from 'rxjs';
 import { ABMClientesService } from '../abm-clientes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
+import { Pais } from 'app/shared/models/cliente.model';
+import { map, startWith } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'abm-clientes-crear',
@@ -19,6 +22,8 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
     component: string = 'CreateCliente';
     suscripcion: Subscription;
     provincias = [];
+    paises: Pais[] = [];
+    filteredPaises: Observable<Pais[]>;
     empresa = [
         { nombre: 'NITROPHYL' },
         { nombre: 'ELASINT' }
@@ -35,6 +40,7 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         public dialog: MatDialog,
         private router: Router,
         private notificationService: NotificationService,
+        private cdRef: ChangeDetectorRef
     ) {
         this.clienteForm = this.formBuilder.group({
             //codigo: [null],
@@ -51,7 +57,8 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
             observacionesCobranzas: [null],
             observacionesEntrega: [null],
             observacionesFacturacion: [null],
-            telefono: [null, [Validators.required]]
+            telefono: [null, [Validators.required]],
+            paisDTO: [null, [Validators.required]]
         });
         this.suscripcion = this.ABMClientesService.events.subscribe(
             (data: any) => {
@@ -68,10 +75,47 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         this.clientesService.getProvincias().subscribe(d => {
             this.provincias = d.data;
         });
+        this.clientesService.getPaises().subscribe(d => {
+            this.paises = d.data;
+        });
+
+        this.filteredPaises = this.clienteForm.get('paisDTO').valueChanges.pipe(
+            startWith(''),
+            map(value => typeof value === 'string' ? value : value?.nombre),
+            map(nombre => nombre ? this._filterPaises(nombre) : this.paises.slice())
+        );
+
+        this.clienteForm.get('paisDTO').valueChanges.subscribe(val => {
+            const paisNombre = (typeof val === 'string' ? val : val?.nombre)?.trim();
+            if (paisNombre?.toLowerCase() === 'argentina') {
+                this.clienteForm.get('provincia').setValidators([Validators.required]);
+            } else {
+                this.clienteForm.get('provincia').clearValidators();
+                this.clienteForm.get('provincia').setValue(null);
+            }
+            this.clienteForm.get('provincia').updateValueAndValidity();
+            this.cdRef.detectChanges();
+        });
+
         this.empresa = [
             { nombre: 'NITROPHYL' },
             { nombre: 'ELASINT' }
         ];
+    }
+
+    private _filterPaises(nombre: string): Pais[] {
+        const filterValue = nombre.toLowerCase();
+        return this.paises.filter(pais => pais.nombre.toLowerCase().includes(filterValue));
+    }
+
+    displayPais(pais: Pais): string {
+        return pais && pais.nombre ? pais.nombre : '';
+    }
+
+    get esArgentina(): boolean {
+        const val = this.clienteForm.get('paisDTO')?.value;
+        const nombre = (typeof val === 'string' ? val : val?.nombre)?.trim();
+        return nombre?.toLowerCase() === 'argentina';
     }
 
     ngAfterViewInit() {
@@ -91,8 +135,15 @@ export class ABMClientesCrearComponent implements OnInit, OnDestroy, AfterViewIn
         if (!this.clienteForm.valid) {
             return;
         };
+        let formValue = this.clienteForm.getRawValue();
+        if (typeof formValue.paisDTO === 'string') {
+            formValue.paisDTO = { id: null, nombre: formValue.paisDTO };
+        }
+        if (formValue.paisDTO?.nombre?.toLowerCase() !== 'argentina' && formValue.paisDTO?.id !== 1000) {
+            formValue.provincia = null;
+        }
         let model: Cliente = {
-            ...this.clienteForm.getRawValue(),
+            ...formValue,
             id: 0
         };
         this.clientesService.createCliente(model).subscribe(d => {

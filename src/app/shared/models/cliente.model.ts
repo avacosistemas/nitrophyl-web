@@ -1,10 +1,19 @@
+export interface Pais {
+    id: number;
+    nombre: string;
+    usuarioCreacion?: string;
+    fechaCreacion?: any;
+    usuarioActualizacion?: string;
+    fechaActualizacion?: any;
+}
+
 export interface Cliente {
     id: number;
     codigo?: string;
     nombre: string;
     razonSocial: string;
     email: string;
-    cuit: number;
+    cuit: any;
     domicilio: string;
     codigoPostal: string;
     localidad: string;
@@ -17,6 +26,8 @@ export interface Cliente {
     telefono: string;
     contacto?: any;
     activo?: boolean;
+    paisDTO?: Pais;
+    labelCombo?: string;
 }
 
 export interface Contacto {
