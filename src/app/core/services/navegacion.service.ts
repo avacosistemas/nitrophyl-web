@@ -215,6 +215,22 @@ export class NavegacionService {
           type: 'basic',
         },
         {
+          icon: 'heroicons_outline:office-building',
+          id: 'sector-fabrica',
+          link: '/sector-fabrica/grid',
+          title: 'Sectores Fábrica',
+          permissionCode: 'MENU_SECTORES_FABRICA',
+          type: 'basic',
+        },
+        {
+          icon: 'heroicons_outline:cog',
+          id: 'maquina-fabrica',
+          link: '/maquina-fabrica/grid',
+          title: 'Máquinas Fábrica',
+          permissionCode: 'MENU_MAQUINAS_FABRICA',
+          type: 'basic',
+        },
+        {
           icon: 'mat_solid:compress',
           id: 'prensas',
           link: '/prensas/grid',

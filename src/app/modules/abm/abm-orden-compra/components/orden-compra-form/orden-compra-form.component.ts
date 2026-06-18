@@ -10,6 +10,8 @@ import { IOrdenCompraCreateDTO } from '../../models/orden-compra.interface';
 import { OrdenCompraHeaderComponent } from './headers/orden-compra-header.component';
 import { OrdenCompraDetailsComponent } from './details/orden-compra-details.component';
 import * as moment from 'moment';
+import { MatDialog } from '@angular/material/dialog';
+import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
 @Component({
     selector: 'app-orden-compra-form',
@@ -24,6 +26,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     mode: 'create' | 'view' | 'edit' = 'create';
     orderId: number | null = null;
     step: 'header' | 'items' = 'header';
+    orderEstado: string | null = null;
     
     form: FormGroup;
     piezaForm: FormGroup;
@@ -42,7 +45,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         private _notification: NotificationService,
         private _router: Router,
         private _activatedRoute: ActivatedRoute,
-        private _cdr: ChangeDetectorRef
+        private _cdr: ChangeDetectorRef,
+        private _dialog: MatDialog
     ) {
         this.form = this._fb.group({
             cliente: [null, Validators.required],
@@ -71,7 +75,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             if (action === 'confirmHeader') this.onConfirmHeader();
             if (action === 'editHeader') { this.step = 'header'; this.updateHeaderUI(); }
             if (action === 'toggleSplit') { this.detailsComp?.toggleSplit(); this.updateHeaderUI(); }
-            if (action === 'saveAll') this.onSaveAll();
+            if (action === 'saveAll') this.onSaveAll(false);
+            if (action === 'saveAllAndGenerateOF') this.onSaveAll(true);
             if (action === 'goBack') this._router.navigate(['/orden-compra/list']);
         });
 
@@ -94,6 +99,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         this._service.getOrdenCompra(this.orderId).subscribe({
             next: (res) => {
                 const data = res.data;
+                this.orderEstado = data.estado;
                 this.form.patchValue({
                     cliente: { id: data.idCliente, nombre: data.cliente },
                     fecha: moment(data.fecha, 'YYYY-MM-DD').toDate(),
@@ -169,21 +175,45 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         this.piezasAgregadas = pieces;
     }
 
-    onSaveAll(): void {
+    onSaveAll(generarOF: boolean = false): void {
         if (this.form.invalid) { this.form.markAllAsTouched(); this._notification.showError("Complete los campos obligatorios de la cabecera"); return; }
         if (this.piezasAgregadas.length === 0) { this._notification.showError("Agregue ítems a la orden"); return; }
 
+        if (generarOF) {
+            const dialogRef = this._dialog.open(GenericModalComponent, {
+                width: '450px',
+                data: {
+                    title: 'Confirmar Generación de OF',
+                    message: 'Se van a generar ordenes de fabricacion por cada una de las entregas solicitadas de las piezas. Luego de generar las ordenes de fabricación no será posible modificar la orden de compra. ¿Desea continuar?',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Continuar',
+                    cancelButtonText: 'Cancelar',
+                    type: 'warning'
+                }
+            });
+
+            dialogRef.afterClosed().subscribe(confirmed => {
+                if (confirmed) {
+                    this.executeSave(generarOF);
+                }
+            });
+        } else {
+            this.executeSave(generarOF);
+        }
+    }
+
+    private executeSave(generarOF: boolean): void {
         const reader = new FileReader();
         reader.onload = () => {
             const base64 = reader.result ? (reader.result as string).split(',')[1] : null;
-            this.saveData(base64);
+            this.saveData(base64, generarOF);
         };
 
         if (this.selectedFile) { reader.readAsDataURL(this.selectedFile); }
-        else { this.saveData(null); }
+        else { this.saveData(null, generarOF); }
     }
 
-    private saveData(base64: string | null): void {
+    private saveData(base64: string | null, generarOF: boolean): void {
         const header = this.form.getRawValue();
         const dto: IOrdenCompraCreateDTO = {
             id: this.mode === 'edit' ? this.orderId : null,
@@ -195,6 +225,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             idEmpresaTransporte: header.idEmpresaTransporte,
             idDomicilioEnvio: header.idDomicilioEnvio,
             mediosEnvio: header.mediosEnvio,
+            generarOrdenFabrica: generarOF,
             archivo: base64 ? { nombre: this.selectedFile.name, archivo: base64 } : null,
             detalle: this.piezasAgregadas.map(g => ({
                 id: g.id || null, idPieza: g.idPieza, pieza: g.denominacion,
@@ -229,13 +260,20 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         const breadcrumbTitle = isView ? 'Ver' : (isEdit ? 'Editar' : 'Nueva');
 
         let btns = [];
+        const isPending = this.mode === 'create' || (this.orderEstado && this.orderEstado.toUpperCase().trim() === 'PENDIENTE');
+        const showGenerateOF = isPending && (this.mode === 'edit' || this.step === 'items');
+        console.log('[DEBUG] updateHeaderUI:', { mode: this.mode, step: this.step, orderEstado: this.orderEstado, isPending, showGenerateOF });
+
         if (this.step === 'header') {
             btns = [
                 { type: 'stroked', label: isView ? 'Volver' : 'Cancelar', action: 'goBack', condition: true },
                 { type: 'flat', label: isView ? 'Ver Ítems' : 'Editar Ítems', action: 'confirmHeader', condition: true }
             ];
             if (isEdit) {
-                btns.splice(1, 0, { type: 'flat', label: 'Actualizar', action: 'saveAll', condition: true });
+                btns.splice(1, 0, { type: 'flat', label: 'Guardar', action: 'saveAll', condition: true });
+                if (showGenerateOF) {
+                    btns.splice(2, 0, { type: 'flat', label: 'Guardar y Generar OF', action: 'saveAllAndGenerateOF', condition: true });
+                }
             }
             this._service.updateHeaderSubtitle(isView ? `${cli} | Comprobante: ${comp}` : '');
         } else {
@@ -246,7 +284,12 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 { type: 'stroked', label: isView ? 'Volver a la lista' : 'Volver', action: isView ? 'goBack' : 'editHeader', condition: true }
             ];
             if (isView) { btns.splice(2, 0, { type: 'flat', label: 'Volver a Cabecera', action: 'editHeader', condition: true }); }
-            else { btns.push({ type: 'flat', label: isEdit ? 'Actualizar' : 'Finalizar', action: 'saveAll', condition: true }); }
+            else { 
+                btns.push({ type: 'flat', label: 'Guardar', action: 'saveAll', condition: true }); 
+                if (showGenerateOF) {
+                    btns.push({ type: 'flat', label: 'Guardar y Generar OF', action: 'saveAllAndGenerateOF', condition: true });
+                }
+            }
             this._service.updateHeaderSubtitle(`${cli} | Comprobante: ${comp}`);
         }
 

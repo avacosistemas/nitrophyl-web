@@ -77,6 +77,10 @@ export class AbmOrdenCompraService {
         return this.http.put<any>(`${this.apiUrl}/${id}`, dto);
     }
 
+    generarOrdenFabrica(id: number): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/generarOrdenFabrica/${id}`, {});
+    }
+
     cancelOrdenCompra(id: number, observaciones: string): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/cancelar/${id}`, { observaciones });
     }

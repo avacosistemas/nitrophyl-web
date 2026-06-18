@@ -1,0 +1,166 @@
+{
+  "status": "OK",
+  "data": {
+    "cabecera": {
+      "numero_ot": "253/26",
+      "cliente": "Avaco Sisteas",
+      "oc": "ABC-123",
+      "prensa": "Prensa Hidráulica",
+      "fecha_emision": "10/06/2026",
+      "fecha_entrega": "16/06/2026",
+      "observaciones": "Evitar golpes durante el transporte"
+    },
+    "items": [
+      {
+        "id_item": 1,
+        "titulo": "MOTOM 25851-1",
+        "cantidad_total": 60,
+        "material": "Nitrilo",
+        "formula": "N70",
+        "batch": "",
+        "fabrico": "",
+        "hp": "MOTO-SE-062",
+        "plano_rev": "25851/01",
+        "matriz": "29448/9 (PL 29448)",
+        "identicacion": "Abc 123",
+        "ubicacion": "D-3",
+        "pc": "043",
+        "observaciones_item": "Revisar dureza antes de entregar",
+        "control_calidad": [
+          {
+            "tipo": "Dureza",
+            "valor": "70-75"
+          },
+          {
+            "tipo": "Diámetro",
+            "valor": "698 - 701"
+          },
+          {
+            "tipo": "Espesor",
+            "valor": "9,5 - 10,5"
+          }
+        ]
+      },
+      {
+        "id_item": 2,
+        "titulo": "MOTOM 25851-1",
+        "cantidad_total": 60,
+        "material": "Nitrilo",
+        "formula": "N70",
+        "batch": "",
+        "fabrico": "",
+        "hp": "MOTO-SE-062",
+        "plano_rev": "25851/01",
+        "matriz": "29448/9 (PL 29448)",
+        "identicacion": "",
+        "ubicacion": "D-3",
+        "pc": "",
+        "observaciones_item": "Revisar dureza antes de entregar",
+        "control_calidad": [
+          {
+            "tipo": "Dureza",
+            "valor": "70-75"
+          },
+          {
+            "tipo": "Diámetro",
+            "valor": "698 - 701"
+          },
+          {
+            "tipo": "Espesor",
+            "valor": "9,5 - 10,5"
+          }
+        ]
+      },
+      {
+        "id_item": 3,
+        "titulo": "MOTOM 25851-1",
+        "cantidad_total": 60,
+        "material": "Nitrilo",
+        "formula": "N70",
+        "batch": "",
+        "fabrico": "",
+        "hp": "MOTO-SE-062",
+        "plano_rev": "25851/01",
+        "matriz": "29448/9 (PL 29448)",
+        "identicacion": "",
+        "ubicacion": "D-3",
+        "pc": "",
+        "observaciones_item": "Revisar dureza antes de entregar",
+        "control_calidad": [
+          {
+            "tipo": "Dureza",
+            "valor": "70-75"
+          },
+          {
+            "tipo": "Diámetro",
+            "valor": "698 - 701"
+          },
+          {
+            "tipo": "Espesor",
+            "valor": "9,5 - 10,5"
+          }
+        ]
+      },
+      {
+        "id_item": 4,
+        "titulo": "MOTOM 25851-1",
+        "cantidad_total": 60,
+        "material": "Nitrilo",
+        "formula": "N70",
+        "batch": "",
+        "fabrico": "",
+        "hp": "MOTO-SE-062",
+        "plano_rev": "25851/01",
+        "matriz": "29448/9 (PL 29448)",
+        "identicacion": "",
+        "ubicacion": "D-3",
+        "pc": "",
+        "observaciones_item": "Revisar dureza antes de entregar",
+        "control_calidad": [
+          {
+            "tipo": "Dureza",
+            "valor": "70-75"
+          },
+          {
+            "tipo": "Diámetro",
+            "valor": "698 - 701"
+          },
+          {
+            "tipo": "Espesor",
+            "valor": "9,5 - 10,5"
+          }
+        ]
+      },
+      {
+        "id_item": 5,
+        "titulo": "MOTOM 25851-1",
+        "cantidad_total": 60,
+        "material": "Nitrilo",
+        "formula": "N70",
+        "batch": "",
+        "fabrico": "",
+        "hp": "MOTO-SE-062",
+        "plano_rev": "25851/01",
+        "matriz": "29448/9 (PL 29448)",
+        "identicacion": "",
+        "ubicacion": "D-3",
+        "pc": "Abajo",
+        "observaciones_item": "Revisar dureza antes de entregar",
+        "control_calidad": [
+          {
+            "tipo": "Dureza",
+            "valor": "70-75"
+          },
+          {
+            "tipo": "Diámetro",
+            "valor": "698 - 701"
+          },
+          {
+            "tipo": "Espesor",
+            "valor": "9,5 - 10,5"
+          }
+        ]
+      }
+    ]
+  }
+}

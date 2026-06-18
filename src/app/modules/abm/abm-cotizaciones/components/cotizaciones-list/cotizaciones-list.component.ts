@@ -123,12 +123,12 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
             startWith(''),
             debounceTime(300),
             switchMap(value => {
-                const searchTerm = typeof value === 'string' ? value : value?.denominacion;
+                const searchTerm = typeof value === 'string' ? value : (value?.nombre || value?.denominacion || '');
                 if (typeof value === 'object' && value !== null) {
                     return of([]);
                 }
-                return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50, soloVigentes: true }).pipe(
-                    map(res => res.data.page),
+                return this._abmPiezasService.getPiezasCombo(searchTerm).pipe(
+                    map(res => res.data || []),
                     catchError(() => of([]))
                 );
             })
@@ -143,7 +143,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
             asc: this.sort.direction !== 'desc',
             idx: this.sort.active || 'fecha',
             idCliente: formValues.cliente?.id,
-            idPieza: formValues.pieza?.id,
+            idPieza: formValues.pieza?.id || (formValues.pieza?.codigo ? Number(formValues.pieza.codigo) : null),
             soloVigentes: formValues.soloVigentes
         };
         return params;
@@ -175,11 +175,11 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
 
     displayFn(item: any): string {
         if (!item) { return ''; }
+        if (item.nombre) {
+            return item.nombre;
+        }
         if (item.denominacion) {
             return item.codigo ? `${item.codigo} - ${item.denominacion}` : item.denominacion;
-        }
-        if (item.nombre) {
-            return item.codigo ? `${item.codigo} - ${item.nombre}` : item.nombre;
         }
         return '';
     }

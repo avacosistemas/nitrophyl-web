@@ -184,7 +184,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
             debounceTime(300),
             switchMap(value => {
                 const isRestricted = this.form.get('soloPiezasCliente').value;
-                const searchTerm = typeof value === 'string' ? value : value?.denominacion;
+                const searchTerm = typeof value === 'string' ? value : (value?.nombre || value?.denominacion || '');
 
                 if (isRestricted) {
                     return of(this._filterLocalPiezas(searchTerm));
@@ -192,8 +192,8 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
                     if (typeof value === 'object' && value !== null) {
                         return of([]);
                     }
-                    return this._abmPiezasService.getPiezas({ nombre: searchTerm || '', rows: 50, soloVigentes: true }).pipe(
-                        map(res => res.data.page),
+                    return this._abmPiezasService.getPiezasCombo(searchTerm).pipe(
+                        map(res => res.data || []),
                         catchError(() => of([]))
                     );
                 }
@@ -221,7 +221,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
         const cliente = this.form.get('cliente').value;
 
         const message = this._sanitizer.bypassSecurityTrustHtml(
-            `Está a punto de asignar el precio de la pieza <b>${pieza.denominacion}</b> para el cliente <b>${cliente.nombre}</b>. Esto impactará a partir de las próximas cotizaciones para la facturación. ¿Está seguro?`
+            `Está a punto de asignar el precio de la pieza <b>${pieza.nombre || pieza.denominacion}</b> para el cliente <b>${cliente.nombre}</b>. Esto impactará a partir de las próximas cotizaciones para la facturación. ¿Está seguro?`
         );
 
         const dialogRef = this._dialog.open(GenericModalComponent, {
@@ -252,7 +252,7 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
 
         const dto: ICotizacionCreateDTO = {
             idCliente: formValue.cliente.id,
-            idPieza: formValue.pieza.id,
+            idPieza: formValue.pieza.id || (formValue.pieza.codigo ? Number(formValue.pieza.codigo) : 0),
             valor: formValue.valor,
             fecha: fechaParaAPI,
             observaciones: formValue.observaciones
@@ -279,8 +279,11 @@ export class CotizacionModalComponent implements OnInit, OnDestroy {
 
     displayFn(item: any): string {
         if (!item) { return ''; }
+        if (item.nombre) {
+            return item.nombre;
+        }
         const formulaStr = item.formula ? ` (${item.formula})` : '';
-        return (item.codigo ? `${item.codigo} - ${item.denominacion || item.nombre}` : (item.denominacion || item.nombre)) + formulaStr;
+        return (item.codigo ? `${item.codigo} - ${item.denominacion}` : item.denominacion) + formulaStr;
     }
 
     displayCliente(cliente: Cliente): string {

@@ -9,8 +9,6 @@ import { environment } from "environments/environment";
     providedIn: 'root'
 })
 
-
-
 export class UserService {
 
     private mode: string;
@@ -21,6 +19,10 @@ export class UserService {
 
     public getUsers(): Observable<UserList> {
         return this.http.get<UserList>(`${environment.server}users/`)
+    }
+
+    public getUsersCombo(): Observable<any> {
+        return this.http.get<any>(`${environment.server}users/combo`);
     }
 
     public postUser(user: User): Observable<Respuesta> {

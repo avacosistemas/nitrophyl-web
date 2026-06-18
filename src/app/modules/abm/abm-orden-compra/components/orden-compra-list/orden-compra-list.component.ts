@@ -230,6 +230,36 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         });
     }
 
+    generarOFFromGrid(element: IOrdenCompra): void {
+        const dialogRef = this.dialog.open(GenericModalComponent, {
+            width: '450px',
+            data: {
+                title: 'Confirmar Generación de OF',
+                message: 'Se van a generar ordenes de fabricacion por cada una de las entregas solicitadas de las piezas. Luego de generar las ordenes de fabricación no será posible modificar la orden de compra. ¿Desea continuar?',
+                showConfirmButton: true,
+                confirmButtonText: 'Continuar',
+                cancelButtonText: 'Cancelar',
+                type: 'warning'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(confirmed => {
+            if (confirmed) {
+                this.isLoading = true;
+                this._ordenCompraService.generarOrdenFabrica(element.id).subscribe({
+                    next: () => {
+                        this._notificationService.showSuccess('Orden de Fabricación generada correctamente.');
+                        this.search();
+                    },
+                    error: (err) => {
+                        this.isLoading = false;
+                        this._notificationService.showError(err.error?.message || 'Error al generar la orden de fabricación.');
+                    }
+                });
+            }
+        });
+    }
+
     downloadArchivo(element: IOrdenCompra): void {
         this._ordenCompraService.getArchivoOrdenCompra(element.id).subscribe(res => {
             const byteCharacters = atob(res.data.archivoContenido);

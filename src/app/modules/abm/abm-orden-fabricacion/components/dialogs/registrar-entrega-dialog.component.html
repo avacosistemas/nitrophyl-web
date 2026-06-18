@@ -1,0 +1,79 @@
+<h2 mat-dialog-title class="font-bold text-gray-800">Registrar Entrega</h2>
+
+<mat-dialog-content [formGroup]="form" class="flex flex-col gap-6 pt-2 pb-4">
+    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center mb-2">
+        <span class="text-xs font-bold text-gray-500 uppercase">Saldo Pendiente</span>
+        <span class="text-xl font-bold text-primary">{{ data.saldoPendiente }}</span>
+    </div>
+
+    <div class="flex flex-col gap-4">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Operario</mat-label>
+            <input type="text" placeholder="Buscar y seleccionar un operario..." matInput formControlName="operario"
+                [matAutocomplete]="autoOperario" #operarioTrigger="matAutocompleteTrigger"
+                (focus)="operarioTrigger.openPanel()" (click)="operarioTrigger.openPanel()" required>
+            <button *ngIf="form.get('operario').value" matSuffix mat-icon-button aria-label="Clear"
+                (click)="clearControl('operario'); $event.stopPropagation()">
+                <mat-icon class="icon-size-5">close</mat-icon>
+            </button>
+            <mat-autocomplete #autoOperario="matAutocomplete" [displayWith]="displayFnOperario">
+                <mat-option *ngFor="let o of filteredOperarios$ | async" [value]="o">
+                    {{ o.nombre }}
+                </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="form.get('operario').hasError('required')">
+                El operario es requerido.
+            </mat-error>
+            <mat-error *ngIf="form.get('operario').hasError('mustSelectOption')">
+                Debe seleccionar un operario de la lista.
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Lote</mat-label>
+            <input type="text" placeholder="Buscar y seleccionar un lote..." matInput formControlName="lote"
+                [matAutocomplete]="autoLote" #loteTrigger="matAutocompleteTrigger"
+                (focus)="loteTrigger.openPanel()" (click)="loteTrigger.openPanel()" required>
+            <button *ngIf="form.get('lote').value" matSuffix mat-icon-button aria-label="Clear"
+                (click)="clearControl('lote'); $event.stopPropagation()">
+                <mat-icon class="icon-size-5">close</mat-icon>
+            </button>
+            <mat-autocomplete #autoLote="matAutocomplete" [displayWith]="displayFnLote">
+                <mat-option *ngFor="let lote of filteredLotes$ | async" [value]="lote">
+                    {{ lote.nombre }}
+                </mat-option>
+            </mat-autocomplete>
+            <mat-error *ngIf="form.get('lote').hasError('required')">
+                El lote es requerido.
+            </mat-error>
+            <mat-error *ngIf="form.get('lote').hasError('mustSelectOption')">
+                Debe seleccionar un lote de la lista.
+            </mat-error>
+        </mat-form-field>
+
+        <div class="grid grid-cols-2 gap-4">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Cantidad</mat-label>
+                <input type="number" matInput formControlName="cantidad" min="1" required>
+                <mat-error *ngIf="form.get('cantidad').hasError('required')">Requerido</mat-error>
+                <mat-error *ngIf="form.get('cantidad').hasError('min')">Debe ser mayor a 0</mat-error>
+            </mat-form-field>
+
+            <!-- Fecha Datepicker -->
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Fecha</mat-label>
+                <input matInput [matDatepicker]="picker" formControlName="fecha" required>
+                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                <mat-datepicker #picker></mat-datepicker>
+                <mat-error *ngIf="form.get('fecha').hasError('required')">Requerido</mat-error>
+            </mat-form-field>
+        </div>
+    </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="pb-6">
+    <button mat-button mat-dialog-close class="mr-2">Cancelar</button>
+    <button mat-flat-button color="accent" [disabled]="form.invalid" (click)="save()">
+        Registrar Entrega
+    </button>
+</mat-dialog-actions>

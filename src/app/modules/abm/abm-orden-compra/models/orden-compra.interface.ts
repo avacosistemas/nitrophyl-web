@@ -23,6 +23,7 @@ export interface IOrdenCompraItem {
 
 export interface IOrdenCompraCreateDTO {
     id?: number;
+    generarOrdenFabrica?: boolean;
     archivo: {
         archivo: string;
         nombre: string;
@@ -66,6 +67,7 @@ export interface IOrdenCompraPendientesParams {
     asc: boolean;
     idx: string;
     comprobante?: string;
+    estado?: string;
     idCliente?: number;
     idPieza?: number;
     fechaDesde?: string;     

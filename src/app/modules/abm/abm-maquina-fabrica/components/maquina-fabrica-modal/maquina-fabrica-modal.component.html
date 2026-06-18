@@ -1,0 +1,46 @@
+<h1 mat-dialog-title>{{ title }}</h1>
+
+<div mat-dialog-content>
+    <form [formGroup]="form" (ngSubmit)="onSave()" class="mat-form-without-wrapper flex flex-col gap-4">
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Nombre de la Máquina</mat-label>
+            <input matInput formControlName="nombre" required>
+            <mat-error *ngIf="form.get('nombre').hasError('required')">
+                El nombre es requerido.
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Sector</mat-label>
+            <mat-select formControlName="idSector" required>
+                <mat-option *ngFor="let sector of sectores" [value]="sector.id">
+                    {{ sector.nombre }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('idSector').hasError('required')">
+                El sector es requerido.
+            </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Tipo</mat-label>
+            <mat-select formControlName="tipo" required>
+                <mat-option *ngFor="let tipo of tiposMaquina" [value]="tipo.value">
+                    {{ tipo.label }}
+                </mat-option>
+            </mat-select>
+            <mat-error *ngIf="form.get('tipo').hasError('required')">
+                El tipo es requerido.
+            </mat-error>
+        </mat-form-field>
+    </form>
+</div>
+
+<div mat-dialog-actions class="flex justify-end gap-2 pt-2">
+    <button mat-stroked-button (click)="onCancel()">Cancelar</button>
+    <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
+        [disabled]="form.invalid || isLoading" (click)="onSave()">
+        <span *ngIf="!isLoading">Guardar</span>
+        <mat-progress-spinner *ngIf="isLoading" diameter="24" mode="indeterminate"></mat-progress-spinner>
+    </button>
+</div>

@@ -17,18 +17,30 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MatMomentDateModule, MomentDateAdapter } from '@angular/material-moment-adapter';
+import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
 
+export const MY_DATE_FORMATS = {
+    parse: { dateInput: 'DD/MM/YYYY' },
+    display: {
+        dateInput: 'DD/MM/YYYY',
+        monthYearLabel: 'MMMM YYYY',
+        dateA11yLabel: 'LL',
+        monthYearA11yLabel: 'MMMM YYYY',
+    },
+};
+
 import { ABMOrdenFabricacionComponent } from './abm-orden-fabricacion.component';
 import { OrdenFabricacionListComponent } from './components/orden-fabricacion-list/orden-fabricacion-list.component';
 import { OrdenFabricacionFormComponent } from './components/orden-fabricacion-form/orden-fabricacion-form.component';
 import { AsignarPrensaDialogComponent } from './components/dialogs/asignar-prensa-dialog.component';
 import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-orden-dialog.component';
+import { RegistrarEntregaDialogComponent } from './components/dialogs/registrar-entrega-dialog.component';
 
 @NgModule({
     declarations: [
@@ -36,7 +48,8 @@ import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-or
         OrdenFabricacionListComponent,
         OrdenFabricacionFormComponent,
         AsignarPrensaDialogComponent,
-        FinalizarOrdenDialogComponent
+        FinalizarOrdenDialogComponent,
+        RegistrarEntregaDialogComponent
     ],
     imports: [
         CommonModule,
@@ -63,7 +76,10 @@ import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-or
         MatCheckboxModule
     ],
     providers: [
-        DatePipe
+        DatePipe,
+        { provide: MAT_DATE_LOCALE, useValue: 'es-ES' },
+        { provide: DateAdapter, useClass: MomentDateAdapter, deps: [MAT_DATE_LOCALE] },
+        { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS }
     ]
 })
 export class ABMOrdenFabricacionModule { }

@@ -14,7 +14,9 @@ import { MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { MatDialog } from '@angular/material/dialog';
 import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog.component';
 import { FinalizarOrdenDialogComponent } from '../dialogs/finalizar-orden-dialog.component';
+import { RegistrarEntregaDialogComponent } from '../dialogs/registrar-entrega-dialog.component';
 import moment from 'moment';
+import { generarHtmlOT } from '../../utils/ot-html.generator';
 
 type ClienteNitrophyl = Partial<Cliente> & { id: number | null; nombre: string };
 
@@ -26,18 +28,21 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     @ViewChild(MatPaginator) paginator: MatPaginator;
     @ViewChild(MatSort) sort: MatSort;
     @ViewChild('clientInput', { read: MatAutocompleteTrigger }) clientAutocompleteTrigger: MatAutocompleteTrigger;
+    @ViewChild('piezaInput', { read: MatAutocompleteTrigger }) piezaAutocompleteTrigger: MatAutocompleteTrigger;
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
     displayedColumns: string[] = [
-        'ocFecha', 'ocComprobante', 'cliente', 'pieza', 'formula', 'ocCantidad',
-        'ofFecha', 'fechaEntrega', 'estado', 'deFabrica', 'deStock', 'maquina', 'saldo', 'facturada', 'entregadas', 'acciones'
+        'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
+        'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'entregadas', 'saldo', 'acciones'
     ];
     totalReg: number = 0;
 
     searchForm: FormGroup;
     clientes: ClienteNitrophyl[] = [];
     filteredClientes$: Observable<ClienteNitrophyl[]>;
+    piezas: any[] = [];
+    filteredPiezas$: Observable<any[]>;
 
     private _destroying$ = new Subject<void>();
 
@@ -51,21 +56,31 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
-            comprobante: [''],
+            tipoFecha: [''],
             fechaDesde: [null],
             fechaHasta: [null],
-            estado: ['']
+            estado: [''],
+            pieza: [null],
+            anioOF: [''],
+            numeroOF: ['']
         });
     }
 
     ngOnInit(): void {
         this.loadClientes();
+        this.loadPiezas();
     }
 
     ngAfterViewInit(): void {
         merge(this.sort.sortChange, this.paginator.page).pipe(
             startWith({}),
             switchMap(() => {
+                const formValues = this.searchForm.value;
+                if ((formValues.fechaDesde || formValues.fechaHasta) && !formValues.tipoFecha) {
+                    this._notificationService.showError('Debe seleccionar el tipo de fecha para aplicar el filtro de fechas.');
+                    this.isLoading = false;
+                    return of(null);
+                }
                 this.isLoading = true;
                 const params = this.buildRequestParams();
                 return this._ordenFabricacionService.getOrdenesFabricacion(params).pipe(
@@ -83,8 +98,11 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                     const filasPlanas = [];
 
                     response.data.page.forEach((orden: IOrdenFabricacion) => {
-
                         const piezaPrincipal: IOrdenFabricacionPieza = orden.piezas[0] || ({} as IOrdenFabricacionPieza);
+
+                        const anio = orden.anio || (orden.fecha ? moment(orden.fecha, 'YYYY-MM-DD').year() : null);
+                        const numero = orden.numero;
+                        const formattedNumero = (anio && numero) ? `${anio}/${String(numero).padStart(3, '0')}` : '-';
 
                         filasPlanas.push({
                             ...orden,
@@ -102,7 +120,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                             cantFabrica: piezaPrincipal.cantidadAFabricar || 0,
                             cantStock: piezaPrincipal.stockActual || 0,
                             maquina: orden.prensa || '-',
-                            facturada: 0
+                            facturada: 0,
+                            formattedNumero: formattedNumero
                         });
                     });
 
@@ -127,10 +146,13 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             asc: this.sort.direction !== 'desc',
             idx: this.sort.active || 'fecha',
             idCliente: formValues.cliente?.id,
-            comprobante: formValues.comprobante,
-            fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null,
-            fechaHasta: formValues.fechaHasta ? moment(formValues.fechaHasta).format('DD/MM/YYYY') : null,
-            estado: formValues.estado
+            tipoFecha: formValues.tipoFecha || null,
+            fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).toISOString() : null,
+            fechaHasta: formValues.fechaHasta ? moment(formValues.fechaHasta).toISOString() : null,
+            estado: formValues.estado || null,
+            idPieza: formValues.pieza?.id || null,
+            anioOF: formValues.anioOF || null,
+            numeroOF: formValues.numeroOF || null
         };
     }
 
@@ -152,13 +174,59 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         return this.clientes.filter(c => c.nombre.toLowerCase().includes(filterValue));
     }
 
+    loadPiezas(): void {
+        this._ordenFabricacionService.getPiezas(null, false).pipe(takeUntil(this._destroying$)).subscribe({
+            next: (res) => {
+                this.piezas = res?.data || [];
+                this.filteredPiezas$ = this.searchForm.get('pieza').valueChanges.pipe(
+                    startWith(''),
+                    map(value => this._filterPiezas(value))
+                );
+            },
+            error: () => this._notificationService.showError('Error al cargar piezas.')
+        });
+    }
+
+    private _filterPiezas(value: string | any): any[] {
+        const filterValue = (typeof value === 'string' ? value : (value?.denominacion || '')).toLowerCase();
+        return this.piezas.filter(p => p.denominacion.toLowerCase().includes(filterValue) || p.codigo?.toLowerCase().includes(filterValue));
+    }
+
+    displayFnPieza(pieza: any): string {
+        return pieza?.denominacion || '';
+    }
+
+    clearPiezaSelection(): void {
+        this.searchForm.get('pieza').setValue('');
+        this._changeDetectorRef.detectChanges();
+        setTimeout(() => {
+            if (this.piezaAutocompleteTrigger) {
+                this.piezaAutocompleteTrigger.openPanel();
+            }
+        }, 50);
+    }
+
     search(): void {
+        const formValues = this.searchForm.value;
+        if ((formValues.fechaDesde || formValues.fechaHasta) && !formValues.tipoFecha) {
+            this._notificationService.showError('Debe seleccionar el tipo de fecha para aplicar el filtro de fechas.');
+            return;
+        }
         this.paginator.pageIndex = 0;
         this.paginator.page.emit();
     }
 
     limpiarFiltros(): void {
-        this.searchForm.reset({ estado: '' });
+        this.searchForm.reset({
+            cliente: null,
+            tipoFecha: '',
+            fechaDesde: null,
+            fechaHasta: null,
+            estado: '',
+            pieza: null,
+            anioOF: '',
+            numeroOF: ''
+        });
         this.search();
     }
 
@@ -177,29 +245,27 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     asignarPrensa(orden: IOrdenFabricacion): void {
-        const pieza = orden.piezas && orden.piezas.length > 0 ? orden.piezas[0] : null;
-
         const dialogRef = this._dialog.open(AsignarPrensaDialogComponent, {
-            width: '600px',
+            width: '500px',
             panelClass: 'custom-dialog-container',
             data: {
-                cantidadSolicitada: pieza ? pieza.cantidadSolicitada : 0,
-                stockDisponible: pieza ? pieza.stockActual : 0,
-                sugeridoFabrica: pieza ? pieza.cantidadAFabricar : 0,
-                sugeridoStock: 0,
-                fechaEstimada: orden.fechaEstimada || null
+                idOrden: orden.id
             }
         });
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.isLoading = true;
-                console.log('Datos a guardar:', result);
-
-                setTimeout(() => {
-                    this._notificationService.showSuccess('Orden asignada a prensa correctamente');
-                    this.search();
-                }, 1000);
+                this._ordenFabricacionService.asignarOrden(orden.id, result).subscribe({
+                    next: () => {
+                        this._notificationService.showSuccess('Orden asignada correctamente');
+                        this.search();
+                    },
+                    error: () => {
+                        this.isLoading = false;
+                        this._notificationService.showError('Error al asignar la orden');
+                    }
+                });
             }
         });
     }
@@ -235,6 +301,55 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                         this._notificationService.showError('Error al registrar la producción');
                     }
                 });
+            }
+        });
+    }
+
+    registrarEntrega(el: any): void {
+        const pieza = el.piezas[0];
+        const dialogRef = this._dialog.open(RegistrarEntregaDialogComponent, {
+            width: '450px',
+            data: {
+                saldoPendiente: el.saldo,
+                idFormula: pieza?.idFormula || pieza?.id
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.isLoading = true;
+                this._ordenFabricacionService.registrarEntrega(el.id, result).subscribe({
+                    next: () => {
+                        this._notificationService.showSuccess('Entrega registrada correctamente');
+                        this.search();
+                    },
+                    error: () => {
+                        this.isLoading = false;
+                        this._notificationService.showError('Error al registrar la entrega');
+                    }
+                });
+            }
+        });
+    }
+
+    verOT(el: any): void {
+        this._ordenFabricacionService.getOrdenFabricacionOT(el.id).subscribe({
+            next: (response: any) => {
+                if (response?.status === 'OK' && response?.data) {
+                    const html = generarHtmlOT(response.data);
+                    const newWindow = window.open('', '_blank');
+                    if (newWindow) {
+                        newWindow.document.write(html);
+                        newWindow.document.close();
+                        newWindow.focus();
+                        setTimeout(() => newWindow.print(), 500);
+                    }
+                } else {
+                    this._notificationService.showError('No se pudo obtener la OT.');
+                }
+            },
+            error: () => {
+                this._notificationService.showError('Error al obtener la Orden de Trabajo.');
             }
         });
     }

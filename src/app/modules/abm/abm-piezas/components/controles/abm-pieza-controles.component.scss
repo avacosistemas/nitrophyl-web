@@ -1,0 +1,11 @@
+@import '../../styles/_classes.scss';
+
+.mat-form-without-wrapper {
+    ::ng-deep .mat-form-field-subscript-wrapper {
+        display: none;
+    }
+
+    ::ng-deep .mat-form-field-wrapper {
+        padding-bottom: 0;
+    }
+}

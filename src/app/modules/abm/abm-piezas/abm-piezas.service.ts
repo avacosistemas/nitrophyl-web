@@ -3,7 +3,7 @@ import {
     Insumo, Esquema, Finalizacion,
     Prensa, Plano, Molde, PiezaDimension, PiezaProceso,
     ApiResponse, PiezaCreateDTO, PiezaUpdateDTO, IPiezaMolde, PiezaCliente,
-    IInsumoTratado, IAdhesivo, ITipoInsumoJerarquico, ITratamiento, IPaginatedResponse
+    IInsumoTratado, IAdhesivo, ITipoInsumoJerarquico, ITratamiento, IPaginatedResponse, PiezaControl
 } from './models/pieza.model';
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -39,11 +39,20 @@ export class ABMPiezaService {
     private readonly API_TRATAMIENTO_URL = `${this.API_BASE_URL}tratamiento`;
     private readonly API_ADHESIVO_URL = `${this.API_BASE_URL}adhesivo`;
     private readonly API_BOMBEO_URL = `${this.API_BASE_URL}bombeo`;
+    private readonly API_PIEZA_CONTROL_URL = `${this.API_BASE_URL}piezaControl`;
 
     constructor(private http: HttpClient) { }
 
     getPiezas(params: any): Observable<any> {
         return this.http.get<any>(this.API_PIEZA_URL, { params });
+    }
+
+    getPiezasCombo(nombre?: string): Observable<any> {
+        let params = new HttpParams();
+        if (nombre) {
+            params = params.set('nombre', nombre);
+        }
+        return this.http.get<any>(`${this.API_PIEZA_URL}/combo`, { params });
     }
 
     getByIdEdicion(id: number): Observable<PiezaProceso> {
@@ -202,6 +211,22 @@ export class ABMPiezaService {
 
     eliminarClienteDePieza(idAsociacion: number): Observable<any> {
         return this.http.delete(`${this.API_PIEZA_CLIENTE_URL}/${idAsociacion}`);
+    }
+
+    getControlesPorPieza(idPieza: number): Observable<ApiResponse<PiezaControl[]>> {
+        return this.http.get<ApiResponse<PiezaControl[]>>(`${this.API_PIEZA_CONTROL_URL}/${idPieza}`);
+    }
+
+    createPiezaControl(dto: { control: string; idPieza: number; tipo: 'GENERAL' }): Observable<any> {
+        return this.http.post(this.API_PIEZA_CONTROL_URL, dto);
+    }
+
+    updatePiezaControl(id: number, dto: { control: string; idPieza: number; tipo: 'GENERAL' }): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_CONTROL_URL}/${id}`, dto);
+    }
+
+    deletePiezaControl(id: number): Observable<any> {
+        return this.http.delete(`${this.API_PIEZA_CONTROL_URL}/${id}`);
     }
 
     getPlanos(idPieza: number): Observable<ApiResponse<Plano[]>> {

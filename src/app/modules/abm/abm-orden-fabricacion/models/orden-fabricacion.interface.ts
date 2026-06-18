@@ -21,6 +21,8 @@ export interface IOrdenFabricacion {
     fechaEntregada?: string;
     entregadas: number;
     saldo?: number;
+    numero?: number;
+    anio?: number;
 
     piezas: IOrdenFabricacionPieza[];
 }

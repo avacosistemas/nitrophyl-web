@@ -47,10 +47,15 @@ export class AbmOrdenFabricacionService {
         return this.http.post<any>(this.apiUrl, dto);
     }
 
-    getPiezas(idCliente?: number | null, soloDelCliente: boolean = true): Observable<any> {
-        let params = new HttpParams().set('soloDelCliente', soloDelCliente.toString());
-        if (idCliente) params = params.set('idCliente', idCliente.toString());
-        return this.http.get<any>(`${environment.server}piezas/paraFabricacion`, { params });
+    getPiezas(idCliente?: number | null, soloDelCliente: boolean = true, nombre?: string): Observable<any> {
+        let params = new HttpParams();
+        if (soloDelCliente && idCliente) {
+            params = params.set('idCliente', idCliente.toString());
+        }
+        if (nombre) {
+            params = params.set('nombre', nombre);
+        }
+        return this.http.get<any>(`${environment.server}pieza/combo`, { params });
     }
 
     // getPiezaStock(idPieza: number): Observable<any> {
@@ -87,6 +92,19 @@ export class AbmOrdenFabricacionService {
 
     registrarProduccion(payload: any): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/registrarProduccion`, payload);
+    }
+
+    registrarEntrega(id: number, payload: { cantidad: number, fecha: string, idLote: number, idUsuario: number }): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/registrarEntrega/${id}`, payload);
+    }
+
+    asignarOrden(id: number, payload: { idMaquina: number, idSector: number, idUsuario: number }): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/asignar/${id}`, payload);
+    }
+
+    getOrdenFabricacionOT(id: number): Observable<any> {
+        return this.http.get<any>('/assets/ordendefabricacion.json');
+        // return this.http.get<any>(`${this.apiUrl}/ot`, { params: new HttpParams().set('id', id.toString()) });
     }
 
     getOrdenesCompraPorCliente(idCliente: number): Observable<any> {

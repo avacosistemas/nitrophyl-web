@@ -1,8 +1,11 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Subject, Observable } from 'rxjs';
-import { takeUntil, startWith, map } from 'rxjs/operators';
+import { Subject, Observable, of, merge } from 'rxjs';
+import { takeUntil, startWith, map, switchMap, debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
+import { AbmSectorFabricaService } from 'app/modules/abm/abm-sector-fabrica/abm-sector-fabrica.service';
+import { AbmMaquinaFabricaService } from 'app/modules/abm/abm-maquina-fabrica/abm-maquina-fabrica.service';
+import { UserService } from 'app/shared/services/user.service';
 
 @Component({
     selector: 'app-asignar-prensa-dialog',
@@ -10,52 +13,86 @@ import { takeUntil, startWith, map } from 'rxjs/operators';
 })
 export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
     form: FormGroup;
-    currentTotal: number = 0;
-
-    totalColorClass: string = 'bg-gray-100 border-gray-200';
-    totalTextClass: string = 'text-gray-800';
-
+    filteredSectores$: Observable<any[]>;
+    filteredMaquinas$: Observable<any[]>;
     filteredOperarios$: Observable<any[]>;
-    operarios: any[] = [
-        { id: 1, nombre: 'Juan Pérez' },
-        { id: 2, nombre: 'Ana García' },
-        { id: 3, nombre: 'Carlos López' },
-        { id: 4, nombre: 'Roberto Gómez' },
-        { id: 5, nombre: 'Luisa Fernández' }
-    ];
+    operarios: any[] = [];
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
         private fb: FormBuilder,
         public dialogRef: MatDialogRef<AsignarPrensaDialogComponent>,
-        @Inject(MAT_DIALOG_DATA) public data: {
-            cantidadSolicitada: number,
-            stockDisponible: number,
-            sugeridoFabrica: number,
-            sugeridoStock: number,
-            fechaEstimada: string
-        }
+        private _sectorService: AbmSectorFabricaService,
+        private _maquinaService: AbmMaquinaFabricaService,
+        private _userService: UserService,
+        @Inject(MAT_DIALOG_DATA) public data: any
     ) {
-        const suggestedStock = Math.min(data.cantidadSolicitada, data.stockDisponible);
-        const suggestedFabrica = Math.max(0, data.cantidadSolicitada - suggestedStock);
-
         this.form = this.fb.group({
-            cantFabrica: [suggestedFabrica, [Validators.required, Validators.min(0)]],
-            cantStock: [suggestedStock, [Validators.required, Validators.min(0), Validators.max(data.stockDisponible)]],
-            maquina: ['', Validators.required],
-            operario: ['']
+            sector: [null, Validators.required],
+            maquina: [{ value: null, disabled: true }],
+            operario: [null]
         });
     }
 
     ngOnInit(): void {
-        this.calculateTotal();
+        this.filteredSectores$ = this.form.get('sector').valueChanges.pipe(
+            startWith(''),
+            debounceTime(150),
+            distinctUntilChanged(),
+            switchMap(value => {
+                const nombre = typeof value === 'string' ? value : '';
+                return this._sectorService.getSectoresCombo(nombre).pipe(
+                    map(res => res.data || []),
+                    catchError(() => of([]))
+                );
+            })
+        );
 
-        this.form.valueChanges
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(() => {
-                this.calculateTotal();
-            });
+        this.filteredMaquinas$ = merge(
+            this.form.get('maquina').valueChanges.pipe(
+                map(value => typeof value === 'string' ? value : '')
+            ),
+            this.form.get('sector').valueChanges.pipe(
+                map(() => '')
+            )
+        ).pipe(
+            startWith(''),
+            debounceTime(150),
+            switchMap(nombre => {
+                const sector = this.form.get('sector').value;
+                const idSector = sector && sector.id ? sector.id : null;
+                if (!idSector) {
+                    return of([]);
+                }
+                return this._maquinaService.getMaquinasCombo(idSector, nombre).pipe(
+                    map(res => res.data || []),
+                    catchError(() => of([]))
+                );
+            })
+        );
+
+        this.form.get('sector').valueChanges.pipe(
+            takeUntil(this._unsubscribeAll)
+        ).subscribe(sector => {
+            const maquinaControl = this.form.get('maquina');
+            if (sector && sector.id) {
+                maquinaControl.enable({ emitEvent: false });
+            } else {
+                maquinaControl.disable({ emitEvent: false });
+                maquinaControl.setValue(null, { emitEvent: false });
+            }
+        });
+
+        this._userService.getUsersCombo().pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (res) => {
+                this.operarios = res.data || [];
+                this.form.get('operario').updateValueAndValidity();
+            },
+            error: (err) => {
+                console.error('Error loading operarios combo:', err);
+            }
+        });
 
         this.filteredOperarios$ = this.form.get('operario').valueChanges.pipe(
             startWith(''),
@@ -65,11 +102,23 @@ export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
 
     private _filterOperarios(value: any): any[] {
         const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
-        return this.operarios.filter(o => o.nombre.toLowerCase().includes(filterValue));
+        return this.operarios.filter(o => o.nombre?.toLowerCase().includes(filterValue));
     }
 
-    displayFn(operario: any): string {
+    displayFnSector(sector: any): string {
+        return sector?.nombre || '';
+    }
+
+    displayFnMaquina(maquina: any): string {
+        return maquina?.nombre || '';
+    }
+
+    displayFnOperario(operario: any): string {
         return operario?.nombre || '';
+    }
+
+    clearControl(controlName: string): void {
+        this.form.get(controlName).setValue(null);
     }
 
     ngOnDestroy(): void {
@@ -77,30 +126,21 @@ export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    calculateTotal(): void {
-        const fabrica = this.form.get('cantFabrica').value || 0;
-        const stock = this.form.get('cantStock').value || 0;
-
-        this.currentTotal = fabrica + stock;
-        const solicitada = this.data.cantidadSolicitada || 0;
-
-        if (this.currentTotal === solicitada) {
-            this.totalColorClass = 'bg-green-100 border-green-200';
-            this.totalTextClass = 'text-green-800';
-        } else if (this.currentTotal < solicitada) {
-            this.totalColorClass = 'bg-red-100 border-red-200';
-            this.totalTextClass = 'text-red-800';
-        } else {
-            this.totalColorClass = 'bg-yellow-100 border-yellow-200';
-            this.totalTextClass = 'text-yellow-800';
-        }
-    }
-
     save() {
         if (this.form.valid) {
+            const sector = this.form.get('sector').value;
+            const maquina = this.form.get('maquina').value;
+            const operario = this.form.get('operario').value;
+
+            if (!sector || !sector.id) {
+                this.form.get('sector').setErrors({ mustSelectOption: true });
+                return;
+            }
+
             const result = {
-                ...this.form.value,
-                fechaEstimada: this.data.fechaEstimada
+                idSector: sector.id,
+                idMaquina: (maquina && maquina.id) ? maquina.id : 0,
+                idUsuario: (operario && operario.id) ? operario.id : 0
             };
             this.dialogRef.close(result);
         }

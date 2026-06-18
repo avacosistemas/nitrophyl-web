@@ -255,3 +255,10 @@ export interface Finalizacion {
     imagenTerminada?: string;
     safeImageUrl?: any;
 }
+
+export interface PiezaControl {
+    id: number | null;
+    idPieza: number;
+    control: string;
+    tipo: string;
+}

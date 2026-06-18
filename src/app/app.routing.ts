@@ -234,6 +234,22 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'sector-fabrica',
+        data: { permission: 'MENU_SECTORES_FABRICA' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-sector-fabrica/abm-sector-fabrica.module').then(
+            (m: any) => m.ABMSectorFabricaModule
+          ),
+      },
+      {
+        path: 'maquina-fabrica',
+        data: { permission: 'MENU_MAQUINAS_FABRICA' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-maquina-fabrica/abm-maquina-fabrica.module').then(
+            (m: any) => m.ABMMaquinaFabricaModule
+          ),
+      },
+      {
         path: 'prensas',
         data: { permission: 'MENU_PRENSAS' },
         loadChildren: () =>
