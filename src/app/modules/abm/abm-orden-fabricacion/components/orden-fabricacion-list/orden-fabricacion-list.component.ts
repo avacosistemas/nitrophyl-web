@@ -18,17 +18,17 @@ import { RegistrarEntregaDialogComponent } from '../dialogs/registrar-entrega-di
 import moment from 'moment';
 import { generarHtmlOT } from '../../utils/ot-html.generator';
 
-type ClienteNitrophyl = Partial<Cliente> & { id: number | null; nombre: string };
+type ClienteNitrophyl = Omit<Partial<Cliente>, 'id'> & { id: number | null; nombre: string };
 
 @Component({
     selector: 'app-orden-fabricacion-list',
     templateUrl: './orden-fabricacion-list.component.html',
 })
 export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnDestroy {
-    @ViewChild(MatPaginator) paginator: MatPaginator;
-    @ViewChild(MatSort) sort: MatSort;
-    @ViewChild('clientInput', { read: MatAutocompleteTrigger }) clientAutocompleteTrigger: MatAutocompleteTrigger;
-    @ViewChild('piezaInput', { read: MatAutocompleteTrigger }) piezaAutocompleteTrigger: MatAutocompleteTrigger;
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+    @ViewChild(MatSort) sort!: MatSort;
+    @ViewChild('clientInput', { read: MatAutocompleteTrigger }) clientAutocompleteTrigger!: MatAutocompleteTrigger;
+    @ViewChild('piezaInput', { read: MatAutocompleteTrigger }) piezaAutocompleteTrigger!: MatAutocompleteTrigger;
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
@@ -40,9 +40,9 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
 
     searchForm: FormGroup;
     clientes: ClienteNitrophyl[] = [];
-    filteredClientes$: Observable<ClienteNitrophyl[]>;
+    filteredClientes$!: Observable<ClienteNitrophyl[]>;
     piezas: any[] = [];
-    filteredPiezas$: Observable<any[]>;
+    filteredPiezas$!: Observable<any[]>;
 
     private _destroying$ = new Subject<void>();
 
@@ -92,33 +92,45 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             }),
             map((response: any) => {
                 this.isLoading = false;
-                if (response && response.data) {
+                if (response && response.data && response.data.page) {
                     this.totalReg = response.data.totalReg;
 
-                    const filasPlanas = [];
+                    const filasPlanas: IOrdenFabricacion[] = [];
 
-                    response.data.page.forEach((orden: IOrdenFabricacion) => {
-                        const piezaPrincipal: IOrdenFabricacionPieza = orden.piezas[0] || ({} as IOrdenFabricacionPieza);
-
-                        const anio = orden.anio || (orden.fecha ? moment(orden.fecha, 'YYYY-MM-DD').year() : null);
+                    response.data.page.forEach((orden: any) => {
+                        const anio = orden.anio || (orden.fechaOF ? moment(orden.fechaOF, 'DD/MM/YYYY').year() : null);
                         const numero = orden.numero;
                         const formattedNumero = (anio && numero) ? `${anio}/${String(numero).padStart(3, '0')}` : '-';
 
+                        const piezas: IOrdenFabricacionPieza[] = [
+                            {
+                                idPieza: orden.idPieza,
+                                codigoPieza: orden.piezaCodigo,
+                                nombrePieza: orden.piezaCodigo,
+                                idFormula: orden.idFormula,
+                                cantidadSolicitada: orden.totalSolicitado,
+                                stockActual: 0,
+                                cantidadAFabricar: orden.saldo,
+                                tieneCotizacion: false
+                            }
+                        ];
+
                         filasPlanas.push({
                             ...orden,
-                            ocNro: orden.ordenCompraNro,
-                            ocFecha: orden.ordenCompraFecha,
-                            piezas: orden.piezas, 
-                            piezaNombre: piezaPrincipal.nombrePieza || '-',
-                            piezaFormula: piezaPrincipal.codigoPieza || 'NK',
-                            ocCantidad: piezaPrincipal.cantidadSolicitada || 0,
-
-                            entregadas: orden.entregadas || 0,
+                            id: orden.id || orden.idOrdenFabricacion,
+                            estado: orden.estadoOF,
+                            fecha: orden.fechaOF ? moment(orden.fechaOF, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
+                            fechaEstimada: orden.fechaEntregaSolicitada ? moment(orden.fechaEntregaSolicitada, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
+                            ocNro: orden.idOrdenCompra ? String(orden.idOrdenCompra) : '-',
+                            ocFecha: orden.fechaOC ? moment(orden.fechaOC, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
+                            piezas: piezas,
+                            piezaNombre: orden.piezaCodigo || '-',
+                            piezaFormula: orden.formulaNombre || 'NK',
+                            ocCantidad: orden.totalSolicitado || 0,
+                            entregadas: orden.totalFabricado || 0,
                             saldo: orden.saldo || 0,
-                            fechaEstimada: orden.fechaEstimada || null,
-
-                            cantFabrica: piezaPrincipal.cantidadAFabricar || 0,
-                            cantStock: piezaPrincipal.stockActual || 0,
+                            cantFabrica: orden.saldo || 0,
+                            cantStock: 0,
                             maquina: orden.prensa || '-',
                             facturada: 0,
                             formattedNumero: formattedNumero
@@ -160,7 +172,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         this._clientesService.getClientes().pipe(takeUntil(this._destroying$)).subscribe({
             next: (res) => {
                 this.clientes = [{ id: null, nombre: 'Nitrophyl' }, ...res.data];
-                this.filteredClientes$ = this.searchForm.get('cliente').valueChanges.pipe(
+                this.filteredClientes$ = this.searchForm.get('cliente')!.valueChanges.pipe(
                     startWith(''),
                     map(value => this._filterClientes(value))
                 );
@@ -178,7 +190,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         this._ordenFabricacionService.getPiezas(null, false).pipe(takeUntil(this._destroying$)).subscribe({
             next: (res) => {
                 this.piezas = res?.data || [];
-                this.filteredPiezas$ = this.searchForm.get('pieza').valueChanges.pipe(
+                this.filteredPiezas$ = this.searchForm.get('pieza')!.valueChanges.pipe(
                     startWith(''),
                     map(value => this._filterPiezas(value))
                 );
@@ -197,7 +209,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     clearPiezaSelection(): void {
-        this.searchForm.get('pieza').setValue('');
+        this.searchForm.get('pieza')!.setValue('');
         this._changeDetectorRef.detectChanges();
         setTimeout(() => {
             if (this.piezaAutocompleteTrigger) {
@@ -235,7 +247,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     clearClientSelection(): void {
-        this.searchForm.get('cliente').setValue('');
+        this.searchForm.get('cliente')!.setValue('');
         this._changeDetectorRef.detectChanges();
         setTimeout(() => {
             if (this.clientAutocompleteTrigger) {
