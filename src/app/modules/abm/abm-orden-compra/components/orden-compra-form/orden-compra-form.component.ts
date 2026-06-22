@@ -260,9 +260,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         const breadcrumbTitle = isView ? 'Ver' : (isEdit ? 'Editar' : 'Nueva');
 
         let btns = [];
-        const isPending = this.mode === 'create' || (this.orderEstado && this.orderEstado.toUpperCase().trim() === 'PENDIENTE');
-        const showGenerateOF = isPending && (this.mode === 'edit' || this.step === 'items');
-        console.log('[DEBUG] updateHeaderUI:', { mode: this.mode, step: this.step, orderEstado: this.orderEstado, isPending, showGenerateOF });
+        const isIngresada = this.mode === 'create' || (this.orderEstado && this.orderEstado.toUpperCase().trim() === 'INGRESADA');
+        const showGenerateOF = isIngresada && (this.mode === 'edit' || this.step === 'items');
+        console.log('[DEBUG] updateHeaderUI:', { mode: this.mode, step: this.step, orderEstado: this.orderEstado, isIngresada, showGenerateOF });
 
         if (this.step === 'header') {
             btns = [

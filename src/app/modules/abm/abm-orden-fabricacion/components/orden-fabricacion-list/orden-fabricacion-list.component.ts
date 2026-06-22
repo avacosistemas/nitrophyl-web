@@ -144,7 +144,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             first: this.paginator.pageIndex * this.paginator.pageSize,
             rows: this.paginator.pageSize,
             asc: this.sort.direction !== 'desc',
-            idx: this.sort.active || 'fecha',
+            idx: this.sort.active || 'fecha_OF',
             idCliente: formValues.cliente?.id,
             tipoFecha: formValues.tipoFecha || null,
             fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).toISOString() : null,

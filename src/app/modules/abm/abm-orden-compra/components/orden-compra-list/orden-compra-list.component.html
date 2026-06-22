@@ -96,7 +96,7 @@
                         (click)="viewOrdenCompra(element)">
                         <mat-icon svgIcon="heroicons_solid:eye"></mat-icon>
                     </button>
-                    <ng-container *ngIf="element.estado === 'PENDIENTE'">
+                    <ng-container *ngIf="element.estado === 'INGRESADA'">
                         <button mat-icon-button matTooltip="Generar Orden de Fabricación"
                             (click)="generarOFFromGrid(element)">
                             <mat-icon svgIcon="heroicons_solid:document-text"></mat-icon>
@@ -110,7 +110,7 @@
                             <mat-icon class="text-warn" svgIcon="heroicons_solid:x-circle"></mat-icon>
                         </button>
                     </ng-container>
-                    <button *ngIf="element.estado === 'PENDIENTE' || element.estado === 'CANCELADA'" 
+                    <button *ngIf="element.estado === 'INGRESADA' || element.estado === 'CANCELADA'" 
                         mat-icon-button matTooltip="Eliminar Orden de Compra"
                         (click)="deleteOrdenCompra(element)">
                         <mat-icon class="text-red-500" svgIcon="heroicons_solid:trash"></mat-icon>
