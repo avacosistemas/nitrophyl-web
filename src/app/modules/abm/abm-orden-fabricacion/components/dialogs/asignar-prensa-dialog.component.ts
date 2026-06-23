@@ -139,8 +139,8 @@ export class AsignarPrensaDialogComponent implements OnInit, OnDestroy {
 
             const result = {
                 idSector: sector.id,
-                idMaquina: (maquina && maquina.id) ? maquina.id : 0,
-                idUsuario: (operario && operario.id) ? operario.id : 0
+                idMaquina: (maquina && maquina.codigo) ? maquina.codigo : null,
+                idUsuario: (operario && operario.codigo) ? operario.codigo : null
             };
             this.dialogRef.close(result);
         }
