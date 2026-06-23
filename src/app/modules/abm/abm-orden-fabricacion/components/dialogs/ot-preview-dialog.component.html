@@ -1,0 +1,22 @@
+<div class="flex flex-col h-full max-h-[95vh] bg-[#323639] overflow-hidden rounded-xl">
+    <div class="flex items-center justify-between px-6 py-3 border-b border-white/10 text-white">
+        <h2 class="text-md font-bold m-0">{{ data.title }}</h2>
+        <div class="flex items-center gap-3">
+            <button mat-flat-button color="accent" class="px-4 py-1" (click)="download()">
+                <mat-icon class="text-lg mr-1">download</mat-icon>
+                Descargar PDF
+            </button>
+            <button mat-flat-button color="primary" class="px-4 py-1" (click)="print()">
+                <mat-icon class="text-lg mr-1">print</mat-icon>
+                Imprimir
+            </button>
+            <button mat-icon-button (click)="cancel()" class="text-white/80 hover:text-white" title="Cerrar">
+                <mat-icon>close</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex-auto bg-[#525659] overflow-y-auto flex flex-col items-center custom-scrollbar">
+        <iframe #iframe id="ot-iframe" class="w-full min-h-[75vh]" style="border: none;"></iframe>
+    </div>
+</div>

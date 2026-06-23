@@ -15,6 +15,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog.component';
 import { FinalizarOrdenDialogComponent } from '../dialogs/finalizar-orden-dialog.component';
 import { RegistrarEntregaDialogComponent } from '../dialogs/registrar-entrega-dialog.component';
+import { OtPreviewDialogComponent } from '../dialogs/ot-preview-dialog.component';
 import moment from 'moment';
 import { generarHtmlOT } from '../../utils/ot-html.generator';
 
@@ -23,6 +24,7 @@ type ClienteNitrophyl = Omit<Partial<Cliente>, 'id'> & { id: number | null; nomb
 @Component({
     selector: 'app-orden-fabricacion-list',
     templateUrl: './orden-fabricacion-list.component.html',
+    styleUrls: ['./orden-fabricacion-list.component.scss'],
 })
 export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -152,11 +154,20 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
 
     private buildRequestParams(): any {
         const formValues = this.searchForm.value;
+        let activeSort = this.sort?.active || 'fecha_OF';
+        if (activeSort === 'ocFecha') {
+            activeSort = 'fecha_OC';
+        } else if (activeSort === 'ofFecha') {
+            activeSort = 'fecha_OF';
+        } else if (activeSort === 'fechaEntrega') {
+            activeSort = 'fecha_entrega';
+        }
+
         return {
             first: this.paginator.pageIndex * this.paginator.pageSize,
             rows: this.paginator.pageSize,
             asc: this.sort.direction !== 'desc',
-            idx: this.sort.active || 'fecha_OF',
+            idx: activeSort,
             idCliente: formValues.cliente?.id,
             tipoFecha: formValues.tipoFecha || null,
             fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null,
@@ -349,13 +360,16 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             next: (response: any) => {
                 if (response?.status === 'OK' && response?.data) {
                     const html = generarHtmlOT(response.data);
-                    const newWindow = window.open('', '_blank');
-                    if (newWindow) {
-                        newWindow.document.write(html);
-                        newWindow.document.close();
-                        newWindow.focus();
-                        setTimeout(() => newWindow.print(), 500);
-                    }
+                    const title = `Orden de Trabajo - OT ${response.data.cabecera?.numero_ot || ''}`;
+                    this._dialog.open(OtPreviewDialogComponent, {
+                        width: '1000px',
+                        maxWidth: '95vw',
+                        panelClass: 'ot-preview-dialog-panel',
+                        data: {
+                            html: html,
+                            title: title
+                        }
+                    });
                 } else {
                     this._notificationService.showError('No se pudo obtener la OT.');
                 }

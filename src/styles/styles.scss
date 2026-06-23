@@ -82,3 +82,8 @@
 mat-hint {
     margin-top: 6px;
 }
+
+.ot-preview-dialog-panel .mat-dialog-container {
+    padding: 0 !important;
+    overflow: hidden !important;
+}

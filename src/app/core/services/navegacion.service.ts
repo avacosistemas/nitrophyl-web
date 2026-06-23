@@ -121,25 +121,10 @@ export class NavegacionService {
         {
           icon: 'heroicons_solid:shopping-cart',
           id: 'orden-compra-group',
+          link: '/orden-compra/list',
           title: 'Ordenes de Compra',
-          type: 'collapsable',
+          type: 'basic',
           permissionCode: 'MENU_ADMINISTRACION_ORDEN_COMPRA',
-          children: [
-            {
-              id: 'orden-compra-listado',
-              link: '/orden-compra/list',
-              title: 'Listado',
-              type: 'basic',
-              permissionCode: 'MENU_ADMINISTRACION_ORDEN_COMPRA_LISTADO',
-            },
-            {
-              id: 'orden-compra-pendientes',
-              link: '/orden-compra/pendientes',
-              title: 'Pendientes',
-              type: 'basic',
-              permissionCode: 'MENU_ADMINISTRACION_ORDEN_COMPRA_PENDIENTES',
-            }
-          ]
         },
         {
           icon: 'heroicons_solid:clipboard-list',

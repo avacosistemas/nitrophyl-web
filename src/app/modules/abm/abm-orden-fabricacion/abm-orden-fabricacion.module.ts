@@ -41,6 +41,7 @@ import { OrdenFabricacionFormComponent } from './components/orden-fabricacion-fo
 import { AsignarPrensaDialogComponent } from './components/dialogs/asignar-prensa-dialog.component';
 import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-orden-dialog.component';
 import { RegistrarEntregaDialogComponent } from './components/dialogs/registrar-entrega-dialog.component';
+import { OtPreviewDialogComponent } from './components/dialogs/ot-preview-dialog.component';
 
 @NgModule({
     declarations: [
@@ -49,7 +50,8 @@ import { RegistrarEntregaDialogComponent } from './components/dialogs/registrar-
         OrdenFabricacionFormComponent,
         AsignarPrensaDialogComponent,
         FinalizarOrdenDialogComponent,
-        RegistrarEntregaDialogComponent
+        RegistrarEntregaDialogComponent,
+        OtPreviewDialogComponent
     ],
     imports: [
         CommonModule,
