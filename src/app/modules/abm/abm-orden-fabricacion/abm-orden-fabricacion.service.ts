@@ -103,8 +103,8 @@ export class AbmOrdenFabricacionService {
     }
 
     getOrdenFabricacionOT(id: number): Observable<any> {
-        return this.http.get<any>('/assets/ordendefabricacion.json');
-        // return this.http.get<any>(`${this.apiUrl}/ot`, { params: new HttpParams().set('id', id.toString()) });
+        //return this.http.get<any>('/assets/ordendefabricacion.json');
+        return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/descargar/${id}`, id.toString());
     }
 
     getOrdenesCompraPorCliente(idCliente: number): Observable<any> {
