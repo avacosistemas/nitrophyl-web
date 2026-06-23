@@ -370,7 +370,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         switch (estado) {
             case 'EN_PROCESO': return 'En Proceso';
             case 'PENDIENTE': return 'Pendiente';
-            case 'FINALIZADA': return 'Producida';
+            case 'FINALIZADA': return 'Finalizada';
             default: return estado;
         }
     }
