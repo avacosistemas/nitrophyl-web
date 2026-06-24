@@ -55,7 +55,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             tipoDespacho: ['RETIRO_CLIENTE', Validators.required],
             idEmpresaTransporte: [null],
             idDomicilioEnvio: [null],
-            mediosEnvio: [[]]
+            mediosEnvio: [[]],
+            observaciones: ['']
         });
 
         this.piezaForm = this._fb.group({
@@ -107,7 +108,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                     tipoDespacho: data.tipoDespacho || 'RETIRO_CLIENTE',
                     idEmpresaTransporte: data.idEmpresaTransporte,
                     idDomicilioEnvio: data.idDomicilioEnvio,
-                    mediosEnvio: data.mediosEnvio || []
+                    mediosEnvio: data.mediosEnvio || [],
+                    observaciones: data.observaciones || ''
                 });
 
                 if (data.archivo?.archivo) {
@@ -225,6 +227,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             idEmpresaTransporte: header.idEmpresaTransporte,
             idDomicilioEnvio: header.idDomicilioEnvio,
             mediosEnvio: header.mediosEnvio,
+            observaciones: header.observaciones || '',
             generarOrdenFabrica: generarOF,
             archivo: base64 ? { nombre: this.selectedFile.name, archivo: base64 } : null,
             detalle: this.piezasAgregadas.map(g => ({

@@ -1,5 +1,5 @@
 <div class="w-full max-w-2xl bg-card shadow-2xl rounded-3xl p-10 border border-gray-200 animate-in my-auto">
-    <form [formGroup]="form" class="grid grid-cols-1 gap-6">
+    <form [formGroup]="form" class="grid grid-cols-1 gap-4">
         <mat-form-field appearance="outline" class="w-full">
             <mat-label>Cliente</mat-label>
             <input type="text" matInput formControlName="cliente" [matAutocomplete]="autoC"
@@ -15,7 +15,7 @@
             </mat-autocomplete>
         </mat-form-field>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Comprobante</mat-label>
                 <input matInput formControlName="nroComprobante">
@@ -28,8 +28,13 @@
                 <mat-datepicker #p1></mat-datepicker>
             </mat-form-field>
 
-            <div class="md:col-span-2 flex flex-col gap-6 p-6 bg-gray-50/50 rounded-2xl border border-gray-100">
-                <mat-label class="text-xs font-black uppercase tracking-widest text-secondary">Tipo de Despacho</mat-label>
+            <mat-form-field appearance="outline" class="md:col-span-2 w-full">
+                <mat-label>Observaciones</mat-label>
+                <textarea matInput formControlName="observaciones" rows="2" placeholder="Ingresar observaciones..."></textarea>
+            </mat-form-field>
+
+            <fieldset class="md:col-span-2 flex flex-col gap-4 p-6 bg-gray-50/50 rounded-2xl border border-gray-300 relative">
+                <legend class="text-xs font-medium uppercase tracking-widest text-secondary px-2 bg-card">Tipo de Despacho</legend>
                 <mat-radio-group formControlName="tipoDespacho" class="flex flex-col sm:flex-row gap-8">
                     <mat-radio-button value="RETIRO_CLIENTE" color="primary">Retira Cliente</mat-radio-button>
                     <mat-radio-button value="RETIRO_TRANSPORTE" color="primary">Retira Empresa de Transporte</mat-radio-button>
@@ -79,7 +84,7 @@
                         </button>
                     </mat-form-field>
                 </div>
-            </div>
+            </fieldset>
         </div>
 
         <div *ngIf="mode !== 'view'" 

@@ -24,6 +24,7 @@ export interface IOrdenCompraItem {
 export interface IOrdenCompraCreateDTO {
     id?: number;
     generarOrdenFabrica?: boolean;
+    observaciones?: string;
     archivo: {
         archivo: string;
         nombre: string;
