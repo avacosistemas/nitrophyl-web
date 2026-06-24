@@ -382,11 +382,6 @@ export function generarHtmlOT(data: OTData): string {
                         </div>
                     </div>
                     <div class="h-row">
-                        <div class="h-field"><span class="h-lbl">DESPACHO:</span>
-                            <div class="h-val">${formatTipoDespacho(cabecera.tipoDespacho)}</div>
-                        </div>
-                    </div>
-                    <div class="h-row">
                         <div class="h-field"><span class="h-lbl">OBSERVACIONES:</span>
                             <div class="h-val">${cabecera.observaciones || ''}</div>
                         </div>
