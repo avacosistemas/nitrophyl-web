@@ -183,24 +183,24 @@
                 <th mat-header-cell *matHeaderCellDef class="bg-gray-50 max-w-[100px] font-bold text-gray-600 text-center px-0.5 py-1 whitespace-nowrap"></th>
                 <td mat-cell *matCellDef="let el" class="text-center py-1 px-0.5 whitespace-nowrap max-w-[100px]">
 
-                    <button *ngIf="el.estado === 'PENDIENTE'" mat-icon-button color="primary" class="w-8 h-8 min-w-8"
+                    <button *ngIf="el.estado === 'PENDIENTE'" mat-icon-button class="w-8 h-8 min-w-8"
                         (click)="asignarPrensa(el)" matTooltip="Asignar Prensa">
-                        <mat-icon class="icon-size-6" svgIcon="heroicons_solid:play"></mat-icon>
+                        <mat-icon class="icon-size-6" svgIcon="heroicons_outline:office-building"></mat-icon>
                         <!-- <mat-icon class="icon-size-6">check_circle</mat-icon> -->
                     </button>
 
                     <div *ngIf="el.estado === 'EN_PROCESO'" class="flex justify-center items-center gap-1">
-                        <button mat-icon-button color="accent" class="w-8 h-8 min-w-8" (click)="registrarEntrega(el)" matTooltip="Registrar Entrega">
-                            <mat-icon class="icon-size-6" svgIcon="heroicons_solid:truck"></mat-icon>
+                        <button mat-icon-button class="w-8 h-8 min-w-8" (click)="registrarEntrega(el)" matTooltip="Registrar Entrega">
+                            <mat-icon class="icon-size-6" svgIcon="heroicons_outline:inbox-in"></mat-icon>
                         </button>
-                        <button mat-icon-button color="primary" class="w-8 h-8 min-w-8" (click)="verOT(el)" matTooltip="Ver OT">
-                            <mat-icon class="icon-size-6" svgIcon="heroicons_solid:document-text"></mat-icon>
+                        <button mat-icon-button class="w-8 h-8 min-w-8" (click)="verOT(el)" matTooltip="Ver OT">
+                            <mat-icon class="icon-size-6" svgIcon="heroicons_outline:document-text"></mat-icon>
                         </button>
                     </div>
 
-                    <span *ngIf="el.estado === 'FINALIZADA'" class="text-green-600 inline-flex items-center justify-center w-8 h-8">
-                        <mat-icon class="icon-size-6" svgIcon="heroicons_solid:check-circle" matTooltip="Finalizada"></mat-icon>
-                    </span>
+                    <!-- <span *ngIf="el.estado === 'FINALIZADA'" class="text-green-600 inline-flex items-center justify-center w-8 h-8">
+                        <mat-icon class="icon-size-6" svgIcon="heroicons_outline:check-circle" matTooltip="Finalizada"></mat-icon>
+                    </span> -->
 
                 </td>
             </ng-container>
