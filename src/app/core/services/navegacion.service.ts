@@ -121,7 +121,7 @@ export class NavegacionService {
         {
           icon: 'heroicons_solid:shopping-cart',
           id: 'orden-compra-group',
-          link: '/orden-compra/list',
+          link: '/orden-compra',
           title: 'Ordenes de Compra',
           type: 'basic',
           permissionCode: 'MENU_ADMINISTRACION_ORDEN_COMPRA',

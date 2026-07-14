@@ -9,7 +9,7 @@ import { NotificationService } from 'app/shared/services/notification.service';
 import { IOrdenCompraCreateDTO } from '../../models/orden-compra.interface';
 import { OrdenCompraHeaderComponent } from './headers/orden-compra-header.component';
 import { OrdenCompraDetailsComponent } from './details/orden-compra-details.component';
-import * as moment from 'moment';
+import moment from 'moment';
 import { MatDialog } from '@angular/material/dialog';
 import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
 
@@ -20,8 +20,8 @@ import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.c
     encapsulation: ViewEncapsulation.None
 })
 export class OrdenCompraFormComponent implements OnInit, OnDestroy {
-    @ViewChild(OrdenCompraHeaderComponent) headerComp: OrdenCompraHeaderComponent;
-    @ViewChild(OrdenCompraDetailsComponent) detailsComp: OrdenCompraDetailsComponent;
+    @ViewChild(OrdenCompraHeaderComponent) headerComp!: OrdenCompraHeaderComponent;
+    @ViewChild(OrdenCompraDetailsComponent) detailsComp!: OrdenCompraDetailsComponent;
 
     mode: 'create' | 'view' | 'edit' = 'create';
     orderId: number | null = null;
@@ -67,7 +67,10 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             fechaEntrega: [null, Validators.required],
             cotizacionValor: [null],
             cotizacionFecha: [null],
-            actualizarCotizacion: [false]
+            actualizarCotizacion: [false],
+            observacion: [''],
+            aplicarDescuento: [false],
+            descuento: [null, [Validators.min(0)]]
         });
     }
 
@@ -97,7 +100,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
 
     private loadOrderData(): void {
         this.isInitialLoading = true;
-        this._service.getOrdenCompra(this.orderId).subscribe({
+        this._service.getOrdenCompra(this.orderId!).subscribe({
             next: (res) => {
                 const data = res.data;
                 this.orderEstado = data.estado;
@@ -129,11 +132,13 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                     this.pdfPreviewUrl = this._sanitizer.bypassSecurityTrustResourceUrl(URL.createObjectURL(blob));
                 }
 
-                this.piezasAgregadas = data.detalle.map(d => ({
+                this.piezasAgregadas = data.detalle.map((d: any) => ({
                     id: d.id, idPieza: d.idPieza, idCotizacion: d.idCotizacion,
                     esActualizacion: false, denominacion: d.pieza, precio: d.valorCotizacion,
                     fechaCotizacion: d.fechaCotizacion ? moment(d.fechaCotizacion).format('DD/MM/YYYY') : '',
-                    batches: d.entregasSolicitadas.map(e => ({
+                    descuento: d.descuento !== undefined ? d.descuento : null,
+                    observacion: d.observacion || '',
+                    batches: d.entregasSolicitadas.map((e: any) => ({
                         id: e.id, idTemp: e.id, cantidadSolicitada: e.cantidad,
                         fechaEntrega: moment(e.fechaEntregaSolicitada, 'YYYY-MM-DD').format('DD/MM/YYYY'), isEditing: false
                     }))
@@ -229,18 +234,20 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             mediosEnvio: header.mediosEnvio,
             observaciones: header.observaciones || '',
             generarOrdenFabrica: generarOF,
-            archivo: base64 ? { nombre: this.selectedFile.name, archivo: base64 } : null,
+            archivo: base64 ? { nombre: this.selectedFile!.name, archivo: base64 } : { nombre: null, archivo: null },
             detalle: this.piezasAgregadas.map(g => ({
                 id: g.id || null, idPieza: g.idPieza, pieza: g.denominacion,
                 idCotizacion: (!g.esActualizacion && g.idCotizacion) ? g.idCotizacion : null,
                 valorCotizacion: parseFloat(g.precio || 0), fechaCotizacion: g.fechaCotizacion,
-                entregasSolicitadas: g.batches.map(b => ({
+                descuento: g.descuento !== undefined && g.descuento !== null ? g.descuento : null,
+                observacion: g.observacion || null,
+                entregasSolicitadas: g.batches.map((b: any) => ({
                     id: b.id || null, cantidad: b.cantidadSolicitada, fechaEntregaSolicitada: b.fechaEntrega
                 }))
             }))
         };
 
-        const request$ = this.mode === 'edit' ? this._service.updateOrdenCompra(this.orderId, dto) : this._service.createOrdenCompra(dto);
+        const request$ = this.mode === 'edit' ? this._service.updateOrdenCompra(this.orderId!, dto) : this._service.createOrdenCompra(dto);
         request$.subscribe(() => {
             this._notification.showSuccess(this.mode === 'edit' ? "Orden Actualizada Correctamente" : "Orden Guardada Correctamente");
             this._router.navigate(['/orden-compra/list']);
@@ -258,8 +265,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         const isView = this.mode === 'view';
         const isEdit = this.mode === 'edit';
         const title = isView ? 'Ver Orden' : (isEdit ? 'Editar Orden' : 'Generar Orden');
-        const cli = this.form.get('cliente').value?.nombre || '';
-        const comp = this.form.get('nroComprobante').value;
+        const cli = this.form.get('cliente')!.value?.nombre || '';
+        const comp = this.form.get('nroComprobante')!.value;
         const breadcrumbTitle = isView ? 'Ver' : (isEdit ? 'Editar' : 'Nueva');
 
         let btns = [];

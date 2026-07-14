@@ -94,7 +94,7 @@ export class AbmOrdenFabricacionService {
         return this.http.post<any>(`${this.apiUrl}/registrarProduccion`, payload);
     }
 
-    registrarEntrega(id: number, payload: { cantidad: number, fecha: string, idLote: number, idUsuario: number }): Observable<any> {
+    registrarEntrega(id: number, payload: { cantidad: number, fecha: string, idLote: number | number[], idUsuario: number }): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/registrarEntrega/${id}`, payload);
     }
 

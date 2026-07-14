@@ -1,0 +1,160 @@
+<div class="flex flex-col h-full animate-in">
+    <div class="flex-1 overflow-y-auto space-y-6 pb-6 p-6 bg-gray-100">
+        <form [formGroup]="piezaForm" class="flex flex-col gap-5">
+
+            <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col gap-3">
+                <div class="flex flex-col gap-2">
+                    <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                        <mat-label>Pieza seleccionada</mat-label>
+                        <mat-icon matPrefix class="icon-size-5 mr-2" svgIcon="heroicons_outline:cube"></mat-icon>
+                        <input type="text" matInput formControlName="pieza" [matAutocomplete]="autoP"
+                            placeholder="Seleccione una pieza..." #piezaInput
+                            #piezaInputTrigger="matAutocompleteTrigger" (focus)="piezaInputTrigger.openPanel()"
+                            (click)="piezaInputTrigger.openPanel()">
+                        <button *ngIf="piezaForm.get('pieza').value" matSuffix mat-icon-button
+                            (click)="clearPiezaSelection()">
+                            <mat-icon> close </mat-icon>
+                        </button>
+                        <mat-autocomplete #autoP="matAutocomplete" [displayWith]="displayFn"
+                            (optionSelected)="onPiezaSelected($event)">
+                            <mat-option *ngFor="let p of filteredPiezas$ | async" [value]="p">
+                                <span class="font-bold">{{p.codigo}}</span> - <span
+                                    class="text-secondary">{{p.denominacion}}</span>
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+                    <mat-checkbox formControlName="soloDelCliente" color="primary"
+                        class="text-xs font-bold uppercase text-secondary">
+                        Restringir a piezas del cliente
+                    </mat-checkbox>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center" *ngIf="piezaCotizacionInfo">
+                    <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                        <mat-label>Cantidad</mat-label>
+                        <input type="number" matInput formControlName="cantidadSolicitada" placeholder="0">
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                        <mat-label>Plazo</mat-label>
+                        <mat-select [(ngModel)]="auxiliarValor" [ngModelOptions]="{standalone: true}"
+                            (selectionChange)="onAuxiliarChange()">
+                            <mat-select-trigger>
+                                <span class="font-black uppercase text-blue-600">{{ auxiliarTexto }}</span>
+                            </mat-select-trigger>
+                            <mat-option value="custom" style="display: none;">Personalizado</mat-option>
+                            <mat-option *ngFor="let opt of deliveryOptions" [value]="opt.value">
+                                {{ opt.label }}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
+                        <mat-label>Fecha Entrega</mat-label>
+                        <input matInput [matDatepicker]="pe" [matDatepickerFilter]="dateFilter"
+                            formControlName="fechaEntrega" [min]="minDate" placeholder="dd-mm-aaaa">
+                        <mat-datepicker-toggle matSuffix [for]="pe"></mat-datepicker-toggle>
+                        <mat-datepicker #pe></mat-datepicker>
+                    </mat-form-field>
+                </div>
+
+                <div class="flex flex-col gap-2" *ngIf="piezaCotizacionInfo">
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Observaciones</mat-label>
+                        <textarea matInput formControlName="observacion" rows="3"
+                            placeholder="Ingrese observaciones del producto..."></textarea>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="bg-white p-4 rounded-2xl shadow-md" *ngIf="piezaCotizacionInfo">
+                <div class="flex flex-col gap-3 pb-4">
+                    <div class="col-span-2" *ngIf="piezaCotizacionInfo.tieneCotizacion">
+                        <mat-checkbox formControlName="actualizarCotizacion" color="primary"
+                            class="text-xs font-bold uppercase text-secondary">
+                            Actualizar cotización existente
+                        </mat-checkbox>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>{{ (piezaCotizacionInfo?.tieneCotizacion &&
+                                !piezaForm.get('actualizarCotizacion').value) ? 'Precio Cotización Actual (U$D)' :
+                                'Precio
+                                Nueva Cotización (U$D)' }}</mat-label>
+                            <input type="text" matInput formControlName="cotizacionValor"
+                                (input)="onPriceInput($event, 'cotizacionValor')"
+                                [readonly]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>{{ (piezaCotizacionInfo?.tieneCotizacion &&
+                                !piezaForm.get('actualizarCotizacion').value) ? 'Fecha Cotización Actual' : 'Fecha Nueva
+                                Cotización' }}</mat-label>
+                            <input matInput [matDatepicker]="pc" formControlName="cotizacionFecha"
+                                [readonly]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value">
+                            <mat-datepicker-toggle matSuffix [for]="pc"
+                                [disabled]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value"></mat-datepicker-toggle>
+                            <mat-datepicker #pc></mat-datepicker>
+                        </mat-form-field>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-3 border-t pt-4"
+                    *ngIf="piezaForm.get('pieza').value && piezaForm.get('cantidadSolicitada').value > 0">
+                    <mat-checkbox formControlName="aplicarDescuento" color="primary"
+                        class="text-xs font-bold uppercase text-secondary">
+                        Aplicar descuento
+                    </mat-checkbox>
+                    <div *ngIf="piezaForm.get('aplicarDescuento').value" class="animate-in flex gap-5">
+                        <mat-form-field appearance="outline" class="w-1/2 fuse-mat-no-subscript">
+                            <mat-label>Descuento</mat-label>
+                            <input type="number" matInput formControlName="descuento" min="0" max="100" placeholder="0">
+                            <span matSuffix class="font-bold text-gray-500 mr-2">%</span>
+                        </mat-form-field>
+
+                        <div *ngIf="piezaForm.get('aplicarDescuento').value && piezaForm.get('descuento').value > 0"
+                            class="w-1/2 flex flex-col text-xs font-medium mt-2 uppercase">
+                            <span>Aplicado por unidad:</span>
+                            <span class="text-2xl font-bold text-green-600">{{ formatCurrency(precioDescuentoCalculado) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- <div *ngIf="piezaForm.get('pieza').value && piezaForm.get('cantidadSolicitada').value > 0"
+                    class="p-4 bg-gray-50 border border-gray-300 rounded-2xl flex flex-col gap-2 animate-in">
+                    <div class="flex justify-between items-center text-xs font-bold text-gray-500 uppercase">
+                        <span>Precio Unitario:</span>
+                        <span class="text-sm text-gray-800">{{ formatCurrency(precioUnitarioActual) }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-xs font-bold text-gray-500 uppercase">
+                        <span>Subtotal:</span>
+                        <span class="text-sm text-gray-800">{{ formatCurrency(precioSubtotalItem) }}</span>
+                    </div>
+                    <div *ngIf="piezaForm.get('aplicarDescuento').value && piezaForm.get('descuento').value > 0"
+                        class="flex justify-between items-center text-xs font-bold text-green-600 uppercase">
+                        <span>Descuento ({{ piezaForm.get('descuento').value }}%):</span>
+                        <span class="text-sm">-{{ formatCurrency(precioDescuentoCalculado) }}</span>
+                    </div>
+                    <div class="h-px bg-gray-200"></div>
+                    <div class="flex justify-between items-center text-xs font-bold text-gray-500 uppercase">
+                        <span>Precio Total</span>
+                        <span class="text-lg font-black text-primary">{{ formatCurrency(precioTotalItem) }}</span>
+                    </div>
+                </div> -->
+            </div>
+        </form>
+    </div>
+
+    <div class="flex items-center justify-between border-t bg-white px-8 pt-4 pb-4">
+        <button mat-button (click)="resetItemForm()">Limpiar</button>
+        <div class="flex gap-3">
+            <button mat-stroked-button color="primary" [disabled]="piezaForm.invalid" (click)="addOrUpdatePieza(true)">
+                {{ isEditingItem ? 'Guardar y continuar' : 'Añadir y continuar' }}
+            </button>
+            <button mat-flat-button color="primary" class="px-8" [disabled]="piezaForm.invalid"
+                (click)="addOrUpdatePieza(false)">
+                {{ isEditingItem ? 'Guardar' : 'Añadir' }}
+            </button>
+        </div>
+    </div>
+</div>

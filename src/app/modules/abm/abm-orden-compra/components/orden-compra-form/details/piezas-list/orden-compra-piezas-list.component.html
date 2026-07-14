@@ -1,0 +1,155 @@
+<div class="flex flex-col h-full bg-gray-100 animate-in">
+
+    <div class="flex-1 overflow-y-auto space-y-4">
+        <div *ngFor="let grupo of piezasAgregadas; let i = index"
+            class="group relative bg-card shadow-md m-5 hover:shadow-xl transition-all duration-300 rounded-3xl border border-gray-300 overflow-hidden flex flex-col md:flex-row items-stretch animate-in">
+
+            <div class="flex flex-col w-full">
+                <div class="flex">
+                    <div class="flex flex-1 flex-col gap-2 p-4">
+                        <div class="flex items-start justify-between gap-4">
+                            <span class="text-base font-bold text-primary px-2 py-0.5 uppercase flex-1">
+                                {{grupo.denominacion}}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-[60px_1fr] px-2 border-b pb-2">
+                            <span class="text-[9px] font-bold text-secondary uppercase">Cant.</span>
+                            <span class="text-[9px] font-bold text-secondary uppercase">Fecha Entrega</span>
+                        </div>
+
+                        <div>
+                            <div *ngFor="let batch of grupo.batches; let bi = index"
+                                class="grid grid-cols-[60px_1fr] items-center group/item hover:bg-gray-50 p-1 rounded-xl transition-colors">
+
+                                <div class="flex items-center px-2">
+                                    <mat-form-field *ngIf="batch.isEditing" appearance="outline"
+                                        class="fuse-mat-dense fuse-mat-no-subscript w-16">
+                                        <input matInput type="number" [(ngModel)]="batch.tempCantidad"
+                                            class="text-center font-bold">
+                                    </mat-form-field>
+                                    <span *ngIf="!batch.isEditing"
+                                        class="font-black text-lg text-gray-800">{{batch.cantidadSolicitada}}</span>
+                                </div>
+
+                                <div class="flex items-center justify-between gap-4 px-2">
+                                    <div *ngIf="batch.isEditing" class="flex items-center flex-1">
+                                        <mat-form-field appearance="outline"
+                                            class="fuse-mat-dense fuse-mat-no-subscript w-full max-w-[180px]">
+                                            <input matInput [matDatepicker]="pe2" [matDatepickerFilter]="dateFilter"
+                                                [(ngModel)]="batch.tempFecha" [min]="minDate">
+                                            <mat-datepicker-toggle matSuffix [for]="pe2"></mat-datepicker-toggle>
+                                            <mat-datepicker #pe2></mat-datepicker>
+                                        </mat-form-field>
+                                    </div>
+                                    <span *ngIf="!batch.isEditing"
+                                        class="font-bold text-md text-gray-600 flex-1">{{batch.fechaEntrega}}</span>
+
+                                    <div class="flex items-center gap-1 group-hover/item:opacity-100 transition-opacity"
+                                        [ngClass]="{'opacity-100': batch.isEditing}" *ngIf="mode !== 'view'">
+                                        <button *ngIf="!batch.isEditing" mat-icon-button (click)="editBatch(batch)"
+                                            class="text-primary opacity-40 hover:opacity-100 hover:bg-primary/10 rounded-full"
+                                            matTooltip="Editar">
+                                            <mat-icon class="icon-size-5"
+                                                svgIcon="heroicons_solid:pencil-alt"></mat-icon>
+                                        </button>
+
+                                        <button *ngIf="batch.isEditing" mat-icon-button matTooltip="Confirmar"
+                                            (click)="saveBatch(batch)">
+                                            <mat-icon svgIcon="heroicons_solid:check" class="text-green-600"></mat-icon>
+                                        </button>
+
+                                        <button *ngIf="!batch.isEditing" mat-icon-button
+                                            (click)="removeBatch(grupo, bi)"
+                                            class="hover:bg-warn/10 opacity-40 hover:opacity-100 rounded-full"
+                                            matTooltip="Eliminar entrega">
+                                            <mat-icon class="text-red-500 icon-size-5"
+                                                svgIcon="heroicons_solid:trash"></mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        class="w-full md:w-56 bg-gray-100 border-t md:border-t-0 md:border-l border-gray-200 flex flex-col p-6 pt-2 relative text-right md:text-left">
+                        <div class="flex items-center justify-end w-full gap-1 shrink-0" *ngIf="mode !== 'view'">
+                            <button mat-icon-button (click)="selectPieceFromCard(grupo)"
+                                matTooltip="Añadir más a esta pieza" class="w-8 h-8">
+                                <mat-icon svgIcon="heroicons_solid:plus-circle"
+                                    class="text-green-600 icon-size-5"></mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="removePieza(i)" color="warn"
+                                matTooltip="Borrar pieza completa" class="w-8 h-8">
+                                <mat-icon svgIcon="heroicons_solid:trash" class="icon-size-5"></mat-icon>
+                            </button>
+                            <button *ngIf="mode !== 'view'" mat-icon-button (click)="editQuotation(grupo)"
+                                matTooltip="Editar pieza" class="w-8 h-8">
+                                <mat-icon svgIcon="heroicons_solid:pencil-alt" class="icon-size-5"></mat-icon>
+                            </button>
+                        </div>
+
+                        <div class="flex flex-col gap-2 mt-2">
+                            <div class="flex justify-between md:flex-col items-end md:items-start">
+                                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Precio Unitario
+                                    (U$D)</span>
+                                <div class="flex flex-col items-end md:items-start">
+                                    <div class="flex items-center gap-2">
+                                        <span *ngIf="grupo.descuento"
+                                            class="text-xs line-through text-gray-500 font-medium">{{
+                                            formatCurrency(grupo.precio) }}</span>
+                                        <span *ngIf="grupo.descuento"
+                                            class="mt-0.5 bg-green-100 text-green-800 text-[10px] font-black px-1.5 py-0.5 rounded-full border border-green-200 uppercase tracking-wider">
+                                            Dto. {{ grupo.descuento }}%
+                                        </span>
+                                    </div>
+                                    <span class="text-lg font-bold text-gray-800">
+                                        {{ formatCurrency(grupo.descuento ? grupo.precio * (1 - grupo.descuento / 100) :
+                                        grupo.precio) }}
+                                    </span>
+                                </div>
+
+                                <div class="flex justify-between mt-1">
+                                    <span
+                                        class="text-xs py-1 px-2 bg-gray-200 border border-gray-300 rounded-xl">
+                                        Fecha Cotiz.: <span class="font-bold">{{ grupo.fechaCotizacion }}</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- 
+                            <div class="flex flex-col gap-1 text-[11px] text-gray-600">
+                                <div class="flex justify-between">
+                                    <span>Subtotal:</span>
+                                    <span class="font-bold">{{ formatCurrency(getSubtotalGrupo(grupo)) }}</span>
+                                </div>
+                                <div *ngIf="grupo.descuento" class="flex justify-between text-green-600 font-medium">
+                                    <span>Descuento:</span>
+                                    <span>-{{ formatCurrency(getDescuentoGrupo(grupo)) }}</span>
+                                </div>
+                                <div class="flex justify-between text-gray-800 font-black border-t pt-1 mt-1 text-xs">
+                                    <span>Total Ítem:</span>
+                                    <span class="text-primary">{{ formatCurrency(getTotalGrupo(grupo)) }}</span>
+                                </div>
+                            </div>
+                            -->
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="grupo.observacion"
+                    class="text-sm text-gray-600 bg-gray-100/50 p-2.5 px-4 border-t border-gray-200">
+                    <strong class="text-xs font-bold text-gray-500 uppercase tracking-widest">Observaciones:</strong>
+                    {{ grupo.observacion }}
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="piezasAgregadas.length === 0"
+            class="flex flex-col items-center justify-center p-12 bg-white/50 rounded-3xl border-2 border-dashed border-gray-300">
+            <mat-icon class="icon-size-16 text-gray-300 mb-2" svgIcon="heroicons_outline:shopping-bag"></mat-icon>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">Sin piezas cargadas</p>
+        </div>
+    </div>
+</div>

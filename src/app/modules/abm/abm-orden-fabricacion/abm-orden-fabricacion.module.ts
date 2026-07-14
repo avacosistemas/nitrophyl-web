@@ -21,6 +21,7 @@ import { MatMomentDateModule, MomentDateAdapter } from '@angular/material-moment
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
 import { PromptsModule } from 'app/modules/prompts/prompts.modules';
@@ -38,10 +39,10 @@ export const MY_DATE_FORMATS = {
 import { ABMOrdenFabricacionComponent } from './abm-orden-fabricacion.component';
 import { OrdenFabricacionListComponent } from './components/orden-fabricacion-list/orden-fabricacion-list.component';
 import { OrdenFabricacionFormComponent } from './components/orden-fabricacion-form/orden-fabricacion-form.component';
-import { AsignarPrensaDialogComponent } from './components/dialogs/asignar-prensa-dialog.component';
-import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-orden-dialog.component';
-import { RegistrarEntregaDialogComponent } from './components/dialogs/registrar-entrega-dialog.component';
-import { OtPreviewDialogComponent } from './components/dialogs/ot-preview-dialog.component';
+import { AsignarPrensaDialogComponent } from './components/dialogs/asignar-prensa-dialog/asignar-prensa-dialog.component';
+import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-orden-dialog/finalizar-orden-dialog.component';
+import { RegistrarEntregaDialogComponent } from './components/dialogs/registrar-entrega-dialog/registrar-entrega-dialog.component';
+import { OtPreviewDialogComponent } from './components/dialogs/ot-preview-dialog/ot-preview-dialog.component';
 
 @NgModule({
     declarations: [
@@ -75,7 +76,8 @@ import { OtPreviewDialogComponent } from './components/dialogs/ot-preview-dialog
         MatDatepickerModule,
         MatMomentDateModule,
         MatSelectModule,
-        MatCheckboxModule
+        MatCheckboxModule,
+        MatChipsModule
     ],
     providers: [
         DatePipe,

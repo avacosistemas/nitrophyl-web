@@ -10,7 +10,7 @@
         <input type="text" matInput formControlName="lote" [matAutocomplete]="autoLote">
         <mat-autocomplete #autoLote="matAutocomplete" [displayWith]="displayFn">
             <mat-option *ngFor="let lote of filteredLotes$ | async" [value]="lote">
-                {{ lote.nombre }} (Cód: {{ lote.codigo }})
+                {{ lote.nombre }}
             </mat-option>
         </mat-autocomplete>
     </mat-form-field>

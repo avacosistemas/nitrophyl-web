@@ -33,6 +33,10 @@ import { OrdenCompraCancelModalComponent } from './components/orden-compra-cance
 import { OrdenCompraHeaderComponent } from './components/orden-compra-form/headers/orden-compra-header.component';
 import { OrdenCompraDetailsComponent } from './components/orden-compra-form/details/orden-compra-details.component';
 import { OrdenCompraPendientesListComponent } from './components/orden-compra-pendientes-list/orden-compra-pendientes-list.component';
+import { OrdenCompraPiezaFormComponent } from './components/orden-compra-form/details/pieza-form/orden-compra-pieza-form.component';
+import { OrdenCompraPiezasListComponent } from './components/orden-compra-form/details/piezas-list/orden-compra-piezas-list.component';
+import { OrdenCompraPiezaEditModalComponent } from './components/orden-compra-form/details/piezas-list/edit-modal/orden-compra-pieza-edit-modal.component';
+import { MatTabsModule } from '@angular/material/tabs';
 
 export const MY_DATE_FORMATS = {
     parse: { dateInput: 'DD/MM/YYYY' },
@@ -52,7 +56,10 @@ export const MY_DATE_FORMATS = {
         OrdenCompraCancelModalComponent,
         OrdenCompraHeaderComponent,
         OrdenCompraDetailsComponent,
-        OrdenCompraPendientesListComponent
+        OrdenCompraPendientesListComponent,
+        OrdenCompraPiezaFormComponent,
+        OrdenCompraPiezasListComponent,
+        OrdenCompraPiezaEditModalComponent
     ],
     imports: [
         CommonModule,
@@ -78,7 +85,8 @@ export const MY_DATE_FORMATS = {
         MatMomentDateModule,
         MatSelectModule,
         MatCheckboxModule,
-        MatRadioModule
+        MatRadioModule,
+        MatTabsModule
     ],
     providers: [
         DatePipe,

@@ -30,15 +30,24 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Lote</mat-label>
-            <input type="text" placeholder="Buscar y seleccionar un lote..." matInput formControlName="lote"
-                [matAutocomplete]="autoLote" #loteTrigger="matAutocompleteTrigger"
-                (focus)="loteTrigger.openPanel()" (click)="loteTrigger.openPanel()" required>
-            <button *ngIf="form.get('lote').value" matSuffix mat-icon-button aria-label="Clear"
+            <mat-label>Lotes</mat-label>
+            <mat-chip-list #chipListLote aria-label="Selección de lotes">
+                <mat-chip *ngFor="let lote of lotesAgregados" (removed)="quitarLote(lote)">
+                    {{ lote.nombre }}
+                    <button matChipRemove>
+                        <mat-icon>cancel</mat-icon>
+                    </button>
+                </mat-chip>
+                <input placeholder="Buscar y añadir lote..." #loteInput [formControl]="loteInputCtrl"
+                    [matAutocomplete]="autoLote" [matChipInputFor]="chipListLote"
+                    #loteTrigger="matAutocompleteTrigger"
+                    (focus)="loteTrigger.openPanel()" (click)="loteTrigger.openPanel()">
+            </mat-chip-list>
+            <button *ngIf="lotesAgregados.length > 0" matSuffix mat-icon-button aria-label="Clear"
                 (click)="clearControl('lote'); $event.stopPropagation()">
                 <mat-icon class="icon-size-5">close</mat-icon>
             </button>
-            <mat-autocomplete #autoLote="matAutocomplete" [displayWith]="displayFnLote">
+            <mat-autocomplete #autoLote="matAutocomplete" (optionSelected)="agregarLote($event)" [displayWith]="displayFnLote">
                 <mat-option *ngFor="let lote of filteredLotes$ | async" [value]="lote">
                     {{ lote.nombre }}
                 </mat-option>
@@ -47,7 +56,7 @@
                 El lote es requerido.
             </mat-error>
             <mat-error *ngIf="form.get('lote').hasError('mustSelectOption')">
-                Debe seleccionar un lote de la lista.
+                Debe seleccionar al menos un lote de la lista.
             </mat-error>
         </mat-form-field>
 

@@ -1,0 +1,59 @@
+<div class="flex flex-col max-w-160 w-full overflow-hidden">
+    <div class="flex flex-col px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <h2 class="text-lg font-bold text-gray-800 uppercase tracking-wide">Editar Pieza</h2>
+        <span class="text-lg text-gray-800">{{ denominacion }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="confirm()" class="p-6 pb-4 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Precio (U$D)</mat-label>
+                <input matInput type="text" formControlName="precio" (input)="onPriceInput($event)">
+                <mat-error *ngIf="form.get('precio').hasError('required')">El precio es requerido</mat-error>
+                <mat-error *ngIf="form.get('precio').hasError('min')">El precio debe ser mayor o igual a 0</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Fecha Cotización</mat-label>
+                <input matInput [matDatepicker]="pqe" formControlName="fechaCotizacion" placeholder="dd-mm-aaaa">
+                <mat-datepicker-toggle matSuffix [for]="pqe"></mat-datepicker-toggle>
+                <mat-datepicker #pqe></mat-datepicker>
+                <mat-error *ngIf="form.get('fechaCotizacion').hasError('required')">La fecha es requerida</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="flex flex-col gap-3 border-t pt-4">
+            <mat-checkbox formControlName="aplicarDescuento" color="primary"
+                class="text-xs font-bold uppercase text-secondary">
+                Aplicar descuento
+            </mat-checkbox>
+            <div *ngIf="form.get('aplicarDescuento').value" class="animate-in flex gap-5">
+                <mat-form-field appearance="outline" class="w-1/2 fuse-mat-no-subscript">
+                    <mat-label>Descuento</mat-label>
+                    <input matInput type="number" formControlName="descuento" min="0" max="100" placeholder="0">
+                    <span matSuffix class="font-bold text-gray-500 mr-2">%</span>
+                    <mat-error *ngIf="form.get('descuento').hasError('required')">El descuento es requerido</mat-error>
+                    <mat-error *ngIf="form.get('descuento').hasError('min') || form.get('descuento').hasError('max')">
+                        El descuento debe estar entre 0.01% y 100%
+                    </mat-error>
+                </mat-form-field>
+                
+                <div *ngIf="form.get('aplicarDescuento').value && form.get('descuento').value > 0"
+                    class="w-1/2 flex flex-col text-xs font-medium mt-2 uppercase">
+                    <span>Aplicado por unidad:</span>
+                    <span class="text-2xl font-bold text-green-600">{{ formatCurrency(precioDescuentoCalculado) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-full">
+            <mat-label>Observaciones</mat-label>
+            <textarea matInput formControlName="observacion" rows="3" placeholder="Ingrese observaciones..."></textarea>
+        </mat-form-field>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
+            <button mat-button type="button" (click)="cancel()">Cancelar</button>
+            <button mat-flat-button color="accent" type="submit" [disabled]="form.invalid">Guardar</button>
+        </div>
+    </form>
+</div>

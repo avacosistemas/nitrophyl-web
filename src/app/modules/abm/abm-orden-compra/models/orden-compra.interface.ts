@@ -22,12 +22,12 @@ export interface IOrdenCompraItem {
 }
 
 export interface IOrdenCompraCreateDTO {
-    id?: number;
+    id?: number | null;
     generarOrdenFabrica?: boolean;
     observaciones?: string;
-    archivo: {
-        archivo: string;
-        nombre: string;
+    archivo?: {
+        archivo: string | null;
+        nombre: string | null;
     };
     cliente?: string;
     idCliente: number;
@@ -44,6 +44,8 @@ export interface IOrdenCompraCreateDTO {
         idCotizacion?: number | null;
         fechaCotizacion?: string | null;
         valorCotizacion?: number | null;
+        descuento?: number | null;
+        observacion?: string | null;
         entregasSolicitadas: {
             id?: number;
             cantidad: number;

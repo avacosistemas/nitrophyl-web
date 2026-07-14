@@ -12,10 +12,10 @@ import { ClientesService } from 'app/shared/services/clientes.service';
 import { Cliente } from 'app/shared/models/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { MatDialog } from '@angular/material/dialog';
-import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog.component';
-import { FinalizarOrdenDialogComponent } from '../dialogs/finalizar-orden-dialog.component';
-import { RegistrarEntregaDialogComponent } from '../dialogs/registrar-entrega-dialog.component';
-import { OtPreviewDialogComponent } from '../dialogs/ot-preview-dialog.component';
+import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog/asignar-prensa-dialog.component';
+import { FinalizarOrdenDialogComponent } from '../dialogs/finalizar-orden-dialog/finalizar-orden-dialog.component';
+import { RegistrarEntregaDialogComponent } from '../dialogs/registrar-entrega-dialog/registrar-entrega-dialog.component';
+import { OtPreviewDialogComponent } from '../dialogs/ot-preview-dialog/ot-preview-dialog.component';
 import moment from 'moment';
 import { generarHtmlOT } from '../../utils/ot-html.generator';
 

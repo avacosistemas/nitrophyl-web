@@ -40,6 +40,8 @@ export interface OTItem {
     control_calidad: OTControlCalidad[];
     cotizacion?: number;
     fechaCotizacion?: string;
+    descuento?: number;
+    precio_descuento?: number;
 }
 
 export interface OTData {
@@ -169,6 +171,16 @@ export function generarHtmlOT(data: OTData): string {
                     <div class="pill-group"><span class="lbl">FECHA COT.</span>
                         <div class="pill-box">${item.fechaCotizacion || ''}</div>
                     </div>
+                    ${item.descuento !== undefined && item.descuento !== null && !isNaN(Number(item.descuento)) ? `
+                    <div class="pill-group"><span class="lbl">DESCUENTO %</span>
+                        <div class="pill-box">${item.descuento}%</div>
+                    </div>
+                    ` : ''}
+                    ${item.precio_descuento !== undefined && item.precio_descuento !== null && !isNaN(Number(item.precio_descuento)) ? `
+                    <div class="pill-group"><span class="lbl">PRECIO DESC.</span>
+                        <div class="pill-box">U$D ${item.precio_descuento}</div>
+                    </div>
+                    ` : ''}
                 </div>
                 <div class="item-body">
                     <div class="item-left" style="padding-top: 10px;">
