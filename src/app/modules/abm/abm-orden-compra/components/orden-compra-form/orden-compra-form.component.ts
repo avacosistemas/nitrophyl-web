@@ -272,7 +272,6 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         let btns = [];
 
         const showGenerateOF = this.mode === 'edit' || (this.mode === 'create' && this.step === 'items');
-        console.log('[DEBUG] updateHeaderUI:', { mode: this.mode, step: this.step, orderEstado: this.orderEstado, showGenerateOF });
 
         if (this.step === 'header') {
             btns = [

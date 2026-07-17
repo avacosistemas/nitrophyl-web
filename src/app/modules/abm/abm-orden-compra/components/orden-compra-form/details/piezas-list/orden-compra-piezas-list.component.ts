@@ -97,6 +97,7 @@ export class OrdenCompraPiezasListComponent {
 
     editQuotation(grupo: any): void {
         const dialogRef = this._dialog.open(OrdenCompraPiezaEditModalComponent, {
+            panelClass: 'dialog-edit-item-oc',
             width: '600px',
             data: {
                 denominacion: grupo.denominacion,
