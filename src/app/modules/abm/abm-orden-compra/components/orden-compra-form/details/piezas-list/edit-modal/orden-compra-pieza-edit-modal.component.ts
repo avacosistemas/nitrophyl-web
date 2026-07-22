@@ -84,7 +84,7 @@ export class OrdenCompraPiezaEditModalComponent implements OnInit {
         const aplicar = this.form.get('aplicarDescuento')!.value;
         const desc = parseFloat(this.form.get('descuento')!.value || 0);
         if (aplicar && desc > 0) {
-            return this.precioUnitarioActual * (desc / 100);
+            return this.precioUnitarioActual - (this.precioUnitarioActual * (desc / 100));
         }
         return 0;
     }

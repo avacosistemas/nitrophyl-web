@@ -40,7 +40,7 @@
                 
                 <div *ngIf="form.get('aplicarDescuento').value && form.get('descuento').value > 0"
                     class="w-1/2 flex flex-col text-xs font-medium mt-2 uppercase">
-                    <span>Aplicado por unidad:</span>
+                    <span>Valor de la Cotización Aplicando Descuento:</span>
                     <span class="text-2xl font-bold text-green-600">{{ formatCurrency(precioDescuentoCalculado) }}</span>
                 </div>
             </div>

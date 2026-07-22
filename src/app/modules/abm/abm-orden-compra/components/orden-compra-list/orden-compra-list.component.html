@@ -78,7 +78,8 @@
                         'bg-blue-100 text-blue-800': element.estado === 'EN_PROCESO',
                         'bg-green-100 text-green-800': element.estado === 'FINALIZADA',
                         'bg-red-100 text-red-800': element.estado === 'CANCELADA',
-                        'bg-gray-100 text-gray-800': element.estado === 'INGRESADA'
+                        'bg-gray-100 text-gray-800': element.estado === 'INGRESADA',
+                        'bg-gray-100 text-blue-800': element.estado === 'PRODUCIDA'
                     }">
                         {{ element.estado }}
                     </span>

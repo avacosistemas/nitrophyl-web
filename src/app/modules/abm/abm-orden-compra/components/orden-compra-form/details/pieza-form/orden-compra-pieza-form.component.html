@@ -79,8 +79,7 @@
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>{{ (piezaCotizacionInfo?.tieneCotizacion &&
                                 !piezaForm.get('actualizarCotizacion').value) ? 'Precio Cotización Actual (U$D)' :
-                                'Precio
-                                Nueva Cotización (U$D)' }}</mat-label>
+                                'Valor Nueva Cotización (U$D)' }}</mat-label>
                             <input type="text" matInput formControlName="cotizacionValor"
                                 (input)="onPriceInput($event, 'cotizacionValor')"
                                 [readonly]="piezaCotizacionInfo.tieneCotizacion && !piezaForm.get('actualizarCotizacion').value">
@@ -114,7 +113,7 @@
 
                         <div *ngIf="piezaForm.get('aplicarDescuento').value && piezaForm.get('descuento').value > 0"
                             class="w-1/2 flex flex-col text-xs font-medium mt-2 uppercase">
-                            <span>Aplicado por unidad:</span>
+                            <span>Valor de la Cotización Aplicando Descuento:</span>
                             <span class="text-2xl font-bold text-green-600">{{ formatCurrency(precioDescuentoCalculado) }}</span>
                         </div>
                     </div>

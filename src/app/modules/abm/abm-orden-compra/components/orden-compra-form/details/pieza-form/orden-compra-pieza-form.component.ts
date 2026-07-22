@@ -349,7 +349,7 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
         const aplicar = this.piezaForm.get('aplicarDescuento')?.value;
         const desc = parseFloat(this.piezaForm.get('descuento')?.value || 0);
         if (aplicar && desc > 0) {
-            return this.precioUnitarioActual * (desc / 100);
+            return this.precioUnitarioActual - (this.precioUnitarioActual * (desc / 100));
         }
         return 0;
     }

@@ -171,9 +171,9 @@ export function generarHtmlOT(data: OTData): string {
                     <div class="pill-group"><span class="lbl">FECHA COT.</span>
                         <div class="pill-box">${item.fechaCotizacion || ''}</div>
                     </div>
-                    ${item.descuento !== undefined && item.descuento !== null && !isNaN(Number(item.descuento)) ? `
+                    ${item.descuento !== undefined && item.descuento !== null ? `
                     <div class="pill-group"><span class="lbl">DESCUENTO %</span>
-                        <div class="pill-box">${item.descuento}%</div>
+                        <div class="pill-box">${item.descuento} %</div>
                     </div>
                     ` : ''}
                     ${item.precio_descuento !== undefined && item.precio_descuento !== null && !isNaN(Number(item.precio_descuento)) ? `
