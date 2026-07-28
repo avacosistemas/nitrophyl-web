@@ -28,8 +28,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { LotModalComponent } from './lot-modal/lot-modal.component';
 
 import { A11yModule } from '@angular/cdk/a11y';
-import { LotUpdateService } from 'app/shared/services/lot-update.service';
-import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { LotUpdateService } from 'app/modules/abm/abm-lots/lot-update.service';
+import { PromptsModule } from 'app/shared/components/prompts.modules';
 import { MaterialModule } from 'app/material.module';
 import { LotStatusChangeComponent } from './lots/lot-status-change/lot-status-change.component';
 import { LotCommentsComponent } from './lot-comments/lot-comments.component'; 

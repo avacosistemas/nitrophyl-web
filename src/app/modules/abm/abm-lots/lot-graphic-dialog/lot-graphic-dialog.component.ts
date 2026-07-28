@@ -1,14 +1,14 @@
 import { Component, Inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialog } from '@angular/material/dialog';
-import { LotService } from 'app/shared/services/lot.service';
-import { MachinesService } from 'app/shared/services/machines.service';
+import { LotService } from 'app/modules/abm/abm-lots/lot.service';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { IMachine } from 'app/shared/models/machine.model';
+import { IMachine } from 'app/modules/abm/abm-machines/machine.model';
 import { MatTableDataSource } from '@angular/material/table';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { saveAs } from 'file-saver';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 
 export interface GraphicFile {
   id: number;

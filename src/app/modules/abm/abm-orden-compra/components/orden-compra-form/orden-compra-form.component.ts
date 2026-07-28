@@ -11,7 +11,7 @@ import { OrdenCompraHeaderComponent } from './headers/orden-compra-header.compon
 import { OrdenCompraDetailsComponent } from './details/orden-compra-details.component';
 import moment from 'moment';
 import { MatDialog } from '@angular/material/dialog';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-orden-compra-form',

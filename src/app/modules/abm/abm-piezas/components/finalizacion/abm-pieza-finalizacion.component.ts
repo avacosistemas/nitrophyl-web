@@ -6,7 +6,7 @@ import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
-import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
+import { ImgModalDialogComponent } from 'app/shared/components/img-modal/img-modal.component';
 
 @Component({
   selector: 'app-abm-pieza-finalizacion',

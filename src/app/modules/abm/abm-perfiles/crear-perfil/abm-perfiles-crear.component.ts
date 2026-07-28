@@ -4,13 +4,13 @@ import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms"
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
-import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Perfil } from "app/shared/models/perfil.model";
-import { Permiso } from "app/shared/models/permiso.model";
-import { Rol } from "app/shared/models/rol.model";
-import { PerfilesService } from "app/shared/services/perfiles.service";
-import { PermisosService } from "app/shared/services/permisos.service";
-import { RolesService } from "app/shared/services/roles.service";
+import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
+import { Perfil } from "app/modules/abm/abm-perfiles/perfil.model";
+import { Permiso } from "app/modules/abm/abm-permisos/permiso.model";
+import { Rol } from "app/modules/abm/abm-roles/rol.model";
+import { PerfilesService } from "app/modules/abm/abm-perfiles/perfiles.service";
+import { PermisosService } from "app/modules/abm/abm-permisos/permisos.service";
+import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 import { Subscription } from "rxjs";
 import { ABMPerfilService } from "../abm-perfiles.service";
 

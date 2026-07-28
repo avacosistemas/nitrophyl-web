@@ -31,7 +31,7 @@ export class HeaderComponent {
   @Input() subtitle: string = '';
   @Input() breadcrumbs: Breadcrumb[] = [];
   @Input() buttons: HeaderButton[] = [];
-  @Input() extraContent: TemplateRef<any>;
+  @Input() extraContent?: TemplateRef<any>;
 
   @Output() buttonAction = new EventEmitter<string>();
 

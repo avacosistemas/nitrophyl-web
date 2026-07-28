@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmMaquinaFabricaService } from '../../abm-maquina-fabrica.service';
 import { IMaquinaFabrica, IErrorResponse } from '../../models/maquina-fabrica.interface';
 import { MaquinaFabricaModalComponent } from '../maquina-fabrica-modal/maquina-fabrica-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-maquina-fabrica-list',

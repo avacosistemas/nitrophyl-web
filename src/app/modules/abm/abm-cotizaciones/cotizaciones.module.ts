@@ -29,7 +29,7 @@ import { CurrencyPipe } from '@angular/common';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
-import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { PromptsModule } from 'app/shared/components/prompts.modules';
 
 export const MY_DATE_FORMATS = {
     parse: {

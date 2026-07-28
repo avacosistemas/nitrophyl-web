@@ -6,7 +6,7 @@ import {
 import { Router } from '@angular/router';
 
 // * Services.
-import { MachinesService } from 'app/shared/services/machines.service';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
 
 @Component({
   selector: 'abm-machine',

@@ -1,16 +1,16 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { LotService } from 'app/shared/services/lot.service';
-import { FormulasService } from 'app/shared/services/formulas.service';
+import { LotService } from 'app/modules/abm/abm-lots/lot.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
-import { IFormula } from 'app/shared/models/formula.interface';
-import { ILot } from 'app/shared/models/lot.interface';
+import { IFormula } from 'app/modules/abm/abm-formula/formula.interface';
+import { ILot } from 'app/modules/abm/abm-lots/lot.interface';
 import { DatePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 
 @Component({
     selector: 'app-lot-modal',
@@ -212,17 +212,14 @@ export class LotModalComponent implements OnInit {
         return (control: FormControl): { [key: string]: any } | null => {
             const formula = control.value;
 
-            // Si no hay fórmula seleccionada o es inválida
             if (typeof formula !== 'object' || !formula?.id) {
                 return { invalidFormula: true };
             }
 
-            // Si la fórmula no tiene revisión (rpdto.id == null)
             if (!formula.rpdto || formula.rpdto.id == null) {
                 return { noRevision: true };
             }
 
-            // Si todo está bien
             return null;
         };
     }

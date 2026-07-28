@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { MatTableDataSource } from '@angular/material/table';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ABMPiezaInsumoModalFormComponent } from './modal-form/abm-pieza-insumo-modal-form.component';
 

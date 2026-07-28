@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 import { User } from 'app/shared/models/user.model';
 import { UserService } from 'app/shared/services/user.service';
 

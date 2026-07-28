@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ConfiguracionService } from 'app/shared/services/configuracion.service';
+import { ConfiguracionService } from 'app/modules/abm/abm-configuracion/configuracion.service';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { FormGroup } from '@angular/forms';

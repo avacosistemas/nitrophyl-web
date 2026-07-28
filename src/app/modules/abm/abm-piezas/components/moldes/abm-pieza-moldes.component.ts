@@ -9,7 +9,7 @@ import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { MatTableDataSource } from '@angular/material/table';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { startWith, map, debounceTime, switchMap, catchError } from 'rxjs/operators';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { Molde, IPiezaMolde, PiezaProceso } from '../../models/pieza.model';
 
 @Component({

@@ -20,7 +20,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
-import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { PromptsModule } from 'app/shared/components/prompts.modules';
 
 @NgModule({
   declarations: [

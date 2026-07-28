@@ -2,10 +2,10 @@ import { AfterViewInit, Component, OnInit, OnDestroy } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { BehaviorSubject, Subscription } from 'rxjs';
 // * Services.
-import { MachinesService } from 'app/shared/services/machines.service';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
 
 // * Interfaces.
-import { IMachineResponse, IMachine } from 'app/shared/models/machine.model';
+import { IMachineResponse, IMachine } from 'app/modules/abm/abm-machines/machine.model';
 
 // * Forms.
 import { FormBuilder, FormGroup } from '@angular/forms';

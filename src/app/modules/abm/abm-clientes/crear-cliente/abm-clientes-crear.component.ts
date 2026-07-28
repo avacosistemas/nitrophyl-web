@@ -2,13 +2,13 @@ import { AfterViewInit, Component, OnDestroy, OnInit, ChangeDetectorRef } from '
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-import { Cliente } from 'app/shared/models/cliente.model';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
+import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { Subscription } from 'rxjs';
 import { ABMClientesService } from '../abm-clientes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
-import { Pais } from 'app/shared/models/cliente.model';
+import { Pais } from 'app/modules/abm/abm-clientes/cliente.model';
 import { map, startWith } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 

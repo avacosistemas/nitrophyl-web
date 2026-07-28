@@ -3,9 +3,9 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
-import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Rol } from "app/shared/models/rol.model";
-import { RolesService } from "app/shared/services/roles.service";
+import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
+import { Rol } from "app/modules/abm/abm-roles/rol.model";
+import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 import { Subscription } from "rxjs";
 import { ABMRolService } from "../abm-roles.service";
 

@@ -1,8 +1,8 @@
 import { Component } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Rol } from "app/shared/models/rol.model";
-import { RolesService } from "app/shared/services/roles.service";
+import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
+import { Rol } from "app/modules/abm/abm-roles/rol.model";
+import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 
 @Component({
     selector: 'abm-roles-grilla',

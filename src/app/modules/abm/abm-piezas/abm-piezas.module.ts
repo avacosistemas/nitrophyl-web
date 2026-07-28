@@ -38,7 +38,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
-import { PromptsModule } from '../../prompts/prompts.modules';
+import { PromptsModule } from '../../../shared/components/prompts.modules';
 import { ABMPiezaInsumoModalFormModule } from './components/insumos/modal-form/abm-pieza-insumos-modal-form.module';
 import { ABMPiezaEsquemaModalModule } from './components/esquema/modal-form/abm-pieza-esquema-modal.module';
 import { MatDialogModule } from '@angular/material/dialog';

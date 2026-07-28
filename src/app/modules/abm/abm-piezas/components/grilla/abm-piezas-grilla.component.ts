@@ -11,13 +11,13 @@ import { Observable, Subject, forkJoin, merge, of } from 'rxjs';
 import { startWith, switchMap, map, catchError, takeUntil, tap } from 'rxjs/operators';
 import { Pieza } from '../../models/pieza.model';
 import { ABMPiezaService } from '../../abm-piezas.service';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
-import { FormulasService } from 'app/shared/services/formulas.service';
-import { MaterialsService } from 'app/shared/services/materials.service';
-import { IFormula, IFormulasResponse } from 'app/shared/models/formula.interface';
-import { IMaterialsResponse } from 'app/shared/models/material.interface';
-import { Cliente } from 'app/shared/models/cliente.model';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
+import { MaterialsService } from 'app/modules/abm/abm-formula/materials.service';
+import { IFormula, IFormulasResponse } from 'app/modules/abm/abm-formula/formula.interface';
+import { IMaterialsResponse } from 'app/modules/abm/abm-formula/material.interface';
+import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 
 @Component({
   selector: 'app-abm-piezas-grilla',

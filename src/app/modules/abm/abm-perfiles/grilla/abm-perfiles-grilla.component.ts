@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { PerfilesService } from 'app/shared/services/perfiles.service';
+import { PerfilesService } from 'app/modules/abm/abm-perfiles/perfiles.service';
 import { MatDialog } from '@angular/material/dialog';
-import { Perfil } from 'app/shared/models/perfil.model';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { Perfil } from 'app/modules/abm/abm-perfiles/perfil.model';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 
 @Component({
     selector     : 'abm-perfiles-grilla',

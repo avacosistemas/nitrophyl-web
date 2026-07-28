@@ -231,6 +231,31 @@ export class NavegacionService {
           permissionCode: 'MENU_MATERIA_PRIMA',
           type: 'basic',
         },
+        {
+          icon: 'heroicons_outline:archive',
+          id: 'stock',
+          title: 'Stock',
+          type: 'collapsable',
+          permissionCode: 'MENU_STOCK',
+          children: [
+            {
+              icon: 'heroicons_outline:search',
+              id: 'stock-consulta',
+              link: '/stock/consulta',
+              title: 'Consulta',
+              permissionCode: 'MENU_STOCK_CONSULTA',
+              type: 'basic',
+            },
+            {
+              icon: 'heroicons_outline:switch-horizontal',
+              id: 'stock-movimientos',
+              link: '/stock/movimientos',
+              title: 'Movimientos',
+              permissionCode: 'MENU_STOCK_MOVIMIENTOS',
+              type: 'basic',
+            },
+          ],
+        },
       ],
     },
     {

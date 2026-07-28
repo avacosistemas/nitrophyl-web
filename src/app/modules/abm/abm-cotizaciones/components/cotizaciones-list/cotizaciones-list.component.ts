@@ -8,7 +8,7 @@ import { catchError, map, startWith, switchMap, takeUntil, debounceTime } from '
 import { ICotizacion } from '../../models/cotizacion.model';
 import { CotizacionesService } from '../../cotizaciones.service';
 import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
 
 interface Cliente {

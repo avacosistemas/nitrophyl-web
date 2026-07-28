@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { OrdenCompraPiezaEditModalComponent } from './edit-modal/orden-compra-pieza-edit-modal.component';
 import moment from 'moment';
 

@@ -1,13 +1,9 @@
-<!-- Loading bar -->
 <fuse-loading-bar></fuse-loading-bar>
 
-<!-- Navigation -->
 <fuse-vertical-navigation class="dark bg-gray-900 print:hidden" [appearance]="navigationAppearance"
-    [mode]="isScreenSmall ? 'over' : 'side'" [name]="'mainNavigation'" [navigation]="navigation.default"
+    [mode]="isScreenSmall ? 'over' : 'side'" [name]="'mainNavigation'" [navigation]="navigation?.default"
     [opened]="!isScreenSmall">
-    <!-- Navigation header hook -->
     <ng-container fuseVerticalNavigationContentHeader>
-        <!-- Logo -->
         <div class="flex items-center justify-center h-20">
             <img class="w-8" src="assets/images/logo/logo.svg" alt="Logo image">
         </div>
@@ -19,7 +15,7 @@
                 <mat-icon *ngIf="navigationAppearance === 'default'">keyboard_double_arrow_left</mat-icon>
             </button>
         </div>
-        <!-- User -->
+
         <div class="flex items-center w-full px-6 py-8 border-t">
             <button mat-icon-button [matMenuTriggerFor]="userMenu">
                 <mat-icon>account_circle</mat-icon>
@@ -55,6 +51,5 @@
         </div>
     </ng-container>
 </fuse-vertical-navigation>
-
 
 <router-outlet *ngIf="true"></router-outlet>

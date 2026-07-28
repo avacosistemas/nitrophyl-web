@@ -47,6 +47,10 @@
         flex-direction: column;
 
         ::ng-deep {
+            --mdc-tab-indicator-active-indicator-color: var(--fuse-primary, #4f46e5);
+            --mat-tab-header-active-focus-indicator-color: var(--fuse-primary, #4f46e5);
+            --mat-tab-header-active-hover-indicator-color: var(--fuse-primary, #4f46e5);
+
             .mat-tab-body-wrapper {
                 flex: 1 1 auto;
                 height: 100%;
@@ -65,6 +69,19 @@
             .mat-tab-header {
                 background: white;
                 border-bottom: 1px solid #e5e7eb;
+                --mdc-tab-indicator-active-indicator-color: var(--fuse-primary, #4f46e5);
+            }
+            .mat-ink-bar,
+            .mat-tab-header .mat-ink-bar,
+            .mat-tab-group .mat-ink-bar,
+            .mdc-tab-indicator__content,
+            .mdc-tab-indicator__content--underline,
+            .mat-mdc-tab-indicator .mdc-tab-indicator__content--underline {
+                background: var(--fuse-primary, #4f46e5) !important;
+                background-color: var(--fuse-primary, #4f46e5) !important;
+                border-color: var(--fuse-primary, #4f46e5) !important;
+                border-bottom-color: var(--fuse-primary, #4f46e5) !important;
+                border-top-color: var(--fuse-primary, #4f46e5) !important;
             }
         }
     }

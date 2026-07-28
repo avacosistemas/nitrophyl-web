@@ -2,7 +2,7 @@ import { AfterViewInit, Component, OnInit, ElementRef, ViewChild, ViewChildren, 
 import { catchError, forkJoin, map, Observable, of, startWith } from 'rxjs';
 
 // * Services.
-import { FormulasService } from 'app/shared/services/formulas.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 // * Interfaces.
@@ -10,17 +10,17 @@ import {
   IFormula,
   IFormulaResponse,
   IFormulasResponse,
-} from 'app/shared/models/formula.interface';
+} from 'app/modules/abm/abm-formula/formula.interface';
 
 // * Forms.
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IConfiguracion, IConfiguracionesData, IConfiguracionesResponse, IConfiguracionResponse } from 'app/shared/models/configuracion.interface';
-import { MachinesService } from 'app/shared/services/machines.service';
-import { IMachine, IMachineResponse, IResponse } from 'app/shared/models/machine.model';
-import { Cliente, ResponseClientes } from 'app/shared/models/cliente.model';
-import { ClientesService } from 'app/shared/services/clientes.service';
-import { ConfiguracionService } from 'app/shared/services/configuracion.service';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { IConfiguracion, IConfiguracionesData, IConfiguracionesResponse, IConfiguracionResponse } from 'app/modules/abm/abm-configuracion/configuracion.interface';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
+import { IMachine, IMachineResponse, IResponse } from 'app/modules/abm/abm-machines/machine.model';
+import { Cliente, ResponseClientes } from 'app/modules/abm/abm-clientes/cliente.model';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
+import { ConfiguracionService } from 'app/modules/abm/abm-configuracion/configuracion.service';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';

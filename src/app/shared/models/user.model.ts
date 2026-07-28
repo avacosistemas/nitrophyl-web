@@ -1,4 +1,4 @@
-import { Perfil } from "./perfil.model"
+import { Perfil } from "../../modules/abm/abm-perfiles/perfil.model"
 
 export interface User {
     email: string,

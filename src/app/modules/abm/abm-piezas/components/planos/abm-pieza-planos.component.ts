@@ -10,8 +10,8 @@ import { Plano } from '../../models/pieza.model';
 import { Subscription } from 'rxjs';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import * as FileSaver from 'file-saver';
-import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { PDFModalDialogComponent } from 'app/shared/components/pdf-modal/pdf-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { ABMPiezaPlanoModalComponent } from './modal-plano/abm-pieza-plano-modal.component';
 
 @Component({

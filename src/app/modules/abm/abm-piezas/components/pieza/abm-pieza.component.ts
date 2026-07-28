@@ -26,7 +26,7 @@ import { ABMPiezaDesmoldantePostcuraComponent } from '../desmoldante-postcura/ab
 import { ABMPiezaFinalizacionComponent } from '../finalizacion/abm-pieza-finalizacion.component';
 import { ABMPiezaMoldesComponent } from '../moldes/abm-pieza-moldes.component';
 import { ABMPiezaClientesComponent } from '../clientes/abm-pieza-clientes.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 
 @Component({

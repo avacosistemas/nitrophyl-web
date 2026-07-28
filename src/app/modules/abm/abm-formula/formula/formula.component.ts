@@ -14,20 +14,20 @@ import {
 } from 'rxjs';
 
 // * Services.
-import { FormulasService } from 'app/shared/services/formulas.service';
-import { MaterialsService } from 'app/shared/services/materials.service';
-import { ConfigTestService } from 'app/shared/services/config-test.service';
-import { MachinesService } from 'app/shared/services/machines.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
+import { MaterialsService } from 'app/modules/abm/abm-formula/materials.service';
+import { ConfigTestService } from 'app/modules/abm/abm-assays/config-test.service';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
 
 // * Interfaces.
 import {
   IFormula,
   IFormulaResponse
-} from 'app/shared/models/formula.interface';
+} from 'app/modules/abm/abm-formula/formula.interface';
 import {
   IMaterial,
   IMaterialsResponse,
-} from 'app/shared/models/material.interface';
+} from 'app/modules/abm/abm-formula/material.interface';
 
 // * Forms.
 import {
@@ -41,9 +41,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 import { FormulaTestModalComponent } from '../formula-test-modal/formula-test-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
   selector: 'app-formula',

@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmPrensaService } from '../../abm-prensa.service';
 import { IPrensa, IErrorResponse } from '../../models/prensa.interface';
 import { PrensaModalComponent } from '../prensa-modal/prensa-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-prensa-list',

@@ -1,0 +1,95 @@
+import { IResponse } from 'app/shared/models/response.interface';
+
+export interface ILot {
+  id?: number;
+  observaciones: string;
+  formula?: string;
+  idFormula: number;
+  fecha?: string;
+  fechaEstado?: string;
+  nroLote: string;
+  revision: number;
+  material?: string;
+  hasGrafico?: boolean;
+}
+
+export interface ILotAutocomplete {
+  nombre: string;
+  codigo: string;
+}
+
+export interface ILotResponseAutocomplete {
+  status: string;
+  data: ILotAutocomplete[];
+}
+
+export type ILotsResponse = IResponse<ILot[]>;
+export type ILotResponse = IResponse<ILot>;
+
+export interface IInformeLoteData {
+  id: number;
+  observaciones: string;
+  formula: string;
+  formulaSimple: string;
+  idFormula: number;
+  fecha: string;
+  nroLote: string;
+  observacionesEstado: string | null;
+  fechaEstado: string;
+  estado: string;
+  revision: number;
+  material: string;
+  hasGrafico: boolean;
+}
+
+export interface IInformeLoteBody {
+  status: string;
+  data: IInformeLoteData;
+}
+
+export interface IInformeLoteResponseData {
+  headers: any;
+  body: IInformeLoteBody;
+  statusCode: string;
+  statusCodeValue: number;
+}
+
+export interface IInformeLoteResponse {
+  status: string;
+  data: IInformeLoteData;
+}
+
+export interface IRegistroEnvio {
+  usuarioCreacion: string;
+  fechaCreacion: number;
+  cliente: string;
+  lote: string;
+  formula: string;
+  emailEnviado: string;
+  observacionesMail: string;
+  observacionesInforme: string;
+}
+
+export interface IRegistroEnvioResponse {
+  status: string;
+  data: {
+    page: IRegistroEnvio[];
+    totalReg: number;
+  };
+}
+
+export interface ILotObservation {
+  id: number;
+  idLote: number;
+  observaciones: string;
+  mostrarReporte: boolean;
+  fechaCreacion?: string;
+  usuarioCreacion?: string;
+  fechaActualizacion?: string;
+  usuarioActualizacion?: string;
+}
+
+export interface ILotObservationResponse {
+  data: ILotObservation[];
+  status: string;
+}

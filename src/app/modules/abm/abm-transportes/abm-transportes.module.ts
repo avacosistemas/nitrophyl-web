@@ -15,7 +15,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { SharedModule } from 'app/shared/shared.module';
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
-import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { PromptsModule } from 'app/shared/components/prompts.modules';
 import { AbmTransportesRoutingModule } from './abm-transportes-routing.module';
 import { ABMTransportesComponent } from './abm-transportes.component';
 import { TransportesListComponent } from './components/transportes-list/transportes-list.component';

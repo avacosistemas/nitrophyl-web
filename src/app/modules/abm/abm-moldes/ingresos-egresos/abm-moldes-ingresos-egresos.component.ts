@@ -2,9 +2,9 @@ import { Component, OnDestroy, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
-import { IngresoEgresoDialogComponent } from "app/modules/prompts/ingreso-egreso/ingreso-egreso.component";
-import { MoldeRegistro } from "app/shared/models/molde.model";
-import { MoldesService } from "app/shared/services/moldes.service";
+import { IngresoEgresoDialogComponent } from "app/modules/abm/abm-moldes/ingresos-egresos/ingreso-egreso-dialog/ingreso-egreso.component";
+import { MoldeRegistro } from "app/modules/abm/abm-moldes/molde.model";
+import { MoldesService } from "app/modules/abm/abm-moldes/moldes.service";
 import { Subscription } from "rxjs";
 import { ABMMoldeService } from "../abm-moldes.service";
 

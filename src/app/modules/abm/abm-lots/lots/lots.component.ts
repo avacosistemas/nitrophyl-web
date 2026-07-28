@@ -13,24 +13,24 @@ import { map, Observable, startWith, Subscription } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
 // * Services.
-import { AssayService } from 'app/shared/services/assay.service';
-import { FormulasService } from 'app/shared/services/formulas.service';
-import { LotService } from 'app/shared/services/lot.service';
-import { LotUpdateService } from 'app/shared/services/lot-update.service';
+import { AssayService } from 'app/modules/abm/abm-assays/assay.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
+import { LotService } from 'app/modules/abm/abm-lots/lot.service';
+import { LotUpdateService } from 'app/modules/abm/abm-lots/lot-update.service';
 // * Interfaces.
 import {
   IFormula,
   IFormulaResponse,
   IFormulasResponse,
-} from 'app/shared/models/formula.interface';
-import { ILot, ILotsResponse } from 'app/shared/models/lot.interface';
+} from 'app/modules/abm/abm-formula/formula.interface';
+import { ILot, ILotsResponse } from 'app/modules/abm/abm-lots/lot.interface';
 
 // * Material.
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Components.
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 
 // * Dialogs.
 import { DatePipe } from '@angular/common';
@@ -64,9 +64,9 @@ import {
 
 import { LotModalComponent } from 'app/modules/abm/abm-lots/lot-modal/lot-modal.component';
 import { LotGraphicDialogComponent } from '../lot-graphic-dialog/lot-graphic-dialog.component';
-import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
+import { ExportDataComponent } from 'app/shared/components/export-data/export-data.component';
 import { DomSanitizer } from '@angular/platform-browser';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { LotStatusChangeComponent } from './lot-status-change/lot-status-change.component';
 import { LotCommentsComponent } from '../lot-comments/lot-comments.component';
 

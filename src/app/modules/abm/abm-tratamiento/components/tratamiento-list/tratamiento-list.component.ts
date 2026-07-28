@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmTratamientoService } from '../../abm-tratamiento.service';
 import { ITratamiento, IErrorResponse } from '../../models/tratamiento.interface';
 import { TratamientoModalComponent } from '../tratamiento-modal/tratamiento-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-tratamiento-list',

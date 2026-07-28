@@ -11,7 +11,7 @@
                         <input type="text" placeholder="Buscar cliente..." matInput formControlName="cliente"
                             [matAutocomplete]="autoCliente" #clientInput="matAutocompleteTrigger">
 
-                        <button *ngIf="searchForm.get('cliente').value" matSuffix mat-icon-button aria-label="Clear"
+                        <button type="button" *ngIf="searchForm.get('cliente').value" matSuffix mat-icon-button aria-label="Clear"
                             (click)="clearClientSelection(); $event.stopPropagation()">
                             <mat-icon> close </mat-icon>
                         </button>
@@ -28,7 +28,7 @@
                         <input type="text" placeholder="Buscar pieza..." matInput formControlName="pieza"
                             [matAutocomplete]="autoPieza" #piezaInput="matAutocompleteTrigger">
 
-                        <button *ngIf="searchForm.get('pieza').value" matSuffix mat-icon-button aria-label="Clear"
+                        <button type="button" *ngIf="searchForm.get('pieza').value" matSuffix mat-icon-button aria-label="Clear"
                             (click)="clearPiezaSelection(); $event.stopPropagation()">
                             <mat-icon> close </mat-icon>
                         </button>

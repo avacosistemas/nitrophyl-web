@@ -23,7 +23,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatSelectModule } from '@angular/material/select';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
-import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { PromptsModule } from 'app/shared/components/prompts.modules';
 
 
 @NgModule({

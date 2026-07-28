@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmSectorFabricaService } from '../../abm-sector-fabrica.service';
 import { ISectorFabrica, IErrorResponse } from '../../models/sector-fabrica.interface';
 import { SectorFabricaModalComponent } from '../sector-fabrica-modal/sector-fabrica-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-sector-fabrica-list',

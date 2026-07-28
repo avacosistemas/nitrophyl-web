@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmTransportesService } from '../../abm-transportes.service';
 import { ITransporte, IErrorResponse } from '../../models/transporte.interface';
 import { TransporteModalComponent } from '../transporte-modal/transporte-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-transportes-list',

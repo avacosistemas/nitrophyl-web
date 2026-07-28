@@ -1,0 +1,111 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+// * Environment.
+import { environment } from 'environments/environment';
+// * Interfaces.
+import {
+  IAssay,
+  IAssayCreate,
+  IAssayCreateWithoutResults,
+  IAssayDetailResponse,
+  IAssayDetailsResponse,
+  IAssayResponse,
+  IAssaysResponse,
+} from './assay.interface';
+import { ILot } from 'app/modules/abm/abm-lots/lot.interface';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AssayService {
+  public drawer$: Observable<boolean>;
+
+  private assaysSubject = new BehaviorSubject<IAssay[]>([]);
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public assays$ = this.assaysSubject.asObservable();
+  private _lot: ILot;
+  private _machine: number;
+  private _mode: string;
+  private readonly _url: string = `${environment.server}`;
+
+  private isModalOpenSubject = new BehaviorSubject<boolean>(false);
+  public isModalOpen$ = this.isModalOpenSubject.asObservable();
+
+  public openModal = new Subject<{
+    mode: string;
+    machineId: any;
+    actualMachineId?: number;
+    machineName: string;
+  }>();
+
+  public resetSelect = new Subject<void>();
+
+  constructor(private readonly http: HttpClient) {
+  }
+
+  public get machine(): number {
+    return this._machine;
+  }
+
+  public set machine(id: number) {
+    this._machine = id;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public get lot(): ILot {
+    return this._lot;
+  }
+
+  public set lot(lot: ILot) {
+    this._lot = lot;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/member-ordering
+  public get mode(): string {
+    return this._mode;
+  }
+
+  public set mode(mode: string) {
+    this._mode = mode;
+  }
+
+  public get(id: number): Observable<IAssaysResponse> {
+    return this.http.get<IAssaysResponse>(`${this._url}ensayo/${id}`);
+  }
+
+  public getAssay(id: number): Observable<IAssayDetailsResponse | IAssayDetailResponse> {
+    return this.http.get<IAssayDetailsResponse | IAssayDetailResponse>(`${this._url}ensayoResultado/${id}`);
+  }
+
+  public post(assay: IAssayCreate): Observable<IAssayResponse> {
+    return this.http.post<IAssayResponse>(`${this._url}ensayo`, assay);
+  }
+
+  public update(ensayoDTO: any): Observable<IAssayResponse> {
+    return this.http.put<IAssayResponse>(`${this._url}ensayo`, ensayoDTO);
+  }
+
+  public updateAssays(assays: IAssay[]): void {
+    this.assaysSubject.next(assays);
+  }
+
+  public getAssayConfig(assayId: number): Observable<any> {
+    return this.http.get<any>(`${this._url}ensayo/config/${assayId}`);
+  }
+
+  public fetchAssays(id: number): void {
+    this.get(id).subscribe((res) => {
+      const assays = Array.isArray(res.data) ? res.data : [res.data];
+      this.updateAssays(assays);
+    });
+  }
+
+  postAssayWithoutResults(assayData: IAssayCreateWithoutResults): Observable<any> {
+    return this.http.post(`${this._url}ensayo/sinresultados`, assayData);
+  }
+
+  setModalOpen(isOpen: boolean): void {
+    this.isModalOpenSubject.next(isOpen);
+  }
+}

@@ -2,16 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { finalize, Observable } from 'rxjs';
 import { FuseLoadingService } from '@fuse/services/loading/loading.service';
-import { environment } from 'environments/environment';
 
 @Injectable()
 export class FuseLoadingInterceptor implements HttpInterceptor
 {
     handleRequestsAutomatically: boolean;
-
-    private mockEndpoints: string[] = [
-        '/ordenFabricacion',
-    ];
 
     /**
      * Constructor
@@ -36,14 +31,6 @@ export class FuseLoadingInterceptor implements HttpInterceptor
     intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>>
     {
         let newReq = req.clone();
-
-        if (environment.enableMockup) {
-            const isMockable = this.mockEndpoints.some(endpoint => req.url.includes(endpoint));
-            if (isMockable) {
-                const newUrl = req.url.replace(environment.server, environment.mockServer);
-                newReq = req.clone({ url: newUrl });
-            }
-        }
 
         if ( !this.handleRequestsAutomatically )
         {

@@ -1,6 +1,6 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
-import { PermisosService } from 'app/shared/services/permisos.service';
+import { PermisosService } from 'app/modules/abm/abm-permisos/permisos.service';
 import { ABMPermisoService } from './abm-permisos.service';
 
 @Component({

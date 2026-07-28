@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { SafeResourceUrl } from '@angular/platform-browser';
+import { MatTabGroup } from '@angular/material/tabs';
 import { OrdenCompraPiezaFormComponent } from './pieza-form/orden-compra-pieza-form.component';
 
 @Component({
@@ -11,6 +12,7 @@ import { OrdenCompraPiezaFormComponent } from './pieza-form/orden-compra-pieza-f
 export class OrdenCompraDetailsComponent {
     @ViewChild('splitContainer') splitContainer!: ElementRef;
     @ViewChild(OrdenCompraPiezaFormComponent) piezaFormComponent!: OrdenCompraPiezaFormComponent;
+    @ViewChild(MatTabGroup) tabGroup?: MatTabGroup;
 
     @Input() mode: 'create' | 'view' | 'edit' = 'create';
     @Input() form!: FormGroup;
@@ -61,6 +63,9 @@ export class OrdenCompraDetailsComponent {
                 if (perc > 10 && perc < 90) this.splitSize = perc;
             }
             this._cdr.markForCheck();
+            if (this.tabGroup) {
+                this.tabGroup.realignInkBar();
+            }
         }
 
         if (this.isDraggingImage) {
@@ -72,7 +77,12 @@ export class OrdenCompraDetailsComponent {
 
     @HostListener('window:mouseup')
     onMouseUp(): void {
-        this.isResizing = false;
+        if (this.isResizing) {
+            this.isResizing = false;
+            if (this.tabGroup) {
+                this.tabGroup.realignInkBar();
+            }
+        }
         this.isDraggingImage = false;
     }
 

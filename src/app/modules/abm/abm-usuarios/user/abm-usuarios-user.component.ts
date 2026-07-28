@@ -4,10 +4,10 @@ import { FormControl, FormGroup } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
-import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Perfil } from "app/shared/models/perfil.model";
+import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
+import { Perfil } from "app/modules/abm/abm-perfiles/perfil.model";
 import { User } from "app/shared/models/user.model";
-import { PerfilesService } from "app/shared/services/perfiles.service";
+import { PerfilesService } from "app/modules/abm/abm-perfiles/perfiles.service";
 import { UserService } from "app/shared/services/user.service";
 import { Subscription } from "rxjs";
 import { ABMUsuarioService } from "../abm-usuarios.service";
@@ -22,8 +22,8 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
 
   component = "User";
 
-    mode: string;
-    data: User;
+    mode?: string;
+    data?: User;
     selected: Array<number> = [];
     selectedToRemove: Array<number> = [];
     formDisabled: boolean = false;

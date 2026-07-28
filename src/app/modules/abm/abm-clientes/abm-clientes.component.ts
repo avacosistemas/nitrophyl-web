@@ -1,6 +1,6 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { Subscription } from 'rxjs';
 import { ABMClientesService } from './abm-clientes.service';
 

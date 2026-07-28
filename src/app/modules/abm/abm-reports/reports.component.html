@@ -1,0 +1,13 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+  <app-header
+    [title]="subtitle"
+    [breadcrumbs]="[
+      { title: title, route: ['/reports/generar-informes'], condition: true },
+    ]"
+  >
+  </app-header>
+
+  <div class="content-scroll">
+    <router-outlet></router-outlet>
+  </div>
+</div>

@@ -1,12 +1,12 @@
 import { Component, OnInit, ViewChild } from "@angular/core";
 import { FormBuilder, FormGroup } from "@angular/forms";
-import { Molde } from "app/shared/models/molde.model";
-import { MoldesService } from "app/shared/services/moldes.service";
+import { Molde } from "app/modules/abm/abm-moldes/molde.model";
+import { MoldesService } from "app/modules/abm/abm-moldes/moldes.service";
 import { Router } from "@angular/router";
 import { PageEvent } from "@angular/material/paginator";
 import { ABMPiezaService } from "app/modules/abm/abm-piezas/abm-piezas.service";
-import { ClientesService } from "app/shared/services/clientes.service";
-import { Cliente } from "app/shared/models/cliente.model";
+import { ClientesService } from "app/modules/abm/abm-clientes/clientes.service";
+import { Cliente } from "app/modules/abm/abm-clientes/cliente.model";
 import { Observable, of } from "rxjs";
 import { map, startWith } from "rxjs/operators";
 import { Sort } from '@angular/material/sort';

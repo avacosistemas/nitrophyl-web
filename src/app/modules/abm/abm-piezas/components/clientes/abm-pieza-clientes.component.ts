@@ -8,7 +8,7 @@ import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { PiezaCliente } from '../../models/pieza.model';
 import { ABMPiezaClienteModalComponent } from './modal/abm-pieza-cliente-modal.component';
 

@@ -3,9 +3,9 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import {  Router } from "@angular/router";
-import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Permiso } from "app/shared/models/permiso.model";
-import { PermisosService } from "app/shared/services/permisos.service";
+import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
+import { Permiso } from "app/modules/abm/abm-permisos/permiso.model";
+import { PermisosService } from "app/modules/abm/abm-permisos/permisos.service";
 import { Subscription } from "rxjs";
 import { ABMPermisoService } from "../abm-permisos.service";
 

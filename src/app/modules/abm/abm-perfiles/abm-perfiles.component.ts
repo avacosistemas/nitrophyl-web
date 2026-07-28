@@ -1,6 +1,6 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
-import { PerfilesService } from 'app/shared/services/perfiles.service';
+import { PerfilesService } from 'app/modules/abm/abm-perfiles/perfiles.service';
 import { UserService } from 'app/shared/services/user.service';
 import { ABMPerfilService } from './abm-perfiles.service';
 

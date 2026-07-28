@@ -2,7 +2,6 @@ import { Route } from '@angular/router';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
-import { InitialDataResolver } from 'app/app.resolvers';
 import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
 // @formatter:off
@@ -10,9 +9,6 @@ import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
   { path: '', pathMatch: 'full', redirectTo: 'welcome' },
-
-  // { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'usuarios/grid' },
-
   {
     path: '',
     component: LayoutComponent,
@@ -44,7 +40,6 @@ export const appRoutes: Route[] = [
       },
     ],
   },
-  // Auth routes for guests
   {
     path: '',
     canActivate: [NoAuthGuard],
@@ -117,28 +112,18 @@ export const appRoutes: Route[] = [
     canActivate: [AuthGuard],
     canActivateChild: [AuthGuard],
     component: LayoutComponent,
-    resolve: {
-      initialData: InitialDataResolver,
-    },
     children: [
-      {
-        path: 'example',
-        loadChildren: () =>
-          import('app/modules/admin/example/example.module').then(
-            (m: any) => m.ExampleModule
-          ),
-      },
       {
         path: 'welcome',
         loadChildren: () =>
-          import('app/modules/admin/welcome/welcome.module').then(
+          import('app/modules/components/welcome/welcome.module').then(
             (m: any) => m.WelcomeModule
           ),
       },
       {
         path: 'permission-denied',
         loadChildren: () =>
-          import('app/modules/admin/permission-denied/permission-denied.module').then(
+          import('app/layout/layouts/permission-denied/permission-denied.module').then(
             (m: any) => m.PermissionDeniedModule
           ),
       },
@@ -274,9 +259,17 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'stock',
+        data: { permission: 'MENU_STOCK' },
+        loadChildren: () =>
+          import('app/modules/abm/abm-stock/stock.module').then(
+            (m: any) => m.StockModule
+          ),
+      },
+      {
         path: 'productos',
         loadChildren: () =>
-          import('app/modules/products/products.module').then(
+          import('app/modules/abm/abm-products/products.module').then(
             (m: any) => m.ProductsModule
           ),
       },
@@ -356,25 +349,25 @@ export const appRoutes: Route[] = [
       {
         path: 'monitor',
         loadChildren: () =>
-          import('app/modules/abm/grid-monitor/grid-monitor.module').then(
+          import('app/modules/components/grid-monitor/grid-monitor.module').then(
             (m: any) => m.GRIDMonitorModule
           ),
       },
       {
         path: 'reports',
         loadChildren: () =>
-          import('app/modules/reports/reports.module').then(m => m.ReportsModule)
+          import('app/modules/abm/abm-reports/reports.module').then(m => m.ReportsModule)
       },
       {
         path: 'registro-envios',
         data: { permission: 'MENU_INFORME_CALIDAD' },
         loadChildren: () =>
-          import('app/modules/registro-envios/registro-envios.module').then(m => m.RegistroEnviosModule)
+          import('app/modules/abm/abm-registro-envios/registro-envios.module').then(m => m.RegistroEnviosModule)
       },
       {
         path: 'resultados',
         loadChildren: () =>
-          import('app/modules/resultados-maquina/resultados.module').then(m => m.ResultadosModule)
+          import('app/modules/abm/abm-resultados-maquina/resultados.module').then(m => m.ResultadosModule)
       },
       {
         path: 'configuracion',

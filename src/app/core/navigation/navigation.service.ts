@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, ReplaySubject, of, tap, catchError } from 'rxjs';
 import { Navigation } from 'app/core/navigation/navigation.types';
+import { NavegacionService } from 'app/core/services/navegacion.service';
 
 @Injectable({
     providedIn: 'root'
@@ -13,7 +14,10 @@ export class NavigationService
     /**
      * Constructor
      */
-    constructor(private _httpClient: HttpClient)
+    constructor(
+        private _httpClient: HttpClient,
+        private _navegacionService: NavegacionService
+    )
     {
     }
 
@@ -39,7 +43,24 @@ export class NavigationService
     get(): Observable<Navigation>
     {
         return this._httpClient.get<Navigation>('api/common/navigation').pipe(
+            catchError(() => {
+                const navFallback: Navigation = {
+                    compact: [],
+                    default: this._navegacionService.get(),
+                    futuristic: [],
+                    horizontal: []
+                };
+                return of(navFallback);
+            }),
             tap((navigation) => {
+                if (!navigation || !navigation.default) {
+                    navigation = {
+                        compact: navigation?.compact || [],
+                        default: this._navegacionService.get(),
+                        futuristic: navigation?.futuristic || [],
+                        horizontal: navigation?.horizontal || []
+                    };
+                }
                 this._navigation.next(navigation);
             })
         );

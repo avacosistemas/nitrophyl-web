@@ -12,9 +12,9 @@ import { DomSanitizer } from '@angular/platform-browser';
 import * as FileSaver from 'file-saver';
 import { IOrdenCompra } from '../../models/orden-compra.interface';
 import { AbmOrdenCompraService } from '../../abm-orden-compra.service';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
-import { ClientesService } from 'app/shared/services/clientes.service';
-import { Cliente } from 'app/shared/models/cliente.model';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
+import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import moment from 'moment';
 import { OrdenCompraCancelModalComponent } from '../orden-compra-cancel-modal/orden-compra-cancel-modal.component';
@@ -24,9 +24,9 @@ import { OrdenCompraCancelModalComponent } from '../orden-compra-cancel-modal/or
     templateUrl: './orden-compra-list.component.html',
 })
 export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestroy {
-    @ViewChild(MatPaginator) paginator: MatPaginator;
-    @ViewChild(MatSort) sort: MatSort;
-    @ViewChild('clienteInput', { read: MatAutocompleteTrigger }) clienteAutocompleteTrigger: MatAutocompleteTrigger;
+    @ViewChild(MatPaginator) paginator?: MatPaginator;
+    @ViewChild(MatSort) sort?: MatSort;
+    @ViewChild('clienteInput', { read: MatAutocompleteTrigger }) clienteAutocompleteTrigger?: MatAutocompleteTrigger;
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenCompra>([]);
@@ -35,7 +35,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     searchForm: FormGroup;
     clientes: Cliente[] = [];
-    filteredClientes$: Observable<Cliente[]>;
+    filteredClientes$?: Observable<Cliente[]>;
 
     private _destroying$ = new Subject<void>();
 
@@ -133,6 +133,34 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
     search(): void {
         this.paginator.pageIndex = 0;
         this.paginator.page.emit();
+    }
+
+    formatEstado(estado: string): string {
+        if (!estado) return '';
+        return estado.replace(/_/g, ' ');
+    }
+
+    getEstadoClass(estado: string): string {
+        if (!estado) return 'bg-gray-100 text-gray-800';
+        const est = estado.trim().toUpperCase();
+        switch (est) {
+            case 'PENDIENTE':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'EN_PROCESO':
+            case 'EN PROCESO':
+                return 'bg-blue-100 text-blue-800';
+            case 'FINALIZADA':
+                return 'bg-green-100 text-green-800';
+            case 'CANCELADA':
+                return 'bg-red-100 text-red-800';
+            case 'PRODUCIDA':
+                return 'bg-gray-100 text-blue-800';
+            case 'INGRESADA':
+            case 'FABRICADA':
+            case 'FABRICADO':
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
     }
 
     limpiarFiltros(): void {

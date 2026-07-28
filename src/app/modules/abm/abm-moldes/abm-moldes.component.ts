@@ -1,6 +1,6 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, NavigationEnd } from '@angular/router';
-import { MoldesService } from 'app/shared/services/moldes.service';
+import { MoldesService } from 'app/modules/abm/abm-moldes/moldes.service';
 import { Subscription } from 'rxjs';
 import { ABMMoldeService } from './abm-moldes.service';
 import { filter } from 'rxjs/operators';

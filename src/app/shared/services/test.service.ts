@@ -52,15 +52,6 @@ export class TestService {
     );
   }
 
-  // public setTest(body: any): Observable<any> {
-  //   return this.http.put<any>(`${this.url}/${body.idMaquina}`, body.moldeClientesListadoDTOs).pipe(
-  //     catchError(error => {
-  //       console.error('Error al establecer la prueba:', error);
-  //       return of({ status: 'ERROR' });
-  //     })
-  //   );
-  // }
-
   public deleteTest(id: number): Observable<any> {
     return this.http.delete<any>(`${this.url}/${id}`).pipe(
       catchError((error) => {

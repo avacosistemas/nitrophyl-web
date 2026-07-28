@@ -2,22 +2,22 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
 
 // * Services.
-import { FormulasService } from 'app/shared/services/formulas.service';
-import { MaterialsService } from 'app/shared/services/materials.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
+import { MaterialsService } from 'app/modules/abm/abm-formula/materials.service';
 
 // * Interfaces.
 import {
   IFormula,
   IFormulasResponse,
-} from 'app/shared/models/formula.interface';
-import { IMaterialsResponse } from 'app/shared/models/material.interface';
+} from 'app/modules/abm/abm-formula/formula.interface';
+import { IMaterialsResponse } from 'app/modules/abm/abm-formula/material.interface';
 
 // * Forms.
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { ExportDataComponent } from 'app/modules/prompts/export-data/export-data.component';
+import { ExportDataComponent } from 'app/shared/components/export-data/export-data.component';
 
 import { MatDialog } from '@angular/material/dialog';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { DeleteFormulaConfirmationComponent } from './delete-formula-confirmation.component';
 
 @Component({

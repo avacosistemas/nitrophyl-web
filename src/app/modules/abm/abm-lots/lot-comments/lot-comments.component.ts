@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
-import { LotService } from 'app/shared/services/lot.service';
-import { ILotObservation } from 'app/shared/models/lot.interface';
+import { LotService } from 'app/modules/abm/abm-lots/lot.service';
+import { ILotObservation } from 'app/modules/abm/abm-lots/lot.interface';
 
 @Component({
     selector: 'app-lot-comments',

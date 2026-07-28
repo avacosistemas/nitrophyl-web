@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmAdhesivosService } from '../../abm-adhesivos.service';
 import { IAdhesivo, IErrorResponse } from '../../models/adhesivo.interface';
 import { AdhesivoModalComponent } from '../adhesivo-modal/adhesivo-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-adhesivos-list',

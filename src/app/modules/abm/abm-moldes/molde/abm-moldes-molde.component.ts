@@ -11,30 +11,30 @@ import {
 } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
-import { DialogCustomComponent } from 'app/modules/prompts/dialog-custom/dialog-custom.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
+import { DialogCustomComponent } from 'app/modules/abm/abm-moldes/molde/dialog-custom/dialog-custom.component';
 import {
   Boca,
   Fotos,
   Molde,
   Planos,
   Plano,
-} from 'app/shared/models/molde.model';
-import { MoldesService } from 'app/shared/services/moldes.service';
+} from 'app/modules/abm/abm-moldes/molde.model';
+import { MoldesService } from 'app/modules/abm/abm-moldes/moldes.service';
 import { Subscription, Subject, Observable, forkJoin } from 'rxjs';
 import { take, startWith, map } from 'rxjs/operators';
 import { ABMMoldeService } from '../abm-moldes.service';
 import * as FileSaver from 'file-saver';
 import { ABMMoldesModalComponent } from '../modal/abm-moldes-modal.component';
-import { ClientesService } from 'app/shared/services/clientes.service';
-import { Observacion } from 'app/shared/models/observacion.model';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
+import { Observacion } from 'app/modules/abm/abm-formula/observacion.model';
 import { ModalFotoComponent } from '../modal-foto/modal-foto.component';
 import { MatTabChangeEvent, MatTabGroup } from '@angular/material/tabs';
 import { MatTableDataSource } from '@angular/material/table';
-import { PDFModalDialogComponent } from 'app/modules/prompts/pdf-modal/pdf-modal.component';
+import { PDFModalDialogComponent } from 'app/shared/components/pdf-modal/pdf-modal.component';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { TextareaModalComponent } from '../textarea-modal/textarea-modal.component';
 
 interface Cliente {

@@ -8,8 +8,8 @@ import { Subject, merge, of, Observable } from 'rxjs';
 import { startWith, switchMap, map, catchError, takeUntil } from 'rxjs/operators';
 import { IOrdenFabricacion, IOrdenFabricacionPieza } from '../../models/orden-fabricacion.interface';
 import { AbmOrdenFabricacionService } from '../../abm-orden-fabricacion.service';
-import { ClientesService } from 'app/shared/services/clientes.service';
-import { Cliente } from 'app/shared/models/cliente.model';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
+import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete'
 import { MatDialog } from '@angular/material/dialog';
 import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog/asignar-prensa-dialog.component';

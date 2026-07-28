@@ -1,6 +1,6 @@
 import { AfterContentChecked, ChangeDetectorRef, Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
-import { RolesService } from 'app/shared/services/roles.service';
+import { RolesService } from 'app/modules/abm/abm-roles/roles.service';
 import { ABMRolService } from './abm-roles.service';
 
 @Component({

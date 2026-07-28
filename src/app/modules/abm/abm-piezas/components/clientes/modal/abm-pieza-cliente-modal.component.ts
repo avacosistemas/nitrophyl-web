@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { Subscription, Observable, merge } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';

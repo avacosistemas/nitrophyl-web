@@ -4,8 +4,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { CargaArchivo } from "app/shared/models/molde.model";
-import { MoldesService } from "app/shared/services/moldes.service";
+import { CargaArchivo } from "app/modules/abm/abm-moldes/molde.model";
+import { MoldesService } from "app/modules/abm/abm-moldes/moldes.service";
 
 @Component({
   selector: 'abm-moldes-modal',

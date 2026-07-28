@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { LotModalComponent } from 'app/modules/abm/abm-lots/lot-modal/lot-modal.component';
-import { LotUpdateService } from 'app/shared/services/lot-update.service';
+import { LotUpdateService } from 'app/modules/abm/abm-lots/lot-update.service';
 
 @Component({
   selector: 'abm-lots',

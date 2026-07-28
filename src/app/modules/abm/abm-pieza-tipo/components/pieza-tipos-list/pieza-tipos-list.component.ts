@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmPiezaTipoService } from '../../abm-pieza-tipo.service';
 import { IPiezaTipo, IErrorResponse } from '../../models/pieza-tipo.interface';
 import { PiezaTipoModalComponent } from '../pieza-tipo-modal/pieza-tipo-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
   selector: 'app-pieza-tipos-list',

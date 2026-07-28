@@ -11,17 +11,17 @@ import { map, Observable, Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 // * Services.
-import { AssayService } from 'app/shared/services/assay.service';
-import { ConfigTestService } from 'app/shared/services/config-test.service';
-import { FormulasService } from 'app/shared/services/formulas.service';
+import { AssayService } from 'app/modules/abm/abm-assays/assay.service';
+import { ConfigTestService } from 'app/modules/abm/abm-assays/config-test.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 
 // * Interfaces.
 import {
   IConfigTest,
   IConfigTestResponse,
   IConfigTestsResponse,
-} from 'app/shared/models/config-test.interface';
-import { IFormula } from 'app/shared/models/formula.interface';
+} from 'app/modules/abm/abm-assays/config-test.interface';
+import { IFormula } from 'app/modules/abm/abm-formula/formula.interface';
 
 @Component({
   selector: 'abm-assays',

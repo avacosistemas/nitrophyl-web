@@ -9,7 +9,7 @@ import { Router } from '@angular/router';
 import { AbmMateriaPrimaService } from '../../abm-materiaprima.service';
 import { IMateriaPrima, IErrorResponse } from '../../models/materia-prima.interface';
 import { MateriaPrimaModalComponent } from '../materia-prima-modal/materia-prima-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-materia-prima-list',

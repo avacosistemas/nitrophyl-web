@@ -2,12 +2,12 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { IConfiguracionPruebaParametro, IConditions, ITestFormula } from 'app/shared/models/formula.interface';
+import { IConfiguracionPruebaParametro, IConditions, ITestFormula } from 'app/modules/abm/abm-formula/formula.interface';
 import { TestService } from 'app/shared/services/test.service';
-import { ConfigTestService } from 'app/shared/services/config-test.service';
+import { ConfigTestService } from 'app/modules/abm/abm-assays/config-test.service';
 import { merge } from 'rxjs';
-import { TestModifyDialogComponent } from 'app/modules/prompts/test-modify/test-modify-dialog.component';
-import { CheckParamDialogComponent } from 'app/modules/prompts/check-param/check-param-dialog.component';
+import { TestModifyDialogComponent } from 'app/modules/abm/abm-formula/test-modify/test-modify-dialog.component';
+import { CheckParamDialogComponent } from 'app/modules/abm/abm-formula/check-param/check-param-dialog.component';
 
 interface MissingValue {
     nombre: string;

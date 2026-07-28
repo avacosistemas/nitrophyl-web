@@ -12,11 +12,11 @@ import { Subscription, BehaviorSubject, take, of } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 
 // * Services.
-import { MachinesService } from 'app/shared/services/machines.service';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
 import { TestService } from 'app/shared/services/test.service';
 
 // * Interfaces.
-import { IMachine, IMachineResponse } from 'app/shared/models/machine.model';
+import { IMachine, IMachineResponse } from 'app/modules/abm/abm-machines/machine.model';
 import { ITest } from 'app/shared/models/test.model';
 
 // * Forms.
@@ -30,7 +30,7 @@ import { DateAdapter } from '@angular/material/core';
 import * as moment from 'moment';
 
 // * Components.
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 
 @Component({
   selector: 'app-machine',
@@ -188,11 +188,6 @@ export class MachineComponent implements OnInit, AfterViewInit, OnDestroy {
     this._testService.addTest(newTest.idMaquina, newTest).subscribe({
       next: (response) => {
         const addedTest = response.data;
-
-        // if (!addedTest || !addedTest.id) {
-        //   this.openSnackBar(false, 'No se recibió un ID válido para la nueva prueba');
-        //   return;
-        // }
 
         currentTests.push({
           id: addedTest.id,

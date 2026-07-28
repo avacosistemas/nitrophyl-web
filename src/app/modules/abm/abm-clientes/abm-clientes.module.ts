@@ -22,7 +22,7 @@ import { CoreSharedModule } from 'app/core/shared/shared.module';
 import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
-import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { PromptsModule } from 'app/shared/components/prompts.modules';
 import { MaterialModule } from 'app/material.module';
 
 const abmUsuariosRoutes: Route[] = [

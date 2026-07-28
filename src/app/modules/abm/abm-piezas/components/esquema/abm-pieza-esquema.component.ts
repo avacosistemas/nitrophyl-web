@@ -8,9 +8,9 @@ import { Observable } from 'rxjs';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { ABMPiezaEsquemaModalComponent } from './modal-form/abm-pieza-esquema-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ImgModalDialogComponent } from 'app/modules/prompts/img-modal/img-modal.component';
+import { ImgModalDialogComponent } from 'app/shared/components/img-modal/img-modal.component';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({

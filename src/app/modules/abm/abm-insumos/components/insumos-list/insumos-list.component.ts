@@ -10,7 +10,7 @@ import { AbmInsumosService } from '../../abm-insumos.service';
 import { IInsumo, IErrorResponse } from '../../models/insumo.interface';
 import { InsumoModalComponent } from '../insumo-modal/insumo-modal.component';
 import { InsumoObservationModalComponent } from '../insumo-observation-modal/insumo-observation-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-insumos-list',

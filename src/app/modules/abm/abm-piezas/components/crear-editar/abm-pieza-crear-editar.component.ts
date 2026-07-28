@@ -15,9 +15,9 @@ import { Observable, of, combineLatest, forkJoin, throwError, merge } from 'rxjs
 import { map, startWith, catchError, debounceTime, switchMap, filter } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
-import { FormulasService } from 'app/shared/services/formulas.service';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { RevisionInicialInputComponent } from './revision-inicial-input.component';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatTableDataSource } from '@angular/material/table';

@@ -8,7 +8,7 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { AbmInsumoTipoService } from '../../abm-insumo-tipo.service';
 import { IInsumoTipo, IErrorResponse } from '../../models/insumo-tipo.interface';
 import { InsumoTipoModalComponent } from '../insumo-tipo-modal/insumo-tipo-modal.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-insumo-tipo-list',

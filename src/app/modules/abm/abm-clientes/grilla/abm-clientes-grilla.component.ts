@@ -2,11 +2,11 @@ import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { Router } from '@angular/router';
-import { Cliente } from 'app/shared/models/cliente.model';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Pais } from 'app/shared/models/cliente.model';
+import { Pais } from 'app/modules/abm/abm-clientes/cliente.model';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 

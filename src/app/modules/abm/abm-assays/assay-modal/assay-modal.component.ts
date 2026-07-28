@@ -1,21 +1,21 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormBuilder, FormGroup, Validators, FormArray, FormControl, AbstractControl } from '@angular/forms';
-import { AssayService } from 'app/shared/services/assay.service';
-import { ConfigTestService } from 'app/shared/services/config-test.service';
-import { MachinesService } from 'app/shared/services/machines.service';
+import { AssayService } from 'app/modules/abm/abm-assays/assay.service';
+import { ConfigTestService } from 'app/modules/abm/abm-assays/config-test.service';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { IAssay, IAssayCreate, IAssayDetail, IAssayDetailsResponse, IAssayDetailResponse } from 'app/shared/models/assay.interface';
-import { IConfigTest, IParams } from 'app/shared/models/config-test.interface';
-import { IMachineResponse, IMachine } from 'app/shared/models/machine.model';
+import { IAssay, IAssayCreate, IAssayDetail, IAssayDetailsResponse, IAssayDetailResponse } from 'app/modules/abm/abm-assays/assay.interface';
+import { IConfigTest, IParams } from 'app/modules/abm/abm-assays/config-test.interface';
+import { IMachineResponse, IMachine } from 'app/modules/abm/abm-machines/machine.model';
 import { DatePipe } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
-import { RemoveDialogComponent } from 'app/modules/prompts/remove/remove.component';
+import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 import { map } from 'rxjs';
 import { DateAdapter } from '@angular/material/core';
 import { AssayDialogComponent } from '../assay-dialog/assay-dialog.component';
 import { AssayDialogAlertComponent } from '../assay-dialog-alert/assay-dialog-alert.component';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 interface Icon {
     color: string;

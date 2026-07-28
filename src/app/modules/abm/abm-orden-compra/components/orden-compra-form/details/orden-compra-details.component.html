@@ -64,7 +64,8 @@
                 <mat-tab-group class="h-full flex flex-col abm-tabs" [selectedIndex]="activeTabIndex" (selectedIndexChange)="activeTabIndex = $event">
                     <mat-tab>
                         <ng-template mat-tab-label>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 transition-colors duration-200"
+                                [ngClass]="{'text-primary': activeTabIndex === 0, 'text-gray-500': activeTabIndex !== 0}">
                                 <mat-icon svgIcon="heroicons_outline:cube" class="icon-size-5"></mat-icon>
                                 <span class="font-bold text-sm tracking-wide">Cargar Piezas</span>
                             </div>
@@ -82,7 +83,8 @@
 
                     <mat-tab>
                         <ng-template mat-tab-label>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 transition-colors duration-200"
+                                [ngClass]="{'text-primary': activeTabIndex === 1, 'text-gray-500': activeTabIndex !== 1}">
                                 <mat-icon svgIcon="heroicons_outline:shopping-bag" class="icon-size-5"></mat-icon>
                                 <span class="font-bold text-sm tracking-wide">Piezas Agregadas</span>
                                 <span class="flex items-center justify-center bg-primary text-white text-xs font-bold rounded-full min-w-5 h-5 px-1.5 shadow-sm">

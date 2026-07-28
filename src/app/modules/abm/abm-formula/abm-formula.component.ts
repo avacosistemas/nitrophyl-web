@@ -6,8 +6,8 @@ import {
 import { Router } from '@angular/router';
 
 // * Services.
-import { FormulasService } from 'app/shared/services/formulas.service';
-import { MachinesService } from 'app/shared/services/machines.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
+import { MachinesService } from 'app/modules/abm/abm-machines/machines.service';
 
 // * Forms.
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';

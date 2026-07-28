@@ -3,7 +3,7 @@ import { FormGroup, Validators } from '@angular/forms';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { Observable, Subject } from 'rxjs';
 import { startWith, map, takeUntil } from 'rxjs/operators';
-import { ClientesService } from 'app/shared/services/clientes.service';
+import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { AbmTransportesService } from 'app/modules/abm/abm-transportes/abm-transportes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
 

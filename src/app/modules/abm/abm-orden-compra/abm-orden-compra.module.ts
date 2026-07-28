@@ -24,7 +24,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 
 import { HeaderSharedModule } from 'app/shared/header-shared.module';
-import { PromptsModule } from 'app/modules/prompts/prompts.modules';
+import { PromptsModule } from 'app/shared/components/prompts.modules';
 
 import { ABMOrdenCompraComponent } from './abm-orden-compra.component';
 import { OrdenCompraListComponent } from './components/orden-compra-list/orden-compra-list.component';

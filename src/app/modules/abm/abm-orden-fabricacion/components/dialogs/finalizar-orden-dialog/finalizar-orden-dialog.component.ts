@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef, MatDialog } from '@angular/material/dial
 import { AbmOrdenFabricacionService } from '../../../abm-orden-fabricacion.service';
 import { Observable, of } from 'rxjs';
 import { startWith, switchMap, debounceTime, catchError, map } from 'rxjs/operators';
-import { GenericModalComponent } from 'app/modules/prompts/modal/generic-modal.component';
+import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 
 @Component({
     selector: 'app-finalizar-orden-dialog',

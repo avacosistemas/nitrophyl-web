@@ -2,14 +2,14 @@ import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
 import { map, Observable, Subscription } from 'rxjs';
 
 // * Services.
-import { AssayService } from 'app/shared/services/assay.service';
+import { AssayService } from 'app/modules/abm/abm-assays/assay.service';
 
 // * Interfaces.
 import {
   IAssay,
   IAssayResponse,
   IAssaysResponse,
-} from 'app/shared/models/assay.interface';
+} from 'app/modules/abm/abm-assays/assay.interface';
 
 // * Material.
 import { MatDialog } from '@angular/material/dialog';

@@ -4,9 +4,9 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
-import { RemoveDialogComponent } from "app/modules/prompts/remove/remove.component";
-import { Contacto } from "app/shared/models/cliente.model";
-import { ClientesService } from "app/shared/services/clientes.service";
+import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
+import { Contacto } from "app/modules/abm/abm-clientes/cliente.model";
+import { ClientesService } from "app/modules/abm/abm-clientes/clientes.service";
 import { Subscription } from "rxjs";
 import { ABMClientesService } from "../abm-clientes.service";
 
