@@ -259,6 +259,23 @@ export class NavegacionService {
       ],
     },
     {
+      icon: 'mat_solid:monitor',
+      id: 'monitoreo',
+      title: 'Monitoreo',
+      type: 'collapsable',
+      permissionCode: 'MONITOREO',
+      children: [
+        {
+          icon: 'heroicons_outline:presentation-chart-bar',
+          id: 'monitoreo-maquinas',
+          link: '/monitoreo/maquinas',
+          title: 'Máquinas',
+          permissionCode: 'MONITOREO_MAQUINAS',
+          type: 'basic',
+        }
+      ]
+    },
+    {
       icon: 'heroicons_outline:cog',
       id: 'security',
       title: 'Seguridad',

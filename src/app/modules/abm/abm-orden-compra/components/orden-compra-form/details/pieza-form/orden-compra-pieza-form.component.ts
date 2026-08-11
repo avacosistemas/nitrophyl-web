@@ -245,7 +245,8 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
             fechaEntrega: null,
             observacion: grupo.observacion || '',
             aplicarDescuento: grupo.descuento !== null && grupo.descuento !== undefined,
-            descuento: grupo.descuento || null
+            descuento: grupo.descuento || null,
+            observacionDescuento: grupo.observacionDescuento || ''
         });
         this.onPiezaSelected({ option: { value: { id: grupo.idPieza } } });
     }
@@ -280,6 +281,7 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
             grupo.fechaCotizacion = fechaCotiz;
             grupo.esActualizacion = p.actualizarCotizacion;
             grupo.observacion = p.observacion || '';
+            grupo.observacionDescuento = p.observacionDescuento || '';
             grupo.descuento = desc;
         } else {
             grupo = {
@@ -287,6 +289,7 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
                 idCotizacion: idCotiz, precio: precio, fechaCotizacion: fechaCotiz,
                 esActualizacion: p.actualizarCotizacion, batches: [batch],
                 observacion: p.observacion || '',
+                observacionDescuento: p.observacionDescuento || '',
                 descuento: desc
             };
             this.piezasAgregadas.push(grupo);
@@ -305,7 +308,7 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
     }
 
     resetItemForm(openAutocomplete: boolean = true): void {
-        this.piezaForm.reset({ soloDelCliente: true, aplicarDescuento: false, descuento: null, observacion: '' });
+        this.piezaForm.reset({ soloDelCliente: true, aplicarDescuento: false, descuento: null, observacion: '', observacionDescuento: '' });
         this.isEditingItem = false;
         this.piezaCotizacionInfo = null;
         this.auxiliarValor = null;

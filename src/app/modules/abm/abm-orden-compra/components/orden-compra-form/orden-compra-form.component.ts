@@ -70,7 +70,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             actualizarCotizacion: [false],
             observacion: [''],
             aplicarDescuento: [false],
-            descuento: [null, [Validators.min(0)]]
+            descuento: [null, [Validators.min(0)]],
+            observacionDescuento: ['']
         });
     }
 
@@ -137,6 +138,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                     esActualizacion: false, denominacion: d.pieza, precio: d.valorCotizacion,
                     fechaCotizacion: d.fechaCotizacion ? moment(d.fechaCotizacion).format('DD/MM/YYYY') : '',
                     descuento: d.descuento !== undefined ? d.descuento : null,
+                    observacionDescuento: d.observacionDescuento || '',
                     observacion: d.observacion || '',
                     batches: d.entregasSolicitadas.map((e: any) => ({
                         id: e.id, idTemp: e.id, cantidadSolicitada: e.cantidad,
@@ -240,6 +242,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 idCotizacion: (!g.esActualizacion && g.idCotizacion) ? g.idCotizacion : null,
                 valorCotizacion: parseFloat(g.precio || 0), fechaCotizacion: g.fechaCotizacion,
                 descuento: g.descuento !== undefined && g.descuento !== null ? g.descuento : null,
+                observacionDescuento: g.observacionDescuento || null,
                 observacion: g.observacion || null,
                 entregasSolicitadas: g.batches.map((b: any) => ({
                     id: b.id || null, cantidad: b.cantidadSolicitada, fechaEntregaSolicitada: b.fechaEntrega

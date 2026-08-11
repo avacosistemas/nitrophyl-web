@@ -18,6 +18,8 @@ import { RegistrarEntregaDialogComponent } from '../dialogs/registrar-entrega-di
 import { OtPreviewDialogComponent } from '../dialogs/ot-preview-dialog/ot-preview-dialog.component';
 import moment from 'moment';
 import { generarHtmlOT } from '../../utils/ot-html.generator';
+import { SelectionModel } from '@angular/cdk/collections';
+import { generarHtmlResumen } from '../../utils/resumen-html.generator';
 
 type ClienteNitrophyl = Omit<Partial<Cliente>, 'id'> & { id: number | null; nombre: string };
 
@@ -39,6 +41,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'entregadas', 'saldo', 'acciones'
     ];
     totalReg: number = 0;
+    selection = new SelectionModel<IOrdenFabricacion>(true, []);
+    clienteAplicado: any = null;
 
     searchForm: FormGroup;
     clientes: ClienteNitrophyl[] = [];
@@ -83,6 +87,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                     this.isLoading = false;
                     return of(null);
                 }
+                this.selection.clear();
+                this.clienteAplicado = formValues.cliente;
                 this.isLoading = true;
                 const params = this.buildRequestParams();
                 return this._ordenFabricacionService.getOrdenesFabricacion(params).pipe(
@@ -235,11 +241,13 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             this._notificationService.showError('Debe seleccionar el tipo de fecha para aplicar el filtro de fechas.');
             return;
         }
+        this.selection.clear();
         this.paginator.pageIndex = 0;
         this.paginator.page.emit();
     }
 
     limpiarFiltros(): void {
+        this.clienteAplicado = null;
         this.searchForm.reset({
             cliente: null,
             tipoFecha: '',
@@ -387,5 +395,61 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             case 'FINALIZADA': return 'Finalizada';
             default: return estado;
         }
+    }
+
+    isClienteSelected(): boolean {
+        const cliente = this.clienteAplicado;
+        return !!(cliente && (typeof cliente === 'object' && (cliente.id !== undefined || cliente.nombre)));
+    }
+
+    get getDisplayedColumns(): string[] {
+        const columns = [
+            'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
+            'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'entregadas', 'saldo', 'acciones'
+        ];
+        if (this.isClienteSelected()) {
+            return ['select', ...columns];
+        }
+        return columns;
+    }
+
+    isAllSelected() {
+        const numSelected = this.selection.selected.length;
+        const numRows = this.dataSource.data.length;
+        return numSelected === numRows;
+    }
+
+    masterToggle() {
+        this.isAllSelected() ?
+            this.selection.clear() :
+            this.dataSource.data.forEach(row => this.selection.select(row));
+    }
+
+    generarResumen() {
+        const selectedIds = this.selection.selected.map(item => item.id);
+        this.isLoading = true;
+        this._ordenFabricacionService.getResumenOFMock(selectedIds).subscribe({
+            next: (response: any) => {
+                this.isLoading = false;
+                if (response && response.status === 'OK' && response.data) {
+                    const html = generarHtmlResumen(response.data);
+                    this._dialog.open(OtPreviewDialogComponent, {
+                        width: '1000px',
+                        maxWidth: '95vw',
+                        panelClass: 'ot-preview-dialog-panel',
+                        data: {
+                            html: html,
+                            title: 'Resumen de Órdenes de Fabricación'
+                        }
+                    });
+                } else {
+                    this._notificationService.showError('No se pudo obtener el resumen.');
+                }
+            },
+            error: () => {
+                this.isLoading = false;
+                this._notificationService.showError('Error al obtener el resumen.');
+            }
+        });
     }
 }

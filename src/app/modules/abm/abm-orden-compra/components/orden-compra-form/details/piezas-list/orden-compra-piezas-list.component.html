@@ -143,6 +143,11 @@
                     <strong class="text-xs font-bold text-gray-500 uppercase tracking-widest">Observaciones:</strong>
                     {{ grupo.observacion }}
                 </div>
+                <div *ngIf="grupo.observacionDescuento"
+                    class="text-sm text-gray-600 bg-gray-100/50 p-2.5 px-4 border-t border-gray-200">
+                    <strong class="text-xs font-bold text-green-700 uppercase tracking-widest">Observaciones del Descuento:</strong>
+                    {{ grupo.observacionDescuento }}
+                </div>
             </div>
         </div>
 

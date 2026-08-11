@@ -319,6 +319,15 @@ export const appRoutes: Route[] = [
           ),
       },
       {
+        path: 'monitoreo',
+        canActivate: [PermissionGuard],
+        data: { permission: 'MONITOREO_MAQUINAS' },
+        loadChildren: () =>
+          import('app/modules/components/monitoreo/monitoreo.module').then(
+            (m: any) => m.MonitoreoModule
+          ),
+      },
+      {
         path: 'formulas',
         loadChildren: () =>
           import('app/modules/abm/abm-formula/abm-formula.module').then(

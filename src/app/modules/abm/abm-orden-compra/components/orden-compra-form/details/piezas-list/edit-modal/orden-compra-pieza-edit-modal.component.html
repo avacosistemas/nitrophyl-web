@@ -27,22 +27,28 @@
                 class="text-xs font-bold uppercase text-secondary">
                 Aplicar descuento
             </mat-checkbox>
-            <div *ngIf="form.get('aplicarDescuento').value" class="animate-in flex gap-5">
-                <mat-form-field appearance="outline" class="w-1/2 fuse-mat-no-subscript">
-                    <mat-label>Descuento</mat-label>
-                    <input matInput type="number" formControlName="descuento" min="0" max="100" placeholder="0">
-                    <span matSuffix class="font-bold text-gray-500 mr-2">%</span>
-                    <mat-error *ngIf="form.get('descuento').hasError('required')">El descuento es requerido</mat-error>
-                    <mat-error *ngIf="form.get('descuento').hasError('min') || form.get('descuento').hasError('max')">
-                        El descuento debe estar entre 0.01% y 100%
-                    </mat-error>
-                </mat-form-field>
-                
-                <div *ngIf="form.get('aplicarDescuento').value && form.get('descuento').value > 0"
-                    class="w-1/2 flex flex-col text-xs font-medium mt-2 uppercase">
-                    <span>Valor de la Cotización Aplicando Descuento:</span>
-                    <span class="text-2xl font-bold text-green-600">{{ formatCurrency(precioDescuentoCalculado) }}</span>
+            <div *ngIf="form.get('aplicarDescuento').value" class="animate-in flex flex-col gap-3">
+                <div class="flex gap-5">
+                    <mat-form-field appearance="outline" class="w-1/2 fuse-mat-no-subscript">
+                        <mat-label>Descuento</mat-label>
+                        <input matInput type="number" formControlName="descuento" min="0" max="100" placeholder="0">
+                        <span matSuffix class="font-bold text-gray-500 mr-2">%</span>
+                        <mat-error *ngIf="form.get('descuento').hasError('required')">El descuento es requerido</mat-error>
+                        <mat-error *ngIf="form.get('descuento').hasError('min') || form.get('descuento').hasError('max')">
+                            El descuento debe estar entre 0.01% y 100%
+                        </mat-error>
+                    </mat-form-field>
+                    
+                    <div *ngIf="form.get('aplicarDescuento').value && form.get('descuento').value > 0"
+                        class="w-1/2 flex flex-col text-xs font-medium mt-2 uppercase">
+                        <span>Valor de la Cotización Aplicando Descuento:</span>
+                        <span class="text-2xl font-bold text-green-600">{{ formatCurrency(precioDescuentoCalculado) }}</span>
+                    </div>
                 </div>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Observaciones del Descuento</mat-label>
+                    <textarea matInput formControlName="observacionDescuento" rows="2" placeholder="Ingrese observaciones del descuento..."></textarea>
+                </mat-form-field>
             </div>
         </div>
 

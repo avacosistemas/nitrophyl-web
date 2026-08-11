@@ -104,7 +104,8 @@ export class OrdenCompraPiezasListComponent {
                 precio: grupo.precio,
                 fechaCotizacion: grupo.fechaCotizacion,
                 descuento: grupo.descuento,
-                observacion: grupo.observacion
+                observacion: grupo.observacion,
+                observacionDescuento: grupo.observacionDescuento
             }
         });
 
@@ -114,6 +115,7 @@ export class OrdenCompraPiezasListComponent {
                 grupo.fechaCotizacion = result.fechaCotizacion ? result.fechaCotizacion.format('DD/MM/YYYY') : '';
                 grupo.descuento = result.descuento;
                 grupo.observacion = result.observacion;
+                grupo.observacionDescuento = result.observacionDescuento;
                 grupo.esActualizacion = true;
                 grupo.idCotizacion = null;
                 this.piecesChanged.emit([...this.piezasAgregadas]);

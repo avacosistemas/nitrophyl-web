@@ -1,0 +1,50 @@
+<div class="absolute inset-0 flex flex-col min-w-0 overflow-hidden">
+    <app-header 
+        [title]="'Monitoreo'" 
+        [subtitle]="'Máquinas'" 
+        [breadcrumbs]="[
+            { title: 'Monitoreo', route: ['/monitoreo/maquinas'], condition: true },
+            { title: 'Máquinas', route: ['/monitoreo/maquinas'], condition: true }
+        ]" 
+        [buttons]="[
+            {
+                type: 'flat',
+                label: 'Actualizar',
+                condition: true,
+                isDisabled: false,
+                action: 'refresh'
+            }
+        ]" 
+        (buttonAction)="handleAction($event)">
+    </app-header>
+
+    <div class="content-scroll p-6 sm:p-10 w-full h-full bg-gray-50 overflow-y-auto">
+        <div class="flex flex-col gap-6">
+            <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-gray-200 shadow-sm min-h-[200px]">
+                <mat-progress-spinner color="primary" mode="indeterminate"></mat-progress-spinner>
+                <span class="mt-4 text-gray-500 font-medium">Cargando...</span>
+            </div>
+
+            <div *ngIf="errorLoading && !isLoading" class="p-6 bg-red-50 border border-red-200 rounded-2xl shadow-sm text-center">
+                <mat-icon class="text-red-500 text-5xl w-12 h-12 mb-2">warning</mat-icon>
+                <h3 class="text-lg font-bold text-red-800">Error de carga</h3>
+                <p class="text-sm text-red-600 mt-1">No se pudieron cargar los datos de las máquinas. Por favor, intente de nuevo.</p>
+                <button mat-stroked-button color="warn" class="mt-4" (click)="loadMaquinaData()">Reintentar</button>
+            </div>
+
+            <div *ngIf="!isLoading && !errorLoading" class="w-full p-6 bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-between">
+                <div *ngIf="chartOptions" class="w-full">
+                    <apx-chart
+                        [series]="chartOptions.series"
+                        [chart]="chartOptions.chart"
+                        [plotOptions]="chartOptions.plotOptions"
+                        [colors]="chartOptions.colors"
+                        [dataLabels]="chartOptions.dataLabels"
+                        [xaxis]="chartOptions.xaxis"
+                        [title]="chartOptions.title"
+                    ></apx-chart>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

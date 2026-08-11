@@ -26,7 +26,8 @@ export class OrdenCompraPiezaEditModalComponent implements OnInit {
             fechaCotizacion: [initialDate, Validators.required],
             aplicarDescuento: [data.descuento !== null && data.descuento !== undefined],
             descuento: [data.descuento, [Validators.min(0), Validators.max(100)]],
-            observacion: [data.observacion || '']
+            observacion: [data.observacion || ''],
+            observacionDescuento: [data.observacionDescuento || '']
         });
     }
 
@@ -71,7 +72,8 @@ export class OrdenCompraPiezaEditModalComponent implements OnInit {
             precio: parseFloat(raw.precio || 0),
             fechaCotizacion: raw.fechaCotizacion ? moment(raw.fechaCotizacion) : null,
             descuento: raw.aplicarDescuento && raw.descuento !== null && raw.descuento !== undefined && raw.descuento !== '' ? parseFloat(raw.descuento) : null,
-            observacion: raw.observacion || ''
+            observacion: raw.observacion || '',
+            observacionDescuento: raw.observacionDescuento || ''
         });
     }
 

@@ -46,6 +46,7 @@ export interface IOrdenCompraCreateDTO {
         valorCotizacion?: number | null;
         descuento?: number | null;
         observacion?: string | null;
+        observacionDescuento?: string | null;
         entregasSolicitadas: {
             id?: number;
             cantidad: number;

@@ -60,9 +60,7 @@ export class ABMPiezaPlanosComponent extends ABMPiezaBaseComponent implements On
     }
 
     setDisplayedColumns(): void {
-        this.displayedColumnsPlanos = this.mode === 'view'
-            ? this.baseDisplayedColumns
-            : [...this.baseDisplayedColumns, 'acciones'];
+        this.displayedColumnsPlanos = [...this.baseDisplayedColumns, 'acciones'];
     }
 
     loadPlanos(): void {

@@ -1,0 +1,11 @@
+{
+  "status": "OK",
+  "data": [
+    { "maquina": "Compresion-Deflexion", "cantidad": 15 },
+    { "maquina": "Densimetro", "cantidad": 12 },
+    { "maquina": "Horno Binder", "cantidad": 9 },
+    { "maquina": "Durometro", "cantidad": 7 },
+    { "maquina": "Camara de ozono", "cantidad": 6 },
+    { "maquina": "Compresion Set", "cantidad": 3 }
+  ]
+}

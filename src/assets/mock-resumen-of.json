@@ -1,0 +1,65 @@
+{
+  "status": "OK",
+  "data": [
+    {
+      "pieza": "Asiento p/valv marip mecanizada 50,8 (Multiboca)",
+      "formula": "VE70F",
+      "hp": "HP-VE70F",
+      "numeroOt": "2026/009",
+      "ordenCompra": "OC-AV-009",
+      "fechaEntrega": "08/07/26",
+      "sector": "Mecanizado",
+      "maquina": "Torno CNC 01",
+      "cantidadTotal": 10,
+      "cantidadFabricada": 10
+    },
+    {
+      "pieza": "Asiento p/valv marip mecanizada 50,8 (Multiboca)",
+      "formula": "VE70F",
+      "hp": "HP-VE70F",
+      "numeroOt": "2026/010",
+      "ordenCompra": "OC-AV-010",
+      "fechaEntrega": "26/06/26",
+      "sector": "Mecanizado",
+      "maquina": "Torno CNC 01",
+      "cantidadTotal": 15,
+      "cantidadFabricada": 15
+    },
+    {
+      "pieza": "Asiento p/valv marip mecanizada 50,8 (Multiboca)",
+      "formula": "VE70F",
+      "hp": "HP-VE70F",
+      "numeroOt": "2026/017",
+      "ordenCompra": "OC-AV-017",
+      "fechaEntrega": "17/08/26",
+      "sector": "Mecanizado",
+      "maquina": "Torno CNC 02",
+      "cantidadTotal": 15,
+      "cantidadFabricada": 0
+    },
+    {
+      "pieza": "Asiento p/valv marip mecanizada 50,8 (Multiboca)",
+      "formula": "VE70F",
+      "hp": "HP-VE70F",
+      "numeroOt": "2026/018",
+      "ordenCompra": "OC-AV-018",
+      "fechaEntrega": "17/08/26",
+      "sector": "Mecanizado",
+      "maquina": "Torno CNC 02",
+      "cantidadTotal": 200,
+      "cantidadFabricada": 0
+    },
+    {
+      "pieza": "Asiento p/valv marip mecanizada 50,8 (Multiboca)",
+      "formula": "VE70F",
+      "hp": "HP-VE70F",
+      "numeroOt": "2026/019",
+      "ordenCompra": "OC-AV-019",
+      "fechaEntrega": "17/08/26",
+      "sector": "Mecanizado",
+      "maquina": "Torno CNC 01",
+      "cantidadTotal": 12,
+      "cantidadFabricada": 3
+    }
+  ]
+}
