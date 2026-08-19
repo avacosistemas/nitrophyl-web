@@ -106,10 +106,12 @@ export class AbmOrdenFabricacionService {
         return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/descargar/${id}`, id.toString());
     }
 
-    getResumenOFMock(ids: number[]): Observable<any> {
-        return this.http.get<any>('assets/mock-resumen-of.json');
-    // generarResumen(ids: number[]): Observable<any> {
-    //     return this.http.post<any>(`${this.apiUrl}/resumen`, { ids });
+    // getResumenOFMock(ids: number[]): Observable<any> {
+    //    return this.http.get<any>('assets/mock-resumen-of.json');
+    // }
+
+    generarResumen(ids: number[]): Observable<any> {
+         return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/resumen`, { ids });
     }
 
     getOrdenesCompraPorCliente(idCliente: number): Observable<any> {

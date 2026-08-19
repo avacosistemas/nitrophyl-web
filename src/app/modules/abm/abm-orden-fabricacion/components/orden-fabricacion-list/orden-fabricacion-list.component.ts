@@ -10,7 +10,9 @@ import { IOrdenFabricacion, IOrdenFabricacionPieza } from '../../models/orden-fa
 import { AbmOrdenFabricacionService } from '../../abm-orden-fabricacion.service';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
-import { MatAutocompleteTrigger } from '@angular/material/autocomplete'
+import { AbmSectorFabricaService } from 'app/modules/abm/abm-sector-fabrica/abm-sector-fabrica.service';
+import { AbmMaquinaFabricaService } from 'app/modules/abm/abm-maquina-fabrica/abm-maquina-fabrica.service';
+import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import { MatDialog } from '@angular/material/dialog';
 import { AsignarPrensaDialogComponent } from '../dialogs/asignar-prensa-dialog/asignar-prensa-dialog.component';
 import { FinalizarOrdenDialogComponent } from '../dialogs/finalizar-orden-dialog/finalizar-orden-dialog.component';
@@ -33,11 +35,13 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     @ViewChild(MatSort) sort!: MatSort;
     @ViewChild('clientInput', { read: MatAutocompleteTrigger }) clientAutocompleteTrigger!: MatAutocompleteTrigger;
     @ViewChild('piezaInput', { read: MatAutocompleteTrigger }) piezaAutocompleteTrigger!: MatAutocompleteTrigger;
+    @ViewChild('sectorInput', { read: MatAutocompleteTrigger }) sectorAutocompleteTrigger!: MatAutocompleteTrigger;
+    @ViewChild('maquinaInput', { read: MatAutocompleteTrigger }) maquinaAutocompleteTrigger!: MatAutocompleteTrigger;
 
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
     displayedColumns: string[] = [
-        'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
+        'select', 'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
         'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'entregadas', 'saldo', 'acciones'
     ];
     totalReg: number = 0;
@@ -49,12 +53,18 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     filteredClientes$!: Observable<ClienteNitrophyl[]>;
     piezas: any[] = [];
     filteredPiezas$!: Observable<any[]>;
+    sectores: any[] = [];
+    filteredSectores$!: Observable<any[]>;
+    maquinas: any[] = [];
+    filteredMaquinas$!: Observable<any[]>;
 
     private _destroying$ = new Subject<void>();
 
     constructor(
         private _ordenFabricacionService: AbmOrdenFabricacionService,
         private _clientesService: ClientesService,
+        private _sectorFabricaService: AbmSectorFabricaService,
+        private _maquinaFabricaService: AbmMaquinaFabricaService,
         private _notificationService: NotificationService,
         private _fb: FormBuilder,
         private _changeDetectorRef: ChangeDetectorRef,
@@ -62,6 +72,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
+            sector: [null],
+            maquina: [null],
             tipoFecha: [''],
             fechaDesde: [null],
             fechaHasta: [null],
@@ -75,6 +87,16 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     ngOnInit(): void {
         this.loadClientes();
         this.loadPiezas();
+        this.loadSectores();
+        this.loadMaquinas(null);
+
+        this.searchForm.get('sector')!.valueChanges.pipe(
+            takeUntil(this._destroying$)
+        ).subscribe(sector => {
+            this.searchForm.get('maquina')!.setValue(null, { emitEvent: false });
+            const idSector = (sector && typeof sector === 'object' && sector.id) ? sector.id : null;
+            this.loadMaquinas(idSector);
+        });
     }
 
     ngAfterViewInit(): void {
@@ -175,6 +197,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             asc: this.sort.direction !== 'desc',
             idx: activeSort,
             idCliente: formValues.cliente?.id,
+            idSeccion: (formValues.sector && typeof formValues.sector === 'object') ? formValues.sector.id : null,
+            idMaquina: (formValues.maquina && typeof formValues.maquina === 'object') ? formValues.maquina.id : null,
             tipoFecha: formValues.tipoFecha || null,
             fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null,
             fechaHasta: formValues.fechaHasta ? moment(formValues.fechaHasta).format('DD/MM/YYYY') : null,
@@ -235,6 +259,71 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         }, 50);
     }
 
+    loadSectores(): void {
+        this._sectorFabricaService.getSectoresCombo().pipe(takeUntil(this._destroying$)).subscribe({
+            next: (res) => {
+                this.sectores = res?.data || [];
+                this.filteredSectores$ = this.searchForm.get('sector')!.valueChanges.pipe(
+                    startWith(''),
+                    map(value => this._filterSectores(value))
+                );
+            },
+            error: () => this._notificationService.showError('Error al cargar sectores.')
+        });
+    }
+
+    private _filterSectores(value: string | any): any[] {
+        const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+        return this.sectores.filter(s => s.nombre?.toLowerCase().includes(filterValue));
+    }
+
+    displayFnSector(sector: any): string {
+        return sector?.nombre || '';
+    }
+
+    clearSectorSelection(): void {
+        this.searchForm.get('sector')!.setValue(null);
+        this._changeDetectorRef.detectChanges();
+        setTimeout(() => {
+            if (this.sectorAutocompleteTrigger) {
+                this.sectorAutocompleteTrigger.openPanel();
+            }
+        }, 50);
+    }
+
+    loadMaquinas(idSector?: number | null): void {
+        this._maquinaFabricaService.getMaquinasCombo(idSector || undefined).pipe(takeUntil(this._destroying$)).subscribe({
+            next: (res) => {
+                this.maquinas = res?.data || [];
+                this.searchForm.get('maquina')!.updateValueAndValidity();
+                this.filteredMaquinas$ = this.searchForm.get('maquina')!.valueChanges.pipe(
+                    startWith(''),
+                    map(value => this._filterMaquinas(value))
+                );
+            },
+            error: () => this._notificationService.showError('Error al cargar máquinas.')
+        });
+    }
+
+    private _filterMaquinas(value: string | any): any[] {
+        const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
+        return this.maquinas.filter(m => m.nombre?.toLowerCase().includes(filterValue));
+    }
+
+    displayFnMaquina(maquina: any): string {
+        return maquina?.nombre || '';
+    }
+
+    clearMaquinaSelection(): void {
+        this.searchForm.get('maquina')!.setValue(null);
+        this._changeDetectorRef.detectChanges();
+        setTimeout(() => {
+            if (this.maquinaAutocompleteTrigger) {
+                this.maquinaAutocompleteTrigger.openPanel();
+            }
+        }, 50);
+    }
+
     search(): void {
         const formValues = this.searchForm.value;
         if ((formValues.fechaDesde || formValues.fechaHasta) && !formValues.tipoFecha) {
@@ -250,6 +339,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         this.clienteAplicado = null;
         this.searchForm.reset({
             cliente: null,
+            sector: null,
+            maquina: null,
             tipoFecha: '',
             fechaDesde: null,
             fechaHasta: null,
@@ -403,14 +494,10 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     get getDisplayedColumns(): string[] {
-        const columns = [
-            'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
+        return [
+            'select', 'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
             'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'entregadas', 'saldo', 'acciones'
         ];
-        if (this.isClienteSelected()) {
-            return ['select', ...columns];
-        }
-        return columns;
     }
 
     isAllSelected() {
@@ -428,7 +515,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     generarResumen() {
         const selectedIds = this.selection.selected.map(item => item.id);
         this.isLoading = true;
-        this._ordenFabricacionService.getResumenOFMock(selectedIds).subscribe({
+        this._ordenFabricacionService.generarResumen(selectedIds).subscribe({
             next: (response: any) => {
                 this.isLoading = false;
                 if (response && response.status === 'OK' && response.data) {

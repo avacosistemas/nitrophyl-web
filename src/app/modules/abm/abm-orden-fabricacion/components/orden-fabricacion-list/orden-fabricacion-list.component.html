@@ -22,7 +22,7 @@
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>
-                    
+
                     <mat-form-field appearance="outline" class="md:col-span-2 lg:col-span-2">
                         <mat-label>Pieza</mat-label>
                         <input type="text" placeholder="Buscar pieza..." matInput formControlName="pieza"
@@ -36,6 +36,40 @@
                         <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFnPieza">
                             <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
                                 {{ pieza.codigo ? pieza.codigo + ' - ' : '' }}{{ pieza.denominacion }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Sector</mat-label>
+                        <input type="text" placeholder="Buscar sector..." matInput formControlName="sector"
+                            [matAutocomplete]="autoSector" #sectorInput="matAutocompleteTrigger">
+
+                        <button type="button" *ngIf="searchForm.get('sector').value" matSuffix mat-icon-button aria-label="Clear"
+                            (click)="clearSectorSelection(); $event.stopPropagation()">
+                            <mat-icon> close </mat-icon>
+                        </button>
+
+                        <mat-autocomplete #autoSector="matAutocomplete" [displayWith]="displayFnSector">
+                            <mat-option *ngFor="let sector of filteredSectores$ | async" [value]="sector">
+                                {{ sector.nombre }}
+                            </mat-option>
+                        </mat-autocomplete>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Máquina</mat-label>
+                        <input type="text" placeholder="Buscar máquina..." matInput formControlName="maquina"
+                            [matAutocomplete]="autoMaquina" #maquinaInput="matAutocompleteTrigger">
+
+                        <button type="button" *ngIf="searchForm.get('maquina').value" matSuffix mat-icon-button aria-label="Clear"
+                            (click)="clearMaquinaSelection(); $event.stopPropagation()">
+                            <mat-icon> close </mat-icon>
+                        </button>
+
+                        <mat-autocomplete #autoMaquina="matAutocomplete" [displayWith]="displayFnMaquina">
+                            <mat-option *ngFor="let maquina of filteredMaquinas$ | async" [value]="maquina">
+                                {{ maquina.nombre }}
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>
@@ -85,7 +119,7 @@
                         <mat-datepicker #pickerHasta></mat-datepicker>
                     </mat-form-field>
 
-                    <div class="flex justify-end items-center gap-2">
+                    <div class="sm:col-span-2 md:col-span-1 lg:col-span-4 flex justify-end items-center gap-2 pb-1">
                         <button mat-stroked-button type="button" (click)="limpiarFiltros()">Limpiar</button>
                         <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
                             type="submit">Buscar</button>
@@ -95,7 +129,7 @@
         </mat-expansion-panel>
     </mat-accordion>
 
-    <div *ngIf="isClienteSelected() && selection.selected.length >= 2" class="flex items-center justify-between p-4 mt-6 bg-blue-50 border border-blue-200 rounded-lg shadow-sm transition-all duration-300">
+    <div *ngIf="selection.selected.length >= 2" class="flex items-center justify-between p-4 mt-6 bg-blue-50 border border-blue-200 rounded-lg shadow-sm transition-all duration-300">
         <span class="text-blue-800 font-medium flex items-center gap-2">
             <mat-icon class="text-blue-600">info</mat-icon>
             Se han seleccionado {{ selection.selected.length }} órdenes de fabricación.
@@ -111,13 +145,13 @@
         </div>
         <table mat-table [dataSource]="dataSource" matSort class="w-full">
             <ng-container matColumnDef="select">
-                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 px-3 text-center w-12">
+                <th mat-header-cell *matHeaderCellDef class="bg-gray-50 px-1 pl-2 text-center w-8 min-w-[32px] max-w-[32px]">
                     <mat-checkbox (change)="$event ? masterToggle() : null"
                         [checked]="selection.hasValue() && isAllSelected()"
                         [indeterminate]="selection.hasValue() && !isAllSelected()">
                     </mat-checkbox>
                 </th>
-                <td mat-cell *matCellDef="let row" class="px-3 text-center w-12">
+                <td mat-cell *matCellDef="let row" class="px-1 pl-2 text-center w-8 min-w-[32px] max-w-[32px]">
                     <mat-checkbox (click)="$event.stopPropagation()"
                         (change)="$event ? selection.toggle(row) : null"
                         [checked]="selection.isSelected(row)">
@@ -228,7 +262,7 @@
             </ng-container>
 
             <ng-container matColumnDef="header-oc">
-                <th mat-header-cell *matHeaderCellDef [attr.colspan]="isClienteSelected() ? 6 : 5"
+                <th mat-header-cell *matHeaderCellDef [attr.colspan]="6"
                     class="bg-[#2c3344] text-white text-center text-sm font-bold uppercase tracking-widest py-1 border-r-2">
                     Orden de Compra
                 </th>
