@@ -42,6 +42,11 @@ export interface OTItem {
     fechaCotizacion?: string;
     descuento?: number;
     precio_descuento?: number;
+    observacionDescuento?: string;
+    observacionesDescuento?: string;
+    descuentoObservacion?: string;
+    descuento_observacion?: string;
+    descuento_observaciones?: string;
 }
 
 export interface OTData {
@@ -149,6 +154,9 @@ export function generarHtmlOT(data: OTData): string {
     }).join('');
 
     const itemsHtmlAdmin = items.map((item, index) => {
+        const obsDescuento = item.observacionDescuento || item.observacionesDescuento || item.descuentoObservacion || item.descuento_observacion || item.descuento_observaciones || '';
+        const hasDiscount = (item.descuento !== undefined && item.descuento !== null) || !!obsDescuento;
+
         return `
             <div class="item-card">
                 <div class="item-head print-bg">
@@ -187,6 +195,10 @@ export function generarHtmlOT(data: OTData): string {
                         <div class="data-row">
                             <div class="d-field"><span class="lbl">TIPO DESPACHO:</span><span class="val">${formatTipoDespacho(cabecera.tipoDespacho)}</span></div>
                         </div>
+                        ${hasDiscount ? `
+                        <div class="data-row">
+                            <div class="d-field"><span class="lbl">OBSERVACIÓN DESCUENTO:</span><span class="val">${obsDescuento}</span></div>
+                        </div>` : ''}
                         ${cabecera.empresaTransporte ? `
                         <div class="data-row">
                             <div class="d-field"><span class="lbl">TRANSPORTE:</span><span class="val">${cabecera.empresaTransporte}</span></div>
