@@ -15,7 +15,7 @@
 
             <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Fecha Cotización</mat-label>
-                <input matInput [matDatepicker]="pqe" formControlName="fechaCotizacion" placeholder="dd-mm-aaaa">
+                <input matInput [matDatepicker]="pqe" formControlName="fechaCotizacion" placeholder="dd/mm/aaaa">
                 <mat-datepicker-toggle matSuffix [for]="pqe"></mat-datepicker-toggle>
                 <mat-datepicker #pqe></mat-datepicker>
                 <mat-error *ngIf="form.get('fechaCotizacion').hasError('required')">La fecha es requerida</mat-error>

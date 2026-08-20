@@ -52,7 +52,7 @@
                     <mat-form-field appearance="outline" class="w-full fuse-mat-no-subscript">
                         <mat-label>Fecha Entrega</mat-label>
                         <input matInput [matDatepicker]="pe" [matDatepickerFilter]="dateFilter"
-                            formControlName="fechaEntrega" [min]="minDate" placeholder="dd-mm-aaaa">
+                            formControlName="fechaEntrega" [min]="minDate" placeholder="dd/mm/aaaa">
                         <mat-datepicker-toggle matSuffix [for]="pe"></mat-datepicker-toggle>
                         <mat-datepicker #pe></mat-datepicker>
                     </mat-form-field>

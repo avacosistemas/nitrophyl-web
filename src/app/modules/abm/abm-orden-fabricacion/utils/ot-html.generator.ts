@@ -391,8 +391,7 @@ export function generarHtmlOT(data: OTData): string {
                     <h1>ORDEN DE FABRICACIÓN</h1>
                     <div class="h-row">
                         <div class="h-field"><span class="h-lbl">CLIENTE:</span>
-                            <div class="h-val">${cabecera.cliente || ''}<
-                            div>
+                            <div class="h-val">${cabecera.cliente || ''}</div>
                         </div>
                         <div class="h-field fixed"><span class="h-lbl">OC:</span>
                             <div class="h-val">${cabecera.oc || ''}</div>

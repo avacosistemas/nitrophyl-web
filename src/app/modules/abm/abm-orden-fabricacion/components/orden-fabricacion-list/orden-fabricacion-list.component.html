@@ -40,6 +40,44 @@
                         </mat-autocomplete>
                     </mat-form-field>
 
+                    
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Año OF</mat-label>
+                        <input matInput type="number" formControlName="anioOF" placeholder="Ej: 2026">
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Número OF</mat-label>
+                        <input matInput type="number" formControlName="numeroOF" placeholder="Ej: 3">
+                    </mat-form-field>
+
+                    
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Tipo de Fecha</mat-label>
+                        <mat-select formControlName="tipoFecha">
+                            <mat-option value="">Ninguno (Vacío)</mat-option>
+                            <mat-option value="CREACION_OC">Creación OC</mat-option>
+                            <mat-option value="CREACION_OF">Creación OF</mat-option>
+                            <mat-option value="ENTREGA_OF">Entrega OF</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Fecha Desde</mat-label>
+                        <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde">
+                        <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerDesde></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Fecha Hasta</mat-label>
+                        <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta">
+                        <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
+                        <mat-datepicker #pickerHasta></mat-datepicker>
+                    </mat-form-field>
+
                     <mat-form-field appearance="outline">
                         <mat-label>Sector</mat-label>
                         <input type="text" placeholder="Buscar sector..." matInput formControlName="sector"
@@ -75,16 +113,6 @@
                     </mat-form-field>
 
                     <mat-form-field appearance="outline">
-                        <mat-label>Año OF</mat-label>
-                        <input matInput type="number" formControlName="anioOF" placeholder="Ej: 2026">
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
-                        <mat-label>Número OF</mat-label>
-                        <input matInput type="number" formControlName="numeroOF" placeholder="Ej: 3">
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
                         <mat-label>Estado</mat-label>
                         <mat-select formControlName="estado">
                             <mat-option value="">Todos</mat-option>
@@ -93,30 +121,6 @@
                             <mat-option value="FINALIZADA">Finalizada</mat-option>
                             <mat-option value="CANCELADA">Cancelada</mat-option>
                         </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
-                        <mat-label>Tipo de Fecha</mat-label>
-                        <mat-select formControlName="tipoFecha">
-                            <mat-option value="">Ninguno (Vacío)</mat-option>
-                            <mat-option value="CREACION_OC">Creación OC</mat-option>
-                            <mat-option value="CREACION_OF">Creación OF</mat-option>
-                            <mat-option value="ENTREGA_OF">Entrega OF</mat-option>
-                        </mat-select>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
-                        <mat-label>Fecha Desde</mat-label>
-                        <input matInput [matDatepicker]="pickerDesde" formControlName="fechaDesde">
-                        <mat-datepicker-toggle matSuffix [for]="pickerDesde"></mat-datepicker-toggle>
-                        <mat-datepicker #pickerDesde></mat-datepicker>
-                    </mat-form-field>
-
-                    <mat-form-field appearance="outline">
-                        <mat-label>Fecha Hasta</mat-label>
-                        <input matInput [matDatepicker]="pickerHasta" formControlName="fechaHasta">
-                        <mat-datepicker-toggle matSuffix [for]="pickerHasta"></mat-datepicker-toggle>
-                        <mat-datepicker #pickerHasta></mat-datepicker>
                     </mat-form-field>
 
                     <div class="sm:col-span-2 md:col-span-1 lg:col-span-4 flex justify-end items-center gap-2 pb-1">
