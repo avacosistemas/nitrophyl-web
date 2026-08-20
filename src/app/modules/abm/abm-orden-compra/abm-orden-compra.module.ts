@@ -39,7 +39,9 @@ import { OrdenCompraPiezaEditModalComponent } from './components/orden-compra-fo
 import { MatTabsModule } from '@angular/material/tabs';
 
 export const MY_DATE_FORMATS = {
-    parse: { dateInput: 'DD/MM/YYYY' },
+    parse: {
+        dateInput: ['DD/MM/YYYY', 'DD-MM-YYYY', 'D/M/YYYY', 'D-M-YYYY', 'YYYY-MM-DD']
+    },
     display: {
         dateInput: 'DD/MM/YYYY',
         monthYearLabel: 'MMMM YYYY',

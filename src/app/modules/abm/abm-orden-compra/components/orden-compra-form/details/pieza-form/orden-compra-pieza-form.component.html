@@ -1,6 +1,6 @@
 <div class="flex flex-col h-full animate-in">
     <div class="flex-1 overflow-y-auto space-y-6 pb-6 p-6 bg-gray-100">
-        <form [formGroup]="piezaForm" class="flex flex-col gap-5">
+        <form [formGroup]="piezaForm" (keydown.enter)="onFormEnter($event)" (submit)="$event.preventDefault()" class="flex flex-col gap-5">
 
             <div class="bg-white p-4 rounded-2xl shadow-md flex flex-col gap-3">
                 <div class="flex flex-col gap-2">
@@ -11,7 +11,7 @@
                             placeholder="Seleccione una pieza..." #piezaInput
                             #piezaInputTrigger="matAutocompleteTrigger" (focus)="piezaInputTrigger.openPanel()"
                             (click)="piezaInputTrigger.openPanel()">
-                        <button *ngIf="piezaForm.get('pieza').value" matSuffix mat-icon-button
+                        <button type="button" *ngIf="piezaForm.get('pieza').value" matSuffix mat-icon-button
                             (click)="clearPiezaSelection()">
                             <mat-icon> close </mat-icon>
                         </button>
@@ -152,12 +152,12 @@
     </div>
 
     <div class="flex items-center justify-between border-t bg-white px-8 pt-4 pb-4">
-        <button mat-button (click)="resetItemForm()">Limpiar</button>
+        <button type="button" mat-button (click)="resetItemForm()">Limpiar</button>
         <div class="flex gap-3">
-            <button mat-stroked-button color="primary" [disabled]="piezaForm.invalid" (click)="addOrUpdatePieza(true)">
+            <button type="button" mat-stroked-button color="primary" [disabled]="piezaForm.invalid" (click)="addOrUpdatePieza(true)">
                 {{ isEditingItem ? 'Guardar y continuar' : 'Añadir y continuar' }}
             </button>
-            <button mat-flat-button color="primary" class="px-8" [disabled]="piezaForm.invalid"
+            <button type="button" mat-flat-button color="primary" class="px-8" [disabled]="piezaForm.invalid"
                 (click)="addOrUpdatePieza(false)">
                 {{ isEditingItem ? 'Guardar' : 'Añadir' }}
             </button>

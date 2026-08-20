@@ -1,11 +1,11 @@
 <div class="w-full max-w-2xl bg-card shadow-2xl rounded-3xl p-10 border border-gray-200 animate-in my-auto">
-    <form [formGroup]="form" class="grid grid-cols-1 gap-4">
+    <form [formGroup]="form" (keydown.enter)="$event.preventDefault()" (submit)="$event.preventDefault()" class="grid grid-cols-1 gap-4">
         <mat-form-field appearance="outline" class="w-full">
             <mat-label>Cliente</mat-label>
             <input type="text" matInput formControlName="cliente" [matAutocomplete]="autoC"
                 placeholder="Buscar cliente..." #clienteInput="matAutocompleteTrigger">
 
-            <button *ngIf="form.get('cliente').value && mode !== 'view'" matSuffix mat-icon-button aria-label="Clear"
+            <button type="button" *ngIf="form.get('cliente').value && mode !== 'view'" matSuffix mat-icon-button aria-label="Clear"
                 (click)="clearClientSelection(); $event.stopPropagation()">
                 <mat-icon> close </mat-icon>
             </button>
@@ -41,14 +41,14 @@
                     <mat-radio-button value="ENVIO" color="primary">Envía Nitro</mat-radio-button>
                 </mat-radio-group>
             
-                <div *ngIf="form.get('tipoDespacho').value === 'RETIRO_TRANSPORTE' || form.get('tipoDespacho').value === 'ENVIO'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div *ngIf="form.get('tipoDespacho').value === 'RETIRO_TRANSPORTE'" class="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Seleccionar Empresa de Transporte</mat-label>
                         <mat-icon matPrefix class="icon-size-5 mr-2 text-secondary">local_shipping</mat-icon>
                         <mat-select formControlName="idEmpresaTransporte">
                             <mat-option *ngFor="let t of transportes" [value]="t.id">{{t.nombre}}</mat-option>
                         </mat-select>
-                        <button matSuffix *ngIf="form.get('idEmpresaTransporte').value && mode !== 'view'" mat-icon-button aria-label="Clear"
+                        <button type="button" matSuffix *ngIf="form.get('idEmpresaTransporte').value && mode !== 'view'" mat-icon-button aria-label="Clear"
                             (click)="$event.stopPropagation(); form.get('idEmpresaTransporte').setValue(null)">
                             <mat-icon> close </mat-icon>
                         </button>

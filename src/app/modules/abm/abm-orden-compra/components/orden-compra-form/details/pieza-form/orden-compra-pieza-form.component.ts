@@ -137,19 +137,18 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
             return;
         }
 
-        let deliveryDate = moment(date).startOf('day');
-        const adjustedDate = this.adjustToMonday(moment(deliveryDate));
-        
-        if (!deliveryDate.isSame(adjustedDate, 'day')) {
-            this._isUpdatingDate = true;
-            this.piezaForm.get('fechaEntrega')!.setValue(adjustedDate.toDate());
-            this._isUpdatingDate = false;
-            deliveryDate = adjustedDate;
+        const mDate = moment(date);
+        if (!mDate.isValid()) {
+            this.auxiliarValor = null;
+            this.auxiliarTexto = '';
+            return;
         }
+
+        const deliveryDate = mDate.startOf('day');
 
         const matchedOption = this.deliveryOptions.find(opt => {
             const optDate = this.adjustToMonday(opt.calculate());
-            return optDate.isSame(deliveryDate, 'day');
+            return optDate.isSame(this.adjustToMonday(moment(deliveryDate)), 'day');
         });
 
         if (matchedOption) {
@@ -157,7 +156,7 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
         } else {
             this.auxiliarValor = 'custom';
         }
-        
+
         const today = moment().startOf('day');
         const diffDays = deliveryDate.diff(today, 'days');
         this.updateAuxiliarTexto(diffDays);
@@ -249,6 +248,14 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
             observacionDescuento: grupo.observacionDescuento || ''
         });
         this.onPiezaSelected({ option: { value: { id: grupo.idPieza } } });
+    }
+
+    onFormEnter(event: Event): void {
+        event.preventDefault();
+        event.stopPropagation();
+        if (this.piezaForm.valid) {
+            this.addOrUpdatePieza(false);
+        }
     }
 
     addOrUpdatePieza(continueAdding: boolean): void {

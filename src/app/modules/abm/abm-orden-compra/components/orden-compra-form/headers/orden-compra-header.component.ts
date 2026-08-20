@@ -71,7 +71,6 @@ export class OrdenCompraHeaderComponent implements OnInit, OnDestroy {
             if (tipo === 'RETIRO_TRANSPORTE') {
                 this.form.get('idEmpresaTransporte').setValidators([Validators.required]);
             } else if (tipo === 'ENVIO') {
-                this.form.get('idEmpresaTransporte').setValidators([Validators.required]);
                 this.form.get('idDomicilioEnvio').setValidators([Validators.required]);
             }
             
