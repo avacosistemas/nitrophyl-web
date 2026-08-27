@@ -96,7 +96,7 @@ export class ABMPiezaService {
     }
 
     getMoldesCombo(nombreMolde: string, idTipoPieza?: number): Observable<ApiResponse<Molde[]>> {
-        let params = new HttpParams().set('nombre', nombreMolde);
+        let params = new HttpParams().set('codigo', nombreMolde);
         if (idTipoPieza) {
             params = params.set('idTipoPieza', idTipoPieza.toString());
         }
