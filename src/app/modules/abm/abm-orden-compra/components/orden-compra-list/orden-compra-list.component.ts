@@ -111,7 +111,7 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
             idCliente: formValues.cliente?.id,
         };
     }
-    
+
     loadClientes(): void {
         this._clientesService.getClientes().pipe(takeUntil(this._destroying$)).subscribe({
             next: (res) => {
@@ -143,21 +143,23 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
     getEstadoClass(estado: string): string {
         if (!estado) return 'bg-gray-100 text-gray-800';
         const est = estado.trim().toUpperCase();
+
         switch (est) {
             case 'PENDIENTE':
                 return 'bg-yellow-100 text-yellow-800';
             case 'EN_PROCESO':
             case 'EN PROCESO':
                 return 'bg-blue-100 text-blue-800';
+            case 'PRODUCIDA':
+                return 'bg-indigo-100 text-indigo-800';
+            case 'FABRICADA':
+                return 'bg-purple-100 text-purple-800';
+            case 'INGRESADA':
+                return 'bg-gray-100 text-gray-800';
             case 'FINALIZADA':
                 return 'bg-green-100 text-green-800';
             case 'CANCELADA':
                 return 'bg-red-100 text-red-800';
-            case 'PRODUCIDA':
-                return 'bg-gray-100 text-blue-800';
-            case 'INGRESADA':
-            case 'FABRICADA':
-            case 'FABRICADO':
             default:
                 return 'bg-gray-100 text-gray-800';
         }

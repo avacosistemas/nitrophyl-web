@@ -1,163 +1,248 @@
-import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
-import {
-  ApexAxisChartSeries,
-  ApexChart,
-  ApexXAxis,
-  ApexPlotOptions,
-  ApexDataLabels,
-  ApexTitleSubtitle
-} from 'ng-apexcharts';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { Observable, Subject, of } from 'rxjs';
+import { startWith, map, takeUntil } from 'rxjs/operators';
 
-export type ChartOptions = {
-  series: ApexAxisChartSeries;
-  chart: ApexChart;
-  xaxis: ApexXAxis;
-  plotOptions: ApexPlotOptions;
-  dataLabels: ApexDataLabels;
-  colors: string[];
-  title: ApexTitleSubtitle;
-};
-
-interface MaquinaProceso {
-  maquina: string;
-  cantidad: number;
-}
+import { MonitoreoService, MaquinaMonitoreo } from '../monitoreo.service';
+import { DetalleOtDialogComponent } from '../dialogs/detalle-ot-dialog/detalle-ot-dialog.component';
 
 @Component({
-  selector: 'app-maquinas-monitoreo',
-  templateUrl: './maquinas.component.html',
-  styleUrls: []
+    selector: 'app-maquinas-monitoreo',
+    templateUrl: './maquinas.component.html',
+    styleUrls: []
 })
-export class MaquinasComponent implements OnInit {
-  isLoading = true;
-  errorLoading = false;
-  chartOptions!: Partial<ChartOptions>;
-  maquinas: MaquinaProceso[] = [];
+export class MaquinasComponent implements OnInit, OnDestroy {
+    isLoading = true;
+    errorLoading = false;
 
-  constructor(private http: HttpClient) {}
+    allMaquinas: MaquinaMonitoreo[] = [];
+    filteredMaquinas: MaquinaMonitoreo[] = [];
+    
+    tiposMaquinaList: string[] = [];
+    sectoresList: string[] = [];
 
-  ngOnInit(): void {
-    this.loadMaquinaData();
-  }
+    filteredTiposMaquina$!: Observable<string[]>;
+    filteredSectores$!: Observable<string[]>;
 
-  handleAction(action: string): void {
-    if (action === 'refresh') {
-      this.loadMaquinaData();
+    coloresOptions = [
+        { value: 'GRIS', label: 'Gris (Sin carga - 0 OTs)', colorClass: 'bg-gray-400' },
+        { value: 'AMARILLO', label: 'Amarillo (Carga baja - 1 a 2 OTs)', colorClass: 'bg-yellow-400' },
+        { value: 'NARANJA', label: 'Naranja (Carga media - 3 a 5 OTs)', colorClass: 'bg-orange-500' },
+        { value: 'ROJO', label: 'Rojo (Carga alta - 6 o más OTs)', colorClass: 'bg-red-500' }
+    ];
+
+    filterForm: FormGroup;
+
+    private _destroying$ = new Subject<void>();
+
+    constructor(
+        private fb: FormBuilder,
+        private monitoreoService: MonitoreoService,
+        private dialog: MatDialog
+    ) {
+        this.filterForm = this.fb.group({
+            tipoMaquina: [''],
+            sector: [''],
+            cargaColor: ['']
+        });
     }
-  }
 
-  loadMaquinaData(): void {
-    this.isLoading = true;
-    this.errorLoading = false;
+    ngOnInit(): void {
+        this.setupAutocompleteObservables();
+        this.loadMaquinaData();
+    }
 
-    this.getMaquinasProcesosMock().subscribe({
-      next: (response: any) => {
-        if (response && response.status === 'OK' && response.data) {
-          this.processData(response.data);
+    ngOnDestroy(): void {
+        this._destroying$.next();
+        this._destroying$.complete();
+    }
+
+    handleAction(action: string): void {
+        if (action === 'refresh') {
+            this.loadMaquinaData();
+        }
+    }
+
+    private setupAutocompleteObservables(): void {
+        this.filteredTiposMaquina$ = this.filterForm.get('tipoMaquina')!.valueChanges.pipe(
+            startWith(''),
+            map(val => this.filterOptionsList(this.tiposMaquinaList, val))
+        );
+
+        this.filteredSectores$ = this.filterForm.get('sector')!.valueChanges.pipe(
+            startWith(''),
+            map(val => this.filterOptionsList(this.sectoresList, val))
+        );
+    }
+
+    private filterOptionsList(options: string[], val: any): string[] {
+        const filterVal = typeof val === 'string' ? val.toLowerCase().trim() : '';
+        if (!filterVal) {
+            return options;
+        }
+        return options.filter(opt => opt.toLowerCase().includes(filterVal));
+    }
+
+    loadMaquinaData(): void {
+        this.isLoading = true;
+        this.errorLoading = false;
+
+        this.monitoreoService.getMaquinasMonitoreo().pipe(
+            takeUntil(this._destroying$)
+        ).subscribe({
+            next: (response: any) => {
+                this.isLoading = false;
+                if (response && response.status === 'OK' && Array.isArray(response.data)) {
+                    this.allMaquinas = response.data;
+                    this.extractUniqueFilterOptions(response.data);
+                    this.applyFilters();
+                } else {
+                    this.errorLoading = true;
+                }
+            },
+            error: () => {
+                this.isLoading = false;
+                this.errorLoading = true;
+            }
+        });
+    }
+
+    private extractUniqueFilterOptions(data: MaquinaMonitoreo[]): void {
+        const machineNamesSet = new Set<string>();
+        const sectorsSet = new Set<string>();
+
+        data.forEach(item => {
+            if (item.maquina) machineNamesSet.add(item.maquina);
+            if (item.tipoMaquina) machineNamesSet.add(item.tipoMaquina);
+            if (item.sector) sectorsSet.add(item.sector);
+        });
+
+        this.tiposMaquinaList = Array.from(machineNamesSet).sort();
+        this.sectoresList = Array.from(sectorsSet).sort();
+
+        this.filterForm.get('tipoMaquina')?.updateValueAndValidity();
+        this.filterForm.get('sector')?.updateValueAndValidity();
+    }
+
+    applyFilters(): void {
+        const { tipoMaquina, sector, cargaColor } = this.filterForm.value;
+        const tipoVal = (tipoMaquina || '').trim().toLowerCase();
+        const sectorVal = (sector || '').trim().toLowerCase();
+        const colorVal = (cargaColor || '').trim();
+
+        this.filteredMaquinas = this.allMaquinas.filter(m => {
+            if (tipoVal) {
+                const matchesMaquina = (m.maquina && m.maquina.toLowerCase().includes(tipoVal)) ||
+                    (m.tipoMaquina && m.tipoMaquina.toLowerCase().includes(tipoVal));
+                if (!matchesMaquina) return false;
+            }
+
+            if (sectorVal) {
+                const matchesSector = m.sector && m.sector.toLowerCase().includes(sectorVal);
+                if (!matchesSector) return false;
+            }
+
+            if (colorVal) {
+                const category = this.getCargaCategory(m.cantidad);
+                if (category !== colorVal) return false;
+            }
+
+            return true;
+        });
+    }
+
+    clearTipoMaquina(): void {
+        this.filterForm.get('tipoMaquina')?.setValue('');
+        this.applyFilters();
+    }
+
+    clearSector(): void {
+        this.filterForm.get('sector')?.setValue('');
+        this.applyFilters();
+    }
+
+    clearCargaColor(): void {
+        this.filterForm.get('cargaColor')?.setValue('');
+        this.applyFilters();
+    }
+
+    limpiarFiltros(): void {
+        this.filterForm.patchValue({
+            tipoMaquina: '',
+            sector: '',
+            cargaColor: ''
+        });
+        this.applyFilters();
+    }
+
+    getCargaCategory(cantidad: number): 'GRIS' | 'AMARILLO' | 'NARANJA' | 'ROJO' {
+        if (!cantidad || cantidad === 0) {
+            return 'GRIS';
+        } else if (cantidad === 1 || cantidad === 2) {
+            return 'AMARILLO';
+        } else if (cantidad >= 3 && cantidad <= 5) {
+            return 'NARANJA';
         } else {
-          this.isLoading = false;
-          this.errorLoading = true;
+            return 'ROJO'; // 6 o más
         }
-      },
-      error: () => {
-        this.isLoading = false;
-        this.errorLoading = true;
-      }
-    });
-
-    /*
-    this.getMaquinasProcesosReal().subscribe({
-      next: (response: any) => {
-        if (response && response.status === 'OK' && response.data) {
-          this.processData(response.data);
-        }
-      },
-      error: () => { this.isLoading = false; this.errorLoading = true; }
-    });
-    */
-  }
-
-  getMaquinasProcesosMock(): Observable<any> {
-    return this.http.get<any>('assets/mock-monitoreo-maquinas.json');
-  }
-
-  /*
-  getMaquinasProcesosReal(): Observable<any> {
-    return this.http.get<any>('/api/monitoreo/maquinas');
-  }
-  */
-
-  private processData(data: MaquinaProceso[]): void {
-    this.isLoading = false;
-    if (!data || data.length === 0) {
-      this.maquinas = [];
-      return;
     }
 
-    this.maquinas = [...data].sort((a, b) => b.cantidad - a.cantidad);
+    getCardColorClasses(cantidad: number): {
+        border: string;
+        headerBg: string;
+        dotBg: string;
+        label: string;
+    } {
+        const category = this.getCargaCategory(cantidad);
 
-    const barColors = this.maquinas.map((item) => {
-      if (item.cantidad > 10) {
-        return '#ef4444';
-      } else if (item.cantidad >= 5) {
-        return '#f97316';
-      } else {
-        return '#3b82f6';
-      }
-    });
+        switch (category) {
+            case 'GRIS':
+                return {
+                    border: 'border-gray-300 hover:border-gray-400',
+                    headerBg: 'bg-gray-100/70',
+                    dotBg: 'bg-gray-400',
+                    label: 'Sin Carga (0 OTs)'
+                };
+            case 'AMARILLO':
+                return {
+                    border: 'border-yellow-300 hover:border-yellow-400',
+                    headerBg: 'bg-yellow-50/80',
+                    dotBg: 'bg-yellow-500',
+                    label: 'Carga Baja (1-2 OTs)'
+                };
+            case 'NARANJA':
+                return {
+                    border: 'border-orange-300 hover:border-orange-400',
+                    headerBg: 'bg-orange-50/80',
+                    dotBg: 'bg-orange-500',
+                    label: 'Carga Media (3-5 OTs)'
+                };
+            case 'ROJO':
+                return {
+                    border: 'border-red-300 hover:border-red-400',
+                    headerBg: 'bg-red-50/80',
+                    dotBg: 'bg-red-500',
+                    label: 'Carga Alta (6+ OTs)'
+                };
+        }
+    }
 
-    this.chartOptions = {
-      series: [
-        {
-          name: 'Procesos Activos',
-          data: this.maquinas.map((item) => item.cantidad)
-        }
-      ],
-      chart: {
-        type: 'bar',
-        height: 450,
-        toolbar: {
-          show: true
-        }
-      },
-      plotOptions: {
-        bar: {
-          horizontal: true,
-          distributed: true,
-          barHeight: '60%',
-          borderRadius: 4
-        }
-      },
-      colors: barColors,
-      dataLabels: {
-        enabled: true,
-        style: {
-          colors: ['#fff']
-        },
-        formatter: (val: any) => {
-          return `${val} proc.`;
-        }
-      },
-      xaxis: {
-        categories: this.maquinas.map((item) => item.maquina),
-        labels: {
-          style: {
-            fontSize: '12px'
-          }
-        }
-      },
-      title: {
-        text: 'Carga de Procesos por Máquina',
-        align: 'left',
-        style: {
-          fontSize: '16px',
-          fontWeight: 'bold',
-          color: '#1f2937'
-        }
-      }
-    };
-  }
+    openOtDetailModal(maquina: MaquinaMonitoreo): void {
+        const dialogRef = this.dialog.open(DetalleOtDialogComponent, {
+            data: { maquina },
+            autoFocus: false,
+            panelClass: 'detalle-ot-dialog-panel'
+        });
+
+        dialogRef.afterClosed().subscribe((updatedOts) => {
+            if (updatedOts && Array.isArray(updatedOts)) {
+                const found = this.allMaquinas.find(m => (m.id && m.id === maquina.id) || m.maquina === maquina.maquina);
+                if (found) {
+                    found.cantidad = updatedOts.length;
+                    this.applyFilters();
+                }
+            }
+        });
+    }
 }

@@ -58,10 +58,6 @@ export class AbmOrdenFabricacionService {
         return this.http.get<any>(`${environment.server}pieza/combo`, { params });
     }
 
-    // getPiezaStock(idPieza: number): Observable<any> {
-    //     return this.http.get<any>(`${environment.server}piezas/stock/${idPieza}`);
-    // }
-
     getLotes(idFormula: any, nroLote: string): Observable<any> {
         let params = new HttpParams();
 
@@ -106,12 +102,12 @@ export class AbmOrdenFabricacionService {
         return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/descargar/${id}`, id.toString());
     }
 
-    // getResumenOFMock(ids: number[]): Observable<any> {
-    //    return this.http.get<any>('assets/mock-resumen-of.json');
+    // getOrdenFabricacionOTMock(): Observable<any> {
+    //     return this.http.get<any>('assets/mock-orden-trabajo-ot.json');
     // }
 
     generarResumen(ids: number[]): Observable<any> {
-         return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/resumen`, { ids });
+        return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/resumen`, { ids });
     }
 
     getOrdenesCompraPorCliente(idCliente: number): Observable<any> {
