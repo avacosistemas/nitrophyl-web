@@ -5,6 +5,7 @@ import { environment } from 'environments/environment';
 
 export interface MaquinaMonitoreo {
     id?: number;
+    idMaquina?: number;
     maquina: string;
     cantidad: number;
     idSector?: number;

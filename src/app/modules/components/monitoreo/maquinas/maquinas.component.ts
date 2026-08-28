@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable, Subject, of } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { startWith, map, takeUntil } from 'rxjs/operators';
 
 import { MonitoreoService, MaquinaMonitoreo } from '../monitoreo.service';
@@ -18,7 +18,7 @@ export class MaquinasComponent implements OnInit, OnDestroy {
 
     allMaquinas: MaquinaMonitoreo[] = [];
     filteredMaquinas: MaquinaMonitoreo[] = [];
-    
+
     tiposMaquinaList: string[] = [];
     sectoresList: string[] = [];
 
@@ -237,7 +237,11 @@ export class MaquinasComponent implements OnInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe((updatedOts) => {
             if (updatedOts && Array.isArray(updatedOts)) {
-                const found = this.allMaquinas.find(m => (m.id && m.id === maquina.id) || m.maquina === maquina.maquina);
+                const targetIdMaquina = maquina.idMaquina ?? maquina.id;
+                const found = this.allMaquinas.find(m => {
+                    const mId = m.idMaquina ?? m.id;
+                    return (mId !== undefined && mId === targetIdMaquina) || m.maquina === maquina.maquina;
+                });
                 if (found) {
                     found.cantidad = updatedOts.length;
                     this.applyFilters();

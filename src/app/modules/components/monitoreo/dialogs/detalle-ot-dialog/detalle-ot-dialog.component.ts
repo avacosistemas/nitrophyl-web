@@ -34,7 +34,9 @@ export class DetalleOtDialogComponent implements OnInit {
         this.isLoading = true;
         this.errorLoading = false;
 
-        this.monitoreoService.getOtsPorMaquina(this.maquina.id, this.maquina.idSector).subscribe({
+        const idMaquina = this.maquina.idMaquina ?? this.maquina.id;
+
+        this.monitoreoService.getOtsPorMaquina(idMaquina, this.maquina.idSector).subscribe({
             next: (res: any) => {
                 this.isLoading = false;
                 if (res && res.status === 'OK' && Array.isArray(res.data)) {
