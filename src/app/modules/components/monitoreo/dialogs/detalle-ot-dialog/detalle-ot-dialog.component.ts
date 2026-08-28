@@ -3,6 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { CdkDragDrop, CdkDragSortEvent, moveItemInArray } from '@angular/cdk/drag-drop';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MonitoreoService, OrdenTrabajoDetalle, MaquinaMonitoreo } from '../../monitoreo.service';
+import { generarHtmlPlanillaMaquina } from '../../utils/monitoreo-html.generator';
 
 @Component({
     selector: 'app-detalle-ot-dialog',
@@ -96,6 +97,36 @@ export class DetalleOtDialogComponent implements OnInit {
                 this.notificationService.showError(`Error al guardar la nueva posición de ${movedOt.of}`, 4000);
             }
         });
+    }
+
+    imprimirPlanilla(): void {
+        const html = generarHtmlPlanillaMaquina(this.maquina, this.ots);
+
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (doc) {
+            doc.open();
+            doc.write(html);
+            doc.close();
+
+            setTimeout(() => {
+                if (iframe.contentWindow) {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                }
+                setTimeout(() => {
+                    document.body.removeChild(iframe);
+                }, 1000);
+            }, 300);
+        }
     }
 
     close(): void {
