@@ -1,11 +1,26 @@
 {
   "status": "OK",
   "data": [
-    { "maquina": "Compresion-Deflexion", "cantidad": 15 },
-    { "maquina": "Densimetro", "cantidad": 12 },
-    { "maquina": "Horno Binder", "cantidad": 9 },
-    { "maquina": "Durometro", "cantidad": 7 },
-    { "maquina": "Camara de ozono", "cantidad": 6 },
-    { "maquina": "Compresion Set", "cantidad": 3 }
+    {
+      "id": 1,
+      "maquina": "Reometro",
+      "cantidad": 15,
+      "sector": "Prensas",
+      "tipoMaquina": "Reometro"
+    },
+    {
+      "id": 2,
+      "maquina": "Dinamómetro",
+      "cantidad": 12,
+      "sector": "Prensas",
+      "tipoMaquina": "Dinamómetro"
+    },
+    {
+      "id": 3,
+      "maquina": "Densimetro",
+      "cantidad": 9,
+      "sector": "Borneman",
+      "tipoMaquina": "Densimetro"
+    }
   ]
 }

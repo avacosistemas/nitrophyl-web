@@ -20,6 +20,12 @@ export interface OTControlCalidad {
     valor: string;
 }
 
+export interface OTEntrega {
+    fecha: string;
+    cantidad: number;
+    lote: string;
+}
+
 export interface OTItem {
     id_item: number;
     titulo: string;
@@ -47,6 +53,8 @@ export interface OTItem {
     descuentoObservacion?: string;
     descuento_observacion?: string;
     descuento_observaciones?: string;
+    entregas?: OTEntrega[];
+    entregas_parciales?: OTEntrega[];
 }
 
 export interface OTData {
@@ -64,6 +72,26 @@ function formatTipoDespacho(tipo?: string): string {
     }
 }
 
+function renderEntregasTableRows(entregas?: OTEntrega[]): string {
+    const list = entregas || [];
+    const maxRows = 5;
+    const rows: string[] = [];
+
+    for (let i = 0; i < maxRows; i++) {
+        const ent = list[i];
+        if (ent) {
+            rows.push(`<tr>
+                <td style="text-align: center; font-size: 10px; font-weight: bold;">${ent.fecha || ''}</td>
+                <td style="text-align: center; font-size: 10px; font-weight: bold;">${ent.cantidad ?? ''}</td>
+                <td style="text-align: center; font-size: 10px; font-weight: bold;">${ent.lote || ''}</td>
+            </tr>`);
+        } else {
+            rows.push(`<tr><td></td><td></td><td></td></tr>`);
+        }
+    }
+    return rows.join('');
+}
+
 export function generarHtmlOT(data: OTData): string {
     const { cabecera, items } = data;
 
@@ -76,6 +104,7 @@ export function generarHtmlOT(data: OTData): string {
                 </div>`).join('');
 
         const ident = item.identificacion || item.identicacion || item.identficacion;
+        const entregasRows = renderEntregasTableRows(item.entregas || item.entregas_parciales);
 
         return `
             <div class="item-card">
@@ -131,11 +160,7 @@ export function generarHtmlOT(data: OTData): string {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
+                                    ${entregasRows}
                                 </tbody>
                             </table>
                         </div>
@@ -156,6 +181,7 @@ export function generarHtmlOT(data: OTData): string {
     const itemsHtmlAdmin = items.map((item, index) => {
         const obsDescuento = item.observacionDescuento || item.observacionesDescuento || item.descuentoObservacion || item.descuento_observacion || item.descuento_observaciones || '';
         const hasDiscount = (item.descuento !== undefined && item.descuento !== null) || !!obsDescuento;
+        const entregasRows = renderEntregasTableRows(item.entregas || item.entregas_parciales);
 
         return `
             <div class="item-card">
@@ -224,11 +250,7 @@ export function generarHtmlOT(data: OTData): string {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
-                                    <tr><td></td><td></td><td></td></tr>
+                                    ${entregasRows}
                                 </tbody>
                             </table>
                         </div>
