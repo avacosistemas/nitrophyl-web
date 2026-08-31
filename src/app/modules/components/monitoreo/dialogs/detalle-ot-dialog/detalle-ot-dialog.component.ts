@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { CdkDragDrop, CdkDragSortEvent, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MonitoreoService, OrdenTrabajoDetalle, MaquinaMonitoreo } from '../../monitoreo.service';
 import { generarHtmlPlanillaMaquina } from '../../utils/monitoreo-html.generator';
@@ -61,42 +61,34 @@ export class DetalleOtDialogComponent implements OnInit {
         return material.replace(/Fórmula\s*/gi, '').trim();
     }
 
-    onSorted(event: CdkDragSortEvent<OrdenTrabajoDetalle[]>): void {
-        if (event.previousIndex !== event.currentIndex) {
-            moveItemInArray(this.ots, event.previousIndex, event.currentIndex);
+    drop(event: CdkDragDrop<OrdenTrabajoDetalle[]>): void {
+        const movedOt: OrdenTrabajoDetalle = event.item.data;
+        if (!movedOt) return;
+
+        const previousIndex = this.ots.findIndex(item => item === movedOt || item.id === movedOt.id);
+        const newIndex = event.currentIndex;
+
+        if (previousIndex !== -1 && previousIndex !== newIndex) {
+            moveItemInArray(this.ots, previousIndex, newIndex);
+            
             this.ots.forEach((ot, idx) => {
                 ot.posicion = idx + 1;
             });
+
             this.ots = [...this.ots];
+
+            const nuevaPosicion = newIndex + 1;
+
+            this.monitoreoService.actualizarPosicionOt(movedOt.id, nuevaPosicion).subscribe({
+                next: () => {
+                    this.notificationService.showSuccess(`OT ${movedOt.of} movida a la posición ${nuevaPosicion}`, 3000);
+                },
+                error: (err) => {
+                    console.error('Error al actualizar posición:', err);
+                    this.notificationService.showError(`Error al guardar la nueva posición de ${movedOt.of}`, 4000);
+                }
+            });
         }
-    }
-
-    drop(event: CdkDragDrop<OrdenTrabajoDetalle[]>): void {
-        const prevIndex = event.previousIndex;
-        const newIndex = event.currentIndex;
-
-        if (prevIndex !== newIndex) {
-            moveItemInArray(this.ots, prevIndex, newIndex);
-        }
-
-        this.ots.forEach((ot, idx) => {
-            ot.posicion = idx + 1;
-        });
-
-        this.ots = [...this.ots];
-
-        const movedOt = this.ots[newIndex];
-        const nuevaPosicion = newIndex + 1;
-
-        this.monitoreoService.actualizarPosicionOt(movedOt.id, nuevaPosicion).subscribe({
-            next: () => {
-                this.notificationService.showSuccess(`OT ${movedOt.of} movida a la posición ${nuevaPosicion}`, 3000);
-            },
-            error: (err) => {
-                console.error('Error al actualizar posición:', err);
-                this.notificationService.showError(`Error al guardar la nueva posición de ${movedOt.of}`, 4000);
-            }
-        });
     }
 
     imprimirPlanilla(): void {
