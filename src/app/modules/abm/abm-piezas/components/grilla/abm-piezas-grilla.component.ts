@@ -18,6 +18,7 @@ import { IFormula, IFormulasResponse } from 'app/modules/abm/abm-formula/formula
 import { IMaterialsResponse } from 'app/modules/abm/abm-formula/material.interface';
 import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
+import { ABMPiezaClonarModalComponent } from './modal-clonar/abm-pieza-clonar-modal.component';
 
 @Component({
   selector: 'app-abm-piezas-grilla',
@@ -178,6 +179,25 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       soloVigentes: ''
     });
     this.soloVigentes.setValue('');
+  }
+
+  abrirModalClonar(pieza: Pieza): void {
+    const dialogRef = this.dialog.open(ABMPiezaClonarModalComponent, {
+      width: '750px',
+      data: {
+        pieza: pieza
+      }
+    });
+
+    dialogRef.afterClosed().pipe(takeUntil(this._destroying$)).subscribe(result => {
+      if (result && result.success) {
+        if (result.continuar && result.newPiezaId) {
+          this.router.navigate(['/procesos-piezas', result.newPiezaId, 'edit']);
+        } else {
+          this.refreshGrid();
+        }
+      }
+    });
   }
 
   goToEdit(rowId: number): void {

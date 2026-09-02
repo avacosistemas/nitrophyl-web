@@ -179,8 +179,12 @@
 
                     <ng-container matColumnDef="acciones">
                         <th mat-header-cell *matHeaderCellDef></th>
-                        <td mat-cell *matCellDef="let row" class="w-40">
+                        <td mat-cell *matCellDef="let row" class="w-48">
                             <div class="flex justify-end">
+                                <button mat-icon-button *ngIf="'PROCESOS_PIEZAS_CREATE' | hasPermission"
+                                    (click)="abrirModalClonar(row)">
+                                    <mat-icon svgIcon="heroicons_solid:document-duplicate" matTooltip="Clonar"></mat-icon>
+                                </button>
                                 <button mat-icon-button *ngIf="'PROCESOS_PIEZAS_EDIT' | hasPermission"
                                     (click)="goToEdit(row.id)">
                                     <mat-icon svgIcon="heroicons_solid:pencil-alt" matTooltip="Editar"></mat-icon>

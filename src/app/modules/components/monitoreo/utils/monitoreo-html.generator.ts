@@ -58,22 +58,22 @@ export function generarHtmlPlanillaMaquina(maquina: MaquinaMonitoreo, ots: Orden
             <div class="header-left">
                 <h1>PLANILLA DE ÓRDENES DE TRABAJO DE MÁQUINA</h1>
                 <div class="h-row" style="margin-top: 8px;">
-                    <div class="h-field">
+                    <div class="h-field" style="flex: 1;">
                         <span class="h-lbl">MÁQUINA:</span>
-                        <div class="h-val" style="font-weight: bold; font-size: 14px;">${maquina.maquina || ''}</div>
+                        <div class="h-val" style="font-weight: bold; font-size: 14px; white-space: nowrap;">${maquina.maquina || ''}</div>
                     </div>
                     ${maquina.sector ? `
-                    <div class="h-field">
+                    <div class="h-field" style="flex: 1.2;">
                         <span class="h-lbl">SECTOR:</span>
-                        <div class="h-val" style="font-weight: bold; font-size: 13px;">${maquina.sector}</div>
+                        <div class="h-val" style="font-weight: bold; font-size: 13px; white-space: nowrap;">${maquina.sector}</div>
                     </div>` : ''}
-                    <div class="h-field" style="flex: 0 0 140px;">
+                    <div class="h-field" style="flex: 0 0 100px;">
                         <span class="h-lbl">TOTAL OTS:</span>
-                        <div class="h-val" style="font-weight: bold; font-size: 13px;">${ots.length}</div>
+                        <div class="h-val" style="font-weight: bold; font-size: 13px; white-space: nowrap;">${ots.length}</div>
                     </div>
-                    <div class="h-field" style="flex: 0 0 200px;">
+                    <div class="h-field" style="flex: 0 0 170px;">
                         <span class="h-lbl">IMPRESIÓN:</span>
-                        <div class="h-val" style="font-weight: bold; font-size: 12px;">${fechaImpresion}</div>
+                        <div class="h-val" style="font-weight: bold; font-size: 12px; white-space: nowrap;">${fechaImpresion}</div>
                     </div>
                 </div>
             </div>
@@ -82,12 +82,12 @@ export function generarHtmlPlanillaMaquina(maquina: MaquinaMonitoreo, ots: Orden
         <table class="resumen-table">
             <thead>
                 <tr>
-                    <th style="text-align: center; width: 6%;">No.</th>
-                    <th style="text-align: center; width: 14%;">OF</th>
-                    <th style="text-align: left; width: 25%;">Cliente</th>
-                    <th style="text-align: left; width: 25%;">Pieza</th>
-                    <th style="text-align: center; width: 12%;">Material</th>
-                    <th style="text-align: right; width: 8%;">Cant.</th>
+                    <th style="text-align: center; width: 4%;">No.</th>
+                    <th style="text-align: center; width: 8%;">OF</th>
+                    <th style="text-align: left; width: 31%;">Cliente</th>
+                    <th style="text-align: left; width: 31%;">Pieza</th>
+                    <th style="text-align: center; width: 10%;">Material</th>
+                    <th style="text-align: right; width: 6%;">Cant.</th>
                     <th style="text-align: center; width: 10%;">Fecha Entrega</th>
                 </tr>
             </thead>
