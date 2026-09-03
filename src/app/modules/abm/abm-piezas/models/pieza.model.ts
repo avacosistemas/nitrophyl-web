@@ -91,8 +91,8 @@ export interface PiezaClonarDTO {
     idPiezaOriginal: number;
     codigo: string;
     nombre: string;
-    idMaterial?: number | null;
-    material?: string | null;
+    idFormula?: number | null;
+    formula?: string | null;
     idCliente: number;
     nombrePiezaPersonalizado?: string | null;
     cotizacion?: number | null;

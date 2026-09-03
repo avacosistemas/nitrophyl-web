@@ -23,16 +23,16 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Material</mat-label>
-                <input type="text" matInput formControlName="material" [matAutocomplete]="autoMaterial"
-                    placeholder="Seleccione o busque un material">
-                <button mat-icon-button matSuffix *ngIf="form.get('material')?.value && !form.get('material')?.disabled"
-                    (click)="clearMaterialInput(); $event.stopPropagation()" aria-label="Limpiar">
+                <mat-label>Fórmula</mat-label>
+                <input type="text" matInput formControlName="formula" [matAutocomplete]="autoFormula"
+                    placeholder="Seleccione o busque una fórmula">
+                <button mat-icon-button matSuffix *ngIf="form.get('formula')?.value && !form.get('formula')?.disabled"
+                    (click)="clearFormulaInput(); $event.stopPropagation()" aria-label="Limpiar">
                     <mat-icon>close</mat-icon>
                 </button>
-                <mat-autocomplete #autoMaterial="matAutocomplete" [displayWith]="displayMaterial">
-                    <mat-option *ngFor="let mat of filteredMaterials$ | async" [value]="mat">
-                        {{ mat.nombre }} {{ mat.codigo ? '(' + mat.codigo + ')' : '' }}
+                <mat-autocomplete #autoFormula="matAutocomplete" [displayWith]="displayFormula">
+                    <mat-option *ngFor="let f of filteredFormulas$ | async" [value]="f">
+                        {{ f.nombre }}{{ f.material ? ' (' + f.material + ')' : '' }}
                     </mat-option>
                 </mat-autocomplete>
             </mat-form-field>
