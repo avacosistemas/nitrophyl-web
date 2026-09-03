@@ -130,7 +130,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                     response.data.page.forEach((orden: any) => {
                         const anio = orden.anio || (orden.fechaOF ? moment(orden.fechaOF, 'DD/MM/YYYY').year() : null);
                         const numero = orden.numero;
-                        const formattedNumero = (anio && numero) ? `${anio}/${String(numero).padStart(3, '0')}` : '-';
+                        const formattedNumero = (anio && numero) ? `${String(numero).padStart(3, '0')}/${anio % 100}` : '-';
 
                         const piezas: IOrdenFabricacionPieza[] = [
                             {
