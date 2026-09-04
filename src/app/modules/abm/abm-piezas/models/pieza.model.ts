@@ -87,6 +87,32 @@ export interface PiezaCreateDTO {
     hojaProceso?: string;
 }
 
+export interface PiezaClonarDTO {
+    idPiezaOriginal: number;
+    codigo: string;
+    nombre: string;
+    idFormula?: number | null;
+    formula?: string | null;
+    idCliente: number;
+    nombrePiezaPersonalizado?: string | null;
+    cotizacion?: number | null;
+    fechaCotizacion?: string | null;
+    observacionesCotizacion?: string | null;
+    hojaProceso?: string | null;
+    revisionInicial: number;
+    espesoresPesoCrudo: boolean;
+    moldes: boolean;
+    insumos: boolean;
+    moldeo: boolean;
+    prensas: boolean;
+    desmoldantePostcura: boolean;
+    esquema: boolean;
+    piezaTerminada: boolean;
+    dimensiones: boolean;
+    controles: boolean;
+    planos: boolean;
+}
+
 export interface PiezaUpdateDTO {
     denominacion: string;
     idTipoPieza: number;

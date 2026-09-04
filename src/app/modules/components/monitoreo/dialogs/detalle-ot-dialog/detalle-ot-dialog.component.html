@@ -6,7 +6,7 @@
             </div>
             <div>
                 <h2 class="text-xl font-extrabold text-gray-800 m-0">Detalle de Órdenes de Trabajo</h2>
-                <p class="text-sm font-semibold text-gray-500 m-0 mt-0.5">{{ maquina.maquina }}</p>
+                <p class="text-base font-semibold text-gray-500 m-0 mt-0.5">{{ maquina.maquina }}</p>
             </div>
         </div>
         <button mat-icon-button (click)="close()" class="text-gray-400 hover:text-gray-600">
@@ -27,66 +27,88 @@
             <button mat-stroked-button color="warn" class="mt-3" (click)="loadOts()">Reintentar</button>
         </div>
 
-        <div *ngIf="!isLoading && !errorLoading && ots.length === 0" class="flex flex-col items-center justify-center p-12 text-gray-400">
+        <div *ngIf="!isLoading && !errorLoading && ots.length === 0"
+            class="flex flex-col items-center justify-center p-12 text-gray-400">
             <mat-icon class="text-5xl mb-2 text-gray-300">inbox</mat-icon>
             <p class="text-base font-medium">No hay órdenes de trabajo asignadas a esta máquina.</p>
         </div>
 
         <div *ngIf="!isLoading && !errorLoading && ots.length > 0" class="w-full">
-            <table mat-table [dataSource]="ots" cdkDropList [cdkDropListData]="ots" (cdkDropListDropped)="drop($event)" class="w-full">
-                
+            <table mat-table [dataSource]="ots" cdkDropList [cdkDropListData]="ots" (cdkDropListDropped)="drop($event)"
+                class="w-full">
+
                 <ng-container matColumnDef="drag">
-                    <th mat-header-cell *matHeaderCellDef class="bg-slate-50 pl-4 pr-1 py-2.5 border-b border-gray-200 font-bold text-slate-800 w-16 text-left">No.</th>
-                    <td mat-cell *matCellDef="let element; let i = index" class="w-16 pl-4 pr-1 py-2.5 border-b border-gray-100 text-left">
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-slate-50 pl-4 pr-1 py-2.5 border-b border-gray-200 font-bold text-slate-800 w-16 text-left">
+                        No.</th>
+                    <td mat-cell *matCellDef="let element; let i = index"
+                        class="w-16 pl-4 pr-1 py-2.5 border-b border-gray-100 text-left">
                         <mat-icon class="drag-cursor text-xl text-gray-500">reorder</mat-icon>
-                        <span class="vertical-align-super font-bold text-gray-700 text-xs">{{ element.posicion || (i + 1) }}</span>
+                        <span class="vertical-align-super font-bold text-gray-700 text-base">{{ element.posicion || (i +
+                            1) }}</span>
                     </td>
                 </ng-container>
 
                 <ng-container matColumnDef="of">
-                    <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">OF</th>
-                    <td mat-cell *matCellDef="let element" class="font-bold text-blue-600 px-2 py-2.5 border-b border-gray-100 text-sm">{{ element.of }}</td>
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">OF</th>
+                    <td mat-cell *matCellDef="let element"
+                        class="font-bold text-blue-600 px-2 py-2.5 border-b border-gray-100 text-base">{{ element.of }}
+                    </td>
                 </ng-container>
 
                 <ng-container matColumnDef="cliente">
-                    <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">Cliente</th>
-                    <td mat-cell *matCellDef="let element" class="text-gray-800 font-medium px-2 py-2.5 border-b border-gray-100 text-sm">{{ element.cliente }}</td>
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">Cliente</th>
+                    <td mat-cell *matCellDef="let element"
+                        class="text-gray-800 font-medium px-2 py-2.5 border-b border-gray-100 text-base">{{
+                        element.cliente }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="pieza">
-                    <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">Pieza</th>
-                    <td mat-cell *matCellDef="let element" class="text-gray-800 font-medium px-2 py-2.5 border-b border-gray-100 text-sm">{{ element.pieza }}</td>
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">Pieza</th>
+                    <td mat-cell *matCellDef="let element"
+                        class="text-gray-800 font-medium px-2 py-2.5 border-b border-gray-100 text-base">{{ element.pieza
+                        }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="material">
-                    <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">Material</th>
-                    <td mat-cell *matCellDef="let element" class="px-2 py-2.5 border-b border-gray-100">
-                        <span class="text-gray-700 text-xs font-mono font-medium bg-slate-100/90 rounded px-2 py-0.5 border border-slate-200 inline-block">
-                            {{ formatMaterial(element.material) }}
-                        </span>
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-slate-50 px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">Material</th>
+                    <td mat-cell *matCellDef="let element"
+                        class="text-gray-800 font-medium px-2 py-2.5 border-b border-gray-100 text-base">
+                        {{ formatMaterial(element.material) }}
                     </td>
                 </ng-container>
 
                 <ng-container matColumnDef="cantidad">
-                    <th mat-header-cell *matHeaderCellDef class="bg-slate-50 text-right px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">Cant.</th>
-                    <td mat-cell *matCellDef="let element" class="text-right font-extrabold text-gray-900 px-2 py-2.5 border-b border-gray-100 text-sm">{{ element.cantidad | number }}</td>
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-slate-50 text-right px-2 py-2.5 border-b border-gray-200 font-bold text-slate-800">
+                        Cant.</th>
+                    <td mat-cell *matCellDef="let element"
+                        class="text-right font-extrabold text-gray-900 px-2 py-2.5 border-b border-gray-100 text-base">{{
+                        element.cantidad | number }}</td>
                 </ng-container>
 
                 <ng-container matColumnDef="fechaEntrega">
-                    <th mat-header-cell *matHeaderCellDef class="bg-slate-50 text-center pl-2 pr-4 py-2.5 border-b border-gray-200 font-bold text-slate-800">Fecha Entrega</th>
-                    <td mat-cell *matCellDef="let element" class="text-center text-xs font-medium text-gray-700 pl-2 pr-4 py-2.5 border-b border-gray-100">
-                        <span class="inline-block bg-gray-100 px-2 py-0.5 rounded-md text-gray-700 border border-gray-200">
-                            {{ element.fechaEntrega }}
-                        </span>
+                    <th mat-header-cell *matHeaderCellDef
+                        class="bg-slate-50 text-center pl-2 pr-4 py-2.5 border-b border-gray-200 font-bold text-slate-800">
+                        Fecha Entrega</th>
+                    <td mat-cell *matCellDef="let element"
+                        class="text-gray-800 font-medium px-2 py-2.5 border-b border-gray-100 text-base">
+                        {{ element.fechaEntrega }}
                     </td>
                 </ng-container>
 
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row" class="hover:bg-blue-50/40 transition-colors">
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" cdkDrag [cdkDragData]="row"
+                    class="hover:bg-blue-50/40 transition-colors">
                     <ng-template cdkDragPreview>
-                        <div class="drag-preview flex items-center gap-2 border border-blue-300 shadow-xl bg-white p-2 rounded">
+                        <div
+                            class="drag-preview flex items-center gap-2 border border-blue-300 shadow-xl bg-white p-2 rounded">
                             <mat-icon class="drag-cursor text-2xl text-blue-600">reorder</mat-icon>
-                            <span class="font-bold text-blue-600 text-sm">OF {{ row.of }}</span>
+                            <span class="font-bold text-blue-600 text-base">OF {{ row.of }}</span>
                             <span class="text-xs text-gray-500 font-medium">({{ row.cliente }})</span>
                         </div>
                     </ng-template>
@@ -96,10 +118,12 @@
     </div>
 
     <div class="flex items-center justify-end p-4 border-t border-gray-200 bg-white gap-3">
-        <button mat-stroked-button type="button" (click)="imprimirPlanilla()" class="px-6 font-semibold flex items-center gap-1.5" [disabled]="isLoading || errorLoading">
+        <button mat-stroked-button type="button" (click)="imprimirPlanilla()"
+            class="px-6 font-semibold flex items-center gap-1.5" [disabled]="isLoading || errorLoading">
             <mat-icon class="text-gray-600">print</mat-icon>
             <span>Imprimir</span>
         </button>
-        <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button (click)="close()">Cerrar</button>
+        <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
+            (click)="close()">Cerrar</button>
     </div>
 </div>

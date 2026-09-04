@@ -103,8 +103,8 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         return {
             first: this.paginator.pageIndex * this.paginator.pageSize,
             rows: this.paginator.pageSize,
-            asc: this.sort.direction !== 'desc',
-            idx: this.sort.active || 'fecha',
+            asc: this.sort.active ? this.sort.direction !== 'desc' : false,
+            idx: this.sort.active || 'id',
             comprobante: formValues.comprobante,
             fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null,
             fechaHasta: formValues.fechaHasta ? moment(formValues.fechaHasta).format('DD/MM/YYYY') : null,

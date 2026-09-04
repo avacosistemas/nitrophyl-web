@@ -616,7 +616,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
         this.openConfirmationModal(message, 'Generar Nueva Revisión').subscribe(confirmed => {
             if (confirmed) {
-                this.abmPiezaService.clonarPieza(this.pieza.id).subscribe({
+                this.abmPiezaService.nuevaRevision(this.pieza.id).subscribe({
                     next: (response) => {
                         this.notificationService.showSuccess('Nueva revisión generada exitosamente.');
                         const nuevaPiezaId = response.data?.id;

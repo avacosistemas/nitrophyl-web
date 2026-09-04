@@ -3,7 +3,8 @@ import {
     Insumo, Esquema, Finalizacion,
     Prensa, Plano, Molde, PiezaDimension, PiezaProceso,
     ApiResponse, PiezaCreateDTO, PiezaUpdateDTO, IPiezaMolde, PiezaCliente,
-    IInsumoTratado, IAdhesivo, ITipoInsumoJerarquico, ITratamiento, IPaginatedResponse, PiezaControl
+    IInsumoTratado, IAdhesivo, ITipoInsumoJerarquico, ITratamiento, IPaginatedResponse, PiezaControl,
+    PiezaClonarDTO
 } from './models/pieza.model';
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -79,8 +80,12 @@ export class ABMPiezaService {
         return this.http.put(`${this.API_PIEZA_URL}/formaDimension/${idPieza}`, { formaDimension: forma });
     }
 
-    clonarPieza(idPieza: number): Observable<any> {
-        return this.http.put(`${this.API_PIEZA_URL}/clonar/${idPieza}`, {});
+    nuevaRevision(idPieza: number): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_URL}/nuevaRevision/${idPieza}`, {});
+    }
+
+    copiarPiezaNueva(dto: PiezaClonarDTO): Observable<any> {
+        return this.http.post<any>(`${this.API_PIEZA_URL}/copiar`, dto);
     }
 
     marcarVigente(idPieza: number): Observable<any> {

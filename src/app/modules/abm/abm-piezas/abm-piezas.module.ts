@@ -32,6 +32,7 @@ import { ABMPiezaFinalizacionComponent } from './components/finalizacion/abm-pie
 import { ABMAdhesivosModule } from '../abm-adhesivos/abm-adhesivos.module';
 import { ABMTratamientosModule } from '../abm-tratamiento/abm-tratamiento.module';
 import { ABMPiezaClienteModalComponent } from './components/clientes/modal/abm-pieza-cliente-modal.component';
+import { ABMPiezaClonarModalComponent } from './components/grilla/modal-clonar/abm-pieza-clonar-modal.component';
 import { ABMPiezaControlesComponent } from './components/controles/abm-pieza-controles.component';
 import { SharedModule } from 'app/shared/shared.module';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -80,7 +81,8 @@ export const MY_DATE_FORMATS = {
     ABMPiezaEsquemaComponent,
     ABMPiezaFinalizacionComponent,
     ABMPiezaClienteModalComponent,
-    ABMPiezaControlesComponent
+    ABMPiezaControlesComponent,
+    ABMPiezaClonarModalComponent
   ],
   imports: [
     CommonModule,
