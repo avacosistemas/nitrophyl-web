@@ -2,23 +2,18 @@ import { Component, Inject, OnInit, OnDestroy, ElementRef, ViewChild } from '@an
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { DatePipe } from '@angular/common';
-import { Observable, Subject, merge } from 'rxjs';
-import { map, startWith, takeUntil } from 'rxjs/operators';
+import { Observable, Subject, merge, of } from 'rxjs';
+import { catchError, map, startWith, takeUntil } from 'rxjs/operators';
 import { Pieza, PiezaClonarDTO } from '../../../models/pieza.model';
 import { ABMPiezaService } from '../../../abm-piezas.service';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
-import { MaterialsService } from 'app/modules/abm/abm-formula/materials.service';
+import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
+import { IFormula } from 'app/modules/abm/abm-formula/formula.interface';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
 import { RevisionInicialInputComponent } from '../../crear-editar/revision-inicial-input.component';
 
 interface Cliente {
-    id: number;
-    nombre: string;
-    codigo?: string;
-}
-
-interface Material {
     id: number;
     nombre: string;
     codigo?: string;
@@ -34,10 +29,10 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
     form: FormGroup;
     isLoading: boolean = false;
     clientesDisponibles: Cliente[] = [];
-    materialesDisponibles: Material[] = [];
+    formulasDisponibles: IFormula[] = [];
 
     filteredClientes$: Observable<Cliente[]>;
-    filteredMaterials$: Observable<Material[]>;
+    filteredFormulas$: Observable<IFormula[]>;
 
     private _destroy$ = new Subject<void>();
 
@@ -47,7 +42,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
         @Inject(MAT_DIALOG_DATA) public data: { pieza: Pieza },
         private _piezaService: ABMPiezaService,
         private _clientesService: ClientesService,
-        private _materialsService: MaterialsService,
+        private _formulasService: FormulasService,
         private notificationService: NotificationService,
         private dialog: MatDialog,
         private datePipe: DatePipe
@@ -55,7 +50,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
         const p = this.data.pieza;
         this.form = this.fb.group({
             codigo: [p ? p.codigo : '', Validators.required],
-            material: [null],
+            formula: [null],
             nombre: [p ? p.denominacion : '', Validators.required],
             cliente: [null, Validators.required],
             cotizacion: [null, Validators.pattern('^[0-9]+(\\.[0-9]{1,3})?$')],
@@ -77,7 +72,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         this.loadClientes();
-        this.loadMateriales();
+        this.loadFormulas();
         this.setupCotizacionValidation();
     }
 
@@ -102,34 +97,34 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
         });
     }
 
-    private loadMateriales(): void {
-        this._materialsService.get().pipe(takeUntil(this._destroy$)).subscribe({
-            next: (res: any) => {
-                const list = res?.data ? (Array.isArray(res.data) ? res.data : [res.data]) : [];
-                this.materialesDisponibles = list;
+    private loadFormulas(): void {
+        this._formulasService.get().pipe(
+            catchError((err) => {
+                console.error('Error al cargar fórmulas:', err);
+                this.notificationService.showError('Error al cargar la lista de fórmulas.');
+                return of({ data: [] });
+            }),
+            takeUntil(this._destroy$)
+        ).subscribe((res: any) => {
+            const list = res?.data ? (Array.isArray(res.data) ? res.data : [res.data]) : [];
+            this.formulasDisponibles = list;
 
-                const materialName = this.data.pieza?.material;
-                if (materialName) {
-                    const match = this.materialesDisponibles.find(
-                        m => (m.nombre && m.nombre.trim().toLowerCase() === materialName.trim().toLowerCase()) ||
-                             (m.codigo && m.codigo.trim().toLowerCase() === materialName.trim().toLowerCase())
-                    );
-                    if (match) {
-                        this.form.patchValue({ material: match });
-                    } else {
-                        this.form.patchValue({ material: materialName });
-                    }
-                }
-
-                this.filteredMaterials$ = this.form.get('material').valueChanges.pipe(
-                    startWith(this.form.get('material').value || ''),
-                    map(value => this._filterMateriales(value))
+            const formulaName = this.data.pieza?.formula;
+            if (formulaName) {
+                const match = this.formulasDisponibles.find(
+                    f => f.nombre && f.nombre.trim().toLowerCase() === formulaName.trim().toLowerCase()
                 );
-            },
-            error: (err) => {
-                console.error('Error al cargar materiales:', err);
-                this.notificationService.showError('Error al cargar la lista de materiales.');
+                if (match) {
+                    this.form.patchValue({ formula: match });
+                } else {
+                    this.form.patchValue({ formula: formulaName });
+                }
             }
+
+            this.filteredFormulas$ = this.form.get('formula').valueChanges.pipe(
+                startWith(this.form.get('formula').value || ''),
+                map(value => this._filterFormulas(value))
+            );
         });
     }
 
@@ -170,12 +165,12 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
         );
     }
 
-    private _filterMateriales(value: string | Material): Material[] {
-        if (!value) return this.materialesDisponibles;
+    private _filterFormulas(value: string | IFormula): IFormula[] {
+        if (!value) return this.formulasDisponibles;
         const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
-        return this.materialesDisponibles.filter(m =>
-            (m.nombre && m.nombre.toLowerCase().includes(filterValue)) ||
-            (m.codigo && m.codigo.toLowerCase().includes(filterValue))
+        return this.formulasDisponibles.filter(f =>
+            (f.nombre && f.nombre.toLowerCase().includes(filterValue)) ||
+            (f.material && f.material.toLowerCase().includes(filterValue))
         );
     }
 
@@ -183,14 +178,14 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
         return cliente && cliente.nombre ? cliente.nombre : '';
     }
 
-    displayMaterial(mat: any): string {
-        if (!mat) return '';
-        if (typeof mat === 'string') return mat;
-        return mat.nombre || '';
+    displayFormula(formula: any): string {
+        if (!formula) return '';
+        if (typeof formula === 'string') return formula;
+        return formula.nombre || '';
     }
 
-    clearMaterialInput(): void {
-        this.form.get('material')?.setValue(null);
+    clearFormulaInput(): void {
+        this.form.get('formula')?.setValue(null);
     }
 
     get isAnyCheckSelected(): boolean {
@@ -276,7 +271,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
     private ejecutarClonado(revisionInicial: number, continuar: boolean): void {
         this.isLoading = true;
         const formVal = this.form.getRawValue();
-        const materialVal = formVal.material;
+        const formulaVal = formVal.formula;
 
         let fechaISO: string | null = null;
         if (formVal.fechaCotizacion) {
@@ -287,8 +282,8 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
             idPiezaOriginal: this.data.pieza.id,
             codigo: formVal.codigo,
             nombre: formVal.nombre,
-            idMaterial: (materialVal && typeof materialVal === 'object') ? materialVal.id : null,
-            material: (materialVal && typeof materialVal === 'object') ? materialVal.nombre : (typeof materialVal === 'string' ? materialVal : null),
+            idFormula: (formulaVal && typeof formulaVal === 'object') ? formulaVal.id : null,
+            formula: (formulaVal && typeof formulaVal === 'object') ? formulaVal.nombre : (typeof formulaVal === 'string' ? formulaVal : null),
             idCliente: formVal.cliente ? formVal.cliente.id : null,
             cotizacion: formVal.cotizacion !== null && formVal.cotizacion !== '' ? Number(formVal.cotizacion) : null,
             fechaCotizacion: fechaISO,
