@@ -65,6 +65,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
             desmoldantePostcura: [false],
             esquema: [false],
             piezaTerminada: [false],
+            dimensiones: [false],
             controles: [false],
             planos: [false]
         });
@@ -199,6 +200,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
             v.desmoldantePostcura ||
             v.esquema ||
             v.piezaTerminada ||
+            v.dimensiones ||
             v.controles ||
             v.planos
         );
@@ -214,6 +216,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
             desmoldantePostcura: value,
             esquema: value,
             piezaTerminada: value,
+            dimensiones: value,
             controles: value,
             planos: value
         });
@@ -298,6 +301,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
             desmoldantePostcura: !!formVal.desmoldantePostcura,
             esquema: !!formVal.esquema,
             piezaTerminada: !!formVal.piezaTerminada,
+            dimensiones: !!formVal.dimensiones,
             controles: !!formVal.controles,
             planos: !!formVal.planos
         };

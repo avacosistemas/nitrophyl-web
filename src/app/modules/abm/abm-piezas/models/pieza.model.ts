@@ -108,6 +108,7 @@ export interface PiezaClonarDTO {
     desmoldantePostcura: boolean;
     esquema: boolean;
     piezaTerminada: boolean;
+    dimensiones: boolean;
     controles: boolean;
     planos: boolean;
 }
