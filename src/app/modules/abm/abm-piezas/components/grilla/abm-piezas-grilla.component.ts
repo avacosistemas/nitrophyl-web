@@ -213,7 +213,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       `Se creará una nueva revisión para la pieza <b>${pieza.denominacion}</b> (Rev. ${pieza.revision}). Esta nueva revisión no estará vigente. ¿Desea continuar?`
     );
     this.openConfirmationModal(message, () => {
-      this.abmPiezaService.clonarPieza(pieza.id).subscribe({
+      this.abmPiezaService.nuevaRevision(pieza.id).subscribe({
         next: () => {
           this.notificationService.showSuccess('Nueva revisión generada exitosamente.');
           this.refreshGrid();

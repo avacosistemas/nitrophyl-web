@@ -183,7 +183,7 @@
                             <div class="flex justify-end">
                                 <button mat-icon-button *ngIf="'PROCESOS_PIEZAS_CREATE' | hasPermission"
                                     (click)="abrirModalClonar(row)">
-                                    <mat-icon svgIcon="heroicons_solid:document-duplicate" matTooltip="Clonar"></mat-icon>
+                                    <mat-icon svgIcon="heroicons_solid:document-add" matTooltip="Crear nueva usando como base"></mat-icon>
                                 </button>
                                 <button mat-icon-button *ngIf="'PROCESOS_PIEZAS_EDIT' | hasPermission"
                                     (click)="goToEdit(row.id)">

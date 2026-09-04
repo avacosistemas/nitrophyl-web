@@ -307,7 +307,7 @@ export class ABMPiezaClonarModalComponent implements OnInit, OnDestroy {
             planos: !!formVal.planos
         };
 
-        this._piezaService.clonarPiezaNueva(dto).pipe(takeUntil(this._destroy$)).subscribe({
+        this._piezaService.copiarPiezaNueva(dto).pipe(takeUntil(this._destroy$)).subscribe({
             next: (res: any) => {
                 this.isLoading = false;
                 this.notificationService.showSuccess('Pieza clonada exitosamente.');

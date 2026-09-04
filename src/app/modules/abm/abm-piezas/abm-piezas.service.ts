@@ -80,12 +80,12 @@ export class ABMPiezaService {
         return this.http.put(`${this.API_PIEZA_URL}/formaDimension/${idPieza}`, { formaDimension: forma });
     }
 
-    clonarPieza(idPieza: number): Observable<any> {
-        return this.http.put(`${this.API_PIEZA_URL}/clonar/${idPieza}`, {});
+    nuevaRevision(idPieza: number): Observable<any> {
+        return this.http.put(`${this.API_PIEZA_URL}/nuevaRevision/${idPieza}`, {});
     }
 
-    clonarPiezaNueva(dto: PiezaClonarDTO): Observable<any> {
-        return this.http.post<any>(`${this.API_PIEZA_URL}/clonar`, dto);
+    copiarPiezaNueva(dto: PiezaClonarDTO): Observable<any> {
+        return this.http.post<any>(`${this.API_PIEZA_URL}/copiar`, dto);
     }
 
     marcarVigente(idPieza: number): Observable<any> {

@@ -1,5 +1,5 @@
 <div class="flex items-center justify-between pb-2 mb-2 border-b border-gray-200">
-    <h2 mat-dialog-title class="text-xl font-bold !m-0 !p-0">Clonar Pieza</h2>
+    <h2 mat-dialog-title class="text-xl font-bold !m-0 !p-0">Crear pieza en base a la seleccioanda</h2>
     <button mat-icon-button (click)="cancelar()" aria-label="Cerrar modal" class="text-gray-500 hover:text-gray-700">
         <mat-icon>close</mat-icon>
     </button>
@@ -89,7 +89,7 @@
 
         <div class="flex flex-col gap-2 pt-1">
             <div class="flex items-center justify-between">
-                <span class="text-sm font-semibold text-gray-700">Secciones a Clonar:</span>
+                <span class="text-sm font-semibold text-gray-700">Secciones a usar como base:</span>
                 <div>
                     <button *ngIf="isAnyCheckSelected" type="button" mat-stroked-button color="warn"
                         class="mat-focus-indicator mat-stroked-button mat-button-base !text-xs !h-8 !px-3"
@@ -110,7 +110,6 @@
                 <mat-checkbox formControlName="moldes" color="primary">Moldes</mat-checkbox>
                 <mat-checkbox formControlName="insumos" color="primary">Insumos</mat-checkbox>
                 <mat-checkbox formControlName="moldeo" color="primary">Moldeo</mat-checkbox>
-                <mat-checkbox formControlName="prensas" color="primary">Prensas</mat-checkbox>
                 <mat-checkbox formControlName="desmoldantePostcura" color="primary">Desmoldante postcura</mat-checkbox>
                 <mat-checkbox formControlName="esquema" color="primary">Esquema</mat-checkbox>
                 <mat-checkbox formControlName="piezaTerminada" color="primary">Pieza terminada</mat-checkbox>
