@@ -5,6 +5,7 @@ export interface OTCabecera {
     prensa: string;
     fecha_emision: string;
     fecha_entrega: string;
+    insumos?: string;
     observaciones: string;
     sector?: string;
     telefonoCliente?: string;
@@ -43,6 +44,7 @@ export interface OTItem {
     identficacion?: string;
     ubicacion: string;
     pc: string;
+    insumos?: string;
     observaciones_item: string;
     control_calidad: OTControlCalidad[];
     cotizacion?: number;
@@ -145,6 +147,10 @@ export function generarHtmlOT(data: OTData): string {
                         ${item.pc ? `
                         <div class="data-row">
                             <div class="d-field"><span class="lbl">PC:</span><span class="val">${item.pc}</span></div>
+                        </div>` : ''}
+                        ${item.insumos ? `
+                        <div class="data-row">
+                            <div class="d-field"><span class="lbl">INSUMOS:</span><span class="val">${item.insumos}</span></div>
                         </div>` : ''}
                         <div class="obs-container">
                             <div class="obs-box" style="background-color: #fff; min-height: 45px; font-weight: normal;">Obs:${item.observaciones_item} </div>
@@ -281,7 +287,7 @@ export function generarHtmlOT(data: OTData): string {
         .h-row { display: flex; align-items: flex-end; margin-bottom: 3px; gap: 10px; }
         .h-row:last-child { margin-bottom: 0; }
         .h-row:first-of-type { margin-top: 5px; }
-        .h-field { display: flex; align-items: flex-end; margin-bottom: 8px; flex: 1; }
+        .h-field { display: flex; align-items: flex-end; margin-bottom: 5px; flex: 1; }
         .h-field.fixed { flex: 0 0 150px; }
         .h-lbl { font-weight: bold; font-size: 10px; margin-right: 8px; white-space: nowrap; }
         .h-val { font-size: 13px; border-bottom: 1px solid #000; flex: 1; min-height: 16px; padding-bottom: 2px; }
@@ -313,7 +319,7 @@ export function generarHtmlOT(data: OTData): string {
         .fabrico-group .line { border-bottom: 1px solid #000; flex: 1; height: 20px; font-size: 17px; }
         .item-body { display: flex; }
         .item-left { flex: 1; display: flex; flex-direction: column; padding: 10px; padding-top: 15px; border-right: 1px solid #000; }
-        .data-row { display: flex; gap: 15px; margin-bottom: 12px; }
+        .data-row { display: flex; gap: 15px; margin-bottom: 5px; }
         .d-field { display: flex; align-items: flex-end; margin-bottom: 6px; flex: 1; }
         .d-field.narrow { flex: 0 0 120px; }
         .d-field.stacked { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
@@ -353,7 +359,7 @@ export function generarHtmlOT(data: OTData): string {
         @media print {
             @page { margin: 0; size: A4 portrait; }
             body { background: #fff; margin: 0; padding: 0; }
-            .a4-page { margin: 0; padding: 10mm; box-shadow: none; width: 210mm; height: 297mm; page-break-after: always; box-sizing: border-box; overflow: hidden; }
+            .a4-page { margin: 0; padding: 10mm; padding-top: 7mm; box-shadow: none; width: 210mm; height: 297mm; page-break-after: always; box-sizing: border-box; overflow: hidden; }
         }
     </style>
 </head>
@@ -378,6 +384,11 @@ export function generarHtmlOT(data: OTData): string {
                         </div>
                         <div class="h-field"><span class="h-lbl">MÁQUINA:</span>
                             <div class="h-val">${cabecera.prensa || ''}</div>
+                        </div>
+                    </div>
+                    <div class="h-row">
+                        <div class="h-field"><span class="h-lbl">INSUMOS:</span>
+                            <div class="h-val">${cabecera.insumos || ''}</div>
                         </div>
                     </div>
                     <div class="h-row">
@@ -427,6 +438,11 @@ export function generarHtmlOT(data: OTData): string {
                         </div>
                         <div class="h-field"><span class="h-lbl">EMAIL:</span>
                             <div class="h-val">${cabecera.emailCliente || ''}</div>
+                        </div>
+                    </div>
+                    <div class="h-row">
+                        <div class="h-field"><span class="h-lbl">INSUMOS:</span>
+                            <div class="h-val">${cabecera.insumos || ''}</div>
                         </div>
                     </div>
                     <div class="h-row">
