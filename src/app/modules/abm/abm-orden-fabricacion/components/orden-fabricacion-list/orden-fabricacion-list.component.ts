@@ -100,6 +100,12 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     ngAfterViewInit(): void {
+        this.sort.sortChange.pipe(takeUntil(this._destroying$)).subscribe(() => {
+            if (this.paginator) {
+                this.paginator.pageIndex = 0;
+            }
+        });
+
         merge(this.sort.sortChange, this.paginator.page).pipe(
             startWith({}),
             switchMap(() => {

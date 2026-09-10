@@ -150,20 +150,20 @@
                   <div class="flex gap-4 flex-wrap mt-2">
                     <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                       <mat-label>Alto (mm)</mat-label>
-                      <input type="number" matInput formControlName="alto">
+                      <input type="number" step="any" matInput formControlName="alto">
                       <mat-error *ngIf="moldeForm.get('alto').hasError('required')">Requerido</mat-error>
                     </mat-form-field>
 
                     <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'RECTANGULAR'">
                       <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                         <mat-label>Ancho (mm)</mat-label>
-                        <input type="number" matInput formControlName="ancho">
+                        <input type="number" step="any" matInput formControlName="ancho">
                         <mat-error *ngIf="moldeForm.get('ancho').hasError('required')">Requerido</mat-error>
                       </mat-form-field>
 
                       <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                         <mat-label>Profundidad (mm)</mat-label>
-                        <input type="number" matInput formControlName="profundidad">
+                        <input type="number" step="any" matInput formControlName="profundidad">
                         <mat-error *ngIf="moldeForm.get('profundidad').hasError('required')">Requerido</mat-error>
                       </mat-form-field>
                     </ng-container>
@@ -171,7 +171,7 @@
                     <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'CIRCULAR'">
                       <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                         <mat-label>Diámetro (mm)</mat-label>
-                        <input type="number" matInput formControlName="diametro">
+                        <input type="number" step="any" matInput formControlName="diametro">
                         <mat-error *ngIf="moldeForm.get('diametro').hasError('required')">Requerido</mat-error>
                       </mat-form-field>
                     </ng-container>

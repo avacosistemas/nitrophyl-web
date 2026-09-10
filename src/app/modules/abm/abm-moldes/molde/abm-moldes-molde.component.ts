@@ -144,10 +144,10 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
 
       tipoMolde: ['RECTANGULAR', Validators.required],
-      alto: [null, [Validators.pattern("^[0-9]*$")]],
-      ancho: [null, [Validators.pattern("^[0-9]*$")]],
-      profundidad: [null, [Validators.pattern("^[0-9]*$")]],
-      diametro: [null, [Validators.pattern("^[0-9]*$")]]
+      alto: [null, [Validators.pattern('^[0-9]*\\.?[0-9]+$')]],
+      ancho: [null, [Validators.pattern('^[0-9]*\\.?[0-9]+$')]],
+      profundidad: [null, [Validators.pattern('^[0-9]*\\.?[0-9]+$')]],
+      diametro: [null, [Validators.pattern('^[0-9]*\\.?[0-9]+$')]]
     });
 
     this.moldeForm.get('tipoMolde')?.valueChanges.subscribe(tipo => {
@@ -245,7 +245,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     profCtrl.clearValidators();
     diametroCtrl.clearValidators();
 
-    const numberPattern = Validators.pattern("^[0-9]*$");
+    const numberPattern = Validators.pattern('^[0-9]*\\.?[0-9]+$');
 
     if (tipoMolde === 'RECTANGULAR') {
       anchoCtrl.setValidators([numberPattern]);

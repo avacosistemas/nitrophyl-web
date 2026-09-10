@@ -61,12 +61,12 @@
                                 <div class="flex gap-2">
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Mínimo</mat-label>
-                                        <input type="number" matInput [formControlName]="'altomin'">
+                                        <input type="number" step="any" matInput [formControlName]="'altomin'">
                                     </mat-form-field>
 
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Máximo</mat-label>
-                                        <input type="number" matInput [formControlName]="'altomax'">
+                                        <input type="number" step="any" matInput [formControlName]="'altomax'">
                                     </mat-form-field>
                                 </div>
                             </div>
@@ -76,11 +76,11 @@
                                 <div class="flex gap-2">
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Mínimo</mat-label>
-                                        <input type="number" matInput [formControlName]="'anchomin'">
+                                        <input type="number" step="any" matInput [formControlName]="'anchomin'">
                                     </mat-form-field>
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Máximo</mat-label>
-                                        <input type="number" matInput [formControlName]="'anchomax'">
+                                        <input type="number" step="any" matInput [formControlName]="'anchomax'">
                                     </mat-form-field>
                                 </div>
                             </div>
@@ -90,11 +90,11 @@
                                 <div class="flex gap-2">
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Mínima</mat-label>
-                                        <input type="number" matInput [formControlName]="'profumin'">
+                                        <input type="number" step="any" matInput [formControlName]="'profumin'">
                                     </mat-form-field>
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Máxima</mat-label>
-                                        <input type="number" matInput [formControlName]="'profumax'">
+                                        <input type="number" step="any" matInput [formControlName]="'profumax'">
                                     </mat-form-field>
                                 </div>
                             </div>
@@ -104,11 +104,11 @@
                                 <div class="flex gap-2">
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Mínimo</mat-label>
-                                        <input type="number" matInput [formControlName]="'diametromin'">
+                                        <input type="number" step="any" matInput [formControlName]="'diametromin'">
                                     </mat-form-field>
                                     <mat-form-field appearance="outline" class="w-1/2">
                                         <mat-label>Máximo</mat-label>
-                                        <input type="number" matInput [formControlName]="'diametromax'">
+                                        <input type="number" step="any" matInput [formControlName]="'diametromax'">
                                     </mat-form-field>
                                 </div>
                             </div>
@@ -175,25 +175,25 @@
                     <td mat-cell *matCellDef="let element"> {{element.ubicacion}} </td>
                 </ng-container>
                 <ng-container matColumnDef="alto">
-                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center text-center"><mat-icon
+                    <th mat-header-cell *matHeaderCellDef class="min-w-[55px] px-2 text-center"><mat-icon
                             svgIcon="height"></mat-icon>
                     </th>
-                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.alto}} </td>
+                    <td mat-cell *matCellDef="let element" class="min-w-[55px] px-2 text-center whitespace-nowrap"> {{element.alto}} </td>
                 </ng-container>
                 <ng-container matColumnDef="ancho">
-                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center"><mat-icon svgIcon="height"
+                    <th mat-header-cell *matHeaderCellDef class="min-w-[55px] px-2 text-center"><mat-icon svgIcon="height"
                             style="transform: rotate(90deg);"></mat-icon></th>
-                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.ancho}} </td>
+                    <td mat-cell *matCellDef="let element" class="min-w-[55px] px-2 text-center whitespace-nowrap"> {{element.ancho}} </td>
                 </ng-container>
                 <ng-container matColumnDef="profundidad">
-                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center"><mat-icon
+                    <th mat-header-cell *matHeaderCellDef class="min-w-[55px] px-2 text-center"><mat-icon
                             style="transform: scale(0.7);" svgIcon="open_in_full"></mat-icon></th>
-                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.profundidad}} </td>
+                    <td mat-cell *matCellDef="let element" class="min-w-[55px] px-2 text-center whitespace-nowrap"> {{element.profundidad}} </td>
                 </ng-container>
                 <ng-container matColumnDef="diametro">
-                    <th mat-header-cell *matHeaderCellDef class="w-10 text-center"><mat-icon [svgIcon]="'hide_source'"
+                    <th mat-header-cell *matHeaderCellDef class="min-w-[55px] px-2 text-center"><mat-icon [svgIcon]="'hide_source'"
                             style=" transform: scale(0.7)  rotate(90deg);"></mat-icon></th>
-                    <td mat-cell *matCellDef="let element" class="w-10 text-center"> {{element.diametro}} </td>
+                    <td mat-cell *matCellDef="let element" class="min-w-[55px] px-2 text-center whitespace-nowrap"> {{element.diametro}} </td>
                 </ng-container>
 
                 <ng-container matColumnDef="acciones">
