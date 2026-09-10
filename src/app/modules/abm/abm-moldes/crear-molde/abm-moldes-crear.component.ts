@@ -2,13 +2,14 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormControl, FormGroup, Validators, ValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
 import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 import { Molde } from 'app/modules/abm/abm-moldes/molde.model';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { MoldesService } from 'app/modules/abm/abm-moldes/moldes.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable, of } from 'rxjs';
+import { debounceTime, switchMap, map, catchError, startWith } from 'rxjs/operators';
 import { ABMMoldeService } from '../abm-moldes.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -22,6 +23,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   moldeForm: FormGroup;
   public clients$: any = [];
   public tiposPieza$: { id: number; nombre: string }[] = [];
+  public filteredTroqueles$: Observable<any[]> = of([]);
 
   private requireAtLeastOneCheckbox(): ValidatorFn {
     return (formArray: AbstractControl): ValidationErrors | null => {
@@ -32,7 +34,6 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   }
 
   constructor(
-    private activatedRoute: ActivatedRoute,
     public dialog: MatDialog,
     private router: Router,
     private moldesService: MoldesService,
@@ -49,6 +50,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       cantidadBocas: [null, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
       propio: [true, Validators.required],
       client: [{ value: null }],
+      troquel: [null, [Validators.maxLength(10)]],
       observations: [null],
       location: [null],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
@@ -60,19 +62,23 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       diametro: [null, [Validators.pattern("^[0-9]*$")]]
     });
 
-    this.moldeForm.get('tipoMolde').valueChanges.subscribe(tipo => {
-      this.updateDimensionValidators(tipo);
+    this.moldeForm.get('tipoMolde')?.valueChanges.subscribe(tipo => {
+      if (tipo) {
+        this.updateDimensionValidators(tipo);
+      }
     });
 
-    this.moldeForm.get('propio').valueChanges.subscribe(isPropio => {
+    this.moldeForm.get('propio')?.valueChanges.subscribe(isPropio => {
       const clientControl = this.moldeForm.get('client');
-      if (isPropio) {
-        clientControl.clearValidators();
-        clientControl.setValue(null);
-      } else {
-        clientControl.setValidators(Validators.required);
+      if (clientControl) {
+        if (isPropio) {
+          clientControl.clearValidators();
+          clientControl.setValue(null);
+        } else {
+          clientControl.setValidators(Validators.required);
+        }
+        clientControl.updateValueAndValidity();
       }
-      clientControl.updateValueAndValidity();
     });
 
     this.suscripcion = this.ABMoldesService.events.subscribe((data: any) => {
@@ -101,15 +107,53 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       },
       error: (err) => console.error(err)
     });
+
+    this.filteredTroqueles$ = (this.moldeForm.get('troquel')?.valueChanges || of('')).pipe(
+      startWith(''),
+      debounceTime(300),
+      switchMap(value => {
+        const searchTerm = typeof value === 'string' ? value : (value?.nombre || '');
+        return this.moldesService.buscarTroqueles(searchTerm).pipe(
+          map(res => res?.data || []),
+          catchError(() => of([]))
+        );
+      })
+    );
+  }
+
+  displayTroquel(item: any): string {
+    if (!item) return '';
+    return typeof item === 'string' ? item : (item.nombre || '');
+  }
+
+  clearTroquelSelection(): void {
+    this.moldeForm.get('troquel')?.setValue(null);
+  }
+
+  getTroquelSearchTerm(): string {
+    const value = this.moldeForm.get('troquel')?.value;
+    if (!value) return '';
+    return (typeof value === 'string' ? value : (value?.nombre || '')).trim();
+  }
+
+  isTroquelExactMatch(troqueles: any[] | null): boolean {
+    const term = this.getTroquelSearchTerm().toLowerCase();
+    if (!term || !troqueles) return false;
+    return troqueles.some(t => {
+      const name = (typeof t === 'string' ? t : (t?.nombre || '')).toLowerCase();
+      return name === term;
+    });
   }
 
   private addTiposPiezaCheckboxes(): void {
     const piezaTiposFormArray = this.moldeForm.get('piezaTipos') as FormArray;
-    this.tiposPieza$.forEach(() => piezaTiposFormArray.push(new FormControl(false)));
+    if (piezaTiposFormArray) {
+      this.tiposPieza$.forEach(() => piezaTiposFormArray.push(new FormControl(false)));
+    }
   }
 
   ngOnDestroy(): void {
-    this.suscripcion.unsubscribe();
+    this.suscripcion?.unsubscribe();
   }
 
   ngAfterViewInit() {
@@ -124,6 +168,8 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     const anchoCtrl = this.moldeForm.get('ancho');
     const profCtrl = this.moldeForm.get('profundidad');
     const diametroCtrl = this.moldeForm.get('diametro');
+
+    if (!anchoCtrl || !profCtrl || !diametroCtrl) return;
 
     anchoCtrl.clearValidators();
     profCtrl.clearValidators();
@@ -178,39 +224,51 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       return;
     }
 
-    const isPropio = this.moldeForm.get('propio').value;
+    const isPropio = this.moldeForm.get('propio')?.value;
 
-    const selectedClientId = this.moldeForm.controls.client.value;
+    const selectedClientId = this.moldeForm.get('client')?.value;
     const selectedClient = this.clients$.find((element: any) => element.id === selectedClientId);
 
-    const selectedTiposPieza = this.moldeForm.value.piezaTipos
-      .map((checked, i) => checked ? {
+    const selectedTiposPieza = (this.moldeForm.value.piezaTipos || [])
+      .map((checked: boolean, i: number) => checked ? {
         id: this.tiposPieza$[i].id,
         nombre: this.tiposPieza$[i].nombre
       } : null)
-      .filter(v => v !== null);
+      .filter((v: any) => v !== null);
 
-    const tipoMolde = this.moldeForm.get('tipoMolde').value;
-    const alto = this.moldeForm.get('alto').value;
+    const tipoMolde = this.moldeForm.get('tipoMolde')?.value;
+    const alto = this.moldeForm.get('alto')?.value;
     let ancho = 0;
     let profundidad = 0;
     let diametro = 0;
 
     if (tipoMolde === 'RECTANGULAR') {
-      ancho = this.moldeForm.get('ancho').value;
-      profundidad = this.moldeForm.get('profundidad').value;
+      ancho = this.moldeForm.get('ancho')?.value;
+      profundidad = this.moldeForm.get('profundidad')?.value;
     } else {
-      diametro = this.moldeForm.get('diametro').value;
+      diametro = this.moldeForm.get('diametro')?.value;
+    }
+
+    const troquelVal = this.moldeForm.get('troquel')?.value;
+    let troquelNombre: string | null = null;
+    let idTroquel: number | null = null;
+    if (typeof troquelVal === 'string') {
+      troquelNombre = troquelVal.trim() || null;
+    } else if (troquelVal && typeof troquelVal === 'object') {
+      troquelNombre = troquelVal.nombre || null;
+      idTroquel = troquelVal.id || null;
     }
 
     let model: Molde = {
       id: 0,
-      codigo: this.moldeForm.controls.code.value,
-      estado: this.moldeForm.controls.estado.value,
-      nombre: this.moldeForm.controls.name.value,
-      observaciones: this.moldeForm.controls.observations.value,
-      ubicacion: this.moldeForm.controls.location.value,
-      cantidadBocas: this.moldeForm.controls.cantidadBocas.value,
+      codigo: this.moldeForm.get('code')?.value,
+      estado: this.moldeForm.get('estado')?.value,
+      nombre: this.moldeForm.get('name')?.value,
+      observaciones: this.moldeForm.get('observations')?.value,
+      ubicacion: this.moldeForm.get('location')?.value,
+      cantidadBocas: this.moldeForm.get('cantidadBocas')?.value,
+      troquel: troquelNombre,
+      idTroquel: idTroquel,
       piezaTipos: selectedTiposPieza,
 
       propio: isPropio,

@@ -44,6 +44,11 @@ export class MoldesService {
     return this.http.get<any>(`${environment.server}molde/${id}`);
   }
 
+  public buscarTroqueles(nombre: string = ''): Observable<any> {
+    const params = new HttpParams().set('nombre', nombre || '');
+    return this.http.get<any>(`${environment.server}molde/troquel`, { params });
+  }
+
   public updateMolde(id: number, molde: Molde): Observable<any> {
     return this.http.put<any>(`${environment.server}molde/${id}`, molde);
   }

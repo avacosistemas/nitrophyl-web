@@ -8,14 +8,6 @@
             <h1 class="text-2xl font-semibold mb-2">Molde</h1>
           </div>
 
-          <div class="flex gap-2 mt-2 mb-2">
-            <label class="text-gray-600 font-medium">Propietario</label>
-            <mat-radio-group formControlName="propio" class="flex gap-4">
-              <mat-radio-button [value]="true" color="primary">Nitrophyl</mat-radio-button>
-              <mat-radio-button [value]="false" color="primary">Cliente</mat-radio-button>
-            </mat-radio-group>
-          </div>
-
           <mat-form-field class="w-full" appearance="outline">
             <mat-label>Código </mat-label>
             <input id="code" matInput [formControlName]="'code'" placeholder="Código">
@@ -57,6 +49,43 @@
           </mat-form-field>
 
           <mat-form-field class="w-full" appearance="outline">
+            <mat-label>Troquel</mat-label>
+            <input type="text" placeholder="Buscar o ingresar troquel" matInput formControlName="troquel"
+              [matAutocomplete]="autoTroquel" maxlength="10" #troquelInput="matAutocompleteTrigger">
+            <button mat-icon-button matSuffix *ngIf="moldeForm.get('troquel').value"
+              (click)="clearTroquelSelection(); $event.stopPropagation()">
+              <mat-icon>close</mat-icon>
+            </button>
+            <button mat-icon-button matSuffix *ngIf="!moldeForm.get('troquel').value"
+              (click)="troquelInput.openPanel()">
+              <mat-icon>arrow_drop_down</mat-icon>
+            </button>
+            <mat-autocomplete #autoTroquel="matAutocomplete" [displayWith]="displayTroquel">
+              <mat-option *ngIf="getTroquelSearchTerm() && !isTroquelExactMatch(filteredTroqueles$ | async)"
+                [value]="getTroquelSearchTerm()"
+                class="text-primary-600 font-bold border-b bg-gray-50">
+                <mat-icon class="text-primary-600 icon-size-5 mr-2 align-middle"
+                  svgIcon="heroicons_solid:plus-circle"></mat-icon>
+                Usar "{{ getTroquelSearchTerm() }}"
+              </mat-option>
+              <mat-option *ngFor="let t of filteredTroqueles$ | async" [value]="t">
+                {{ t.nombre || t }}
+              </mat-option>
+            </mat-autocomplete>
+            <mat-error class="mb-1" *ngIf="moldeForm.get('troquel').hasError('maxlength')">
+              Máximo 10 caracteres
+            </mat-error>
+          </mat-form-field>
+
+          <div class="flex gap-2 mt-2 mb-2">
+            <label class="text-gray-600 font-medium">Propietario</label>
+            <mat-radio-group formControlName="propio" class="flex gap-4">
+              <mat-radio-button [value]="true" color="primary">Nitrophyl</mat-radio-button>
+              <mat-radio-button [value]="false" color="primary">Cliente</mat-radio-button>
+            </mat-radio-group>
+          </div>
+
+          <mat-form-field class="w-full" appearance="outline" *ngIf="moldeForm.get('propio').value === false">
             <mat-label>Cliente</mat-label>
             <mat-select formControlName="client" placeholder="Seleccione un cliente">
               <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>

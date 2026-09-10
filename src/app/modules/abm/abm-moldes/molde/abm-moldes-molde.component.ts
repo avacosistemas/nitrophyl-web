@@ -21,8 +21,8 @@ import {
   Plano,
 } from 'app/modules/abm/abm-moldes/molde.model';
 import { MoldesService } from 'app/modules/abm/abm-moldes/moldes.service';
-import { Subscription, Subject, Observable, forkJoin } from 'rxjs';
-import { take, startWith, map } from 'rxjs/operators';
+import { Subscription, Subject, Observable, forkJoin, of } from 'rxjs';
+import { take, startWith, map, debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { ABMMoldeService } from '../abm-moldes.service';
 import * as FileSaver from 'file-saver';
 import { ABMMoldesModalComponent } from '../modal/abm-moldes-modal.component';
@@ -100,6 +100,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   public clients$: Cliente[] = [];
   public filteredClients$: Observable<Cliente[]>;
   public filteredClientsForAdding$: Observable<Cliente[]>;
+  public filteredTroqueles$: Observable<any[]> = of([]);
   public clients: Array<any> = [];
   public displayedColumnsClients: string[] = [
     'nombre',
@@ -139,6 +140,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       cantidadBocas: [{ value: null, disabled: true }],
       propio: [true, [Validators.required]],
       client: [null],
+      troquel: [null, [Validators.maxLength(10)]],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
 
       tipoMolde: ['RECTANGULAR', Validators.required],
@@ -148,18 +150,22 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       diametro: [null, [Validators.pattern("^[0-9]*$")]]
     });
 
-    this.moldeForm.get('tipoMolde').valueChanges.subscribe(tipo => {
-      this.updateDimensionValidators(tipo);
+    this.moldeForm.get('tipoMolde')?.valueChanges.subscribe(tipo => {
+      if (tipo) {
+        this.updateDimensionValidators(tipo);
+      }
     });
 
-    this.moldeForm.get('propio').valueChanges.subscribe(isPropio => {
+    this.moldeForm.get('propio')?.valueChanges.subscribe(isPropio => {
       const clientControl = this.moldeForm.get('client');
-      if (isPropio) {
-        clientControl.clearValidators();
-      } else {
-        clientControl.setValidators(Validators.required);
+      if (clientControl) {
+        if (isPropio) {
+          clientControl.clearValidators();
+        } else {
+          clientControl.setValidators(Validators.required);
+        }
+        clientControl.updateValueAndValidity();
       }
-      clientControl.updateValueAndValidity();
     });
 
     this.bocaForm = this._formBuilder.group({
@@ -232,6 +238,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     const anchoCtrl = this.moldeForm.get('ancho');
     const profCtrl = this.moldeForm.get('profundidad');
     const diametroCtrl = this.moldeForm.get('diametro');
+
+    if (!anchoCtrl || !profCtrl || !diametroCtrl) return;
 
     anchoCtrl.clearValidators();
     profCtrl.clearValidators();
@@ -461,6 +469,16 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       diametro = this.moldeForm.get('diametro').value;
     }
 
+    const troquelVal = this.moldeForm.get('troquel').value;
+    let troquelNombre: string | null = null;
+    let idTroquel: number | null = null;
+    if (typeof troquelVal === 'string') {
+      troquelNombre = troquelVal.trim() || null;
+    } else if (troquelVal && typeof troquelVal === 'object') {
+      troquelNombre = troquelVal.nombre || null;
+      idTroquel = troquelVal.id || null;
+    }
+
     let model: Molde = {
       ...this.initialMolde,
 
@@ -471,6 +489,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       observaciones: this.moldeForm.get('observaciones').value || '',
       ubicacion: this.moldeForm.get('ubicacion').value || '',
       cantidadBocas: this.moldeForm.get('cantidadBocas').value,
+      troquel: troquelNombre,
+      idTroquel: idTroquel,
       piezaTipos: selectedTiposPieza,
 
       propio: isPropio,
@@ -550,7 +570,43 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     });
   }
 
+  displayTroquel(item: any): string {
+    if (!item) return '';
+    return typeof item === 'string' ? item : (item.nombre || '');
+  }
+
+  clearTroquelSelection(): void {
+    this.moldeForm.get('troquel').setValue(null);
+  }
+
+  getTroquelSearchTerm(): string {
+    const value = this.moldeForm.get('troquel')?.value;
+    if (!value) return '';
+    return (typeof value === 'string' ? value : (value?.nombre || '')).trim();
+  }
+
+  isTroquelExactMatch(troqueles: any[] | null): boolean {
+    const term = this.getTroquelSearchTerm().toLowerCase();
+    if (!term || !troqueles) return false;
+    return troqueles.some(t => {
+      const name = (typeof t === 'string' ? t : (t?.nombre || '')).toLowerCase();
+      return name === term;
+    });
+  }
+
   inicializar() {
+    this.filteredTroqueles$ = this.moldeForm.get('troquel').valueChanges.pipe(
+      startWith(''),
+      debounceTime(300),
+      switchMap(value => {
+        const searchTerm = typeof value === 'string' ? value : (value?.nombre || '');
+        return this._molds.buscarTroqueles(searchTerm).pipe(
+          map(res => res?.data || []),
+          catchError(() => of([]))
+        );
+      })
+    );
+
     forkJoin({
       molde: this._molds.getMoldeById(this.currentId),
       tiposPieza: this._abmPiezaService.getPiezaTipo(),
@@ -620,6 +676,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       propio: isPropio,
       client: propietarioObj,
       cantidadBocas: data.cantidadBocas,
+      troquel: data.troquel || null,
 
       tipoMolde: tipo,
       alto: data.alto,

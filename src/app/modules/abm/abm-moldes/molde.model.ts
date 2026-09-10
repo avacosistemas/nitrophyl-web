@@ -15,11 +15,19 @@ export interface Molde {
   profundidad?: number;
   diametro?: number;
   
+  troquel?: string | null;
+  idTroquel?: number | null;
+
   ultimoRegistro?: string;
   piezaTipos?: { id: number, nombre?: string }[];
   observacionesEstado?: string;
 
   faltantes?: string; 
+}
+
+export interface Troquel {
+  id?: number;
+  nombre: string;
 }
 
 

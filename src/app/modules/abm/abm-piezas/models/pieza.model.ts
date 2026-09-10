@@ -166,6 +166,8 @@ export interface Plano {
 export interface Molde {
     id: number;
     nombre: string;
+    troquel?: string | null;
+    idTroquel?: number | null;
 }
 
 export interface IPiezaMolde {

@@ -37,6 +37,7 @@ export interface OTItem {
     hp: string;
     plano_rev: string;
     matriz: string;
+    troquel?: string;
     identicacion: string;
     identificacion?: string;
     identficacion?: string;
@@ -134,6 +135,7 @@ export function generarHtmlOT(data: OTData): string {
                     <div class="item-left">
                         <div class="data-row">
                             <div class="d-field" style="flex: 3;"><span class="lbl">MATRIZ:</span><span class="val">${item.matriz || ''}${item.ubicacion ? ` (${item.ubicacion})` : ''}</span></div>
+                            ${item.troquel ? `<div class="d-field" style="flex: 2;"><span class="lbl">TROQUEL:</span><span class="val">${item.troquel}</span></div>` : ''}
                             <div class="d-field" style="flex: 1;"><span class="lbl">PLANO/REV:</span><span class="val">${item.plano_rev || ''}</span></div>
                         </div>
                         ${ident ? `
