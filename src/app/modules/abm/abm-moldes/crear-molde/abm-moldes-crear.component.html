@@ -8,6 +8,14 @@
             <h1 class="text-2xl font-semibold mb-2">Molde</h1>
           </div>
 
+          <div class="flex gap-2 mt-2 mb-2">
+            <label class="text-gray-600 font-medium">Propietario</label>
+            <mat-radio-group formControlName="propio" class="flex gap-4">
+              <mat-radio-button [value]="true" color="primary">Nitrophyl</mat-radio-button>
+              <mat-radio-button [value]="false" color="primary">Cliente</mat-radio-button>
+            </mat-radio-group>
+          </div>
+
           <mat-form-field class="w-full" appearance="outline">
             <mat-label>Código </mat-label>
             <input id="code" matInput [formControlName]="'code'" placeholder="Código">
@@ -77,15 +85,7 @@
             </mat-error>
           </mat-form-field>
 
-          <div class="flex gap-2 mt-2 mb-2">
-            <label class="text-gray-600 font-medium">Propietario</label>
-            <mat-radio-group formControlName="propio" class="flex gap-4">
-              <mat-radio-button [value]="true" color="primary">Nitrophyl</mat-radio-button>
-              <mat-radio-button [value]="false" color="primary">Cliente</mat-radio-button>
-            </mat-radio-group>
-          </div>
-
-          <mat-form-field class="w-full" appearance="outline" *ngIf="moldeForm.get('propio').value === false">
+          <mat-form-field class="w-full" appearance="outline">
             <mat-label>Cliente</mat-label>
             <mat-select formControlName="client" placeholder="Seleccione un cliente">
               <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
