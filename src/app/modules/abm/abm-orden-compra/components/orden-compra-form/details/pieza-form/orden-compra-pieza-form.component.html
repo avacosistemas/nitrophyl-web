@@ -20,6 +20,7 @@
                             <mat-option *ngFor="let p of filteredPiezas$ | async" [value]="p">
                                 <span class="font-bold">{{p.codigo}}</span> - <span
                                     class="text-secondary">{{p.denominacion}}</span>
+                                    <span class="text-secondary"> ({{p.formula}})</span>
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>
