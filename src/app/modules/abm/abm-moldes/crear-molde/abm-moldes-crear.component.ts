@@ -50,7 +50,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       cantidadBocas: [null, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
       propio: [true, Validators.required],
       client: [{ value: null }],
-      troquel: [null, [Validators.maxLength(10)]],
+      troquel: [null, [Validators.maxLength(20)]],
       observations: [null],
       location: [null],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),

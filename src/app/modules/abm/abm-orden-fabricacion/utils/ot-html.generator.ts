@@ -153,7 +153,7 @@ export function generarHtmlOT(data: OTData): string {
                             <div class="d-field"><span class="lbl">INSUMOS:</span><span class="val">${item.insumos}</span></div>
                         </div>` : ''}
                         <div class="obs-container">
-                            <div class="obs-box" style="background-color: #fff; min-height: 45px; font-weight: normal;">Obs:${item.observaciones_item} </div>
+                            <div class="obs-box" style="background-color: #fff; min-height: 45px; font-weight: normal;">Obs: ${item.observaciones_item != null ? item.observaciones_item : ""} </div>
                         </div>
                     </div>
                     <div class="item-right">

@@ -140,7 +140,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       cantidadBocas: [{ value: null, disabled: true }],
       propio: [true, [Validators.required]],
       client: [null],
-      troquel: [null, [Validators.maxLength(10)]],
+      troquel: [null, [Validators.maxLength(20)]],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
 
       tipoMolde: ['RECTANGULAR', Validators.required],
@@ -464,9 +464,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
     if (tipoMolde === 'RECTANGULAR') {
       ancho = this.moldeForm.get('ancho').value;
+      ancho = parseFloat(ancho.toString().replace(',', '.'));
       profundidad = this.moldeForm.get('profundidad').value;
+      profundidad = parseFloat(profundidad.toString().replace(',', '.'));
     } else {
       diametro = this.moldeForm.get('diametro').value;
+      diametro = parseFloat(diametro.toString().replace(',', '.'));
     }
 
     const troquelVal = this.moldeForm.get('troquel').value;

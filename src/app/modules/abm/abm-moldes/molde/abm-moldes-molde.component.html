@@ -52,7 +52,7 @@
                 <mat-form-field class="w-full" appearance="outline">
                   <mat-label>Troquel</mat-label>
                   <input type="text" placeholder="Buscar o ingresar troquel" matInput formControlName="troquel"
-                    [matAutocomplete]="autoTroquel" maxlength="10" #troquelInput="matAutocompleteTrigger">
+                    [matAutocomplete]="autoTroquel" maxlength="20" #troquelInput="matAutocompleteTrigger">
                   <button mat-icon-button matSuffix *ngIf="moldeForm.get('troquel').value && mode !== 'View'"
                     (click)="clearTroquelSelection(); $event.stopPropagation()">
                     <mat-icon>close</mat-icon>
@@ -150,20 +150,20 @@
                   <div class="flex gap-4 flex-wrap mt-2">
                     <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                       <mat-label>Alto (mm)</mat-label>
-                      <input type="number" step="any" matInput formControlName="alto">
+                      <input type="number" inputmode="decimal" matInput formControlName="alto">
                       <mat-error *ngIf="moldeForm.get('alto').hasError('required')">Requerido</mat-error>
                     </mat-form-field>
 
                     <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'RECTANGULAR'">
                       <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                         <mat-label>Ancho (mm)</mat-label>
-                        <input type="number" step="any" matInput formControlName="ancho">
+                        <input type="number" inputmode="decimal" matInput formControlName="ancho">
                         <mat-error *ngIf="moldeForm.get('ancho').hasError('required')">Requerido</mat-error>
                       </mat-form-field>
 
                       <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                         <mat-label>Profundidad (mm)</mat-label>
-                        <input type="number" step="any" matInput formControlName="profundidad">
+                        <input type="number" inputmode="decimal" matInput formControlName="profundidad">
                         <mat-error *ngIf="moldeForm.get('profundidad').hasError('required')">Requerido</mat-error>
                       </mat-form-field>
                     </ng-container>
@@ -171,7 +171,7 @@
                     <ng-container *ngIf="moldeForm.get('tipoMolde').value === 'CIRCULAR'">
                       <mat-form-field appearance="outline" class="flex-1 min-w-[150px]">
                         <mat-label>Diámetro (mm)</mat-label>
-                        <input type="number" step="any" matInput formControlName="diametro">
+                        <input type="number" inputmode="decimal" matInput formControlName="diametro">
                         <mat-error *ngIf="moldeForm.get('diametro').hasError('required')">Requerido</mat-error>
                       </mat-form-field>
                     </ng-container>
