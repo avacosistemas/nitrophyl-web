@@ -22,6 +22,7 @@ import moment from 'moment';
 import { generarHtmlOT } from '../../utils/ot-html.generator';
 import { SelectionModel } from '@angular/cdk/collections';
 import { generarHtmlResumen } from '../../utils/resumen-html.generator';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 type ClienteNitrophyl = Omit<Partial<Cliente>, 'id'> & { id: number | null; nombre: string };
 
@@ -68,7 +69,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
         private _notificationService: NotificationService,
         private _fb: FormBuilder,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _dialog: MatDialog
+        private _dialog: MatDialog,
+        private _tableDataService: TableDataService
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
@@ -128,54 +130,54 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             }),
             map((response: any) => {
                 this.isLoading = false;
-                if (response && response.data && response.data.page) {
-                    this.totalReg = response.data.totalReg;
+                const pageSize = this.paginator?.pageSize || 10;
+                const normalized = this._tableDataService.normalizeResponse<any>(response, pageSize);
+                this.totalReg = normalized.totalReg;
 
-                    const filasPlanas: IOrdenFabricacion[] = [];
+                const items = normalized.data;
+                const filasPlanas: IOrdenFabricacion[] = [];
 
-                    response.data.page.forEach((orden: any) => {
-                        const anio = orden.anio || (orden.fechaOF ? moment(orden.fechaOF, 'DD/MM/YYYY').year() : null);
-                        const numero = orden.numero;
-                        const formattedNumero = (anio && numero) ? `${String(numero).padStart(3, '0')}/${anio % 100}` : '-';
+                items.forEach((orden: any) => {
+                    const anio = orden.anio || (orden.fechaOF ? moment(orden.fechaOF, 'DD/MM/YYYY').year() : null);
+                    const numero = orden.numero;
+                    const formattedNumero = (anio && numero) ? `${String(numero).padStart(3, '0')}/${anio % 100}` : '-';
 
-                        const piezas: IOrdenFabricacionPieza[] = [
-                            {
-                                idPieza: orden.idPieza,
-                                codigoPieza: orden.piezaCodigo,
-                                nombrePieza: orden.piezaCodigo,
-                                idFormula: orden.idFormula,
-                                cantidadSolicitada: orden.totalSolicitado,
-                                stockActual: 0,
-                                cantidadAFabricar: orden.saldo,
-                                tieneCotizacion: false
-                            }
-                        ];
+                    const piezas: IOrdenFabricacionPieza[] = [
+                        {
+                            idPieza: orden.idPieza,
+                            codigoPieza: orden.piezaCodigo,
+                            nombrePieza: orden.piezaCodigo,
+                            idFormula: orden.idFormula,
+                            cantidadSolicitada: orden.totalSolicitado,
+                            stockActual: 0,
+                            cantidadAFabricar: orden.saldo,
+                            tieneCotizacion: false
+                        }
+                    ];
 
-                        filasPlanas.push({
-                            ...orden,
-                            id: orden.id || orden.idOrdenFabricacion,
-                            estado: orden.estadoOF,
-                            fecha: orden.fechaOF ? moment(orden.fechaOF, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
-                            fechaEstimada: orden.fechaEntregaSolicitada ? moment(orden.fechaEntregaSolicitada, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
-                            ocNro: orden.idOrdenCompra ? String(orden.idOrdenCompra) : '-',
-                            ocFecha: orden.fechaOC ? moment(orden.fechaOC, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
-                            piezas: piezas,
-                            piezaNombre: orden.piezaCodigo || '-',
-                            piezaFormula: orden.formulaNombre || 'NK',
-                            ocCantidad: orden.totalSolicitado || 0,
-                            entregadas: orden.totalFabricado || 0,
-                            saldo: orden.saldo || 0,
-                            cantFabrica: orden.saldo || 0,
-                            cantStock: 0,
-                            maquina: orden.prensa || '-',
-                            facturada: 0,
-                            formattedNumero: formattedNumero
-                        });
+                    filasPlanas.push({
+                        ...orden,
+                        id: orden.id || orden.idOrdenFabricacion,
+                        estado: orden.estadoOF,
+                        fecha: orden.fechaOF ? moment(orden.fechaOF, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
+                        fechaEstimada: orden.fechaEntregaSolicitada ? moment(orden.fechaEntregaSolicitada, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
+                        ocNro: orden.idOrdenCompra ? String(orden.idOrdenCompra) : '-',
+                        ocFecha: orden.fechaOC ? moment(orden.fechaOC, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
+                        piezas: piezas,
+                        piezaNombre: orden.piezaCodigo || '-',
+                        piezaFormula: orden.formulaNombre || 'NK',
+                        ocCantidad: orden.totalSolicitado || 0,
+                        entregadas: orden.totalFabricado || 0,
+                        saldo: orden.saldo || 0,
+                        cantFabrica: orden.saldo || 0,
+                        cantStock: 0,
+                        maquina: orden.prensa || '-',
+                        facturada: 0,
+                        formattedNumero: formattedNumero
                     });
+                });
 
-                    return filasPlanas;
-                }
-                return [];
+                return filasPlanas;
             }),
             takeUntil(this._destroying$)
         ).subscribe(data => this.dataSource.data = data);
@@ -197,9 +199,11 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             activeSort = 'fecha_entrega';
         }
 
+        const pageSize = this.paginator?.pageSize || 10;
+        const pageIndex = this.paginator?.pageIndex || 0;
         return {
-            first: this.paginator.pageIndex * this.paginator.pageSize,
-            rows: this.paginator.pageSize,
+            page: pageIndex,
+            pageSize: pageSize,
             asc: this.sort.direction !== 'desc',
             idx: activeSort,
             idCliente: formValues.cliente?.id,

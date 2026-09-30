@@ -12,6 +12,7 @@ import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import moment from 'moment';
 import { IOrdenCompraPendiente, IOrdenCompraPendientesParams } from '../../models/orden-compra.interface';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
     selector: 'app-orden-compra-pendientes-list',
@@ -41,7 +42,8 @@ export class OrdenCompraPendientesListComponent implements OnInit, AfterViewInit
         private _clientesService: ClientesService,
         private _notificationService: NotificationService,
         private _fb: FormBuilder,
-        private _changeDetectorRef: ChangeDetectorRef
+        private _changeDetectorRef: ChangeDetectorRef,
+        private _tableDataService: TableDataService
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
@@ -83,11 +85,10 @@ export class OrdenCompraPendientesListComponent implements OnInit, AfterViewInit
             }),
             map(response => {
                 this.isLoading = false;
-                if (response && response.data) {
-                    this.totalReg = response.data.totalReg;
-                    return response.data.page;
-                }
-                return [];
+                const pageSize = this.paginator?.pageSize || 10;
+                const normalized = this._tableDataService.normalizeResponse<IOrdenCompraPendiente>(response, pageSize);
+                this.totalReg = normalized.totalReg;
+                return normalized.data;
             }),
             takeUntil(this._destroying$)
         ).subscribe(data => this.dataSource.data = data);
@@ -100,9 +101,11 @@ export class OrdenCompraPendientesListComponent implements OnInit, AfterViewInit
 
     private buildRequestParams(): IOrdenCompraPendientesParams {
         const formValues = this.searchForm.value;
+        const pageSize = this.paginator?.pageSize || 10;
+        const pageIndex = this.paginator?.pageIndex || 0;
         return {
-            first: this.paginator.pageIndex * this.paginator.pageSize,
-            rows: this.paginator.pageSize,
+            page: pageIndex,
+            pageSize: pageSize,
             asc: this.sort.direction !== 'desc',
             idx: this.sort.active || 'fechaOC',
             comprobante: formValues.comprobante,

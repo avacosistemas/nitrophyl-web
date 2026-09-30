@@ -1,9 +1,11 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { catchError, forkJoin, of } from 'rxjs';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 // * Services.
 import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 import { MaterialsService } from 'app/modules/abm/abm-formula/materials.service';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 // * Interfaces.
 import {
@@ -26,6 +28,7 @@ import { DeleteFormulaConfirmationComponent } from './delete-formula-confirmatio
 })
 export class FormulasComponent implements OnInit, AfterViewInit {
   @ViewChild(ExportDataComponent) exportDataComponent: ExportDataComponent;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
   public component: string = 'all';
 
   public form: FormGroup;
@@ -48,6 +51,11 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   public showSuccess: boolean = false;
   public showError: boolean = false;
   public panelOpenState: boolean = false;
+  public isLoading: boolean = false;
+
+  public pageSize: number = 15;
+  public pageIndex: number = 0;
+  public totalReg: number = 0;
 
   private formulasBackUp$: IFormula[] = [];
 
@@ -55,13 +63,16 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     private _formulas: FormulasService,
     private _materials: MaterialsService,
     private formBuilder: FormBuilder,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private tableDataService: TableDataService,
+    private cdr: ChangeDetectorRef
   ) {
     this.setForm();
   }
 
   public ngOnInit(): void {
-    this.loadData();
+    this.loadMaterials();
+    this.getPagedData();
   }
 
   public ngAfterViewInit(): void {
@@ -73,6 +84,9 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   }
 
   public version(name: string): number {
+    if (!this.formulas$ || !Array.isArray(this.formulas$)) {
+      return 0;
+    }
     const filteredFormulas = this.formulas$.filter(
       (formula: any) => formula.nombre === name
     );
@@ -101,20 +115,94 @@ export class FormulasComponent implements OnInit, AfterViewInit {
   }
 
   public search(): void {
-    if (!this.form.controls.name.value && !this.form.controls.material.value) { this.formulas$ = this.formulasBackUp$; }
+    this.pageIndex = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
+    this.getPagedData();
+  }
 
-    if (this.form.controls.name.value && this.form.controls.material.value) { this.compare(); }
+  public clearFilters(): void {
+    this.form.reset({ name: null, material: null, norma: null });
+    this.search();
+  }
 
-    if (this.form.controls.name.value && !this.form.controls.material.value) { this.compareFormulas(); }
+  public pageChangeEvent(event: PageEvent): void {
+    this.pageSize = event.pageSize;
+    this.pageIndex = event.pageIndex;
+    this.getPagedData();
+  }
 
-    if (!this.form.controls.name.value && this.form.controls.material.value) { this.compareMaterials(); }
+  public getPagedData(): void {
+    this.isLoading = true;
+    const formValues = this.form.value;
+
+    const params: any = {
+      page: this.pageIndex,
+      pageSize: this.pageSize,
+      idx: 'nombre',
+      asc: true
+    };
+
+    if (formValues.name && typeof formValues.name === 'string' && formValues.name.trim() !== '') {
+      params.nombre = formValues.name.trim();
+    }
+    if (formValues.material && formValues.material !== 0) {
+      params.idMaterial = formValues.material;
+    }
+
+    this._formulas.get(params).pipe(
+      catchError((err: any) => {
+        console.error('FormulasComponent => getPagedData: ', err);
+        this.isLoading = false;
+        return of({ data: [], page: { totalReg: 0 } });
+      })
+    ).subscribe((res: any) => {
+      this.isLoading = false;
+      const normalized = this.tableDataService.normalizeResponse<IFormula>(res, this.pageSize);
+      this.formulas$ = normalized.items;
+      this.formulasBackUp$ = normalized.items;
+      this.totalReg = normalized.total;
+      if (this.paginator) {
+        this.paginator.length = this.totalReg;
+      }
+      this.cdr.detectChanges();
+    });
+  }
+
+  private loadMaterials(): void {
+    this._materials.get().pipe(
+      catchError((err: any) => {
+        console.error('FormulasComponent => loadMaterials: ', err);
+        this.materialsFail = true;
+        this.form.controls.material.disable();
+        return of([]);
+      })
+    ).subscribe((materials: any) => {
+      this.materials$ = materials.data;
+    });
   }
 
   onGetAllData(event: { tipo: string; scope: string }): void {
-    if (this.formulas$) {
-      const formattedData = this.formatDataForExport(this.formulas$);
-      this.procesarExportacion(event.tipo, formattedData);
+    const formValues = this.form.value;
+    const params: any = {
+      page: 0,
+      pageSize: 9999,
+      idx: 'nombre',
+      asc: true
+    };
+    if (formValues.name && typeof formValues.name === 'string' && formValues.name.trim() !== '') {
+      params.nombre = formValues.name.trim();
     }
+    if (formValues.material && formValues.material !== 0) {
+      params.idMaterial = formValues.material;
+    }
+
+    this._formulas.get(params).subscribe((res: any) => {
+      const items = this.tableDataService.extractItems<IFormula>(res);
+      const formattedData = this.formatDataForExport(items);
+      this.procesarExportacion(event.tipo, formattedData);
+    });
   }
 
   formatDataForExport(data: IFormula[]): any[] {
@@ -189,7 +277,7 @@ export class FormulasComponent implements OnInit, AfterViewInit {
         this._formulas.delete(row.id).subscribe({
           next: () => {
             this.showModalMessage('Éxito', 'La fórmula se ha eliminado correctamente.', 'success');
-            this.loadData();
+            this.getPagedData();
           },
           error: (err) => {
             const errorMessage = err.error?.message || 'No se pudo eliminar la fórmula debido a que tiene registros asociados (Lotes, Piezas o Informes).';
@@ -212,62 +300,6 @@ export class FormulasComponent implements OnInit, AfterViewInit {
         confirmButtonText: 'Aceptar'
       }
     });
-  }
-
-  private loadData(): void {
-    const error: string = 'FormulasComponent => loadData: ';
-    forkJoin([
-      this._materials.get().pipe(
-        catchError((err: any) => {
-          console.error(error, 'this._materials.get() ', err);
-          this.materialsFail = true;
-          this.form.controls.material.disable();
-          return of([]);
-        })
-      ),
-      this._formulas.get().pipe(
-        catchError((err: any) => {
-          console.error(error, 'this._formulas.get() ', err);
-          return of([]);
-        })
-      ),
-    ]).subscribe({
-      next: ([materials, formulas]: [
-        IMaterialsResponse,
-        IFormulasResponse
-      ]) => {
-        this.materials$ = materials.data;
-        this.formulas$ = formulas.data;
-        this.formulasBackUp$ = formulas.data;
-      },
-      error: (err: any) => console.error(error, err),
-      complete: () => { },
-    });
-  }
-
-  private compare(): void {
-    this.formulas$ = this.formulasBackUp$.filter(
-      formula =>
-        formula.idMaterial === this.form.controls.material.value &&
-        formula.nombre
-          ?.toLowerCase()
-          .includes(this.form.controls.name.value.toLowerCase())
-    );
-  }
-
-  private compareFormulas(): void {
-    this.formulas$ = this.formulasBackUp$.filter((formula: IFormula) =>
-      formula.nombre
-        ?.toLowerCase()
-        .includes(this.form.controls.name.value.toLowerCase())
-    );
-  }
-
-  private compareMaterials(): void {
-    this.formulas$ = this.formulasBackUp$.filter(
-      (formula: IFormula) =>
-        formula.idMaterial === this.form.controls.material.value
-    );
   }
 
   private setForm(): void {

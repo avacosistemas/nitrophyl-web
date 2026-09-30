@@ -61,7 +61,8 @@ export class InsumosListComponent implements OnInit, OnDestroy {
                 this.materiaPrimaUnidades.clear();
                 materiasPrimas.forEach(mp => this.materiaPrimaUnidades.set(mp.id, mp.unidadMedidaStock));
 
-                this.dataSource.data = insumoResponse.data.page;
+                const items = (Array.isArray(insumoResponse?.data) ? insumoResponse.data : insumoResponse?.data?.page) || [];
+                this.dataSource.data = items;
                 this.isLoading = false;
             },
             error: (err) => {

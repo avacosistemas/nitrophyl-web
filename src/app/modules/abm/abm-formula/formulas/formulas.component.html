@@ -28,12 +28,14 @@
                 </mat-select>
               </mat-form-field>
             </div>
-            <div class="row flex justify-end">
+            <div class="row flex justify-end gap-2">
+              <button mat-stroked-button type="button" class="mr-2" (click)="clearFilters()">
+                Limpiar
+              </button>
               <button mat-flat-button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent"
                 (click)="search()">
                 <span class="mat-button-wrapper"> Buscar </span>
                 <span matripple class="mat-ripple mat-button-ripple"></span>
-
               </button>
             </div>
           </form>
@@ -41,6 +43,9 @@
       </mat-accordion>
 
       <div class="relative w-full">
+        <div *ngIf="isLoading" class="flex justify-center items-center my-6">
+          <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+        </div>
         <app-export-data tableId="tablaContenido" *ngIf="formulas$ && formulas$.length > 0" [showAllOptions]="false"
           (getAllData)="onGetAllData($event)"></app-export-data>
         <table mat-table [dataSource]="formulas$" class="border-2 rounded-2xl mt-5 w-full" id="tablaContenido">
@@ -110,7 +115,16 @@
           </ng-container>
           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          <tr class="mat-row" *matNoDataRow>
+            <td class="text-center py-4" [attr.colspan]="displayedColumns.length">
+              <ng-container *ngIf="!isLoading">No se encontraron fórmulas.</ng-container>
+            </td>
+          </tr>
         </table>
+
+        <mat-paginator [length]="totalReg" [pageSize]="pageSize" [pageSizeOptions]="[10, 15, 25, 50, 100]"
+          showFirstLastButtons (page)="pageChangeEvent($event)">
+        </mat-paginator>
       </div>
     </div>
   </div>

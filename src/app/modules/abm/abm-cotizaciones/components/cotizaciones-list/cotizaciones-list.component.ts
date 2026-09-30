@@ -10,6 +10,7 @@ import { CotizacionesService } from '../../cotizaciones.service';
 import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { NotificationService } from 'app/shared/services/notification.service';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 interface Cliente {
     id: number;
@@ -44,7 +45,8 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
         private _abmPiezasService: ABMPiezaService,
         private _clientesService: ClientesService,
         private _notificationService: NotificationService,
-        private _fb: FormBuilder
+        private _fb: FormBuilder,
+        private _tableDataService: TableDataService
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
@@ -74,11 +76,10 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
                 }),
                 map(response => {
                     this.isLoading = false;
-                    if (response && response.data) {
-                        this.totalReg = response.data.totalReg;
-                        return response.data.page;
-                    }
-                    return [];
+                    const pageSize = this.paginator?.pageSize || 15;
+                    const normalized = this._tableDataService.normalizeResponse<ICotizacion>(response, pageSize);
+                    this.totalReg = normalized.totalReg;
+                    return normalized.data;
                 }),
                 takeUntil(this._destroying$)
             ).subscribe(data => {
@@ -137,9 +138,11 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
 
     private buildRequestParams(): any {
         const formValues = this.searchForm.value;
+        const pageSize = this.paginator?.pageSize || 15;
+        const pageIndex = this.paginator?.pageIndex || 0;
         const params: any = {
-            first: this.paginator.pageIndex * this.paginator.pageSize || 0,
-            rows: this.paginator.pageSize,
+            page: pageIndex,
+            pageSize: pageSize,
             asc: this.sort.direction !== 'desc',
             idx: this.sort.active || 'fecha',
             idCliente: formValues.cliente?.id,

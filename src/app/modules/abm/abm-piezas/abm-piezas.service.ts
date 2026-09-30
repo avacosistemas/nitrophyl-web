@@ -11,6 +11,8 @@ import { catchError, map } from 'rxjs/operators';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'environments/environment';
 
+import { TableDataService } from 'app/shared/services/table-data.service';
+
 @Injectable({
     providedIn: 'root',
 })
@@ -42,10 +44,14 @@ export class ABMPiezaService {
     private readonly API_BOMBEO_URL = `${this.API_BASE_URL}bombeo`;
     private readonly API_PIEZA_CONTROL_URL = `${this.API_BASE_URL}piezaControl`;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private tableDataService: TableDataService
+    ) { }
 
     getPiezas(params: any): Observable<any> {
-        return this.http.get<any>(this.API_PIEZA_URL, { params });
+        const httpParams = this.tableDataService.buildHttpParams(params);
+        return this.http.get<any>(this.API_PIEZA_URL, { params: httpParams });
     }
 
     getPiezasCombo(nombre?: string): Observable<any> {
@@ -93,9 +99,9 @@ export class ABMPiezaService {
     }
 
     getMoldes(): Observable<{ id: number; nombre: string }[]> {
-        const params = new HttpParams().set('asc', 'true').set('first', '1').set('rows', '99');
+        const params = new HttpParams().set('asc', 'true').set('page', '0').set('pageSize', '99');
         return this.http.get<any>(this.API_MOLDE_URL, { params }).pipe(
-            map(response => response?.data?.page || []),
+            map(response => this.tableDataService.extractItems(response)),
             catchError(() => of([]))
         );
     }
@@ -275,7 +281,8 @@ export class ABMPiezaService {
     getInsumosPorTipo(idTipo: number): Observable<ApiResponse<IPaginatedResponse<Insumo>>> {
         const params = new HttpParams()
             .set('idTipo', idTipo.toString())
-            .set('rows', '9999');
+            .set('page', '0')
+            .set('pageSize', '9999');
         return this.http.get<ApiResponse<IPaginatedResponse<Insumo>>>(this.API_INSUMO_URL, { params });
     }
 

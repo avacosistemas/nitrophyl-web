@@ -1,8 +1,7 @@
 import { SelectionModel } from "@angular/cdk/collections";
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { FormControl, FormGroup } from "@angular/forms";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Perfil } from "app/modules/abm/abm-perfiles/perfil.model";
@@ -11,6 +10,7 @@ import { PerfilesService } from "app/modules/abm/abm-perfiles/perfiles.service";
 import { UserService } from "app/shared/services/user.service";
 import { Subscription } from "rxjs";
 import { ABMUsuarioService } from "../abm-usuarios.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 
 @Component({
@@ -29,11 +29,12 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
     formDisabled: boolean = false;
     displayedColumns: string[] = ['select', 'name']
     controlGroup = new FormGroup({
-      username: new FormControl(),
-      name: new FormControl(),
-      surname: new FormControl(),
-      enabled: new FormControl(),
-      email: new FormControl()
+      username: new FormControl('', [Validators.required]),
+      name: new FormControl('', [Validators.required]),
+      surname: new FormControl('', [Validators.required]),
+      enabled: new FormControl(true),
+      email: new FormControl('', [Validators.required, Validators.email]),
+      admin: new FormControl(false)
     });
     perfilesDisponibles: Array<Perfil> = [];
     perfilesIncluidos: Array<Perfil> = [];
@@ -53,7 +54,7 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
         private usuarioService: UserService,
         private perfilesService: PerfilesService,
         private ABMUsuarioService: ABMUsuarioService,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService
     ){
         this.suscripcion = this.ABMUsuarioService.events.subscribe(
             (data: any) => {
@@ -83,22 +84,25 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
   }
 
     save() {
-        let model: User = {
-            email: this.controlGroup.controls.email.value,
-            enabled: this.controlGroup.controls.enabled.value,
-            id: 0,
-            lastname: this.controlGroup.controls.surname.value,
-            name: this.controlGroup.controls.name.value,
-            profiles: this.perfilesIncluidos,
-            username: this.controlGroup.controls.username.value
+        if (this.controlGroup.invalid) {
+            return;
         }
-        model.profiles = this.perfilesIncluidos;
+        let model: User = {
+            id: 0,
+            username: this.controlGroup.controls.username.value,
+            name: this.controlGroup.controls.name.value,
+            lastname: this.controlGroup.controls.surname.value,
+            email: this.controlGroup.controls.email.value,
+            enabled: this.controlGroup.controls.enabled.value ?? true,
+            admin: this.controlGroup.controls.admin?.value ?? false,
+            profiles: this.perfilesIncluidos.map(p => ({ id: p.id }))
+        };
         this.usuarioService.postUser(model).subscribe(response => {
-          if (response.status == 'OK') {
-            this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+          if (response.status == 'OK' || (response as any).ok) {
+            this.notificationService.showSuccess("Cambios realizados");
             this.router.navigate(['/usuarios/grid']);
           } else {
-            this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+            this.notificationService.showError("No se pudieron realizar los cambios");
           }
         })
     }
@@ -234,11 +238,4 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
         }
         
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-      this.snackBar.open(message, action, {
-          duration: 5000,
-          panelClass: className
-      });
-    };
 }

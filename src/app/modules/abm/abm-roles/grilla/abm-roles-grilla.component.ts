@@ -56,7 +56,7 @@ export class ABMRolesGrillaComponent {
         dialogRef.afterClosed().subscribe(result => {
             if(result) {
                 this.rolesService.deleteRol(row.id).subscribe(response => {
-                    if (response.status == 'OK') {
+                    if (response.status == 'OK' || (response as any).ok) {
                       this.showSuccess = true;
                     } else {
                       this.showError = true;

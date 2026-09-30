@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Rol } from "app/modules/abm/abm-roles/rol.model";
 import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 import { Subscription } from "rxjs";
 import { ABMRolService } from "../abm-roles.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 
 @Component({
@@ -32,7 +32,7 @@ export class ABMCrearRol implements OnInit, OnDestroy{
         private rolesService: RolesService,
         private _formBuilder: FormBuilder,
         private ABMRolService: ABMRolService,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService
     ){
         this.rolForm = this._formBuilder.group({
             code: ['', [Validators.required, Validators.maxLength(10)]],
@@ -75,28 +75,28 @@ export class ABMCrearRol implements OnInit, OnDestroy{
             code: this.rolForm.controls.code.value,
             name: this.rolForm.controls.name.value
         }
-        let busquedaNombre = this.roles.find(rol => rol.name == model.name);
-        let busquedaCodigo = this.roles.find(rol => rol.code == model.code);
+        let busquedaNombre = this.roles?.find(rol => rol.name.trim().toLowerCase() === model.name.trim().toLowerCase());
+        let busquedaCodigo = this.roles?.find(rol => rol.code.trim().toUpperCase() === model.code.trim().toUpperCase());
         if(busquedaNombre != undefined) {
             this.showErrorName = true;
-            this.openSnackBar("El nombre de rol ingresado ya existe", "X", "red-snackbar");
+            this.notificationService.showError("El nombre de rol ingresado ya existe");
         }
         if(busquedaCodigo != undefined) {
             this.showErrorCode = true;
-            this.openSnackBar("El código ingresado ya existe", "X", "red-snackbar");
+            this.notificationService.showError("El código ingresado ya existe");
         }
         if(this.showErrorName || this.showErrorCode || this.rolForm.invalid) {
             return;
         }
         this.rolForm.disable();
         this.rolesService.postRol(model).subscribe(res => {
-            if (res.status == 'OK') {
+            if (res.status == 'OK' || (res as any).ok) {
                 this.showSuccess = true;
-                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+                this.notificationService.showSuccess("Cambios realizados");
                 this.router.navigate(['/roles/grid']);
             } else {
                 this.showError = true;
-                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+                this.notificationService.showError("No se pudieron realizar los cambios");
             }
             this.rolForm.enable();
         })
@@ -117,12 +117,4 @@ export class ABMCrearRol implements OnInit, OnDestroy{
             });
         }
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-        this.snackBar.open(message, action, {
-            duration: 5000,
-            panelClass: className
-        });
-    };
-
 }

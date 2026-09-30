@@ -41,7 +41,7 @@ export class TransportesListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const sub = this.abmTransportesService.getTransportes().subscribe({
             next: (response) => {
-                this.originalData = response.data?.page || [];
+                this.originalData = (Array.isArray(response?.data) ? response.data : response?.data?.page) || [];
                 this.dataSource.data = this.originalData;
                 this.isLoading = false;
             },

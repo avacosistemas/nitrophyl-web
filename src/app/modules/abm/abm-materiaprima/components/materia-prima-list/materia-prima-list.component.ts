@@ -47,7 +47,8 @@ export class MateriaPrimaListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const sub = this.abmMateriaPrimaService.getMateriasPrimas().subscribe({
             next: (response) => {
-                this.dataSource.data = response.data.page;
+                const items = (Array.isArray(response?.data) ? response.data : response?.data?.page) || [];
+                this.dataSource.data = items;
                 this.isLoading = false;
             },
             error: (err) => {

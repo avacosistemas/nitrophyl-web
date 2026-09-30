@@ -4,6 +4,8 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { environment } from 'environments/environment';
 import { IOrdenCompra, IOrdenCompraApiResponse, IOrdenCompraCreateDTO, IOrdenCompraPendiente, IOrdenCompraPendientesParams } from './models/orden-compra.interface';
 
+import { TableDataService } from 'app/shared/services/table-data.service';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -25,7 +27,10 @@ export class AbmOrdenCompraService {
     private _actionTriggered = new Subject<string>();
     actionTriggered$ = this._actionTriggered.asObservable();
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private tableDataService: TableDataService
+    ) { }
 
     updateHeaderButtons(buttons: any[]): void { this._headerButtons.next(buttons); }
     updateHeaderSubtitle(subtitle: string): void { this._headerSubtitle.next(subtitle); }
@@ -34,34 +39,12 @@ export class AbmOrdenCompraService {
     triggerAction(action: string): void { this._actionTriggered.next(action); }
 
     getOrdenesCompra(params: any): Observable<IOrdenCompraApiResponse<IOrdenCompra>> {
-        let httpParams = new HttpParams();
-        if (params.asc !== undefined) httpParams = httpParams.set('asc', params.asc.toString());
-        if (params.comprobante) httpParams = httpParams.set('comprobante', params.comprobante);
-        if (params.estado) httpParams = httpParams.set('estado', params.estado);
-        if (params.fechaDesde) httpParams = httpParams.set('fechaDesde', params.fechaDesde);
-        if (params.fechaHasta) httpParams = httpParams.set('fechaHasta', params.fechaHasta);
-        if (params.first !== undefined) httpParams = httpParams.set('first', params.first.toString());
-        if (params.idCliente) httpParams = httpParams.set('idCliente', params.idCliente.toString());
-        if (params.idx) httpParams = httpParams.set('idx', params.idx);
-        if (params.rows) httpParams = httpParams.set('rows', params.rows.toString());
-
+        const httpParams = this.tableDataService.buildHttpParams(params);
         return this.http.get<IOrdenCompraApiResponse<IOrdenCompra>>(this.apiUrl, { params: httpParams });
     }
 
     getOrdenesCompraPendientes(params: IOrdenCompraPendientesParams): Observable<IOrdenCompraApiResponse<IOrdenCompraPendiente>> {
-        let httpParams = new HttpParams();
-        if (params.asc !== undefined) httpParams = httpParams.set('asc', params.asc.toString());
-        if (params.comprobante) httpParams = httpParams.set('comprobante', params.comprobante);
-        if (params.fechaDesde) httpParams = httpParams.set('fechaDesde', params.fechaDesde);
-        if (params.fechaHasta) httpParams = httpParams.set('fechaHasta', params.fechaHasta);
-        if (params.fechaEntregaDesde) httpParams = httpParams.set('fechaEntregaDesde', params.fechaEntregaDesde);
-        if (params.fechaEntregaHasta) httpParams = httpParams.set('fechaEntregaHasta', params.fechaEntregaHasta);
-        if (params.first !== undefined) httpParams = httpParams.set('first', params.first.toString());
-        if (params.idCliente) httpParams = httpParams.set('idCliente', params.idCliente.toString());
-        if (params.idPieza) httpParams = httpParams.set('idPieza', params.idPieza.toString());
-        if (params.idx) httpParams = httpParams.set('idx', params.idx);
-        if (params.rows) httpParams = httpParams.set('rows', params.rows.toString());
-
+        const httpParams = this.tableDataService.buildHttpParams(params);
         return this.http.get<IOrdenCompraApiResponse<IOrdenCompraPendiente>>(`${this.apiUrl}/pendientes`, { params: httpParams });
     }
 

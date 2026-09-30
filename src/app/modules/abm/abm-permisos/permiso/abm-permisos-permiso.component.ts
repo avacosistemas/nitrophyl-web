@@ -2,7 +2,6 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Perfil } from "app/modules/abm/abm-perfiles/perfil.model";
@@ -13,6 +12,7 @@ import { PermisosService } from "app/modules/abm/abm-permisos/permisos.service";
 import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 import { Subscription } from "rxjs";
 import { ABMPermisoService } from "../abm-permisos.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 @Component({
     selector: 'abm-permisos-permiso',
@@ -35,7 +35,7 @@ export class ABMPermisosPermiso implements OnInit, OnDestroy {
         private permisosService: PermisosService,
         private _formBuilder: FormBuilder,
         private ABMPermisoService: ABMPermisoService,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService
     ) {
         this.permisoForm = this._formBuilder.group({
             code: ['', [Validators.required, Validators.maxLength(50)]],
@@ -93,16 +93,17 @@ export class ABMPermisosPermiso implements OnInit, OnDestroy {
             return;
         }
         this.permisoForm.disable();
-        let model = this.permiso;
+        let model: Permiso = { ...this.permiso };
         model.description = this.permisoForm.controls.description.value;
-        this.permisosService.updatePermiso(model, model.id).subscribe(res => {
-            if (res.status == 'OK') {
-                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        model.enabled = this.permiso.enabled !== undefined ? this.permiso.enabled : true;
+        this.permisosService.updatePermiso(model).subscribe(res => {
+            if (res.status == 'OK' || res.ok) {
+                this.notificationService.showSuccess("Cambios realizados");
                 if (!continuar) {
                     this.router.navigate(['/permisos/grid']);
                 }
             } else {
-                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+                this.notificationService.showError("No se pudieron realizar los cambios");
             }
             this.permisoForm.enable();
             this.permisoForm.controls.code.disable();
@@ -124,11 +125,4 @@ export class ABMPermisosPermiso implements OnInit, OnDestroy {
             });
         }
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-        this.snackBar.open(message, action, {
-            duration: 5000,
-            panelClass: className
-        });
-    };
 }

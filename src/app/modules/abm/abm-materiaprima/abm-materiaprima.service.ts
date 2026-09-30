@@ -14,8 +14,10 @@ export class AbmMateriaPrimaService {
 
     constructor(private http: HttpClient) { }
 
-    getMateriasPrimas(filters: { nombre?: string } = {}): Observable<IMateriaPrimaApiResponse> {
-        let params = new HttpParams();
+    getMateriasPrimas(filters: { nombre?: string; page?: number; pageSize?: number } = {}): Observable<IMateriaPrimaApiResponse> {
+        let params = new HttpParams()
+            .set('page', (filters.page ?? 0).toString())
+            .set('pageSize', (filters.pageSize ?? 9999).toString());
         if (filters.nombre) {
             params = params.set('nombre', filters.nombre);
         }

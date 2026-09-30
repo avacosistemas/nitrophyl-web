@@ -24,6 +24,7 @@ import { RemoveDialogComponent } from 'app/shared/components/remove/remove.compo
 import { MatDialog } from '@angular/material/dialog';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
   selector: 'app-configuraciones',
@@ -86,7 +87,8 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog,
     private clientesService: ClientesService,
     private configuracionService: ConfiguracionService,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private tableDataService: TableDataService
   ) {
 
     this.form = this.formBuilder.group({
@@ -158,7 +160,6 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     }
 
     if (this.dataSource) {
-      this.dataSource.paginator = this.paginator;
       this.dataSource.sort = this.sort;
     }
   }
@@ -248,7 +249,7 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
   public pageChangeEvent(event: PageEvent): void {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
-    this.updateDataSource();
+    this.getPagedData();
   }
 
   public getPagedData(): void {
@@ -261,14 +262,17 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       mostrarObservacionesParametro: formValues.mostrarObservaciones,
       mostrarResultados: formValues.mostrarResultados,
       mostrarCondiciones: formValues.mostrarCondiciones,
-      enviarGrafico: formValues.enviarGrafico
+      enviarGrafico: formValues.enviarGrafico,
+      page: this.pageIndex,
+      pageSize: this.pageSize,
+      asc: true
     };
 
     this.configuracionService.get(body)
-      .pipe(map((res: IConfiguracionesResponse) => res.data))
-      .subscribe((response: IConfiguracionesData) => {
-        this.configuracionesBackup$ = response.page;
-        this.totalRecords = response.totalReg;
+      .subscribe((res: any) => {
+        const normalized = this.tableDataService.normalizeResponse<IConfiguracion>(res, this.pageSize);
+        this.configuracionesBackup$ = normalized.items;
+        this.totalRecords = normalized.total;
         this.updateDataSource();
       });
   }
@@ -286,37 +290,8 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
     this.dataSource.data = sortedData;
   }
 
-  private updatePagedData(): void {
-    if (this.paginator && this.dataSource) {
-      const paginatedData = this.paginateData(this.dataSource.data);
-      this.dataSource.data = paginatedData;
-    }
-  }
-
-  private paginateData(data: IConfiguracion[]): IConfiguracion[] {
-    const startIndex = this.pageIndex * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    return data.slice(startIndex, endIndex);
-  }
-
   private loadData(): void {
-    const error: string = 'ConfiguracionesComponent => loadData: ';
-    forkJoin([
-      this.configuracionService.get().pipe(
-        map((res: IConfiguracionesResponse) => Array.isArray(res.data) ? res.data : [res.data]),
-        catchError((err: any) => {
-          console.error('Error fetching configuraciones', err);
-          return of([] as IConfiguracion[]);
-        })
-      ),
-    ]).subscribe({
-      next: ([configuraciones]: [IConfiguracion[]]) => {
-        this.configuracionesBackup$ = configuraciones;
-      },
-      error: (err: any) => console.error(error, err),
-      complete: () => { },
-    });
-
+    this.pageIndex = 0;
     this.getPagedData();
   }
 

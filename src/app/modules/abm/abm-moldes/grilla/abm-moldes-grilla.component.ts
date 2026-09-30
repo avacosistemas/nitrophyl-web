@@ -10,6 +10,7 @@ import { Cliente } from "app/modules/abm/abm-clientes/cliente.model";
 import { Observable, of } from "rxjs";
 import { map, startWith } from "rxjs/operators";
 import { Sort } from '@angular/material/sort';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
   selector: 'abm-moldes-grilla',
@@ -40,7 +41,8 @@ export class ABMMoldesGrillaComponent implements OnInit {
     private abmPiezaService: ABMPiezaService,
     private clientesService: ClientesService,
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private tableDataService: TableDataService
   ) {
     this.searchForm = this.formBuilder.group({
       code: [null],
@@ -136,8 +138,8 @@ export class ABMMoldesGrillaComponent implements OnInit {
   cargarMoldes() {
     const formValues = this.searchForm.value;
     const params = {
-      first: (this.pageIndex * this.pageSize) + 1,
-      rows: this.pageSize,
+      page: this.pageIndex,
+      pageSize: this.pageSize,
       idx: this.sortField,
       asc: this.isAsc,
       codigo: formValues.code,
@@ -161,8 +163,9 @@ export class ABMMoldesGrillaComponent implements OnInit {
       }
     });
     this.moldesService.getMoldes(params).subscribe(response => {
-      this.moldes = response.data.page;
-      this.totalReg = response.data.totalReg;
+      const normalized = this.tableDataService.normalizeResponse<Molde>(response, this.pageSize);
+      this.moldes = normalized.data;
+      this.totalReg = normalized.totalReg;
     });
   }
 

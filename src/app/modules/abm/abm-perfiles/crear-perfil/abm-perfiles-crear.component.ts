@@ -2,7 +2,6 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Perfil } from "app/modules/abm/abm-perfiles/perfil.model";
@@ -13,6 +12,7 @@ import { PermisosService } from "app/modules/abm/abm-permisos/permisos.service";
 import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 import { Subscription } from "rxjs";
 import { ABMPerfilService } from "../abm-perfiles.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 @Component({
   selector: 'abm-perfiles-crear',
@@ -48,7 +48,7 @@ export class ABMCrearPerfil implements OnInit, OnDestroy {
     private rolesService: RolesService,
     private _formBuilder: FormBuilder,
     private ABMPerfilesService: ABMPerfilService,
-    private snackBar: MatSnackBar
+    private notificationService: NotificationService
   ) {
     this.suscripcion = this.ABMPerfilesService.events.subscribe(
       (data: any) => {
@@ -116,7 +116,7 @@ export class ABMCrearPerfil implements OnInit, OnDestroy {
     this.createPerfilForm.disable();
     this.formDisabled = true;
 
-    let busquedaRol = this.roles.find(rol => rol.id = this.createPerfilForm.controls.role.value);
+    let busquedaRol = this.roles.find(rol => rol.id == this.createPerfilForm.controls.role.value);
 
     if (busquedaRol != undefined) {
       let model: Perfil = {
@@ -127,11 +127,11 @@ export class ABMCrearPerfil implements OnInit, OnDestroy {
         role: busquedaRol
       }
       this.perfilesService.postPerfil(model).subscribe(res => {
-        if (res.status == 'OK') {
-          this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+        if (res.status == 'OK' || res.ok) {
+          this.notificationService.showSuccess("Cambios realizados");
           this.router.navigate(['/perfiles/grid']);
         } else {
-          this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+          this.notificationService.showError("No se pudieron realizar los cambios");
         }
         this.createPerfilForm.enable();
         this.formDisabled = false;
@@ -241,11 +241,4 @@ export class ABMCrearPerfil implements OnInit, OnDestroy {
     }
 
   }
-
-  openSnackBar(message: string, action: string, className: string) {
-    this.snackBar.open(message, action, {
-        duration: 5000,
-        panelClass: className
-    });
-  };
 }

@@ -11,6 +11,7 @@ import { IStockPieza } from '../../models/stock.model';
 import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 import { IFormula } from 'app/modules/abm/abm-formula/formula.interface';
 import { NotificationService } from 'app/shared/services/notification.service';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
   selector: 'app-stock-consulta',
@@ -53,7 +54,8 @@ export class StockConsultaComponent implements OnInit, AfterViewInit, OnDestroy 
     private _router: Router,
     private _stockService: StockService,
     private _formulasService: FormulasService,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    private _tableDataService: TableDataService
   ) {
     this.searchForm = this._fb.group({
       codigo: [''],
@@ -84,11 +86,10 @@ export class StockConsultaComponent implements OnInit, AfterViewInit, OnDestroy 
         }),
         map((response) => {
           this.isLoading = false;
-          if (response && response.data) {
-            this.totalReg = response.data.totalReg || response.data.page?.length || 0;
-            return response.data.page || [];
-          }
-          return [];
+          const pageSize = this.paginator?.pageSize || 10;
+          const normalized = this._tableDataService.normalizeResponse<IStockPieza>(response, pageSize);
+          this.totalReg = normalized.totalReg;
+          return normalized.data;
         }),
         takeUntil(this._destroying$)
       )
@@ -176,8 +177,13 @@ export class StockConsultaComponent implements OnInit, AfterViewInit, OnDestroy 
       idFormula = formulaVal;
     }
 
+    const pageSize = this.paginator?.pageSize || 10;
+    const pageIndex = this.paginator?.pageIndex || 0;
     return {
-      asc: true,
+      page: pageIndex,
+      pageSize: pageSize,
+      asc: this.sort?.active ? this.sort.direction !== 'desc' : true,
+      idx: this.sort?.active || 'codigo',
       codigo: formValues.codigo || null,
       denominacion: formValues.denominacion || null,
       idFormula: idFormula,

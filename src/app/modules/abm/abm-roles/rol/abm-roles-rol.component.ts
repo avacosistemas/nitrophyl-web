@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Rol } from "app/modules/abm/abm-roles/rol.model";
 import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 import { Subscription } from "rxjs";
 import { ABMRolService } from "../abm-roles.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 
 @Component({
@@ -34,7 +34,7 @@ export class ABMRolesRol implements OnInit, OnDestroy{
         private rolesService: RolesService,
         private _formBuilder: FormBuilder,
         private ABMRolService: ABMRolService,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService
     ){
         this.rolForm = this._formBuilder.group({
             code: ['', [Validators.required, Validators.maxLength(10)]],
@@ -96,26 +96,26 @@ export class ABMRolesRol implements OnInit, OnDestroy{
             return;
         }
         this.rolForm.disable();
-        let model: Rol = this.rol;
+        let model: Rol = { ...this.rol };
         model.name = this.rolForm.controls.name.value;
-        let busquedaNombre = this.roles.find(rol => rol.name == model.name);
+        let busquedaNombre = this.roles?.find(rol => rol.name.trim().toLowerCase() === model.name.trim().toLowerCase() && rol.id !== model.id);
         if(busquedaNombre != undefined) {
             this.showErrorName = true;
-            this.openSnackBar("El nombre de rol ingresado ya existe", "X", "red-snackbar");
+            this.notificationService.showError("El nombre de rol ingresado ya existe");
             this.rolForm.enable();
             this.rolForm.controls.code.disable();
             return;
         }
         this.rolesService.updateRol(model, model.id).subscribe(res => {
-            if (res.status == 'OK') {
+            if (res.status == 'OK' || (res as any).ok) {
                 this.showSuccess = true;
-                this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+                this.notificationService.showSuccess("Cambios realizados");
                 if (!continuar) {
                     this.router.navigate(['/roles/grid']);
                 }
             } else {
                 this.showError = true;
-                this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+                this.notificationService.showError("No se pudieron realizar los cambios");
             }
             this.rolForm.enable();
             this.rolForm.controls.code.disable();
@@ -137,12 +137,4 @@ export class ABMRolesRol implements OnInit, OnDestroy{
             });
         }
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-        this.snackBar.open(message, action, {
-            duration: 5000,
-            panelClass: className
-        });
-    };
-
 }

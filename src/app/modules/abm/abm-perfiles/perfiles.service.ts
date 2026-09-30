@@ -18,23 +18,27 @@ export class PerfilesService {
     }
 
     public getPerfiles(): Observable<any> {
-        return this.http.get<any>(`${environment.server}profiles/`)
+        return this.http.get<any>(`${environment.server}profiles`)
     }
 
     public postPerfil(perfil: Perfil): Observable<any> {
-        return this.http.post<any>(`${environment.server}profiles/`, perfil)
+        return this.http.post<any>(`${environment.server}profiles`, perfil)
     }
 
     public getPerfilById(id: number): Observable<any> {
         return this.http.get<any>(`${environment.server}profiles/${id}`)
     }
 
-    public updatePerfil(perfil, id: number): Observable<any> {
-        return this.http.put<any>(`${environment.server}profiles/${id}`, perfil)
+    public updatePerfil(perfil: Perfil, id?: number): Observable<any> {
+        return this.http.put<any>(`${environment.server}profiles`, perfil)
     }
 
     public deletePerfil(id: number): Observable<any> {
         return this.http.delete<any>(`${environment.server}profiles/${id}`)
+    }
+
+    public filterByName(name: string): Observable<any> {
+        return this.http.get<any>(`${environment.server}profiles/filterByName?name=${encodeURIComponent(name)}`)
     }
 
     public getMode() {

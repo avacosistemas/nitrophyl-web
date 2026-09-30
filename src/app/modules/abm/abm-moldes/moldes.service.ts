@@ -14,6 +14,8 @@ import {
 } from './molde.model';
 import { Observacion } from '../abm-formula/observacion.model';
 
+import { TableDataService } from 'app/shared/services/table-data.service';
+
 @Injectable({
   providedIn: 'root',
 })
@@ -21,18 +23,14 @@ export class MoldesService {
   private url: string = `${environment.server}`;
   private mode: string;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private tableDataService: TableDataService
+  ) {
   }
 
   public getMoldes(params?: any): Observable<any> {
-    let httpParams = new HttpParams();
-    if (params) {
-      Object.keys(params).forEach(key => {
-        if (params[key] !== undefined && params[key] !== null) {
-          httpParams = httpParams.set(key, params[key]);
-        }
-      });
-    }
+    const httpParams = this.tableDataService.buildHttpParams(params);
     return this.http.get<any>(`${environment.server}molde`, { params: httpParams });
   }
 

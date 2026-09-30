@@ -92,8 +92,8 @@ export class OrdenCompraHeaderComponent implements OnInit, OnDestroy {
     }
 
     loadTransportes(): void {
-        this._transportesService.getTransportes({ rows: 100 }).subscribe(res => {
-            this.transportes = res.data?.page || [];
+        this._transportesService.getTransportes({ page: 0, pageSize: 100 }).subscribe(res => {
+            this.transportes = (Array.isArray(res?.data) ? res.data : res?.data?.page) || [];
             const currentId = this.form.get('idEmpresaTransporte').value;
             if (currentId) {
                 const transporte = this.transportes.find(t => t.id === currentId);

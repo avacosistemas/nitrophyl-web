@@ -10,6 +10,7 @@ import { StockService } from '../../stock.service';
 import { IStockMovimiento } from '../../models/stock.model';
 import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
 import { NotificationService } from 'app/shared/services/notification.service';
+import { TableDataService } from 'app/shared/services/table-data.service';
 import moment from 'moment';
 
 @Component({
@@ -43,7 +44,8 @@ export class StockMovimientosComponent implements OnInit, AfterViewInit, OnDestr
     private _router: Router,
     private _stockService: StockService,
     private _abmPiezasService: ABMPiezaService,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    private _tableDataService: TableDataService
   ) {
     this.searchForm = this._fb.group({
       fechaDesde: [null],
@@ -85,11 +87,10 @@ export class StockMovimientosComponent implements OnInit, AfterViewInit, OnDestr
         }),
         map((response) => {
           this.isLoading = false;
-          if (response && response.data) {
-            this.totalReg = response.data.totalReg || response.data.page?.length || 0;
-            return response.data.page || [];
-          }
-          return [];
+          const pageSize = this.paginator?.pageSize || 10;
+          const normalized = this._tableDataService.normalizeResponse<IStockMovimiento>(response, pageSize);
+          this.totalReg = normalized.totalReg;
+          return normalized.data;
         }),
         takeUntil(this._destroying$)
       )
@@ -164,8 +165,13 @@ export class StockMovimientosComponent implements OnInit, AfterViewInit, OnDestr
     const fechaDesdeStr = formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null;
     const fechaHastaStr = formValues.fechaHasta ? moment(formValues.fechaHasta).format('DD/MM/YYYY') : null;
 
+    const pageSize = this.paginator?.pageSize || 10;
+    const pageIndex = this.paginator?.pageIndex || 0;
     return {
-      asc: true,
+      page: pageIndex,
+      pageSize: pageSize,
+      asc: this.sort?.active ? this.sort.direction !== 'desc' : true,
+      idx: this.sort?.active || 'fecha',
       fechaDesde: fechaDesdeStr,
       fechaHasta: fechaHastaStr,
       idPieza: idPiezaSelected,

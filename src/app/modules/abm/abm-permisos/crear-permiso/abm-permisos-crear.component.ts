@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import {  Router } from "@angular/router";
+import { Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Permiso } from "app/modules/abm/abm-permisos/permiso.model";
 import { PermisosService } from "app/modules/abm/abm-permisos/permisos.service";
 import { Subscription } from "rxjs";
 import { ABMPermisoService } from "../abm-permisos.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 @Component({
     selector: 'abm-permisos-crear',
@@ -28,7 +28,7 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
         private permisosService: PermisosService,
         private _formBuilder: FormBuilder,
         private ABMPermisoService: ABMPermisoService,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService
     ) {
         this.permisoForm = this._formBuilder.group({
             code: ['', [Validators.required, Validators.maxLength(50)]],
@@ -72,19 +72,19 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
             description: this.permisoForm.controls.description.value,
             enabled: true
         }
-        let busqueda = this.permisos.find(permiso => permiso.code == model.code);
+        let busqueda = this.permisos?.find(permiso => permiso.code.trim().toUpperCase() === model.code.trim().toUpperCase());
         if(busqueda == undefined) {
             this.permisosService.postPermiso(model).subscribe(res => {
-                if (res.status == 'OK') {
-                    this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+                if (res.status == 'OK' || res.ok) {
+                    this.notificationService.showSuccess("Cambios realizados");
                     this.router.navigate(['/permisos/grid']);
                 } else {
-                    this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+                    this.notificationService.showError("No se pudieron realizar los cambios");
                 }
                 this.permisoForm.enable();
             });
         } else {
-            this.openSnackBar("El código ingresado ya existe", "X", "red-snackbar");
+            this.notificationService.showError("El código ingresado ya existe");
             this.permisoForm.enable();
         }
     }
@@ -104,11 +104,4 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
             });
         }
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-        this.snackBar.open(message, action, {
-            duration: 5000,
-            panelClass: className
-        });
-    };
 }

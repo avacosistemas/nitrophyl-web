@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, ElementRef, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -6,12 +6,14 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Observable, Subject, merge, of } from 'rxjs';
 import { catchError, map, startWith, switchMap, takeUntil, tap, debounceTime } from 'rxjs/operators';
 import { DatePipe } from '@angular/common';
+import * as moment from 'moment';
 import { LotService } from 'app/modules/abm/abm-lots/lot.service';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 import { IRegistroEnvio } from 'app/modules/abm/abm-lots/lot.interface';
 import { IFormula, IFormulaResponse, IFormulasResponse } from 'app/modules/abm/abm-formula/formula.interface';
 import { Cliente, ResponseClientes } from 'app/modules/abm/abm-clientes/cliente.model';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
   selector: 'app-registro-envios',
@@ -54,7 +56,9 @@ export class RegistroEnviosComponent implements OnInit, AfterViewInit, OnDestroy
     private lotService: LotService,
     private clientsService: ClientesService,
     private formulasService: FormulasService,
-    private datePipe: DatePipe
+    private datePipe: DatePipe,
+    private tableDataService: TableDataService,
+    private cdr: ChangeDetectorRef
   ) {
     this.searchForm = this.fb.group({
       fechaDesde: [null],
@@ -78,6 +82,7 @@ export class RegistroEnviosComponent implements OnInit, AfterViewInit, OnDestroy
         startWith({}),
         switchMap(() => {
           this.isLoading = true;
+          this.cdr.detectChanges();
           return this.loadDataObservable();
         }),
         map(data => {
@@ -91,7 +96,30 @@ export class RegistroEnviosComponent implements OnInit, AfterViewInit, OnDestroy
         takeUntil(this._destroying$)
       ).subscribe(data => {
         this.dataSource.data = data;
+        this.cdr.detectChanges();
       });
+  }
+
+  formatFecha(fecha: any): string {
+    if (!fecha) {
+      return '-';
+    }
+    if (typeof fecha === 'string') {
+      const trimmed = fecha.trim();
+      const m = moment(trimmed, ['DD/MM/YYYY HH:mm:ss', 'DD/MM/YYYY HH:mm', 'DD/MM/YYYY', moment.ISO_8601], true);
+      if (m.isValid()) {
+        if (trimmed.includes(':')) {
+          return m.format('DD/MM/YYYY HH:mm');
+        }
+        return m.format('DD/MM/YYYY');
+      }
+      return trimmed;
+    }
+    const m = moment(fecha);
+    if (m.isValid()) {
+      return m.format('DD/MM/YYYY HH:mm');
+    }
+    return String(fecha);
   }
 
   ngOnDestroy(): void {
@@ -132,8 +160,12 @@ export class RegistroEnviosComponent implements OnInit, AfterViewInit, OnDestroy
     const params = this.buildRequestParams();
     return this.lotService.getRegistroEnvios(params).pipe(
       map(response => {
-        this.totalReg = response.data.totalReg;
-        return response.data.page;
+        const normalized = this.tableDataService.normalizeResponse<IRegistroEnvio>(response, this.pageSize);
+        this.totalReg = normalized.total;
+        if (this.paginator) {
+          this.paginator.length = this.totalReg;
+        }
+        return normalized.items;
       }),
       catchError(() => of([]))
     );
@@ -143,10 +175,10 @@ export class RegistroEnviosComponent implements OnInit, AfterViewInit, OnDestroy
     const formValues = this.searchForm.value;
 
     return {
-      first: this.paginator.pageIndex * this.paginator.pageSize,
-      rows: this.paginator.pageSize,
-      asc: this.sort.direction === 'asc',
-      idx: this.sort.active || 'fechaCreacion',
+      page: (this.paginator && this.paginator.pageIndex !== undefined) ? this.paginator.pageIndex : 0,
+      pageSize: (this.paginator && this.paginator.pageSize) ? this.paginator.pageSize : this.pageSize,
+      asc: this.sort ? this.sort.direction === 'asc' : false,
+      idx: this.sort?.active || 'fechaCreacion',
       fechaDesde: formValues.fechaDesde ? this.datePipe.transform(formValues.fechaDesde, 'dd/MM/yyyy') : null,
       fechaHasta: formValues.fechaHasta ? this.datePipe.transform(formValues.fechaHasta, 'dd/MM/yyyy') : null,
       idCliente: formValues.cliente?.id || null,

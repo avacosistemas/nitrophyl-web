@@ -62,7 +62,8 @@ export class MateriaPrimaStockComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         const sub = this.abmMateriaPrimaService.getMateriaPrimaStockHistorial(this.materiaPrima.id).subscribe({
             next: (response) => {
-                this.dataSource.data = response.data.page;
+                const items = (Array.isArray(response?.data) ? response.data : response?.data?.page) || [];
+                this.dataSource.data = items;
                 this.isLoading = false;
             },
             error: (err) => {

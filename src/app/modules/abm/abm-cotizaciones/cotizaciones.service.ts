@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
 import { ICotizacionApiResponse, ICotizacionCreateDTO } from './models/cotizacion.model';
 
+import { TableDataService } from 'app/shared/services/table-data.service';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -11,15 +13,13 @@ export class CotizacionesService {
 
     private readonly apiUrl = `${environment.server}cotizacion`;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private tableDataService: TableDataService
+    ) { }
 
     getCotizaciones(params: any): Observable<ICotizacionApiResponse> {
-        let httpParams = new HttpParams();
-        Object.keys(params).forEach(key => {
-            if (params[key] !== null && params[key] !== undefined) {
-                httpParams = httpParams.set(key, params[key].toString());
-            }
-        });
+        const httpParams = this.tableDataService.buildHttpParams(params);
         return this.http.get<ICotizacionApiResponse>(this.apiUrl, { params: httpParams });
     }
 

@@ -1,21 +1,34 @@
-import { Perfil } from "../../modules/abm/abm-perfiles/perfil.model"
+export interface UserProfileRef {
+    id: number;
+    name?: string;
+    role?: any;
+    permissions?: any[];
+    enabled?: boolean;
+}
 
 export interface User {
-    email: string,
-    enabled: boolean,
-    id: number,
-    lastname: string,
-    name: string,
-    profiles: Array<Perfil>
-    username: string
+    id: number;
+    username: string;
+    name: string;
+    lastname: string;
+    email: string;
+    enabled: boolean;
+    admin?: boolean;
+    profiles: Array<UserProfileRef>;
 }
 
 export interface UserList {
-    status: string,
-    data: Array<User>
+    status: string;
+    data: Array<User>;
+    ok?: boolean;
+    error?: any;
+    page?: any;
 }
 
 export interface UserResponse {
-    status: string,
-    data: User
+    status: string;
+    data: User;
+    ok?: boolean;
+    error?: any;
+    page?: any;
 }

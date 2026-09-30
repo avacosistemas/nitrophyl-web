@@ -2,7 +2,6 @@ import { SelectionModel } from "@angular/cdk/collections";
 import { Component, Inject, OnDestroy, OnInit } from "@angular/core";
 import { FormBuilder, FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Perfil } from "app/modules/abm/abm-perfiles/perfil.model";
@@ -13,6 +12,7 @@ import { PermisosService } from "app/modules/abm/abm-permisos/permisos.service";
 import { RolesService } from "app/modules/abm/abm-roles/roles.service";
 import { Subscription } from "rxjs";
 import { ABMPerfilService } from "../abm-perfiles.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 @Component({
     selector: 'abm-perfiles-perfil',
@@ -52,7 +52,7 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
         private rolesService: RolesService,
         private _formBuilder: FormBuilder,
         private ABMPerfilesService: ABMPerfilService,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService
     ) {
         this.createPerfilForm = this._formBuilder.group({
             name: ['', [Validators.required]],
@@ -95,13 +95,14 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
         }
         
         this.perfilesService.getPerfilById(this.activatedRoute.snapshot.params['id']).subscribe(d => {
-            this.createPerfilForm.controls.role.setValue(d.data.role.id);
+            this.createPerfilForm.controls.role.setValue(d.data.role?.id);
             this.createPerfilForm.controls.name.setValue(d.data.name);
             this.data = d.data;
-            this.permisosIncluidos = this.data.permissions;
+            this.permisosIncluidos = this.data.permissions || [];
             this.searchPermisosIncluidos = this.permisosIncluidos;
             this.permisosService.getPermisos().subscribe(d=>{
-                this.permisos = d.data;
+                this.permisos = d.data || [];
+                this.permisosDisponibles = [];
                 this.permisos.forEach(perfil => {
                     let busqueda = this.permisosIncluidos.find(perfilI => perfilI.id == perfil.id);
                     if(busqueda == undefined) {
@@ -122,20 +123,21 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
         }
         this.createPerfilForm.disable();
         this.formDisabled = true;
-        let model = this.data;
+        let model: Perfil = { ...this.data };
         model.name = this.createPerfilForm.controls.name.value;
+        model.enabled = this.data.enabled !== undefined ? this.data.enabled : true;
         let busqueda = this.roles.find(rol => rol.id == this.createPerfilForm.controls.role.value);
         if(busqueda != undefined) {
             model.permissions = this.permisosIncluidos;
             model.role = busqueda;
-            this.perfilesService.updatePerfil(model, model.id).subscribe(res => {
-                if (res.status == 'OK') {
-                    this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+            this.perfilesService.updatePerfil(model).subscribe(res => {
+                if (res.status == 'OK' || res.ok) {
+                    this.notificationService.showSuccess("Cambios realizados");
                     if(!continuar) {
                         this.router.navigate(['/perfiles/grid']);
                     }
                 } else {
-                    this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+                    this.notificationService.showError("No se pudieron realizar los cambios");
                 }
                 this.createPerfilForm.enable();
                 this.formDisabled = false;
@@ -265,11 +267,4 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
         }
 
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-        this.snackBar.open(message, action, {
-            duration: 5000,
-            panelClass: className
-        });
-    };
 }

@@ -3,30 +3,30 @@ import { MatDialog } from '@angular/material/dialog';
 import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 import { User } from 'app/shared/models/user.model';
 import { UserService } from 'app/shared/services/user.service';
-
+import { PerfilesService } from 'app/modules/abm/abm-perfiles/perfiles.service';
+import { Perfil } from 'app/modules/abm/abm-perfiles/perfil.model';
 
 interface Data {
-    row: User
+    row: User;
 }
+
 @Component({
     selector     : 'abm-usuarios-grilla',
     templateUrl  : './abm-usuarios-grilla.component.html',
     encapsulation: ViewEncapsulation.None
 })
-
-
-
-export class ABMUsuariosGrillaComponent implements OnInit
-{
+export class ABMUsuariosGrillaComponent implements OnInit {
     component = "Grilla";
-    usuarios:  Array<any> = [];
-    displayedColumns: string[] = ['usuario', 'nombre', 'apellido', 'email', 'perfil', 'acciones']
+    usuarios: Array<User> = [];
+    perfiles: Array<Perfil> = [];
+    displayedColumns: string[] = ['usuario', 'nombre', 'apellido', 'email', 'perfil', 'acciones'];
     data: Data;
     showSuccess = false;
     showError = false;
 
     constructor(
         private usuarioService: UserService,
+        private perfilesService: PerfilesService,
         public dialog: MatDialog) { }
 
     ngOnInit(): void {
@@ -52,9 +52,25 @@ export class ABMUsuariosGrillaComponent implements OnInit
     }
 
     inicializar() {
+        this.perfilesService.getPerfiles().subscribe(d => {
+            this.perfiles = d.data || [];
+        });
         this.usuarioService.getUsers().subscribe(d=>{
-            this.usuarios = d.data;
-        })
+            this.usuarios = d.data || [];
+        });
+    }
+
+    getProfileName(row: User): string {
+        if (!row.profiles || row.profiles.length === 0) {
+            return '-';
+        }
+        return row.profiles.map(p => {
+            if (p.name) {
+                return p.name;
+            }
+            const match = this.perfiles.find(item => item.id === p.id);
+            return match ? match.name : `#${p.id}`;
+        }).join(', ');
     }
 
     delete(row) {
@@ -65,7 +81,7 @@ export class ABMUsuariosGrillaComponent implements OnInit
         dialogRef.afterClosed().subscribe(result => {
             if(result) {
                 this.usuarioService.deleteUser(row.id).subscribe(response => {
-                    if (response.status == 'OK') {
+                    if (response.status == 'OK' || (response as any).ok) {
                       this.showSuccess = true;
                     } else {
                       this.showError = true;
@@ -75,5 +91,4 @@ export class ABMUsuariosGrillaComponent implements OnInit
             }
         });
     }
-    
 }

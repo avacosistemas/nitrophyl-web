@@ -6,6 +6,8 @@ import { UserService } from 'app/core/user/user.service';
 import { environment } from 'environments/environment';
 import { Router } from '@angular/router';
 import { NotificationRelayService, RelayMessage } from 'app/core/services/notification-relay.service';
+import { User } from 'app/core/user/user.types';
+import { AuthData, AuthResponse } from 'app/core/auth/auth.types';
 
 @Injectable({
     providedIn: 'root'
@@ -91,18 +93,26 @@ export class AuthService {
 
         return this._httpClient.post(apiURL, credentials).pipe(
             switchMap((response: any) => {
-                if (response && response.token) {
-                    this.accessToken = response.token;
+                const data = response?.data || response;
+
+                if (data && data.token) {
+                    this.accessToken = data.token;
                     this._authenticated = true;
 
-                    const user = {
-                        name: response.name,
-                        lastname: response.lastname,
-                        email: response.email,
-                        username: credentials.username
+                    const permissions = this._extractPermissions(data);
+                    this._userPermissions = permissions;
+
+                    const user: User = {
+                        guid: data.guid,
+                        name: data.name,
+                        lastname: data.lastname,
+                        email: data.email,
+                        username: data.username || credentials.username,
+                        role: data.role,
+                        passwordExpired: data.passwordExpired
                     };
                     localStorage.setItem('userData', JSON.stringify(user));
-                    localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
+                    localStorage.setItem('userPermissions', JSON.stringify(permissions));
 
                     this._userService.user = user;
 
@@ -132,17 +142,25 @@ export class AuthService {
                 return of(false);
             }),
             switchMap((response: any) => {
-                if (response && response.token) {
-                    this.accessToken = response.token;
+                const data = response?.data || response;
+                if (data && data.token) {
+                    this.accessToken = data.token;
                     this._authenticated = true;
 
-                    const user = {
-                        name: response.name,
-                        lastname: response.lastname,
-                        email: response.email,
+                    const permissions = this._extractPermissions(data);
+                    this._userPermissions = permissions;
+
+                    const user: User = {
+                        guid: data.guid,
+                        name: data.name,
+                        lastname: data.lastname,
+                        email: data.email,
+                        username: data.username,
+                        role: data.role,
+                        passwordExpired: data.passwordExpired
                     };
                     localStorage.setItem('userData', JSON.stringify(user));
-                    localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
+                    localStorage.setItem('userPermissions', JSON.stringify(permissions));
                     this._userService.user = user;
                     return of(true);
                 } else {
@@ -209,22 +227,55 @@ export class AuthService {
     }
 
     hasPermission(permission: string): boolean {
-        return this._userPermissions.includes(permission);
+        const permissions = this.getUserPermissions();
+        return permissions.includes(permission);
     }
 
     handleLoginSuccess(response: any): void {
-        if (response && response.permissions) {
-            localStorage.setItem('userPermissions', JSON.stringify(response.permissions));
+        const data = response?.data || response;
+        const permissions = this._extractPermissions(data);
+        if (permissions.length > 0) {
+            localStorage.setItem('userPermissions', JSON.stringify(permissions));
+            this._userPermissions = permissions;
         }
     }
 
     getUserPermissions(): string[] {
-        return JSON.parse(localStorage.getItem('userPermissions') || '[]');
+        const stored = localStorage.getItem('userPermissions');
+        if (!stored) {
+            return [];
+        }
+        try {
+            const parsed = JSON.parse(stored);
+            if (Array.isArray(parsed)) {
+                return parsed;
+            }
+            if (typeof parsed === 'string') {
+                return parsed.split(';').map((p: string) => p.trim()).filter(Boolean);
+            }
+            return [];
+        } catch {
+            return typeof stored === 'string' ? stored.split(';').map((p: string) => p.trim()).filter(Boolean) : [];
+        }
     }
 
-    getUserData(): { name: string; lastname: string; email: string; username: string } | null {
+    getUserData(): User | null {
         const userData = localStorage.getItem('userData');
         return userData ? JSON.parse(userData) : null;
+    }
+
+    private _extractPermissions(data: any): string[] {
+        const rawPermisos = data?.permisos ?? data?.permissions;
+        if (!rawPermisos) {
+            return [];
+        }
+        if (Array.isArray(rawPermisos)) {
+            return rawPermisos;
+        }
+        if (typeof rawPermisos === 'string') {
+            return rawPermisos.split(';').map((p: string) => p.trim()).filter(Boolean);
+        }
+        return [];
     }
 
     // -----------------------------------------------------------------------------------------------------

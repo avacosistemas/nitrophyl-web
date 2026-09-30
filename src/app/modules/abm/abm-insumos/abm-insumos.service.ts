@@ -8,6 +8,8 @@ import { ITipoInsumo, ITipoInsumoApiResponse } from './models/tipo-insumo.interf
 import { IMateriaPrima, IMateriaPrimaApiResponse } from './models/materia-prima.interface';
 
 
+import { TableDataService } from 'app/shared/services/table-data.service';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -17,10 +19,15 @@ export class AbmInsumosService {
     private readonly materiaPrimaApiUrl = `${environment.server}materiaPrima`;
     private readonly apiStockUrl = `${environment.server}insumoStockHistorial`;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private tableDataService: TableDataService
+    ) { }
 
-    getInsumos(filters: { nombre?: string } = {}): Observable<IInsumoApiResponse> {
-        let params = new HttpParams();
+    getInsumos(filters: { nombre?: string; page?: number; pageSize?: number } = {}): Observable<IInsumoApiResponse> {
+        let params = new HttpParams()
+            .set('page', (filters.page ?? 0).toString())
+            .set('pageSize', (filters.pageSize ?? 9999).toString());
         if (filters.nombre) {
             params = params.set('nombre', filters.nombre);
         }
@@ -58,9 +65,11 @@ export class AbmInsumosService {
     }
 
     getMateriasPrimas(): Observable<IMateriaPrima[]> {
-        const params = new HttpParams().set('rows', '9999');
-        return this.http.get<IMateriaPrimaApiResponse>(this.materiaPrimaApiUrl, { params }).pipe(
-            map(response => response.data.page || []),
+        const params = new HttpParams()
+            .set('page', '0')
+            .set('pageSize', '9999');
+        return this.http.get<any>(this.materiaPrimaApiUrl, { params }).pipe(
+            map(response => this.tableDataService.extractItems(response)),
             catchError((error: HttpErrorResponse) => {
                 console.error('Error al cargar materias primas:', error);
                 return throwError(() => new Error('No se pudieron cargar las materias primas.'));

@@ -72,10 +72,18 @@ export interface IRegistroEnvio {
 
 export interface IRegistroEnvioResponse {
   status: string;
-  data: {
+  data: IRegistroEnvio[] | {
     page: IRegistroEnvio[];
     totalReg: number;
   };
+  ok?: boolean | null;
+  error?: string | null;
+  page?: {
+    totalReg: number;
+    page?: number | null;
+    pageSize?: number | null;
+    search?: string | null;
+  } | null;
 }
 
 export interface ILotObservation {

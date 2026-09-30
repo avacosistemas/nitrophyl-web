@@ -46,7 +46,7 @@ export class ABMPerfilesGrillaComponent implements OnInit
 
     inicializar() {
         this.perfilesService.getPerfiles().subscribe(d=>{
-            this.perfiles = d.data;
+            this.perfiles = d.data || [];
         })
     }
 
@@ -58,7 +58,7 @@ export class ABMPerfilesGrillaComponent implements OnInit
         dialogRef.afterClosed().subscribe(result => {
             if(result) {
                 this.perfilesService.deletePerfil(row.id).subscribe(response => {
-                    if (response.status == 'OK') {
+                    if (response.status == 'OK' || (response as any).ok) {
                       this.showSuccess = true;
                     } else {
                       this.showError = true;

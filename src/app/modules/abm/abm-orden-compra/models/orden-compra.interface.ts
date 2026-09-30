@@ -66,8 +66,10 @@ export interface IOrdenCompraPendiente {
 }
 
 export interface IOrdenCompraPendientesParams {
-    first: number;
-    rows: number;
+    page?: number;
+    pageSize?: number;
+    first?: number;
+    rows?: number;
     asc: boolean;
     idx: string;
     comprobante?: string;
@@ -82,8 +84,13 @@ export interface IOrdenCompraPendientesParams {
 
 export interface IOrdenCompraApiResponse<T> {
     status: string;
-    data: {
-        page: T[];
+    data: any;
+    page?: {
         totalReg: number;
+        page: number;
+        pageSize: number;
+        search?: string | null;
     };
+    ok?: boolean;
+    error?: any;
 }

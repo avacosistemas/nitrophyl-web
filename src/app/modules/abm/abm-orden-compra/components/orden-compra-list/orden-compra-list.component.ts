@@ -18,6 +18,7 @@ import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import moment from 'moment';
 import { OrdenCompraCancelModalComponent } from '../orden-compra-cancel-modal/orden-compra-cancel-modal.component';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
     selector: 'app-orden-compra-list',
@@ -47,7 +48,8 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         private _sanitizer: DomSanitizer,
         private _fb: FormBuilder,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _router: Router
+        private _router: Router,
+        private _tableDataService: TableDataService
     ) {
         this.searchForm = this._fb.group({
             cliente: [null],
@@ -83,11 +85,10 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
             }),
             map(response => {
                 this.isLoading = false;
-                if (response && response.data) {
-                    this.totalReg = response.data.totalReg;
-                    return response.data.page;
-                }
-                return [];
+                const pageSize = this.paginator?.pageSize || 10;
+                const normalized = this._tableDataService.normalizeResponse<IOrdenCompra>(response, pageSize);
+                this.totalReg = normalized.totalReg;
+                return normalized.data;
             }),
             takeUntil(this._destroying$)
         ).subscribe(data => this.dataSource.data = data);
@@ -100,11 +101,13 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
 
     private buildRequestParams(): any {
         const formValues = this.searchForm.value;
+        const pageSize = this.paginator?.pageSize || 10;
+        const pageIndex = this.paginator?.pageIndex || 0;
         return {
-            first: this.paginator.pageIndex * this.paginator.pageSize,
-            rows: this.paginator.pageSize,
-            asc: this.sort.active ? this.sort.direction !== 'desc' : false,
-            idx: this.sort.active || 'id',
+            page: pageIndex,
+            pageSize: pageSize,
+            asc: this.sort?.active ? this.sort.direction !== 'desc' : false,
+            idx: this.sort?.active || 'id',
             comprobante: formValues.comprobante,
             fechaDesde: formValues.fechaDesde ? moment(formValues.fechaDesde).format('DD/MM/YYYY') : null,
             fechaHasta: formValues.fechaHasta ? moment(formValues.fechaHasta).format('DD/MM/YYYY') : null,

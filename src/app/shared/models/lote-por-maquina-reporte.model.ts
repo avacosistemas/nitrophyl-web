@@ -20,10 +20,18 @@ export interface Lote {
 
 export interface LotePorMaquinaResponse {
     status: string;
-    data: {
+    data: Lote[] | {
         page: Lote[];
         totalReg: number;
     };
+    ok?: boolean | null;
+    error?: string | null;
+    page?: {
+        totalReg: number;
+        page?: number | null;
+        pageSize?: number | null;
+        search?: string | null;
+    } | null;
 }
 
 export interface ILotePorMaquinaReporteParams {
@@ -31,12 +39,14 @@ export interface ILotePorMaquinaReporteParams {
     estadoLote?: string;
     fechaDesde?: string;
     fechaHasta?: string;
+    page?: number;
+    pageSize?: number;
     first?: number;
+    rows?: number;
     idFormula?: number;
     idMaquina?: number;
     idx?: string;
     nroLote?: string;
-    rows?: number;
 }
 
 export interface LoteConResultadosCombinadosExtend extends Lote {

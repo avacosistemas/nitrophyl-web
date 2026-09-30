@@ -13,6 +13,7 @@ import {
   IFormulasResponse,
   ITestTitle
 } from './formula.interface';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 
 @Injectable({
@@ -31,7 +32,10 @@ export class FormulasService {
   private testTitle: ITestTitle | undefined;
   private action = new Subject<boolean>();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private tableDataService: TableDataService
+  ) {
     this.actions$ = new Subject<boolean>();
   }
 
@@ -48,31 +52,29 @@ export class FormulasService {
   }
 
   public get(
-    body?: IFormula
-  ): Observable<IFormulaResponse | IFormulasResponse> {
-    let url: string;
-
-    if (!body) {
-      return this.http.get<IFormulasResponse>(`${this.url}?idx=nombre&asc=true`);
-    }
-
-    if (body.id) {
+    body?: any,
+    page?: number,
+    pageSize?: number
+  ): Observable<any> {
+    if (body && body.id && !body.page && !body.pageSize && page === undefined && pageSize === undefined) {
       return this.http.get<IFormulaResponse>(`${this.url}/${body.id}`);
     }
 
-    if (body.nombre && body.idMaterial) {
-      url = `${this.url}?nombre=${body.nombre}&idMaterial=${body.idMaterial}`;
-    } else {
-      if (body.nombre) {
-        url = `${this.url}?nombre=${body.nombre}`;
-      }
+    const queryParams: any = {
+      idx: 'nombre',
+      asc: true,
+      ...(body || {})
+    };
 
-      if (body.idMaterial) {
-        url = `${this.url}?idMaterial=${body.idMaterial}`;
-      }
+    if (page !== undefined) {
+      queryParams.page = page;
+    }
+    if (pageSize !== undefined) {
+      queryParams.pageSize = pageSize;
     }
 
-    return this.http.get<IFormulasResponse>(`${url}`);
+    const httpParams = this.tableDataService.buildHttpParams(queryParams);
+    return this.http.get<IFormulasResponse>(this.url, { params: httpParams });
   }
 
   public getMachines(id: number): Observable<any> {

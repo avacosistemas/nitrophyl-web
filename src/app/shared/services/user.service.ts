@@ -33,8 +33,8 @@ export class UserService {
         return this.http.get<UserResponse>(`${environment.server}users/${id}`)
     }
 
-    public updateUser(user: User, id: number): Observable<Respuesta> {
-        return this.http.put<Respuesta>(`${environment.server}users/${id}`, user)
+    public updateUser(user: User, id?: number): Observable<Respuesta> {
+        return this.http.put<Respuesta>(`${environment.server}users/`, user)
     }
 
     public deleteUser(id: number): Observable<Respuesta> {

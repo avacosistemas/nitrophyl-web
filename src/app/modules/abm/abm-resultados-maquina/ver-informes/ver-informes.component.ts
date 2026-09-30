@@ -22,6 +22,8 @@ import {
 } from 'app/modules/abm/abm-formula/formula.interface';
 import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 import { ExportDataComponent } from 'app/shared/components/export-data/export-data.component';
+import { TableDataService } from 'app/shared/services/table-data.service';
+import { Lote } from 'app/shared/models/lote-por-maquina-reporte.model';
 
 @Component({
     selector: 'app-ver-informes',
@@ -68,6 +70,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
         private datePipe: DatePipe,
         public machineService: MachineService,
         private router: Router,
+        private tableDataService: TableDataService,
     ) { }
 
 
@@ -139,8 +142,8 @@ export class VerInformesComponent implements OnInit, OnDestroy {
             : null;
 
         const params = {
-            first: this.pageIndex * this.pageSize + 1,
-            rows: this.pageSize,
+            page: this.pageIndex,
+            pageSize: this.pageSize,
             idMaquina: idMaquinaSeleccionada,
             fechaDesde: fechaDesde,
             fechaHasta: fechaHasta,
@@ -178,8 +181,10 @@ export class VerInformesComponent implements OnInit, OnDestroy {
             )
             .subscribe(
                 (lotesResponse: LotePorMaquinaResponse) => {
-                    if (lotesResponse && lotesResponse.data) {
-                        const lotesProcesados = lotesResponse.data.page.map(lote => {
+                    const tableData = this.tableDataService.normalizeResponse<Lote>(lotesResponse, this.pageSize);
+
+                    if (tableData.items && tableData.items.length > 0) {
+                        const lotesProcesados = tableData.items.map(lote => {
                             return {
                                 ...lote,
                                 resultadosCombinados: this.mapearResultadosCombinados(lote.resultados),
@@ -189,7 +194,7 @@ export class VerInformesComponent implements OnInit, OnDestroy {
                         });
 
                         this.lotes = lotesProcesados;
-                        this.totalRegistros = lotesResponse.data.totalReg;
+                        this.totalRegistros = tableData.total;
 
                         this.mostrarColumnaObservaciones = this.lotes.some(lote => lote.observaciones);
 
@@ -390,8 +395,8 @@ export class VerInformesComponent implements OnInit, OnDestroy {
         const idMaquinaSeleccionada = maquina.id;
 
         const params = {
-            first: 1,
-            rows: 999999,
+            page: 0,
+            pageSize: 999999,
             idMaquina: idMaquinaSeleccionada,
             nroLote: '',
             estadoEnsayo: '',
@@ -404,8 +409,9 @@ export class VerInformesComponent implements OnInit, OnDestroy {
         this.machinesService.getLotesPorMaquina(params)
             .pipe(
                 map((lotesResponse: LotePorMaquinaResponse) => {
-                    if (lotesResponse && lotesResponse.data) {
-                        return lotesResponse.data.page.map(lote => ({
+                    const items = this.tableDataService.extractItems<Lote>(lotesResponse);
+                    if (items && items.length > 0) {
+                        return items.map(lote => ({
                             ...lote,
                             resultadosCombinados: this.mapearResultadosCombinados(lote.resultados),
                             resultadoGeneral: this.calcularResultadoGeneral(lote.resultados),

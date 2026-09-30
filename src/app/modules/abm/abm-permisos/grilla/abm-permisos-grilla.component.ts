@@ -1,8 +1,10 @@
 import { Component } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
+import { MatSlideToggleChange } from "@angular/material/slide-toggle";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Permiso } from "app/modules/abm/abm-permisos/permiso.model";
 import { PermisosService } from "app/modules/abm/abm-permisos/permisos.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 
 @Component({
@@ -21,7 +23,8 @@ export class ABMPermisosGrillaComponent {
 
     constructor(
         private permisosService: PermisosService,
-        public dialog: MatDialog
+        public dialog: MatDialog,
+        private notificationService: NotificationService
     ) {}
 
     ngOnInit(): void {
@@ -54,7 +57,7 @@ export class ABMPermisosGrillaComponent {
         dialogRef.afterClosed().subscribe(result => {
             if(result) {
                 this.permisosService.deletePermiso(row.id).subscribe(response => {
-                    if (response.status == 'OK') {
+                    if (response.status == 'OK' || (response as any).ok) {
                       this.showSuccess = true;
                     } else {
                       this.showError = true;
@@ -67,7 +70,33 @@ export class ABMPermisosGrillaComponent {
 
     inicializar() {
         this.permisosService.getPermisos().subscribe(d=>{
-            this.permisos = d.data;
+            this.permisos = d.data || [];
         })
+    }
+
+    toggleHabilitado(element: Permiso, event: MatSlideToggleChange) {
+        const nuevoEstado = event.checked;
+        const permisoActualizado: Permiso = {
+            ...element,
+            enabled: nuevoEstado
+        };
+
+        this.permisosService.updatePermiso(permisoActualizado).subscribe({
+            next: (response) => {
+                if (response.status === 'OK' || (response as any).ok) {
+                    element.enabled = nuevoEstado;
+                    this.notificationService.showSuccess(`Permiso ${element.code} ${nuevoEstado ? 'habilitado' : 'deshabilitado'} con éxito`);
+                } else {
+                    event.source.checked = !nuevoEstado;
+                    element.enabled = !nuevoEstado;
+                    this.notificationService.showError('No se pudo actualizar el estado del permiso');
+                }
+            },
+            error: () => {
+                event.source.checked = !nuevoEstado;
+                element.enabled = !nuevoEstado;
+                this.notificationService.showError('Error al comunicarse con el servidor');
+            }
+        });
     }
 }

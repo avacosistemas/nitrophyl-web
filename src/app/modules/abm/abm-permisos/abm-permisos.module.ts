@@ -9,6 +9,7 @@ import { ABMCrearPermiso } from './crear-permiso/abm-permisos-crear.component';
 
 import { CoreSharedModule } from 'app/core/shared/shared.module';
 import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 const abmPermisosRoutes: Route[] = [
     {
@@ -49,7 +50,8 @@ const abmPermisosRoutes: Route[] = [
         RouterModule.forChild(abmPermisosRoutes),
         ABMSharedModule,
         CoreSharedModule,
-        HeaderSharedModule
+        HeaderSharedModule,
+        MatSlideToggleModule
     ]
 })
 export class ABMPermisosModule {

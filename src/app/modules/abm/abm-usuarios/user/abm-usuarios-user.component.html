@@ -9,26 +9,29 @@
                 <mat-form-field appearance="outline" class="fuse-mat-textarea">
                     <mat-label> E-Mail </mat-label>
                     <mat-icon matSuffix>mail</mat-icon>
-                    <input matInput formControlName="mail" placeholder="E-Mail" [(ngModel)]="data.email">
+                    <input matInput formControlName="mail" placeholder="E-Mail">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="fuse-mat-textarea">
                     <mat-label> Usuario </mat-label>
                     <mat-icon matSuffix>account_circle</mat-icon>
-                    <input matInput formControlName="username" placeholder="Usuario" [(ngModel)]="data.username">
+                    <input matInput formControlName="username" placeholder="Usuario">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="fuse-mat-textarea">
                     <mat-label> Nombre </mat-label>
                     <mat-icon matSuffix>account_circle</mat-icon>
-                    <input matInput formControlName="name" placeholder="Nombre" [(ngModel)]="data.name">
+                    <input matInput formControlName="name" placeholder="Nombre">
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="fuse-mat-textarea">
                     <mat-label> Apellido </mat-label>
                     <mat-icon matSuffix>account_circle</mat-icon>
-                    <input matInput formControlName="surname" placeholder="Apellido" [(ngModel)]="data.lastname">
+                    <input matInput formControlName="surname" placeholder="Apellido">
                 </mat-form-field>
-                <section class="fuse-mat-textarea">
-                    <mat-checkbox formControlName="enabled" [(ngModel)]="data.enabled">
+                <section class="fuse-mat-textarea flex gap-4">
+                    <mat-checkbox formControlName="enabled">
                         Habilitado
+                    </mat-checkbox>
+                    <mat-checkbox formControlName="admin">
+                        Administrador
                     </mat-checkbox>
                 </section>
             </div>

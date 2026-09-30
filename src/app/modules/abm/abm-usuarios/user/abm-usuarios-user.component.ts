@@ -1,8 +1,7 @@
 import { SelectionModel } from "@angular/cdk/collections";
 import { Component, OnDestroy, OnInit } from "@angular/core";
-import { FormControl, FormGroup } from "@angular/forms";
+import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
-import { MatSnackBar } from "@angular/material/snack-bar";
 import { ActivatedRoute, Router } from "@angular/router";
 import { RemoveDialogComponent } from "app/shared/components/remove/remove.component";
 import { Perfil } from "app/modules/abm/abm-perfiles/perfil.model";
@@ -11,6 +10,7 @@ import { PerfilesService } from "app/modules/abm/abm-perfiles/perfiles.service";
 import { UserService } from "app/shared/services/user.service";
 import { Subscription } from "rxjs";
 import { ABMUsuarioService } from "../abm-usuarios.service";
+import { NotificationService } from "app/shared/services/notification.service";
 
 @Component({
     selector: 'abm-usuarios-user',
@@ -30,11 +30,12 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
     displayedColumns: string[] = ['select', 'name'];
 
     controlGroup = new FormGroup({
-      username: new FormControl(),
-      name: new FormControl(),
-      surname: new FormControl(),
-      enabled: new FormControl(),
-      mail: new FormControl()
+      username: new FormControl('', [Validators.required]),
+      name: new FormControl('', [Validators.required]),
+      surname: new FormControl('', [Validators.required]),
+      enabled: new FormControl(true),
+      mail: new FormControl('', [Validators.required, Validators.email]),
+      admin: new FormControl(false)
     })
     
     
@@ -58,14 +59,14 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
         private usuarioService: UserService,
         private perfilesService: PerfilesService,
         private ABMUsuarioService: ABMUsuarioService,
-        private snackBar: MatSnackBar
+        private notificationService: NotificationService
     ) {
       this.suscripcion = this.ABMUsuarioService.events.subscribe(
         (data: any) => {
           if(data == 1) {
             this.close();
           } else if(data == 2) {
-            this.edit();
+            this.edit(false);
           } else if(data == 3) {
             this.editContinue();
           }
@@ -89,29 +90,34 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
       }
   }
   
-    edit() {
-        let model = this.data;
-        model.profiles = this.perfilesIncluidos;
-        this.usuarioService.updateUser(model, this.data.id).subscribe(response => {
-          if (response.status == 'OK') {
-            this.openSnackBar("Cambios realizados", "X", "green-snackbar");
+    edit(continuar: boolean = false) {
+        if (!this.data) {
+            return;
+        }
+        let model: User = {
+            id: this.data.id,
+            username: this.controlGroup.controls.username.value,
+            name: this.controlGroup.controls.name.value,
+            lastname: this.controlGroup.controls.surname.value,
+            email: this.controlGroup.controls.mail.value,
+            enabled: this.controlGroup.controls.enabled.value ?? true,
+            admin: this.controlGroup.controls.admin?.value ?? false,
+            profiles: this.perfilesIncluidos.map(p => ({ id: p.id }))
+        };
+        this.usuarioService.updateUser(model).subscribe(response => {
+          if (response.status == 'OK' || (response as any).ok) {
+            this.notificationService.showSuccess("Cambios realizados");
+            if (!continuar) {
+                this.router.navigate(['/usuarios/grid']);
+            }
           } else {
-            this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
+            this.notificationService.showError("No se pudieron realizar los cambios");
           }
-          this.router.navigate(['/usuarios/grid'])
         })
     }
 
     editContinue() {
-      let model = this.data;
-      model.profiles = this.perfilesIncluidos;
-      this.usuarioService.updateUser(model, this.data.id).subscribe(response => {
-        if (response.status == 'OK') {
-          this.openSnackBar("Cambios realizados", "X", "green-snackbar");
-        } else {
-          this.openSnackBar("No se puedieron realizar los cambios", "X", "red-snackbar");
-        }
-      })
+      this.edit(true);
     }
 
     close() {
@@ -146,17 +152,21 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
         }
         this.usuarioService.getUserById(this.activatedRoute.snapshot.params['id']).subscribe(d => {
             this.data = d.data;
-            this.perfilesIncluidos = this.data.profiles;
-            this.searchPerfilesIncluidos = this.perfilesIncluidos;
-            this.perfilesService.getPerfiles().subscribe(d=>{
-                this.perfiles = d.data;
-                this.perfiles.forEach(perfil => {
-                    let busqueda = this.perfilesIncluidos.find(perfilI => perfilI.id == perfil.id);
-                    if(busqueda == undefined) {
-                        this.perfilesDisponibles.push(perfil);
-                    }
-                });
-                this.searchPerfiles = this.perfilesDisponibles;
+            this.controlGroup.patchValue({
+              username: this.data.username,
+              name: this.data.name,
+              surname: this.data.lastname,
+              mail: this.data.email,
+              enabled: this.data.enabled,
+              admin: this.data.admin || false
+            });
+            this.perfilesService.getPerfiles().subscribe(res => {
+                this.perfiles = res.data || [];
+                const userProfileIds = (this.data.profiles || []).map(p => p.id);
+                this.perfilesIncluidos = this.perfiles.filter(p => userProfileIds.includes(p.id));
+                this.perfilesDisponibles = this.perfiles.filter(p => !userProfileIds.includes(p.id));
+                this.searchPerfiles = [...this.perfilesDisponibles];
+                this.searchPerfilesIncluidos = [...this.perfilesIncluidos];
             });
         });
     }
@@ -254,11 +264,4 @@ export class ABMUsuariosUserComponent implements OnInit, OnDestroy{
         }
         
     }
-
-    openSnackBar(message: string, action: string, className: string) {
-      this.snackBar.open(message, action, {
-          duration: 5000,
-          panelClass: className
-      });
-    };
 }

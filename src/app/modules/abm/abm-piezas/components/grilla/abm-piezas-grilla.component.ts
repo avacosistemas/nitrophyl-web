@@ -19,6 +19,7 @@ import { IMaterialsResponse } from 'app/modules/abm/abm-formula/material.interfa
 import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { ABMPiezaClonarModalComponent } from './modal-clonar/abm-pieza-clonar-modal.component';
+import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
   selector: 'app-abm-piezas-grilla',
@@ -68,7 +69,8 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     private _formulas: FormulasService,
     private _materials: MaterialsService,
     private _clientesService: ClientesService,
-    private _notificationService: NotificationService
+    private _notificationService: NotificationService,
+    private tableDataService: TableDataService
   ) {
     this.searchForm = this.formBuilder.group({
       nombre: [null],
@@ -103,18 +105,16 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
             catchError(() => {
               this.isLoading = false;
               this.notificationService.showError('Error al cargar los datos de la grilla.');
-              return of({ data: { page: [], totalReg: 0 } });
+              return of(null);
             })
           );
         }),
         map(response => {
           this.isLoading = false;
-          if (response && response.data) {
-            this.totalReg = response.data.totalReg ?? 0;
-            return response.data.page ?? [];
-          }
-          this.totalReg = 0;
-          return [];
+          const pageSize = this.paginator?.pageSize || 15;
+          const normalized = this.tableDataService.normalizeResponse<Pieza>(response, pageSize);
+          this.totalReg = normalized.totalReg;
+          return normalized.data;
         }),
         takeUntil(this._destroying$)
       )
@@ -134,9 +134,11 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
   private buildRequestParams(): any {
     const formValues = this.searchForm.value;
+    const pageSize = this.paginator?.pageSize || 15;
+    const pageIndex = this.paginator?.pageIndex || 0;
     const params: any = {
-      first: this.paginator.pageIndex * this.paginator.pageSize + 1,
-      rows: this.paginator.pageSize,
+      page: pageIndex,
+      pageSize: pageSize,
       asc: this.sort.direction !== 'desc',
       idx: this.sort.active || 'codigo',
       soloVigentes: formValues.soloVigentes,

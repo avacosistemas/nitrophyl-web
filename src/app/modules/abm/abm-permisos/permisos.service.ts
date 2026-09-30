@@ -19,23 +19,27 @@ export class PermisosService {
     }
 
     public getPermisos(): Observable<RespuestaPermisos> {
-        return this.http.get<RespuestaPermisos>(`${environment.server}permissions/`)
+        return this.http.get<RespuestaPermisos>(`${environment.server}permissions`)
     }
 
     public postPermiso(permiso: Permiso): Observable<any> {
-        return this.http.post<any>(`${environment.server}permissions/`, permiso)
+        return this.http.post<any>(`${environment.server}permissions`, permiso)
     }
 
     public getPermisoById(id: number): Observable<RespuestaPermiso> {
         return this.http.get<RespuestaPermiso>(`${environment.server}permissions/${id}`)
     }
 
-    public updatePermiso(permiso: Permiso, id: number): Observable<any> {
-        return this.http.put<any>(`${environment.server}permissions/${id}`, permiso)
+    public updatePermiso(permiso: Permiso): Observable<any> {
+        return this.http.put<any>(`${environment.server}permissions`, permiso)
     }
 
     public deletePermiso(id: number): Observable<Respuesta> {
         return this.http.delete<Respuesta>(`${environment.server}permissions/${id}`)
+    }
+
+    public filterPermisoByNombre(name: string): Observable<RespuestaPermisos> {
+        return this.http.get<RespuestaPermisos>(`${environment.server}permissions/filterPermisoByNombre?name=${encodeURIComponent(name)}`)
     }
 
     public getMode() {

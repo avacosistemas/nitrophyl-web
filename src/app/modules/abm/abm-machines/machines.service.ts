@@ -83,11 +83,28 @@ export class MachinesService {
 
   public getLotesPorMaquina(params: ILotePorMaquinaReporteParams): Observable<LotePorMaquinaResponse> {
     let httpParams = new HttpParams();
+    const queryParams: any = { ...params };
 
-    Object.keys(params).forEach((key) => {
-      if (params[key] !== undefined && params[key] !== null) {
-        httpParams = httpParams.append(key, params[key]?.toString());
+    if (queryParams.pageSize === undefined && queryParams.rows !== undefined) {
+      queryParams.pageSize = queryParams.rows;
     }
+    if (queryParams.page === undefined) {
+      if (queryParams.pageIndex !== undefined) {
+        queryParams.page = queryParams.pageIndex;
+      } else if (queryParams.first !== undefined) {
+        const size = queryParams.pageSize || queryParams.rows || 10;
+        queryParams.page = Math.floor(queryParams.first / size);
+      }
+    }
+
+    delete queryParams.first;
+    delete queryParams.rows;
+    delete queryParams.pageIndex;
+
+    Object.keys(queryParams).forEach((key) => {
+      if (queryParams[key] !== undefined && queryParams[key] !== null && queryParams[key] !== '') {
+        httpParams = httpParams.append(key, queryParams[key]?.toString());
+      }
     });
 
     return this.http.get<LotePorMaquinaResponse>(this.lotePorMaquinaUrl, { params: httpParams });

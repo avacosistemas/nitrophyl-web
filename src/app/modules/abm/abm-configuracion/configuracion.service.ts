@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { EventEmitter,  } from '@angular/core';
 import { Observable, Subject } from 'rxjs';
 
@@ -35,32 +35,35 @@ export class ConfiguracionService {
 
   public get(
     body?: IConfiguracion
-  ): Observable<IConfiguracionResponse | IConfiguracionesResponse> {
-    let url: string = this.url;
-
-    if (!body) {
-      return this.http.get<IConfiguracionesResponse>(`${this.url}?asc=true`);
-    }
-
-    if (body.id) {
+  ): Observable<any> {
+    if (body && body.id) {
       return this.http.get<IConfiguracionResponse>(`${this.url}/${body.id}`);
     }
 
-    const params: string[] = [];
-    if (body.idCliente) params.push(`idCliente=${body.idCliente}`);
-    if (body.idFormula) params.push(`idFormula=${body.idFormula}`);
-    if (body.idMaquina) params.push(`idMaquina=${body.idMaquina}`);
-    if (body.mostrarCondiciones) params.push(`mostrarCondiciones=${body.mostrarCondiciones}`);
-    if (body.enviarGrafico) params.push(`enviarGrafico=${body.enviarGrafico}`);
-    if (body.mostrarObservacionesParametro) params.push(`mostrarObservacionesParametro=${body.mostrarObservacionesParametro}`);
-    if (body.mostrarParametros) params.push(`mostrarParametros=${body.mostrarParametros}`);
-    if (body.mostrarResultados) params.push(`mostrarResultados=${body.mostrarResultados}`);
+    const params: any = { ...body };
+    delete params.cliente;
+    delete params.formula;
+    delete params.maquina;
+    delete params.idsPruebas;
 
-    if (params.length > 0) {
-      url += `?${params.join('&')}`;
+    if (params.page === undefined) {
+      params.page = 0;
+    }
+    if (params.pageSize === undefined) {
+      params.pageSize = 10;
+    }
+    if (params.asc === undefined) {
+      params.asc = true;
     }
 
-    return this.http.get<IConfiguracionesResponse>(url);
+    let httpParams = new HttpParams();
+    Object.keys(params).forEach(k => {
+      if (params[k] !== null && params[k] !== undefined && params[k] !== '') {
+        httpParams = httpParams.set(k, String(params[k]));
+      }
+    });
+
+    return this.http.get<any>(this.url, { params: httpParams });
   }
 
   public post(body: IConfiguracion): Observable<IConfiguracionResponse> {

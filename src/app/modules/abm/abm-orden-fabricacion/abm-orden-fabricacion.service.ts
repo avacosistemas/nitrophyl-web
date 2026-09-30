@@ -4,6 +4,8 @@ import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { environment } from 'environments/environment';
 import { IOrdenFabricacionCreateDTO } from './models/orden-fabricacion.interface';
 
+import { TableDataService } from 'app/shared/services/table-data.service';
+
 @Injectable({
     providedIn: 'root'
 })
@@ -19,7 +21,10 @@ export class AbmOrdenFabricacionService {
     private _actionTriggered = new Subject<string>();
     actionTriggered$ = this._actionTriggered.asObservable();
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private tableDataService: TableDataService
+    ) { }
 
     updateHeaderButtons(buttons: any[]): void {
         this._headerButtons.next(buttons);
@@ -34,12 +39,7 @@ export class AbmOrdenFabricacionService {
     }
 
     getOrdenesFabricacion(params: any): Observable<any> {
-        let httpParams = new HttpParams();
-        Object.keys(params).forEach(key => {
-            if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
-                httpParams = httpParams.set(key, params[key].toString());
-            }
-        });
+        const httpParams = this.tableDataService.buildHttpParams(params);
         return this.http.get<any>(this.apiUrl, { params: httpParams });
     }
 

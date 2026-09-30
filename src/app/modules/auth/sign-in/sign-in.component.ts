@@ -70,9 +70,10 @@ export class AuthSignInComponent implements OnInit
             )
             .subscribe(
                 (response) => {
-                    if (response && response.status === 'CHANGE_PASSWORD_REQUIRED') {
+                    const data = response?.data || response;
+                    if (response?.status === 'CHANGE_PASSWORD_REQUIRED' || data?.passwordExpired === true) {
                         this._router.navigate(['/change-password'], { 
-                            state: { username: this.loginForm.get('username').value } 
+                            state: { username: data?.username || this.loginForm.get('username').value } 
                         });
                         return;
                     }

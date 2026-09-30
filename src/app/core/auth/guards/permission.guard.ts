@@ -12,7 +12,7 @@ export class PermissionGuard implements CanActivate {
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
         const requiredPermission: string = route.data['permission'];
 
-        const userPermissions: string[] = JSON.parse(localStorage.getItem('userPermissions') || '[]');
+        const userPermissions: string[] = this._authService.getUserPermissions();
 
         if (userPermissions.includes(requiredPermission)) {
             return true;

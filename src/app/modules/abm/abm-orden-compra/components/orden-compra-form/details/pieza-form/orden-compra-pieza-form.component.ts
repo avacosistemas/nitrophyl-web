@@ -202,7 +202,8 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
 
         this.isLoading = true;
         this._service.getCotizaciones(pieza.id, clienteId).subscribe(res => {
-            const cotizacion = res.data?.page && res.data.page.length > 0 ? res.data.page[0] : null;
+            const cotizacionesList = (Array.isArray(res?.data) ? res.data : res?.data?.page) || [];
+            const cotizacion = cotizacionesList.length > 0 ? cotizacionesList[0] : null;
 
             if (cotizacion) {
                 this.piezaCotizacionInfo = {

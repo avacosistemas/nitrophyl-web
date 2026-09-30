@@ -159,7 +159,8 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     this.abmPiezaService.getInsumosPorTipo(idTipo)
       .pipe(takeUntil(this.destroy$))
       .subscribe(res => {
-        this.listaInsumos$.next(res.data.page || []);
+        const items = (Array.isArray(res?.data) ? res.data : res?.data?.page) || [];
+        this.listaInsumos$.next(items);
         this.insumoForm.get('insumo').enable();
         this.isLoading = false;
         this.cdr.markForCheck();
@@ -283,8 +284,9 @@ export class ABMPiezaInsumoModalFormComponent implements OnInit, OnDestroy {
     this.insumoForm.get('tipos').disable();
 
     this.abmPiezaService.getInsumosPorTipo(insumoData.tipo.id).pipe(takeUntil(this.destroy$)).subscribe(res => {
-      this.listaInsumos$.next(res.data.page || []);
-      const insumoObj = (res.data.page || []).find(i => i.id === insumoData.idInsumo);
+      const items = (Array.isArray(res?.data) ? res.data : res?.data?.page) || [];
+      this.listaInsumos$.next(items);
+      const insumoObj = items.find(i => i.id === insumoData.idInsumo);
 
       this.insumoForm.patchValue({
         insumo: insumoObj,

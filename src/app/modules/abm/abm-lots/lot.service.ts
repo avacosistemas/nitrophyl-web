@@ -51,7 +51,7 @@ export class LotService {
   }
 
   public getByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta: string, estado: string, rows, first, idx, asc): Observable<ILotsResponse> {
-    let url = this._url + '?asc=' + asc + '&idx=' + idx + '&rows=' + rows + '&first=' + first;
+    let url = this._url + '?asc=' + asc + '&idx=' + idx + '&pageSize=' + rows + '&page=' + first;
 
     if (formula != null && formula != '') {
       url = url + '&idFormula=' + formula;
@@ -73,7 +73,7 @@ export class LotService {
   }
 
   public countByFilter(formula: string, lot: string, fechaDesde: string, fechaHasta: string, estado: string, rows, first, idx, asc): Observable<IResponse<number>> {
-    let url = this._urlCount + '?asc=' + asc + '&idx=' + idx + '&rows=' + rows + '&first=' + first;
+    let url = this._urlCount + '?asc=' + asc + '&idx=' + idx + '&pageSize=' + rows + '&page=' + first;
 
     if (formula != null && formula != '') {
       url = url + '&idFormula=' + formula;
@@ -166,7 +166,7 @@ export class LotService {
   }
 
   public getByFilterMonitor(formula: string, lot: string, fechaDesde: string, fechaHasta: string, rows, first, idx, asc): Observable<ILotsResponse> {
-    var url = this._url + "?asc=" + asc + "&idx=" + idx + "&rows=" + rows + "&first=" + first;
+    var url = this._url + "?asc=" + asc + "&idx=" + idx + "&pageSize=" + rows + "&page=" + first;
 
     if (formula != null && formula != "") {
       url = url + "&idFormula=" + formula;
@@ -185,7 +185,7 @@ export class LotService {
   }
 
   public countByFilterMonitor(formula: string, lot: string, fechaDesde: string, fechaHasta: string, rows, first, idx, asc): Observable<IResponse<number>> {
-    let url = this._urlCountMonitor + '?asc=' + asc + '&idx=' + idx + '&rows=' + rows + '&first=' + first;
+    let url = this._urlCountMonitor + '?asc=' + asc + '&idx=' + idx + '&pageSize=' + rows + '&page=' + first;
 
     if (formula != null && formula != '') {
       url = url + '&idFormula=' + formula;
@@ -243,10 +243,27 @@ export class LotService {
 
   getRegistroEnvios(params: any): Observable<IRegistroEnvioResponse> {
     let httpParams = new HttpParams();
+    const queryParams: any = { ...params };
 
-    Object.keys(params).forEach(key => {
-      if (params[key] !== null && params[key] !== undefined && params[key] !== '') {
-        httpParams = httpParams.set(key, params[key]);
+    if (queryParams.pageSize === undefined && queryParams.rows !== undefined) {
+      queryParams.pageSize = queryParams.rows;
+    }
+    if (queryParams.page === undefined) {
+      if (queryParams.pageIndex !== undefined) {
+        queryParams.page = queryParams.pageIndex;
+      } else if (queryParams.first !== undefined) {
+        const size = queryParams.pageSize || queryParams.rows || 10;
+        queryParams.page = Math.floor(queryParams.first / size);
+      }
+    }
+
+    delete queryParams.first;
+    delete queryParams.rows;
+    delete queryParams.pageIndex;
+
+    Object.keys(queryParams).forEach(key => {
+      if (queryParams[key] !== null && queryParams[key] !== undefined && queryParams[key] !== '') {
+        httpParams = httpParams.set(key, queryParams[key]);
       }
     });
 
