@@ -121,7 +121,7 @@ export class ABMCrearPerfil implements OnInit, OnDestroy {
     if (busquedaRol != undefined) {
       let model: Perfil = {
         enabled: true,
-        id: 0,
+        id: null,
         name: this.createPerfilForm.controls.name.value,
         permissions: this.permisosIncluidos,
         role: busquedaRol

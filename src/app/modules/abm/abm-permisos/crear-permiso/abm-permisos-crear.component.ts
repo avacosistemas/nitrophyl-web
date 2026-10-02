@@ -67,7 +67,7 @@ export class ABMCrearPermiso implements OnInit, OnDestroy {
         }
         this.permisoForm.disable();
         let model: Permiso = {
-            id: 0,
+            id: null,
             code: this.permisoForm.controls.code.value,
             description: this.permisoForm.controls.description.value,
             enabled: true

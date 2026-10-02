@@ -2,7 +2,7 @@ import { Rol } from "../abm-roles/rol.model";
 import { Permiso } from "../abm-permisos/permiso.model";
 
 export interface Perfil {
-    id: number;
+    id: number | null;
     name: string;
     enabled: boolean;
     role: Rol;

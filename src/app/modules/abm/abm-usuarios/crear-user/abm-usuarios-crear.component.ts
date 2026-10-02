@@ -88,7 +88,7 @@ export class ABMUsuariosCrearComponent implements OnInit, OnDestroy{
             return;
         }
         let model: User = {
-            id: 0,
+            id: null,
             username: this.controlGroup.controls.username.value,
             name: this.controlGroup.controls.name.value,
             lastname: this.controlGroup.controls.surname.value,
