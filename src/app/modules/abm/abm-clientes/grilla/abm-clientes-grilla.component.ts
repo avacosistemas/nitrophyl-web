@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
@@ -24,6 +25,7 @@ import { map, startWith } from 'rxjs/operators';
 })
 export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatSort) sort: MatSort;
 
   private _allClientes: Cliente[] = [];
   public filteredClientes: Cliente[] = [];
@@ -95,21 +97,63 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
 
     this.totalRecords = this.filteredClientes.length;
     this.pageIndex = 0;
-    this.paginate();
+    this.sortAndPaginate();
+  }
+
+  public sortAndPaginate(): void {
+    let sortedList = [...this.filteredClientes];
+
+    if (this.sort && this.sort.active && this.sort.direction) {
+      const isAsc = this.sort.direction === 'asc';
+      sortedList.sort((a: any, b: any) => {
+        let valueA: any;
+        let valueB: any;
+
+        switch (this.sort.active) {
+          case 'razonSocial':
+            valueA = a.razonSocial || '';
+            valueB = b.razonSocial || '';
+            break;
+          case 'nombre':
+            valueA = a.nombre || '';
+            valueB = b.nombre || '';
+            break;
+          case 'mail':
+            valueA = a.email || '';
+            valueB = b.email || '';
+            break;
+          case 'cuit':
+            valueA = a.cuit || '';
+            valueB = b.cuit || '';
+            break;
+          default:
+            valueA = a[this.sort.active] || '';
+            valueB = b[this.sort.active] || '';
+            break;
+        }
+
+        if (typeof valueA === 'string' && typeof valueB === 'string') {
+          return isAsc ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+        }
+        return (valueA < valueB ? -1 : valueA > valueB ? 1 : 0) * (isAsc ? 1 : -1);
+      });
+    }
+
+    const startIndex = this.pageIndex * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    this.dataSource = sortedList.slice(startIndex, endIndex);
+
+    this.expandedElement = null;
   }
 
   public paginate(): void {
-    const startIndex = this.pageIndex * this.pageSize;
-    const endIndex = startIndex + this.pageSize;
-    this.dataSource = this.filteredClientes.slice(startIndex, endIndex);
-
-    this.expandedElement = null;
+    this.sortAndPaginate();
   }
 
   public onPageChange(event: PageEvent): void {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
-    this.paginate();
+    this.sortAndPaginate();
   }
 
   public search(): void {
@@ -146,6 +190,13 @@ export class ABMClientesGrillaComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     let top = document.getElementById('top');
     if (top !== null) { top.scrollIntoView(); }
+
+    if (this.sort) {
+      this.sort.sortChange.subscribe(() => {
+        this.pageIndex = 0;
+        this.sortAndPaginate();
+      });
+    }
   }
 
   private _createForms(): void {

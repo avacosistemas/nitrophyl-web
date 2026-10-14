@@ -43,6 +43,7 @@ import { AsignarPrensaDialogComponent } from './components/dialogs/asignar-prens
 import { FinalizarOrdenDialogComponent } from './components/dialogs/finalizar-orden-dialog/finalizar-orden-dialog.component';
 import { RegistrarEntregaDialogComponent } from './components/dialogs/registrar-entrega-dialog/registrar-entrega-dialog.component';
 import { OtPreviewDialogComponent } from './components/dialogs/ot-preview-dialog/ot-preview-dialog.component';
+import { EntregasListComponent } from './components/entregas-list/entregas-list.component';
 
 @NgModule({
     declarations: [
@@ -52,7 +53,8 @@ import { OtPreviewDialogComponent } from './components/dialogs/ot-preview-dialog
         AsignarPrensaDialogComponent,
         FinalizarOrdenDialogComponent,
         RegistrarEntregaDialogComponent,
-        OtPreviewDialogComponent
+        OtPreviewDialogComponent,
+        EntregasListComponent
     ],
     imports: [
         CommonModule,

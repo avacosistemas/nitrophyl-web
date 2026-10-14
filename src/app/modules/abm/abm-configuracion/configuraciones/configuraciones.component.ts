@@ -95,11 +95,11 @@ export class ConfiguracionesComponent implements OnInit, AfterViewInit {
       formula: new FormControl(null),
       cliente: new FormControl(null),
       machine: new FormControl(null),
-      mostrarParametros: new FormControl(false),
-      mostrarObservaciones: new FormControl(false),
-      mostrarResultados: new FormControl(false),
-      mostrarCondiciones: new FormControl(false),
-      enviarGrafico: new FormControl(false)
+      mostrarParametros: new FormControl(null),
+      mostrarObservaciones: new FormControl(null),
+      mostrarResultados: new FormControl(null),
+      mostrarCondiciones: new FormControl(null),
+      enviarGrafico: new FormControl(null)
     });
   }
 

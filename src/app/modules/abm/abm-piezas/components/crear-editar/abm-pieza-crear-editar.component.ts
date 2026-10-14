@@ -54,6 +54,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     filteredFormulas$: Observable<{ id: number; nombre: string }[]>;
     filteredClientes$: Observable<{ id: number; nombre: string; codigo?: string }[]>;
     filteredMoldes$: Observable<Molde[]>;
+    filteredTroqueles$: Observable<any[]> = of([]);
 
     tiposDurezaOptions: { value: string; label: string }[] = [
         { value: 'SHORE_A', label: 'Shore A' },
@@ -103,6 +104,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             fechaRevision: [{ value: null, disabled: true }],
             observacionesRevision: [{ value: null, disabled: false }],
             hojaProceso: [null, Validators.maxLength(100)],
+            troquel: [null, [Validators.maxLength(20)]],
             plano: this.fb.group({
                 sinPlano: [false],
                 archivo: [null],
@@ -150,6 +152,18 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                             catchError(() => of([]))
                         );
                     })
+                );
+            })
+        );
+
+        this.filteredTroqueles$ = (this.piezaForm.get('troquel')?.valueChanges || of('')).pipe(
+            startWith(''),
+            debounceTime(300),
+            switchMap(value => {
+                const searchTerm = typeof value === 'string' ? value : (value?.nombre || '');
+                return this.abmPiezaService.buscarTroqueles(searchTerm).pipe(
+                    map(res => res?.data || []),
+                    catchError(() => of([]))
                 );
             })
         );
@@ -407,6 +421,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             fechaRevision: pieza.fechaRevision,
             observacionesRevision: pieza.observacionesRevision,
             hojaProceso: pieza.hojaProceso,
+            troquel: pieza.troquel || null,
         });
 
         this.espesoresDataSource.data = pieza.espesores || [];
@@ -472,6 +487,16 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 fechaCotizacionISO =new Intl.DateTimeFormat('es-AR').format(dateObj);
             }
 
+            const troquelVal = formValues.troquel;
+            let troquelNombre: string | null = null;
+            let idTroquel: number | null = null;
+            if (typeof troquelVal === 'string') {
+                troquelNombre = troquelVal.trim() || null;
+            } else if (troquelVal && typeof troquelVal === 'object') {
+                troquelNombre = troquelVal.nombre || null;
+                idTroquel = troquelVal.id || null;
+            }
+
             const dto: PiezaCreateDTO = {
                 codigo: formValues.codigo,
                 denominacion: formValues.nombre,
@@ -497,6 +522,8 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                 revisionIncial: revisionInicial,
                 unidadDureza: formValues.unidadDureza,
                 hojaProceso: formValues.hojaProceso,
+                troquel: troquelNombre,
+                idTroquel: idTroquel,
             };
 
             this.abmPiezaService.agregarPieza(dto).subscribe({
@@ -526,6 +553,17 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
 
     private enviarDatosEdicion(): void {
         const formValues = this.piezaForm.getRawValue();
+
+        const troquelVal = formValues.troquel;
+        let troquelNombre: string | null = null;
+        let idTroquel: number | null = null;
+        if (typeof troquelVal === 'string') {
+            troquelNombre = troquelVal.trim() || null;
+        } else if (troquelVal && typeof troquelVal === 'object') {
+            troquelNombre = troquelVal.nombre || null;
+            idTroquel = troquelVal.id || null;
+        }
+
         const dto: Partial<PiezaUpdateDTO> = {
             durezaMinima: formValues.durezaMinima,
             durezaMaxima: formValues.durezaMaxima,
@@ -534,6 +572,8 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
             observacionesPesoCrudo: formValues.observacionesPesoCrudo,
             observacionesRevision: formValues.observacionesRevision,
             hojaProceso: formValues.hojaProceso,
+            troquel: troquelNombre,
+            idTroquel: idTroquel,
         };
 
         this.abmPiezaService.updatePieza(this.piezaId, dto as PiezaUpdateDTO).subscribe({
@@ -603,6 +643,30 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     displayMolde(molde?: { id: number, nombre: string }): string { return molde?.nombre ?? ''; }
     displayCliente(cliente?: { id: number, nombre: string, codigo?: string }): string { return cliente?.nombre ?? ''; }
     displayFormula(formula?: { id: number, nombre: string }): string { return formula?.nombre ?? ''; }
+
+    displayTroquel(item: any): string {
+        if (!item) return '';
+        return typeof item === 'string' ? item : (item.nombre || '');
+    }
+
+    clearTroquelSelection(): void {
+        this.piezaForm.get('troquel')?.setValue(null);
+    }
+
+    getTroquelSearchTerm(): string {
+        const value = this.piezaForm.get('troquel')?.value;
+        if (!value) return '';
+        return (typeof value === 'string' ? value : (value?.nombre || '')).trim();
+    }
+
+    isTroquelExactMatch(troqueles: any[] | null): boolean {
+        const term = this.getTroquelSearchTerm().toLowerCase();
+        if (!term || !troqueles) return false;
+        return troqueles.some(t => {
+            const name = (typeof t === 'string' ? t : (t?.nombre || '')).toLowerCase();
+            return name === term;
+        });
+    }
 
     generarNuevaRevision(): void {
         if (!this.pieza) {

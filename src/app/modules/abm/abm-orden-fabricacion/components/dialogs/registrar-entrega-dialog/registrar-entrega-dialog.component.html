@@ -1,88 +1,193 @@
-<h2 mat-dialog-title class="font-bold text-gray-800">Registrar Entrega</h2>
+<div class="flex flex-col max-h-[88vh] w-full bg-white overflow-hidden rounded-2xl">
+    <div class="flex items-center justify-between p-5 border-b border-gray-200 bg-white">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center">
+                <mat-icon>local_shipping</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-xl font-extrabold text-gray-800 m-0">Entregas</h2>
+                <p class="text-sm font-semibold text-gray-500 m-0 mt-0.5" *ngIf="data.numeroOT">OT {{ data.numeroOT }}</p>
+            </div>
+        </div>
 
-<mat-dialog-content [formGroup]="form" class="flex flex-col gap-6 pt-2 pb-4">
-    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center mb-2">
-        <span class="text-xs font-bold text-gray-500 uppercase">Saldo Pendiente</span>
-        <span class="text-xl font-bold text-primary">{{ data.saldoPendiente }}</span>
-    </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-3 bg-blue-50/70 border border-blue-200/60 rounded-xl px-4 py-2">
+                <div class="flex flex-col text-right">
+                    <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider leading-tight">Saldo Pendiente</span>
+                    <span class="text-xl font-black text-primary leading-tight">{{ data.saldoPendiente }}</span>
+                </div>
+            </div>
 
-    <div class="flex flex-col gap-4">
-        <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Operario</mat-label>
-            <input type="text" placeholder="Buscar y seleccionar un operario..." matInput formControlName="operario"
-                [matAutocomplete]="autoOperario" #operarioTrigger="matAutocompleteTrigger"
-                (focus)="operarioTrigger.openPanel()" (click)="operarioTrigger.openPanel()" required>
-            <button *ngIf="form.get('operario').value" matSuffix mat-icon-button aria-label="Clear"
-                (click)="clearControl('operario'); $event.stopPropagation()">
-                <mat-icon class="icon-size-5">close</mat-icon>
+            <button mat-icon-button (click)="close()" class="text-gray-400 hover:text-gray-600">
+                <mat-icon>close</mat-icon>
             </button>
-            <mat-autocomplete #autoOperario="matAutocomplete" [displayWith]="displayFnOperario">
-                <mat-option *ngFor="let o of filteredOperarios$ | async" [value]="o">
-                    {{ o.nombre }}
-                </mat-option>
-            </mat-autocomplete>
-            <mat-error *ngIf="form.get('operario').hasError('required')">
-                El operario es requerido.
-            </mat-error>
-            <mat-error *ngIf="form.get('operario').hasError('mustSelectOption')">
-                Debe seleccionar un operario de la lista.
-            </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Lotes</mat-label>
-            <mat-chip-list #chipListLote aria-label="Selección de lotes">
-                <mat-chip *ngFor="let lote of lotesAgregados" (removed)="quitarLote(lote)">
-                    {{ lote.nombre }}
-                    <button matChipRemove>
-                        <mat-icon>cancel</mat-icon>
-                    </button>
-                </mat-chip>
-                <input placeholder="Buscar y añadir lote..." #loteInput [formControl]="loteInputCtrl"
-                    [matAutocomplete]="autoLote" [matChipInputFor]="chipListLote"
-                    #loteTrigger="matAutocompleteTrigger"
-                    (focus)="loteTrigger.openPanel()" (click)="loteTrigger.openPanel()">
-            </mat-chip-list>
-            <button *ngIf="lotesAgregados.length > 0" matSuffix mat-icon-button aria-label="Clear"
-                (click)="clearControl('lote'); $event.stopPropagation()">
-                <mat-icon class="icon-size-5">close</mat-icon>
-            </button>
-            <mat-autocomplete #autoLote="matAutocomplete" (optionSelected)="agregarLote($event)" [displayWith]="displayFnLote">
-                <mat-option *ngFor="let lote of filteredLotes$ | async" [value]="lote">
-                    {{ lote.nombre }}
-                </mat-option>
-            </mat-autocomplete>
-            <mat-error *ngIf="form.get('lote').hasError('required')">
-                El lote es requerido.
-            </mat-error>
-            <mat-error *ngIf="form.get('lote').hasError('mustSelectOption')">
-                Debe seleccionar al menos un lote de la lista.
-            </mat-error>
-        </mat-form-field>
-
-        <div class="grid grid-cols-2 gap-4">
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Cantidad</mat-label>
-                <input type="number" matInput formControlName="cantidad" min="1" required>
-                <mat-error *ngIf="form.get('cantidad').hasError('required')">Requerido</mat-error>
-                <mat-error *ngIf="form.get('cantidad').hasError('min')">Debe ser mayor a 0</mat-error>
-            </mat-form-field>
-
-            <!-- Fecha Datepicker -->
-            <mat-form-field appearance="outline" class="w-full">
-                <mat-label>Fecha</mat-label>
-                <input matInput [matDatepicker]="picker" formControlName="fecha" required>
-                <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                <mat-datepicker #picker></mat-datepicker>
-                <mat-error *ngIf="form.get('fecha').hasError('required')">Requerido</mat-error>
-            </mat-form-field>
         </div>
     </div>
-</mat-dialog-content>
 
-<mat-dialog-actions align="end" class="pb-6">
-    <button mat-button mat-dialog-close class="mr-2">Cancelar</button>
-    <button mat-flat-button color="accent" [disabled]="form.invalid" (click)="save()">
-        Registrar Entrega
-    </button>
-</mat-dialog-actions>
+    <div class="overflow-y-auto flex-1 bg-white p-6 flex flex-col gap-5">
+
+        <div [formGroup]="form" class="bg-slate-50/60 border border-gray-200 rounded-xl p-4 flex flex-col gap-4">
+            <span class="text-xs font-bold text-gray-600 uppercase tracking-wider">Nueva Entrega</span>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <mat-form-field appearance="outline" class="w-full bg-white rounded-lg">
+                    <mat-label>Operario</mat-label>
+                    <input type="text" placeholder="Buscar y seleccionar un operario..." matInput formControlName="operario"
+                        [matAutocomplete]="autoOperario" #operarioTrigger="matAutocompleteTrigger"
+                        (click)="operarioTrigger.openPanel()" required>
+                    <button *ngIf="form.get('operario').value" matSuffix mat-icon-button aria-label="Clear"
+                        (click)="clearControl('operario'); $event.stopPropagation()">
+                        <mat-icon class="icon-size-5">close</mat-icon>
+                    </button>
+                    <mat-autocomplete #autoOperario="matAutocomplete" [displayWith]="displayFnOperario">
+                        <mat-option *ngFor="let o of filteredOperarios$ | async" [value]="o">
+                            {{ o.nombreCompleto }}
+                        </mat-option>
+                    </mat-autocomplete>
+                    <mat-error *ngIf="form.get('operario').hasError('required')">
+                        El operario es requerido.
+                    </mat-error>
+                    <mat-error *ngIf="form.get('operario').hasError('mustSelectOption')">
+                        Debe seleccionar un operario de la lista.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full bg-white rounded-lg">
+                    <mat-label>Lotes</mat-label>
+                    <mat-chip-list #chipListLote aria-label="Selección de lotes">
+                        <mat-chip *ngFor="let lote of lotesAgregados" (removed)="quitarLote(lote)">
+                            {{ lote.nombre }}
+                            <button matChipRemove>
+                                <mat-icon>cancel</mat-icon>
+                            </button>
+                        </mat-chip>
+                        <input placeholder="Buscar y añadir lote..." #loteInput [formControl]="loteInputCtrl"
+                            [matAutocomplete]="autoLote" [matChipInputFor]="chipListLote"
+                            #loteTrigger="matAutocompleteTrigger"
+                            (click)="loteTrigger.openPanel()">
+                    </mat-chip-list>
+                    <button *ngIf="lotesAgregados.length > 0" matSuffix mat-icon-button aria-label="Clear"
+                        (click)="clearControl('lote'); $event.stopPropagation()">
+                        <mat-icon class="icon-size-5">close</mat-icon>
+                    </button>
+                    <mat-autocomplete #autoLote="matAutocomplete" (optionSelected)="agregarLote($event)" [displayWith]="displayFnLote">
+                        <mat-option *ngFor="let lote of filteredLotes$ | async" [value]="lote">
+                            {{ lote.nombre }}
+                        </mat-option>
+                    </mat-autocomplete>
+                    <mat-error *ngIf="form.get('lote').hasError('required')">
+                        El lote es requerido.
+                    </mat-error>
+                    <mat-error *ngIf="form.get('lote').hasError('mustSelectOption')">
+                        Debe seleccionar al menos un lote de la lista.
+                    </mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full bg-white rounded-lg">
+                    <mat-label>Cantidad</mat-label>
+                    <input type="number" matInput formControlName="cantidad" min="1" required>
+                    <mat-error *ngIf="form.get('cantidad').hasError('required')">Requerido</mat-error>
+                    <mat-error *ngIf="form.get('cantidad').hasError('min')">Debe ser mayor a 0</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="w-full bg-white rounded-lg">
+                    <mat-label>Fecha</mat-label>
+                    <input matInput [matDatepicker]="picker" formControlName="fecha" required>
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                    <mat-error *ngIf="form.get('fecha').hasError('required')">Requerido</mat-error>
+                </mat-form-field>
+            </div>
+
+            <div class="flex justify-end">
+                <button mat-flat-button color="accent" [disabled]="form.invalid" (click)="save()" class="font-bold">
+                    <mat-icon class="mr-1">add</mat-icon>
+                    Registrar Entrega
+                </button>
+            </div>
+        </div>
+
+        <div class="border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+            <div class="bg-slate-50 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                <span class="text-xs font-bold text-gray-700 uppercase tracking-wider">Historial de Entregas</span>
+                <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800" *ngIf="dataSource.data?.length">
+                    {{ dataSource.data.length }} {{ dataSource.data.length === 1 ? 'registro' : 'registros' }}
+                </span>
+            </div>
+
+            <div class="relative min-h-[140px] overflow-x-auto">
+                <div *ngIf="isLoadingEntregas" class="absolute inset-0 bg-white/80 z-10 flex flex-col items-center justify-center p-6">
+                    <mat-progress-spinner color="primary" mode="indeterminate" diameter="36"></mat-progress-spinner>
+                    <span class="mt-3 text-xs text-gray-500 font-medium">Cargando entregas...</span>
+                </div>
+
+                <div *ngIf="!isLoadingEntregas && (!dataSource.data || dataSource.data.length === 0)"
+                    class="flex flex-col items-center justify-center p-8 text-gray-400">
+                    <mat-icon class="text-4xl mb-1 text-gray-300">inbox</mat-icon>
+                    <p class="text-sm font-medium m-0">No hay entregas registradas para esta orden.</p>
+                </div>
+
+                <table mat-table [dataSource]="dataSource" class="w-full" *ngIf="!isLoadingEntregas && dataSource.data && dataSource.data.length > 0">
+                    <ng-container matColumnDef="fecha">
+                        <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-4 py-2.5 border-b border-gray-200 font-bold text-slate-800 text-xs">
+                            Fecha
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-4 py-2.5 border-b border-gray-100 text-sm font-medium text-gray-800">
+                            {{ element.fecha }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="cantidad">
+                        <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-4 py-2.5 border-b border-gray-200 font-bold text-slate-800 text-xs text-right">
+                            Cant.
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-4 py-2.5 border-b border-gray-100 text-sm font-extrabold text-gray-900 text-right">
+                            {{ element.cantidad | number }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="lotes">
+                        <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-4 py-2.5 border-b border-gray-200 font-bold text-slate-800 text-xs">
+                            Lotes
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-4 py-2.5 border-b border-gray-100 text-sm font-medium text-gray-700">
+                            {{ element.lotes || '-' }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="operario">
+                        <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-4 py-2.5 border-b border-gray-200 font-bold text-slate-800 text-xs">
+                            Operario
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-4 py-2.5 border-b border-gray-100 text-sm font-medium text-gray-800">
+                            {{ element.operario || '-' }}
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="acciones">
+                        <th mat-header-cell *matHeaderCellDef class="bg-slate-50 px-4 py-2.5 border-b border-gray-200 font-bold text-slate-800 text-xs text-center w-16">
+                            Acción
+                        </th>
+                        <td mat-cell *matCellDef="let element" class="px-4 py-2.5 border-b border-gray-100 text-center w-16">
+                            <button mat-icon-button color="warn" (click)="eliminarEntrega(element)" matTooltip="Eliminar entrega" class="w-8 h-8">
+                                <mat-icon svgIcon="heroicons_solid:trash" class="text-red-500 hover:text-red-700"></mat-icon>
+                            </button>
+                        </td>
+                    </ng-container>
+
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-blue-50/40 transition-colors"></tr>
+                </table>
+
+                <mat-paginator [pageSize]="5" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons
+                    class="border-t border-gray-100" *ngIf="dataSource.data && dataSource.data.length > 5">
+                </mat-paginator>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-end p-4 border-t border-gray-200 bg-white gap-3">
+        <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent px-6" mat-flat-button
+            (click)="close()">Cerrar</button>
+    </div>
+</div>

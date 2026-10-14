@@ -119,6 +119,11 @@ export class ABMPiezaService {
         );
     }
 
+    buscarTroqueles(nombre: string = ''): Observable<any> {
+        const params = new HttpParams().set('nombre', nombre || '');
+        return this.http.get<any>(`${this.API_MOLDE_URL}/troquel`, { params });
+    }
+
     getPiezaMoldes(idPieza: number): Observable<ApiResponse<IPiezaMolde[]>> {
         return this.http.get<ApiResponse<IPiezaMolde[]>>(`${this.API_PIEZA_MOLDE_URL}/${idPieza}`);
     }

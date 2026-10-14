@@ -47,6 +47,35 @@
                             </mat-error>
                         </mat-form-field>
 
+                        <mat-form-field class="form-field w-full" appearance="outline">
+                            <mat-label>Troquel</mat-label>
+                            <input type="text" placeholder="Buscar o ingresar troquel" matInput formControlName="troquel"
+                                [matAutocomplete]="autoTroquel" maxlength="20" #troquelInput="matAutocompleteTrigger">
+                            <button mat-icon-button matSuffix *ngIf="piezaForm.get('troquel').value && mode !== 'view'"
+                                (click)="clearTroquelSelection(); $event.stopPropagation()">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                            <button mat-icon-button matSuffix *ngIf="!piezaForm.get('troquel').value && mode !== 'view'"
+                                (click)="troquelInput.openPanel()">
+                                <mat-icon>arrow_drop_down</mat-icon>
+                            </button>
+                            <mat-autocomplete #autoTroquel="matAutocomplete" [displayWith]="displayTroquel">
+                                <mat-option *ngIf="getTroquelSearchTerm() && !isTroquelExactMatch(filteredTroqueles$ | async)"
+                                    [value]="getTroquelSearchTerm()"
+                                    class="text-primary-600 font-bold border-b bg-gray-50">
+                                    <mat-icon class="text-primary-600 icon-size-5 mr-2 align-middle"
+                                        svgIcon="heroicons_solid:plus-circle"></mat-icon>
+                                    Usar "{{ getTroquelSearchTerm() }}"
+                                </mat-option>
+                                <mat-option *ngFor="let t of filteredTroqueles$ | async" [value]="t">
+                                    {{ t.nombre || t }}
+                                </mat-option>
+                            </mat-autocomplete>
+                            <mat-error class="mb-1" *ngIf="piezaForm.get('troquel').hasError('maxlength')">
+                                Máximo 10 caracteres
+                            </mat-error>
+                        </mat-form-field>
+
                         <div *ngIf="mode === 'create'" class="flex flex-col gap-2">
                             <mat-form-field appearance="outline" class="form-field w-full">
                                 <mat-label>Molde</mat-label>

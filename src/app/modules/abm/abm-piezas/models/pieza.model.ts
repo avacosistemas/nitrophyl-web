@@ -58,6 +58,8 @@ export interface PiezaProceso {
     requiereInsumos?: boolean;
     cantidadInsumos?: number;
     formaDimension?: 'RECTANGULAR' | 'CIRCULAR' | null;
+    troquel?: string | null;
+    idTroquel?: number | null;
 }
 
 export interface PiezaCreateDTO {
@@ -85,6 +87,8 @@ export interface PiezaCreateDTO {
     revisionIncial: number;
     unidadDureza: string;
     hojaProceso?: string;
+    troquel?: string | null;
+    idTroquel?: number | null;
 }
 
 export interface PiezaClonarDTO {
@@ -125,6 +129,13 @@ export interface PiezaUpdateDTO {
     observacionesPesoCrudo: string | null;
     observacionesRevision: string | null;
     hojaProceso?: string;
+    troquel?: string | null;
+    idTroquel?: number | null;
+}
+
+export interface Troquel {
+    id?: number;
+    nombre: string;
 }
 
 export interface PiezaCliente {

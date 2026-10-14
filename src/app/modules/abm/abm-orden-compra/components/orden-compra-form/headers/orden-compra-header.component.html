@@ -18,7 +18,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Comprobante</mat-label>
-                <input matInput formControlName="nroComprobante">
+                <input matInput formControlName="nroComprobante" placeholder="Ej: 54134" (blur)="comprobanteBlur.emit()">
+                <mat-progress-spinner *ngIf="isValidatingComprobante" matSuffix diameter="18" mode="indeterminate" class="mr-2"></mat-progress-spinner>
+                <mat-icon *ngIf="!isValidatingComprobante && isComprobanteValidado && form.get('nroComprobante').valid && form.get('nroComprobante').value" matSuffix class="text-green-500 mr-2 icon-size-5">check_circle</mat-icon>
+                <mat-icon *ngIf="!isValidatingComprobante && form.get('nroComprobante').hasError('comprobanteEnUso')" matSuffix class="text-red-500 mr-2 icon-size-5">cancel</mat-icon>
+                <mat-error *ngIf="form.get('nroComprobante').hasError('required')">
+                    El número de comprobante es requerido
+                </mat-error>
+                <mat-error *ngIf="form.get('nroComprobante').hasError('comprobanteEnUso')">
+                    El número de comprobante ya está en uso
+                </mat-error>
+                <mat-hint *ngIf="!form.get('cliente')?.value?.id && mode === 'create'" class="text-amber-600 text-xs">
+                    Seleccione un cliente para habilitar este campo
+                </mat-hint>
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="w-full">

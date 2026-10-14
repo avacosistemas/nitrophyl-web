@@ -75,32 +75,51 @@
                             </mat-form-field>
                         </div>
 
-                        <div class="row flex gap-5">
-                            <section>
-                                <mat-checkbox formControlName="mostrarParametros">
-                                    Mostrar parámetros
-                                </mat-checkbox>
-                            </section>
-                            <section>
-                                <mat-checkbox formControlName="mostrarObservaciones">
-                                    Mostrar observaciones
-                                </mat-checkbox>
-                            </section>
-                            <section>
-                                <mat-checkbox formControlName="mostrarResultados">
-                                    Mostrar resultados
-                                </mat-checkbox>
-                            </section>
-                            <section>
-                                <mat-checkbox formControlName="mostrarCondiciones">
-                                    Mostrar condiciones
-                                </mat-checkbox>
-                            </section>
-                            <section>
-                                <mat-checkbox formControlName="enviarGrafico">
-                                    Enviar Grafico
-                                </mat-checkbox>
-                            </section>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Mostrar Parámetros</mat-label>
+                                <mat-select formControlName="mostrarParametros">
+                                    <mat-option [value]="null">Todos</mat-option>
+                                    <mat-option [value]="true">Sí</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Mostrar Observaciones</mat-label>
+                                <mat-select formControlName="mostrarObservaciones">
+                                    <mat-option [value]="null">Todos</mat-option>
+                                    <mat-option [value]="true">Sí</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Mostrar Resultados</mat-label>
+                                <mat-select formControlName="mostrarResultados">
+                                    <mat-option [value]="null">Todos</mat-option>
+                                    <mat-option [value]="true">Sí</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Mostrar Condiciones</mat-label>
+                                <mat-select formControlName="mostrarCondiciones">
+                                    <mat-option [value]="null">Todos</mat-option>
+                                    <mat-option [value]="true">Sí</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Enviar Gráfico</mat-label>
+                                <mat-select formControlName="enviarGrafico">
+                                    <mat-option [value]="null">Todos</mat-option>
+                                    <mat-option [value]="true">Sí</mat-option>
+                                    <mat-option [value]="false">No</mat-option>
+                                </mat-select>
+                            </mat-form-field>
                         </div>
                         <div class="row flex justify-end">
                             <button mat-flat-button=""

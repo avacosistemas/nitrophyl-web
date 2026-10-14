@@ -19,6 +19,8 @@ export class ABMPiezaEsquemaModalComponent implements OnInit {
   safeImageUrl: SafeUrl | null = null;
   isEditMode: boolean = false;
   isLoading: boolean = false;
+  isImageRemoved: boolean = false;
+  isDragging: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -146,6 +148,8 @@ export class ABMPiezaEsquemaModalComponent implements OnInit {
     if (this.selectedFile) {
       reader.onload = () => onFileRead((reader.result as string).split(',')[1]);
       reader.readAsDataURL(this.selectedFile);
+    } else if (this.isImageRemoved) {
+      onFileRead(null);
     } else {
       const existingImage = this.data.esquema?.imagen || null;
       onFileRead(existingImage);
@@ -155,18 +159,52 @@ export class ABMPiezaEsquemaModalComponent implements OnInit {
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
-      this.selectedFile = file;
-      this.safeImageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
-      this.cdRef.detectChanges();
+      this.processFile(file);
     }
   }
 
-  removeSelectedFile(): void {
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+
+    if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+      const file = event.dataTransfer.files[0];
+      if (file.type.startsWith('image/')) {
+        this.processFile(file);
+      } else {
+        this.notificationService.showError('Solo se permiten archivos de imagen.');
+      }
+    }
+  }
+
+  private processFile(file: File): void {
+    this.selectedFile = file;
+    this.isImageRemoved = false;
+    this.safeImageUrl = this.sanitizer.bypassSecurityTrustUrl(URL.createObjectURL(file));
+    this.cdRef.detectChanges();
+  }
+
+  removeSelectedFile(event?: MouseEvent): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
     this.selectedFile = null;
     this.safeImageUrl = null;
-    if (this.isEditMode && this.data.esquema.imagen) {
-      this.safeImageUrl = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${this.data.esquema.imagen}`);
-    }
+    this.isImageRemoved = true;
     const input = document.getElementById('file-upload') as HTMLInputElement;
     if (input) input.value = '';
     this.cdRef.detectChanges();

@@ -19,6 +19,7 @@ export class OrdenCompraHeaderComponent implements OnInit, OnDestroy {
     @Input() isInitialLoading: boolean = false;
     
     @Output() fileSelectedEvent = new EventEmitter<File>();
+    @Output() comprobanteBlur = new EventEmitter<void>();
 
     clientes: any[] = [];
     transportes: any[] = [];
@@ -26,6 +27,8 @@ export class OrdenCompraHeaderComponent implements OnInit, OnDestroy {
     mediosEnvioDisponibles: string[] = [];
     filteredClientes$: Observable<any[]>;
     selectedFile: File | null = null;
+    @Input() isValidatingComprobante: boolean = false;
+    @Input() isComprobanteValidado: boolean = false;
 
     private _unsubscribeAll: Subject<void> = new Subject<void>();
 

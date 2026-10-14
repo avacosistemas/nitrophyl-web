@@ -90,7 +90,7 @@ export class AbmOrdenFabricacionService {
         return this.http.post<any>(`${this.apiUrl}/registrarProduccion`, payload);
     }
 
-    registrarEntrega(id: number, payload: { cantidad: number, fecha: string, idLote: number | number[], idUsuario: number }): Observable<any> {
+    registrarEntrega(id: number, payload: any): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/registrarEntrega/${id}`, payload);
     }
 
@@ -102,10 +102,6 @@ export class AbmOrdenFabricacionService {
         return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/descargar/${id}`, id.toString());
     }
 
-    // getOrdenFabricacionOTMock(): Observable<any> {
-    //     return this.http.get<any>('assets/mock-orden-trabajo-ot.json');
-    // }
-
     generarResumen(ids: number[]): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/ordenTrabajo/resumen`, { ids });
     }
@@ -113,5 +109,23 @@ export class AbmOrdenFabricacionService {
     getOrdenesCompraPorCliente(idCliente: number): Observable<any> {
         let params = new HttpParams().set('idCliente', idCliente.toString());
         return this.http.get<any>(`${environment.server}ordenCompra`, { params });
+    }
+
+    getEntregas(idOrdenFabricacion: number): Observable<any> {
+        let params = new HttpParams().set('idOrdenFabricacion', idOrdenFabricacion.toString());
+        return this.http.get<any>(`${this.apiUrl}/entregas/listado`, { params });
+    }
+
+    getEntregasGrilla(params: any): Observable<any> {
+        const httpParams = this.tableDataService.buildHttpParams(params);
+        return this.http.get<any>(`${this.apiUrl}/entregas/grilla`, { params: httpParams });
+    }
+
+    deleteEntrega(id: number): Observable<any> {
+        return this.http.delete<any>(`${this.apiUrl}/${id}`);
+    }
+
+    getOperarios(): Observable<any> {
+        return this.http.get<any>(`${environment.server}empleado/operarios`);
     }
 }

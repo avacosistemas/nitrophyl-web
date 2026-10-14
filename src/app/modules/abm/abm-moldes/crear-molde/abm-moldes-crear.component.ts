@@ -23,7 +23,6 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   moldeForm: FormGroup;
   public clients$: any = [];
   public tiposPieza$: { id: number; nombre: string }[] = [];
-  public filteredTroqueles$: Observable<any[]> = of([]);
 
   private requireAtLeastOneCheckbox(): ValidatorFn {
     return (formArray: AbstractControl): ValidationErrors | null => {
@@ -50,7 +49,6 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       cantidadBocas: [null, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
       propio: [true, Validators.required],
       client: [{ value: null }],
-      troquel: [null, [Validators.maxLength(20)]],
       observations: [null],
       location: [null],
       piezaTipos: this._formBuilder.array([], this.requireAtLeastOneCheckbox()),
@@ -108,41 +106,6 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       error: (err) => console.error(err)
     });
 
-    this.filteredTroqueles$ = (this.moldeForm.get('troquel')?.valueChanges || of('')).pipe(
-      startWith(''),
-      debounceTime(300),
-      switchMap(value => {
-        const searchTerm = typeof value === 'string' ? value : (value?.nombre || '');
-        return this.moldesService.buscarTroqueles(searchTerm).pipe(
-          map(res => res?.data || []),
-          catchError(() => of([]))
-        );
-      })
-    );
-  }
-
-  displayTroquel(item: any): string {
-    if (!item) return '';
-    return typeof item === 'string' ? item : (item.nombre || '');
-  }
-
-  clearTroquelSelection(): void {
-    this.moldeForm.get('troquel')?.setValue(null);
-  }
-
-  getTroquelSearchTerm(): string {
-    const value = this.moldeForm.get('troquel')?.value;
-    if (!value) return '';
-    return (typeof value === 'string' ? value : (value?.nombre || '')).trim();
-  }
-
-  isTroquelExactMatch(troqueles: any[] | null): boolean {
-    const term = this.getTroquelSearchTerm().toLowerCase();
-    if (!term || !troqueles) return false;
-    return troqueles.some(t => {
-      const name = (typeof t === 'string' ? t : (t?.nombre || '')).toLowerCase();
-      return name === term;
-    });
   }
 
   private addTiposPiezaCheckboxes(): void {
@@ -249,16 +212,6 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       diametro = this.moldeForm.get('diametro')?.value;
     }
 
-    const troquelVal = this.moldeForm.get('troquel')?.value;
-    let troquelNombre: string | null = null;
-    let idTroquel: number | null = null;
-    if (typeof troquelVal === 'string') {
-      troquelNombre = troquelVal.trim() || null;
-    } else if (troquelVal && typeof troquelVal === 'object') {
-      troquelNombre = troquelVal.nombre || null;
-      idTroquel = troquelVal.id || null;
-    }
-
     let model: Molde = {
       id: 0,
       codigo: this.moldeForm.get('code')?.value,
@@ -267,8 +220,6 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       observaciones: this.moldeForm.get('observations')?.value,
       ubicacion: this.moldeForm.get('location')?.value,
       cantidadBocas: this.moldeForm.get('cantidadBocas')?.value,
-      troquel: troquelNombre,
-      idTroquel: idTroquel,
       piezaTipos: selectedTiposPieza,
 
       propio: isPropio,

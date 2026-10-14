@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { AbmOrdenFabricacionService } from './abm-orden-fabricacion.service';
 import { OrdenFabricacionListComponent } from './components/orden-fabricacion-list/orden-fabricacion-list.component';
 import { OrdenFabricacionFormComponent } from './components/orden-fabricacion-form/orden-fabricacion-form.component';
+import { EntregasListComponent } from './components/entregas-list/entregas-list.component';
 
 @Component({
     selector: 'abm-orden-fabricacion',
@@ -69,6 +70,10 @@ export class ABMOrdenFabricacionComponent implements AfterContentChecked {
         } else if (this.currentComponent instanceof OrdenFabricacionFormComponent) {
             this.title = 'Generar Orden';
             this.breadcrumbs = [...baseBreadcrumb, { title: 'Nueva', route: [], condition: true }];
+        } else if (this.currentComponent instanceof EntregasListComponent) {
+            this.title = 'Entregas';
+            this.subtitle = 'Listado general de entregas';
+            this.breadcrumbs = [...baseBreadcrumb, { title: 'Entregas', route: [], condition: true }];
         }
     }
 }
