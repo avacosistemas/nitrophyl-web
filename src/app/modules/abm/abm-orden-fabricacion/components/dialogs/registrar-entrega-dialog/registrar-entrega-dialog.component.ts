@@ -73,6 +73,7 @@ export class RegistrarEntregaDialogComponent implements OnInit, OnDestroy {
             numeroOT?: string | number;
             saldoPendiente: number;
             idFormula: number;
+            estado?: string;
         }
     ) {
         this.form = this.fb.group({
@@ -81,6 +82,12 @@ export class RegistrarEntregaDialogComponent implements OnInit, OnDestroy {
             lote: [null, Validators.required],
             operario: [null, Validators.required]
         });
+    }
+
+    hasChanges: boolean = false;
+
+    get isFinalizada(): boolean {
+        return this.data?.estado === 'FINALIZADA';
     }
 
     ngOnInit() {
@@ -158,6 +165,16 @@ export class RegistrarEntregaDialogComponent implements OnInit, OnDestroy {
                 this._service.deleteEntrega(entrega.id).subscribe({
                     next: () => {
                         this._notificationService.showSuccess('Entrega eliminada correctamente');
+                        this.hasChanges = true;
+
+                        this.data.saldoPendiente = (this.data.saldoPendiente || 0) + Number(entrega.cantidad || 0);
+                        if (this.data.estado === 'FINALIZADA') {
+                            this.data.estado = 'EN_PROCESO';
+                        }
+                        this.form.patchValue({
+                            cantidad: this.data.saldoPendiente
+                        });
+
                         this.loadEntregas();
                     },
                     error: (err) => {
@@ -273,6 +290,6 @@ export class RegistrarEntregaDialogComponent implements OnInit, OnDestroy {
     }
 
     close(): void {
-        this.dialogRef.close();
+        this.dialogRef.close(this.hasChanges ? { refresh: true } : null);
     }
 }

@@ -455,23 +455,28 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                 idOrdenFabricacion: el.id,
                 numeroOT: el.formattedNumero || el.numero,
                 saldoPendiente: el.saldo,
-                idFormula: pieza?.idFormula || pieza?.id
+                idFormula: pieza?.idFormula || pieza?.id,
+                estado: el.estado
             }
         });
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                this.isLoading = true;
-                this._ordenFabricacionService.registrarEntrega(el.id, result).subscribe({
-                    next: () => {
-                        this._notificationService.showSuccess('Entrega registrada correctamente');
-                        this.search();
-                    },
-                    error: () => {
-                        this.isLoading = false;
-                        this._notificationService.showError('Error al registrar la entrega');
-                    }
-                });
+                if (result.refresh) {
+                    this.search();
+                } else if (result.cantidad) {
+                    this.isLoading = true;
+                    this._ordenFabricacionService.registrarEntrega(el.id, result).subscribe({
+                        next: () => {
+                            this._notificationService.showSuccess('Entrega registrada correctamente');
+                            this.search();
+                        },
+                        error: () => {
+                            this.isLoading = false;
+                            this._notificationService.showError('Error al registrar la entrega');
+                        }
+                    });
+                }
             }
         });
     }
