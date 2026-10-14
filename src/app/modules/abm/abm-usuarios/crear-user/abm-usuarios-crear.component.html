@@ -37,17 +37,17 @@
             </div>
         </mat-tab>
         <mat-tab label="Perfiles Asociados">
-            <div class="grid border-2 bg-white border-gray-200 rounded-2xl p-8">
+            <div class="flex flex-col border-2 bg-white border-gray-200 rounded-2xl p-8 h-[calc(100vh-190px)] overflow-hidden">
                 <div>
                     <h1 class="text-2xl font-semibold mb-2">Perfiles Asociados</h1>
                 </div>
-                <div class="grid grid-cols-5 gap-4 max-h-96">
-                    <div class="col-span-2 flex flex-col gap-2">
+                <div class="grid grid-cols-5 gap-4 min-h-0 h-full content-start">
+                    <div class="col-span-2 flex flex-col min-h-0 h-full">
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Perfiles Disponibles</mat-label>
                             <input matInput (keyup)="onKeyDisponibles($event.target.value)" [(ngModel)]="inputDisponibles">
                         </mat-form-field>
-                        <div class="lista-permisos w-full" *ngIf="perfilesDisponibles.length > 0" [class.mat-elevation-z8]="true">
+                        <div class="lista-permisos w-full flex-1 min-h-0 overflow-auto" *ngIf="perfilesDisponibles.length > 0" [class.mat-elevation-z8]="true">
                             <table mat-table [dataSource]="searchPerfiles" class="w-full">
                                 <ng-container matColumnDef="select">
                                     <th mat-header-cell *matHeaderCellDef>
@@ -78,12 +78,14 @@
                         <button mat-raised-button (click)="add()" [disabled]="selection.selected.length === 0" class="justify-self-center">Agregar</button>
                         <button mat-raised-button (click)="remove()" [disabled]="selectionIncluidos.selected.length === 0" class="justify-self-center">Quitar</button>
                     </div>
-                    <div class="col-span-2 flex flex-col gap-2">
+                    <div class="col-span-2 flex flex-col min-h-0 h-full">
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Perfiles Incluidos</mat-label>
                             <input matInput (keyup)="onKeyIncluidos($event.target.value)" [(ngModel)]="inputIncluidos">
                         </mat-form-field>
-                        <div class="lista-permisos w-full" *ngIf="perfilesIncluidos.length > 0" [class.mat-elevation-z8]="true">
+                        <div class="lista-permisos w-full flex-1 min-h-0 overflow-auto"
+                            *ngIf="perfilesIncluidos.length > 0"
+                            [class.mat-elevation-z8]="true">
                             <table mat-table [dataSource]="searchPerfilesIncluidos" class="w-full">
                                 <ng-container matColumnDef="select">
                                     <th mat-header-cell *matHeaderCellDef>

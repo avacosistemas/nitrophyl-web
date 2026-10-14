@@ -7,7 +7,7 @@ export interface UserProfileRef {
 }
 
 export interface User {
-    id: number;
+    id: number | null;
     username: string;
     name: string;
     lastname: string;

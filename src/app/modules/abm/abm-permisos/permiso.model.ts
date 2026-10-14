@@ -1,5 +1,5 @@
 export interface Permiso {
-    id: number;
+    id: number | null;
     code: string;
     description: string;
     enabled: boolean;
