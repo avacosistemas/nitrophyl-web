@@ -34,21 +34,21 @@
         </mat-expansion-panel>
       </mat-accordion>
 
-      <table mat-table [dataSource]="dataSource" multiTemplateDataRows class="border-2 rounded-2xl w-full">
+      <table mat-table [dataSource]="dataSource" matSort multiTemplateDataRows class="border-2 rounded-2xl w-full">
         <ng-container matColumnDef="razonSocial">
-          <th mat-header-cell *matHeaderCellDef>Razón Social</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Razón Social</th>
           <td mat-cell *matCellDef="let element">{{ element.razonSocial }}</td>
         </ng-container>
         <ng-container matColumnDef="nombre">
-          <th mat-header-cell *matHeaderCellDef>Nombre</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Nombre</th>
           <td mat-cell *matCellDef="let element">{{ element.nombre }}</td>
         </ng-container>
         <ng-container matColumnDef="mail">
-          <th mat-header-cell *matHeaderCellDef>Mail</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Mail</th>
           <td mat-cell *matCellDef="let element">{{ element.email }}</td>
         </ng-container>
         <ng-container matColumnDef="cuit">
-          <th mat-header-cell *matHeaderCellDef>CUIT</th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>CUIT</th>
           <td mat-cell *matCellDef="let element">{{ element.cuit }}</td>
         </ng-container>
         <ng-container matColumnDef="expand">

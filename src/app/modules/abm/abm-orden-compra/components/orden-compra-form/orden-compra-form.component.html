@@ -10,7 +10,10 @@
             [form]="form" 
             [mode]="mode" 
             [isInitialLoading]="isInitialLoading"
-            (fileSelectedEvent)="onFileSelected($event)">
+            [isValidatingComprobante]="isValidatingComprobante"
+            [isComprobanteValidado]="isComprobanteValidado"
+            (fileSelectedEvent)="onFileSelected($event)"
+            (comprobanteBlur)="onComprobanteBlur()">
         </app-orden-compra-header>
     </div>
 

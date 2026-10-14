@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, ViewEncapsulation, ChangeDetectorRef, Vie
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AbmOrdenCompraService } from '../../abm-orden-compra.service';
 import { NotificationService } from 'app/shared/services/notification.service';
@@ -36,6 +36,10 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     isInitialLoading: boolean = false;
 
     piezasAgregadas: any[] = [];
+    isValidatingComprobante: boolean = false;
+    isComprobanteValidado: boolean = false;
+    originalComprobante: string = '';
+    originalIdCliente: number | null = null;
     private _unsubscribeAll: Subject<void> = new Subject<void>();
 
     constructor(
@@ -51,7 +55,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
         this.form = this._fb.group({
             cliente: [null, Validators.required],
             fecha: [new Date(), Validators.required],
-            nroComprobante: ['', Validators.required],
+            nroComprobante: [{ value: '', disabled: true }, Validators.required],
             tipoDespacho: ['RETIRO_CLIENTE', Validators.required],
             idEmpresaTransporte: [null],
             idDomicilioEnvio: [null],
@@ -76,6 +80,8 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        this.setupComprobanteValidation();
+
         this._service.actionTriggered$.pipe(takeUntil(this._unsubscribeAll)).subscribe(action => {
             if (action === 'confirmHeader') this.onConfirmHeader();
             if (action === 'editHeader') { this.step = 'header'; this.updateHeaderUI(); }
@@ -94,7 +100,98 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 this.loadOrderData();
             } else {
                 this.mode = 'create';
+                this.form.get('nroComprobante')?.disable();
                 this.updateHeaderUI();
+            }
+        });
+    }
+
+    private setupComprobanteValidation(): void {
+        this.form.get('cliente')?.valueChanges.pipe(takeUntil(this._unsubscribeAll)).subscribe(cliente => {
+            const nroControl = this.form.get('nroComprobante');
+            if (this.mode === 'view') {
+                nroControl?.disable();
+                return;
+            }
+
+            if (cliente && typeof cliente === 'object' && cliente.id) {
+                nroControl?.enable();
+                const currentComp = nroControl?.value;
+                if (currentComp && typeof currentComp === 'string' && currentComp.trim() !== '') {
+                    this.validarComprobanteActual();
+                }
+            } else {
+                if (this.mode === 'create') {
+                    nroControl?.disable();
+                }
+            }
+        });
+
+        this.form.get('nroComprobante')?.valueChanges.pipe(
+            takeUntil(this._unsubscribeAll)
+        ).subscribe(val => {
+            if (this.mode === 'view' || this.isInitialLoading) return;
+
+            this.isComprobanteValidado = false;
+            const nroControl = this.form.get('nroComprobante');
+            if (nroControl?.hasError('comprobanteEnUso')) {
+                const currentErrors = { ...nroControl.errors };
+                delete currentErrors['comprobanteEnUso'];
+                nroControl.setErrors(Object.keys(currentErrors).length > 0 ? currentErrors : null);
+            }
+        });
+    }
+
+    onComprobanteBlur(): void {
+        if (this.mode === 'view' || this.isInitialLoading) return;
+        this.validarComprobanteActual();
+    }
+
+    private validarComprobanteActual(): void {
+        const cliente = this.form.get('cliente')?.value;
+        const nroControl = this.form.get('nroComprobante');
+        const val = nroControl?.value;
+        const comprobante = typeof val === 'string' ? val.trim() : '';
+
+        if (!cliente?.id || !comprobante) {
+            this.isComprobanteValidado = false;
+            return;
+        }
+
+        if (this.mode === 'edit' && comprobante === this.originalComprobante && cliente.id === this.originalIdCliente) {
+            if (nroControl?.hasError('comprobanteEnUso')) {
+                const currentErrors = { ...nroControl.errors };
+                delete currentErrors['comprobanteEnUso'];
+                nroControl.setErrors(Object.keys(currentErrors).length > 0 ? currentErrors : null);
+            }
+            this.isComprobanteValidado = true;
+            return;
+        }
+
+        this.isValidatingComprobante = true;
+        this.isComprobanteValidado = false;
+        this._service.validarComprobante(cliente.id, comprobante).subscribe({
+            next: (esValido: any) => {
+                this.isValidatingComprobante = false;
+                const valido = typeof esValido === 'boolean' ? esValido : (esValido?.data ?? esValido);
+                if (!valido) {
+                    this.isComprobanteValidado = false;
+                    nroControl?.setErrors({ ...(nroControl.errors || {}), comprobanteEnUso: true });
+                } else {
+                    this.isComprobanteValidado = true;
+                    if (nroControl?.hasError('comprobanteEnUso')) {
+                        const currentErrors = { ...nroControl.errors };
+                        delete currentErrors['comprobanteEnUso'];
+                        nroControl.setErrors(Object.keys(currentErrors).length > 0 ? currentErrors : null);
+                    }
+                }
+                this._cdr.detectChanges();
+            },
+            error: (err) => {
+                this.isValidatingComprobante = false;
+                this.isComprobanteValidado = false;
+                console.error('Error al validar comprobante:', err);
+                this._cdr.detectChanges();
             }
         });
     }
@@ -105,6 +202,9 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
             next: (res) => {
                 const data = res.data;
                 this.orderEstado = data.estado;
+                this.originalComprobante = data.comprobante || '';
+                this.originalIdCliente = data.idCliente || null;
+
                 this.form.patchValue({
                     cliente: { id: data.idCliente, nombre: data.cliente },
                     fecha: moment(data.fecha, 'YYYY-MM-DD').toDate(),
@@ -149,6 +249,7 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
                 if (this.mode === 'view') { this.form.disable(); this.piezaForm.disable(); }
                 else { this.form.enable(); this.piezaForm.enable(); }
 
+                this.isComprobanteValidado = true;
                 this.step = 'header';
                 this.isInitialLoading = false;
                 this.updateHeaderUI();
@@ -163,7 +264,17 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     }
 
     onConfirmHeader(): void {
-        if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+        if (this.isValidatingComprobante) {
+            this._notification.showInfo("Validando número de comprobante...");
+            return;
+        }
+        if (this.form.invalid) { 
+            this.form.markAllAsTouched(); 
+            if (this.form.get('nroComprobante')?.hasError('comprobanteEnUso')) {
+                this._notification.showError("El número de comprobante ya está en uso");
+            }
+            return; 
+        }
         if (!this.selectedFile && this.mode === 'create') { this._notification.showError("Debe subir un archivo (PDF o Imagen)"); return; }
 
         if (this.selectedFile) {
@@ -185,7 +296,19 @@ export class OrdenCompraFormComponent implements OnInit, OnDestroy {
     }
 
     onSaveAll(generarOF: boolean = false): void {
-        if (this.form.invalid) { this.form.markAllAsTouched(); this._notification.showError("Complete los campos obligatorios de la cabecera"); return; }
+        if (this.isValidatingComprobante) {
+            this._notification.showInfo("Validando número de comprobante...");
+            return;
+        }
+        if (this.form.invalid) { 
+            this.form.markAllAsTouched(); 
+            if (this.form.get('nroComprobante')?.hasError('comprobanteEnUso')) {
+                this._notification.showError("El número de comprobante ya está en uso");
+            } else {
+                this._notification.showError("Complete los campos obligatorios de la cabecera");
+            }
+            return; 
+        }
         if (this.piezasAgregadas.length === 0) { this._notification.showError("Agregue ítems a la orden"); return; }
 
         if (generarOF) {

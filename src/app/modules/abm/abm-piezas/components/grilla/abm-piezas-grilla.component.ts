@@ -95,6 +95,12 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
 
     this.dataSource.sort = this.sort;
 
+    this.sort.sortChange.pipe(takeUntil(this._destroying$)).subscribe(() => {
+      if (this.paginator) {
+        this.paginator.pageIndex = 0;
+      }
+    });
+
     merge(this.sort.sortChange, this.paginator.page)
       .pipe(
         startWith({}),
@@ -121,10 +127,6 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       .subscribe(data => {
         this.dataSource.data = data;
       });
-
-    setTimeout(() => {
-      this.paginator.page.emit();
-    });
   }
 
   ngOnDestroy(): void {

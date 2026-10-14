@@ -13,28 +13,53 @@
                             requerido</mat-error>
                     </mat-form-field>
 
-                    <label for="file-upload" class="cursor-pointer">
-                        <div
-                            class="flex flex-col items-center justify-center relative p-4 py-8 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50">
-                            <div class="flex flex-col items-center justify-center">
-                                <mat-icon class="text-gray-500" svgIcon="heroicons_solid:upload" *ngIf="!safeImageUrl"
-                                    style="font-size: 2rem;"></mat-icon>
-                                <img *ngIf="safeImageUrl" [src]="safeImageUrl"
-                                    style="max-width: 100px; max-height: 100px;">
-                                <span class="text-sm text-gray-600 mt-2" *ngIf="!safeImageUrl">Seleccionar
-                                    Archivo</span>
-                                <span class="text-sm text-green-500 mt-2" *ngIf="selectedFile">{{ selectedFile?.name
-                                    }}</span>
-                            </div>
-                            <input id="file-upload" type="file" class="sr-only" accept="image/*"
-                                (change)="onFileSelected($event)">
+                    <div
+                        class="flex flex-col items-center justify-center relative p-6 border-2 border-dashed rounded-xl bg-gray-50 hover:bg-gray-100/70 transition-all cursor-pointer group"
+                        [ngClass]="{
+                            'border-primary bg-blue-50/50 scale-[1.01]': isDragging,
+                            'border-gray-300 hover:border-primary': !isDragging
+                        }"
+                        (click)="fileInput.click()"
+                        (dragover)="onDragOver($event)"
+                        (dragenter)="onDragOver($event)"
+                        (dragleave)="onDragLeave($event)"
+                        (drop)="onDrop($event)">
+                        <input #fileInput id="file-upload" type="file" class="sr-only" accept="image/*"
+                            (change)="onFileSelected($event)">
 
-                            <button *ngIf="safeImageUrl" type="button" mat-icon-button class="absolute top-1 right-2"
-                                (click)="removeSelectedFile()">
-                                <mat-icon>cancel</mat-icon>
-                            </button>
+                        <div *ngIf="!safeImageUrl" class="flex flex-col items-center justify-center text-center py-4">
+                            <div class="w-14 h-14 rounded-full bg-blue-50 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                                <mat-icon class="text-primary text-3xl h-8 w-8 leading-none" svgIcon="heroicons_solid:upload"></mat-icon>
+                            </div>
+                            <span class="text-base font-medium text-gray-700">Seleccionar imagen</span>
+                            <span class="text-sm text-gray-500 mt-1">Haz clic o arrastra un archivo aquí (PNG, JPG)</span>
                         </div>
-                    </label>
+
+                        <div *ngIf="safeImageUrl" class="flex flex-col items-center justify-center text-center w-full">
+                            <div class="relative bg-white p-2 rounded-lg border border-gray-200 shadow-sm mb-3">
+                                <img [src]="safeImageUrl" class="object-contain rounded"
+                                    style="max-width: 140px; max-height: 120px;">
+                            </div>
+
+                            <span class="text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200 mb-2 max-w-xs truncate" *ngIf="selectedFile">
+                                {{ selectedFile?.name }}
+                            </span>
+
+                            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-gray-300 text-gray-700 shadow-xs group-hover:border-primary group-hover:text-primary transition-colors">
+                                <mat-icon class="text-base h-4 w-4 leading-none" svgIcon="heroicons_solid:upload"></mat-icon>
+                                <span class="text-xs sm:text-sm font-medium">
+                                    Haz clic para cambiar la imagen
+                                </span>
+                            </div>
+                            <span class="text-sm text-gray-400 mt-1">o arrastra una nueva imagen aquí</span>
+                        </div>
+
+                        <button *ngIf="safeImageUrl" type="button" mat-icon-button
+                            class="absolute top-2 right-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                            (click)="removeSelectedFile($event)" matTooltip="Eliminar imagen">
+                            <mat-icon svgIcon="heroicons_solid:trash"></mat-icon>
+                        </button>
+                    </div>
                 </div>
             </mat-tab>
 

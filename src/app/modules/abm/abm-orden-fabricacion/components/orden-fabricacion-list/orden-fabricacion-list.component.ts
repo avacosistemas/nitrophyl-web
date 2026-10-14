@@ -42,8 +42,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     isLoading = true;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
     displayedColumns: string[] = [
-        'select', 'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
-        'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'entregadas', 'saldo', 'acciones'
+        'select', 'comprobanteOC', 'ocFecha', 'cliente', 'pieza', 'formula',
+        'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'ocCantidad', 'entregadas', 'saldo', 'acciones'
     ];
     totalReg: number = 0;
     selection = new SelectionModel<IOrdenFabricacion>(true, []);
@@ -82,7 +82,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             estado: [''],
             pieza: [null],
             anioOF: [''],
-            numeroOF: ['']
+            numeroOF: [''],
+            comprobante: ['']
         });
     }
 
@@ -163,6 +164,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                         fechaEstimada: orden.fechaEntregaSolicitada ? moment(orden.fechaEntregaSolicitada, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
                         ocNro: orden.idOrdenCompra ? String(orden.idOrdenCompra) : '-',
                         ocFecha: orden.fechaOC ? moment(orden.fechaOC, 'DD/MM/YYYY').format('YYYY-MM-DD') : null,
+                        comprobante: orden.comprobante || '-',
+                        comprobanteOC: orden.comprobante || '-',
                         piezas: piezas,
                         piezaNombre: orden.piezaCodigo || '-',
                         piezaFormula: orden.formulaNombre || 'NK',
@@ -197,6 +200,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             activeSort = 'fecha_OF';
         } else if (activeSort === 'fechaEntrega') {
             activeSort = 'fecha_entrega';
+        } else if (activeSort === 'comprobanteOC') {
+            activeSort = 'comprobante';
         }
 
         const pageSize = this.paginator?.pageSize || 10;
@@ -215,7 +220,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             estado: formValues.estado || null,
             idPieza: formValues.pieza?.id || null,
             anioOF: formValues.anioOF || null,
-            numeroOF: formValues.numeroOF || null
+            numeroOF: formValues.numeroOF || null,
+            comprobante: formValues.comprobante ? formValues.comprobante.trim() : null
         };
     }
 
@@ -357,7 +363,8 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
             estado: '',
             pieza: null,
             anioOF: '',
-            numeroOF: ''
+            numeroOF: '',
+            comprobante: ''
         });
         this.search();
     }
@@ -440,8 +447,13 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     registrarEntrega(el: any): void {
         const pieza = el.piezas[0];
         const dialogRef = this._dialog.open(RegistrarEntregaDialogComponent, {
-            width: '450px',
+            width: '950px',
+            maxWidth: '95vw',
+            autoFocus: false,
+            panelClass: 'detalle-ot-dialog-panel',
             data: {
+                idOrdenFabricacion: el.id,
+                numeroOT: el.formattedNumero || el.numero,
                 saldoPendiente: el.saldo,
                 idFormula: pieza?.idFormula || pieza?.id
             }
@@ -504,10 +516,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     get getDisplayedColumns(): string[] {
-        return [
-            'select', 'ocFecha', 'cliente', 'pieza', 'formula', 'ocCantidad',
-            'ofFecha', 'fechaEntrega', 'estado', 'ofNumero', 'entregadas', 'saldo', 'acciones'
-        ];
+        return this.displayedColumns;
     }
 
     isAllSelected() {

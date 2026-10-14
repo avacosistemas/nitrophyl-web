@@ -60,6 +60,13 @@ export class AbmOrdenCompraService {
         return this.http.put<any>(`${this.apiUrl}/${id}`, dto);
     }
 
+    validarComprobante(idCliente: number, comprobante: string): Observable<boolean> {
+        const params = new HttpParams()
+            .set('cliente', idCliente.toString())
+            .set('comprobante', comprobante);
+        return this.http.get<boolean>(`${this.apiUrl}/comprobanteValido`, { params });
+    }
+
     generarOrdenFabrica(id: number): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/generarOrdenFabrica/${id}`, {});
     }

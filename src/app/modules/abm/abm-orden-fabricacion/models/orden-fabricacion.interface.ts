@@ -25,6 +25,8 @@ export interface IOrdenFabricacion {
     anio?: number;
 
     piezas: IOrdenFabricacionPieza[];
+    comprobante?: string;
+    comprobanteOC?: string;
 }
 
 export interface IOrdenFabricacionPieza {

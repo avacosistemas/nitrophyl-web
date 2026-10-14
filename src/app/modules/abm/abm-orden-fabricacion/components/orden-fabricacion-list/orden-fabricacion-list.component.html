@@ -52,6 +52,11 @@
                         <input matInput type="number" formControlName="numeroOF" placeholder="Ej: 3">
                     </mat-form-field>
 
+                    <mat-form-field appearance="outline">
+                        <mat-label>Comprobante OC</mat-label>
+                        <input matInput type="text" formControlName="comprobante" placeholder="Ej: 573716-000-OP">
+                    </mat-form-field>
+
                     
 
                     <mat-form-field appearance="outline">
@@ -123,7 +128,7 @@
                         </mat-select>
                     </mat-form-field>
 
-                    <div class="sm:col-span-2 md:col-span-1 lg:col-span-4 flex justify-end items-center gap-2 pb-1">
+                    <div class="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-5 flex justify-end items-center gap-2 pb-1">
                         <button mat-stroked-button type="button" (click)="limpiarFiltros()">Limpiar</button>
                         <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
                             type="submit">Buscar</button>
@@ -162,6 +167,12 @@
                     </mat-checkbox>
                 </td>
             </ng-container>
+            <ng-container matColumnDef="comprobanteOC">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center whitespace-nowrap">
+                    OC </th>
+                <td mat-cell *matCellDef="let el" class="text-center font-medium px-0.5 py-1 whitespace-nowrap"> {{el.comprobanteOC}} </td>
+            </ng-container>
+
             <ng-container matColumnDef="ocFecha">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center whitespace-nowrap">
                     Creación </th>
@@ -181,18 +192,11 @@
             </ng-container>
 
             <ng-container matColumnDef="formula">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center whitespace-nowrap">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center border-r-2 whitespace-nowrap">
                     Fórmula </th>
-                <td mat-cell *matCellDef="let el" class="text-center px-0.5 py-1 whitespace-nowrap">
+                <td mat-cell *matCellDef="let el" class="text-center border-r-2 px-0.5 py-1 whitespace-nowrap">
                     <span class="bg-gray-100 px-2 py-0.5 rounded text-xs font-bold">{{el.piezaFormula || '-'}}</span>
                 </td>
-            </ng-container>
-
-            <ng-container matColumnDef="ocCantidad">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center border-r-2 whitespace-nowrap"> Cant.
-                </th>
-                <td mat-cell *matCellDef="let el" class="border-r-2 text-center font-bold px-0.5 py-1 whitespace-nowrap">
-                    {{el.ocCantidad}} </td>
             </ng-container>
 
             <ng-container matColumnDef="ofFecha">
@@ -228,8 +232,18 @@
                 <td mat-cell *matCellDef="let el" class="text-center font-bold px-0.5 py-1 whitespace-nowrap"> {{el.formattedNumero}} </td>
             </ng-container>
 
+            <ng-container matColumnDef="ocCantidad">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center leading-tight">
+                    Cant. <br/>Solicitada
+                </th>
+                <td mat-cell *matCellDef="let el" class="text-center font-bold px-0.5 py-1 whitespace-nowrap">
+                    {{el.ocCantidad}} </td>
+            </ng-container>
+
             <ng-container matColumnDef="entregadas">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center whitespace-nowrap"> Total Fabr. </th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header class="bg-gray-50 font-bold text-gray-600 px-0.5 py-1 text-center leading-tight">
+                    Total <br/>Fabr.
+                </th>
                 <td mat-cell *matCellDef="let el" class="text-center text-green-700 font-bold px-0.5 py-1 whitespace-nowrap"> {{el.entregadas}} </td>
             </ng-container>
 
@@ -289,7 +303,7 @@
             </ng-container>
 
             <ng-container matColumnDef="header-of">
-                <th mat-header-cell *matHeaderCellDef [attr.colspan]="7"
+                <th mat-header-cell *matHeaderCellDef [attr.colspan]="8"
                     class="bg-[#2c3344] text-white text-center text-sm font-bold uppercase tracking-widest py-1">
                     Orden de Fabricación
                 </th>
