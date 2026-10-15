@@ -136,7 +136,7 @@ export class NavegacionService {
           exactMatch: true,
         },
         {
-          icon: 'heroicons_outline:truck',
+          icon: 'heroicons_outline:gift',
           id: 'entregas-of',
           link: '/orden-fabricacion/entregas',
           title: 'Entregas',

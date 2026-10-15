@@ -48,7 +48,8 @@ export class ABMPiezaDimensionesComponent extends ABMPiezaBaseComponent implemen
         'DIAMETRO_INTERIOR': 'Diámetro interior',
         'DIAMETRO_EXTERIOR': 'Diámetro exterior',
         'ESPESOR': 'Espesor',
-        'LARGO': 'Largo'
+        'LARGO': 'Largo',
+        'SECCION': 'Sección'
     };
 
     constructor(
