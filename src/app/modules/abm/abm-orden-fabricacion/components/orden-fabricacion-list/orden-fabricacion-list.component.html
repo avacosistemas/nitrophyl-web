@@ -272,7 +272,7 @@
                                     svgIcon="heroicons_outline:office-building"></mat-icon>
                         </button>
 
-                        <button *ngIf="el.estado === 'EN_PROCESO'"
+                        <button *ngIf="['EN_PROCESO', 'FINALIZADA'].includes(el.estado)"
                                 mat-icon-button
                                 class="w-8 h-8 min-w-8"
                                 (click)="registrarEntrega(el)"

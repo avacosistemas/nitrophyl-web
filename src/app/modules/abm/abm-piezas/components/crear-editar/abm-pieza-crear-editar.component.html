@@ -51,12 +51,12 @@
                             <mat-label>Troquel</mat-label>
                             <input type="text" placeholder="Buscar o ingresar troquel" matInput formControlName="troquel"
                                 [matAutocomplete]="autoTroquel" maxlength="20" #troquelInput="matAutocompleteTrigger">
-                            <button mat-icon-button matSuffix *ngIf="piezaForm.get('troquel').value && mode !== 'view'"
+                            <button type="button" mat-icon-button matSuffix *ngIf="piezaForm.get('troquel').value && mode !== 'view'"
                                 (click)="clearTroquelSelection(); $event.stopPropagation()">
                                 <mat-icon>close</mat-icon>
                             </button>
-                            <button mat-icon-button matSuffix *ngIf="!piezaForm.get('troquel').value && mode !== 'view'"
-                                (click)="troquelInput.openPanel()">
+                            <button type="button" mat-icon-button matSuffix *ngIf="!piezaForm.get('troquel').value && mode !== 'view'"
+                                (click)="troquelInput.openPanel(); $event.stopPropagation(); $event.preventDefault()">
                                 <mat-icon>arrow_drop_down</mat-icon>
                             </button>
                             <mat-autocomplete #autoTroquel="matAutocomplete" [displayWith]="displayTroquel">
