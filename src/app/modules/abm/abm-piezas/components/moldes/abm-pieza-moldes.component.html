@@ -9,7 +9,7 @@
             [matAutocomplete]="auto">
           <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
             <mat-option *ngFor="let molde of filteredMoldes$ | async" [value]="molde">
-              {{molde.nombre}}
+              {{molde.codigo || molde.nombre}}
             </mat-option>
           </mat-autocomplete>
           <button mat-button *ngIf="moldeForm.get('molde').value" matSuffix mat-icon-button aria-label="Clear"

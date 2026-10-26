@@ -5,8 +5,8 @@
                 <mat-panel-title><span class="text-xl font-extrabold tracking-tight">Búsqueda</span></mat-panel-title>
             </mat-expansion-panel-header>
             <form [formGroup]="searchForm" (ngSubmit)="search()" class="flex flex-col gap-4 mt-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    <mat-form-field appearance="outline">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-4">
+                    <mat-form-field appearance="outline" class="lg:col-span-3">
                         <mat-label>Cliente</mat-label>
                         <input type="text" placeholder="Buscar cliente..." matInput formControlName="cliente"
                             [matAutocomplete]="autoCliente" #clientInput="matAutocompleteTrigger">
@@ -18,15 +18,16 @@
 
                         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
                             <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                                {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                                {{ cliente.nombre }}
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="md:col-span-2 lg:col-span-2">
+                    <mat-form-field appearance="outline" class="md:col-span-2 lg:col-span-3">
                         <mat-label>Pieza</mat-label>
                         <input type="text" placeholder="Buscar pieza..." matInput formControlName="pieza"
-                            [matAutocomplete]="autoPieza" #piezaInput="matAutocompleteTrigger">
+                            [matAutocomplete]="autoPieza" #piezaInput="matAutocompleteTrigger"
+                            (focus)="openPiezaPanel()" (click)="openPiezaPanel()" (blur)="onPiezaBlur()">
 
                         <button type="button" *ngIf="searchForm.get('pieza').value" matSuffix mat-icon-button aria-label="Clear"
                             (click)="clearPiezaSelection(); $event.stopPropagation()">
@@ -35,7 +36,7 @@
 
                         <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFnPieza">
                             <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
-                                {{ pieza.codigo ? pieza.codigo + ' - ' : '' }}{{ pieza.denominacion }}
+                                {{ pieza.codigo ? pieza.codigo + ' - ' : '' }}{{ pieza.denominacion }}{{ pieza.codigoCliente ? ' - ' + pieza.codigoCliente : '' }}
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>
@@ -52,7 +53,7 @@
                         <input matInput type="number" formControlName="numeroOF" placeholder="Ej: 3">
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline">
+                    <mat-form-field appearance="outline" class="lg:col-start-1 lg:col-span-2">
                         <mat-label>Comprobante OC</mat-label>
                         <input matInput type="text" formControlName="comprobante" placeholder="Ej: 573716-000-OP">
                     </mat-form-field>
@@ -128,7 +129,7 @@
                         </mat-select>
                     </mat-form-field>
 
-                    <div class="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-5 flex justify-end items-center gap-2 pb-1">
+                    <div class="col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-8 flex justify-end items-center gap-2 pb-1">
                         <button mat-stroked-button type="button" (click)="limpiarFiltros()">Limpiar</button>
                         <button class="mat-focus-indicator mat-flat-button mat-button-base mat-accent" mat-flat-button
                             type="submit">Buscar</button>

@@ -11,13 +11,16 @@
                 </div>
                 <mat-form-field class="w-full" appearance="outline">
                   <mat-label> Código </mat-label>
-                  <input type="text" placeholder="Código " matInput formControlName="codigo" required maxlength="30">
+                  <input type="text" placeholder="Código " matInput formControlName="codigo" required maxlength="35">
                   <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('required')">
                     El código es requerido
                   </mat-error>
                   <mat-error class="mb-1" *ngIf="moldeForm.get('codigo').hasError('maxlength')">
-                    Máximo 30 caracteres
+                    Máximo 35 caracteres
                   </mat-error>
+                  <mat-hint *ngIf="existingMoldCodes$ | async as existingCodes">
+                    <ng-container *ngIf="existingCodes.length">Códigos similares existentes: {{ existingCodes.join(', ') }}</ng-container>
+                  </mat-hint>
                 </mat-form-field>
 
                 <mat-form-field class="w-full" appearance="outline">
@@ -63,7 +66,7 @@
                     [matAutocomplete]="autoPropietario">
                   <mat-autocomplete #autoPropietario="matAutocomplete" [displayWith]="displayClient">
                     <mat-option *ngFor="let client of filteredClients$ | async" [value]="client">
-                      {{ (client.codigo ? client.codigo + ' - ' : '') + client.nombre }}
+                      {{ client.nombre }}
                     </mat-option>
                   </mat-autocomplete>
                   <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
@@ -333,7 +336,7 @@
                 [matAutocomplete]="autoClienteAgregar">
               <mat-autocomplete #autoClienteAgregar="matAutocomplete" [displayWith]="displayClient">
                 <mat-option *ngFor="let client of filteredClientsForAdding$ | async" [value]="client">
-                  {{ client.codigo ? client.codigo + ' - ' : '' }}{{ client.nombre }}
+                  {{ client.nombre }}
                 </mat-option>
               </mat-autocomplete>
             </mat-form-field>

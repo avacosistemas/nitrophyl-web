@@ -5,8 +5,8 @@
                 <mat-panel-title><span class="text-xl font-extrabold tracking-tight">Búsqueda</span></mat-panel-title>
             </mat-expansion-panel-header>
             <form [formGroup]="searchForm" (ngSubmit)="search()" class="flex flex-col gap-4 mt-4">
-                <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                    <mat-form-field appearance="outline">
+                <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                    <mat-form-field appearance="outline" class="md:col-span-2">
                         <mat-label>Cliente</mat-label>
                         <input type="text" placeholder="Buscar cliente..." matInput formControlName="cliente"
                             [matAutocomplete]="autoCliente" #clienteInput="matAutocompleteTrigger">
@@ -17,7 +17,7 @@
 
                         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
                             <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                                {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                                {{ cliente.nombre }}
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>

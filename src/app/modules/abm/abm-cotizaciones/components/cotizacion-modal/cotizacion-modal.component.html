@@ -6,7 +6,7 @@
     <form [formGroup]="form" class="flex flex-col gap-2">
         <mat-form-field appearance="outline" class="w-full">
             <mat-label>Cliente</mat-label>
-            <input type="text" placeholder="Buscar cliente por nombre o código..." matInput formControlName="cliente"
+            <input type="text" placeholder="Buscar cliente por nombre..." matInput formControlName="cliente"
                 [matAutocomplete]="autoCliente" #clienteTrigger="matAutocompleteTrigger" required>
             
             <button *ngIf="form.get('cliente').value" matSuffix mat-icon-button aria-label="Limpiar" (click)="clearCliente($event)">
@@ -15,7 +15,7 @@
 
             <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFn">
                 <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                    {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                    {{ cliente.nombre }}
                 </mat-option>
             </mat-autocomplete>
             <mat-error *ngIf="form.get('cliente').hasError('required')">El cliente es requerido.</mat-error>

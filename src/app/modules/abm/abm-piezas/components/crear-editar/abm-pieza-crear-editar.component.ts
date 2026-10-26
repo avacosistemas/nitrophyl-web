@@ -12,7 +12,7 @@ import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
 import { PiezaProceso, PiezaCreateDTO, PiezaUpdateDTO, Molde, Espesor } from '../../models/pieza.model';
 import { Observable, of, combineLatest, forkJoin, throwError, merge } from 'rxjs';
-import { map, startWith, catchError, debounceTime, switchMap, filter } from 'rxjs/operators';
+import { map, startWith, catchError, debounceTime, switchMap, filter, distinctUntilChanged } from 'rxjs/operators';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
 import { GenericModalComponent } from 'app/shared/components/modal/generic-modal.component';
@@ -146,6 +146,8 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
                     startWith(''),
                     filter(value => typeof value === 'string'),
                     debounceTime(300),
+                    map(searchString => searchString.trim()),
+                    distinctUntilChanged(),
                     switchMap(searchString => {
                         return this.abmPiezaService.getMoldesCombo(searchString, idTipoPieza).pipe(
                             map(response => response.data || []),
@@ -640,7 +642,7 @@ export class ABMPiezaCrearEditarComponent extends ABMPiezaBaseComponent implemen
     }
 
     displayFn(item: any): string { return item?.nombre ?? ''; }
-    displayMolde(molde?: { id: number, nombre: string }): string { return molde?.nombre ?? ''; }
+    displayMolde(molde?: { id: number, nombre: string, codigo?: string }): string { return molde?.codigo || molde?.nombre || ''; }
     displayCliente(cliente?: { id: number, nombre: string, codigo?: string }): string { return cliente?.nombre ?? ''; }
     displayFormula(formula?: { id: number, nombre: string }): string { return formula?.nombre ?? ''; }
 

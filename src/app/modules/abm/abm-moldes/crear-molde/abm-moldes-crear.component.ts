@@ -7,9 +7,10 @@ import { ABMPiezaService } from 'app/modules/abm/abm-piezas/abm-piezas.service';
 import { RemoveDialogComponent } from 'app/shared/components/remove/remove.component';
 import { Molde } from 'app/modules/abm/abm-moldes/molde.model';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
+import { ClienteCombo } from 'app/modules/abm/abm-clientes/cliente.model';
 import { MoldesService } from 'app/modules/abm/abm-moldes/moldes.service';
 import { Subscription, Observable, of } from 'rxjs';
-import { debounceTime, switchMap, map, catchError, startWith } from 'rxjs/operators';
+import { debounceTime, switchMap, map, catchError, startWith, shareReplay } from 'rxjs/operators';
 import { ABMMoldeService } from '../abm-moldes.service';
 import { HttpErrorResponse } from '@angular/common/http';
 
@@ -21,8 +22,9 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   component: string = 'Create';
   suscripcion: Subscription;
   moldeForm: FormGroup;
-  public clients$: any = [];
+  public filteredClients$: Observable<ClienteCombo[]>;
   public tiposPieza$: { id: number; nombre: string }[] = [];
+  public existingMoldCodes$: Observable<string[]>;
 
   private requireAtLeastOneCheckbox(): ValidatorFn {
     return (formArray: AbstractControl): ValidationErrors | null => {
@@ -43,7 +45,7 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     private notificationService: NotificationService,
   ) {
     this.moldeForm = this._formBuilder.group({
-      code: [null, [Validators.required, Validators.maxLength(30)]],
+      code: [null, [Validators.required, Validators.maxLength(35)]],
       estado: ['ACTIVO', [Validators.required]],
       name: [null, [Validators.required, Validators.maxLength(100)]],
       cantidadBocas: [null, [Validators.required, Validators.min(1), Validators.pattern("^[0-9]*$")]],
@@ -91,11 +93,44 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.updateDimensionValidators('RECTANGULAR');
 
-    this._clients.getClientes().subscribe({
-      next: (res) => {
-        this.clients$ = res.data;
-      },
-      error: (err) => console.error(err),
+    this.filteredClients$ = this.moldeForm.get('client')!.valueChanges.pipe(
+      startWith(''),
+      debounceTime(250),
+      switchMap(value => this._clients.getClientesAutocomplete(typeof value === 'string' ? value : '').pipe(
+        map(response => response.data || []),
+        catchError(() => of([]))
+      ))
+    );
+
+    this.existingMoldCodes$ = this.moldeForm.get('code')!.valueChanges.pipe(
+      startWith(''),
+      debounceTime(250),
+      switchMap(value => {
+        const code = typeof value === 'string' ? value.trim() : '';
+        if (!code) return of([]);
+        return this._abmPiezaService.getMoldesCombo(code).pipe(
+          map(response => (response.data || [])
+            .map(molde => molde.codigo || molde.nombre)
+            .filter(existingCode => !!existingCode)),
+          catchError(() => of([]))
+        );
+      }),
+      shareReplay(1)
+    );
+
+    this.existingMoldCodes$.subscribe(existingCodes => {
+      const codeControl = this.moldeForm.get('code');
+      const enteredCode = (codeControl?.value || '').trim().toLowerCase();
+      const duplicated = existingCodes.some(existingCode =>
+        existingCode.trim().toLowerCase() === enteredCode
+      );
+      const errors = { ...(codeControl?.errors || {}) };
+      if (duplicated) {
+        errors.codigoExistente = true;
+      } else {
+        delete errors.codigoExistente;
+      }
+      codeControl?.setErrors(Object.keys(errors).length ? errors : null);
     });
 
     this._abmPiezaService.getPiezaTipo().subscribe({
@@ -188,9 +223,11 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     }
 
     const isPropio = this.moldeForm.get('propio')?.value;
-
-    const selectedClientId = this.moldeForm.get('client')?.value;
-    const selectedClient = this.clients$.find((element: any) => element.id === selectedClientId);
+    const selectedClient = this.moldeForm.get('client')?.value;
+    if (!isPropio && (!selectedClient || typeof selectedClient === 'string')) {
+      this.notificationService.showError('Por favor, seleccione un cliente de la lista.');
+      return;
+    }
 
     const selectedTiposPieza = (this.moldeForm.value.piezaTipos || [])
       .map((checked: boolean, i: number) => checked ? {
@@ -223,8 +260,8 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       piezaTipos: selectedTiposPieza,
 
       propio: isPropio,
-      idClienteDuenio: selectedClient?.id || null,
-      clienteDuenio: selectedClient?.nombre || null,
+      idClienteDuenio: isPropio ? null : selectedClient.id,
+      clienteDuenio: isPropio ? null : selectedClient.nombre,
 
       tipoMolde: tipoMolde,
       alto: alto,
@@ -252,5 +289,9 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
         console.error(error);
       }
     });
+  }
+
+  displayClient(client: any): string {
+    return client ? client.nombre || '' : '';
   }
 }

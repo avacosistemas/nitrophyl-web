@@ -114,7 +114,11 @@ export class ABMPiezaService {
         return this.http.get<ApiResponse<{ nombre: string, codigo: string }[]>>(`${this.API_MOLDE_URL}/combo`, { params }).pipe(
             map(response => ({
                 ...response,
-                data: response.data.map(item => ({ id: Number(item.codigo), nombre: item.nombre }))
+                data: response.data.map(item => ({
+                    id: Number(item.codigo),
+                    codigo: item.nombre,
+                    nombre: item.nombre
+                }))
             }))
         );
     }

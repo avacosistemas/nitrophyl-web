@@ -97,9 +97,9 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
   tiposPieza: { id: number; nombre: string }[] = [];
 
   public clientForm: FormGroup;
-  public clients$: Cliente[] = [];
   public filteredClients$: Observable<Cliente[]>;
   public filteredClientsForAdding$: Observable<Cliente[]>;
+  public existingMoldCodes$: Observable<string[]>;
   public clients: Array<any> = [];
   public displayedColumnsClients: string[] = [
     'nombre',
@@ -131,7 +131,7 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     private notificationService: NotificationService,
   ) {
     this.moldeForm = this._formBuilder.group({
-      codigo: [null, [Validators.required, Validators.maxLength(30)]],
+      codigo: [null, [Validators.required, Validators.maxLength(35)]],
       estado: [null, [Validators.required]],
       nombre: [null, [Validators.required, Validators.maxLength(100)]],
       observaciones: [null],
@@ -266,17 +266,6 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     anchoCtrl.updateValueAndValidity();
     profCtrl.updateValueAndValidity();
     diametroCtrl.updateValueAndValidity();
-  }
-
-  private _filterClients(value: string | Cliente, source: Cliente[]): Cliente[] {
-    const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
-    if (!filterValue) {
-      return source;
-    }
-    return source.filter(client =>
-      client.nombre.toLowerCase().includes(filterValue) ||
-      (client.codigo && client.codigo.toLowerCase().includes(filterValue))
-    );
   }
 
   displayClient(client: Cliente): string {
@@ -563,21 +552,41 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
     forkJoin({
       molde: this._molds.getMoldeById(this.currentId),
-      tiposPieza: this._abmPiezaService.getPiezaTipo(),
-      clientes: this._clients.getClientes()
+      tiposPieza: this._abmPiezaService.getPiezaTipo()
     }).subscribe({
-      next: ({ molde, tiposPieza, clientes }) => {
+      next: ({ molde, tiposPieza }) => {
         this.tiposPieza = tiposPieza;
 
-        this.clients$ = clientes.data;
+        this.existingMoldCodes$ = this.moldeForm.get('codigo').valueChanges.pipe(
+          startWith(''),
+          debounceTime(250),
+          switchMap(value => {
+            const code = typeof value === 'string' ? value.trim() : '';
+            if (!code) return of([]);
+            return this._abmPiezaService.getMoldesCombo(code).pipe(
+              map(response => (response.data || [])
+                .map(molde => molde.codigo || molde.nombre)
+                .filter(existingCode => existingCode && existingCode.toLowerCase() !== code.toLowerCase())),
+              catchError(() => of([]))
+            );
+          })
+        );
 
         this.filteredClients$ = this.moldeForm.get('client').valueChanges.pipe(
           startWith(''),
-          map(value => this._filterClients(value, this.clients$))
+          debounceTime(250),
+          switchMap(value => this._clients.getClientesAutocomplete(typeof value === 'string' ? value : '').pipe(
+            map(response => response.data || []),
+            catchError(() => of([]))
+          ))
         );
         this.filteredClientsForAdding$ = this.clientForm.get('client').valueChanges.pipe(
           startWith(''),
-          map(value => this._filterClients(value, this.clients$))
+          debounceTime(250),
+          switchMap(value => this._clients.getClientesAutocomplete(typeof value === 'string' ? value : '').pipe(
+            map(response => response.data || []),
+            catchError(() => of([]))
+          ))
         );
 
         this.loadMoldeData(molde.data);
@@ -617,7 +626,11 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
     const isPropio = data.propio;
     const propietarioId = isPropio ? null : data.idClienteDuenio;
-    const propietarioObj = isPropio ? null : this.clients$.find(c => c.id === propietarioId);
+    const propietarioObj = isPropio ? null : {
+      id: propietarioId,
+      codigo: propietarioId?.toString(),
+      nombre: data.clienteDuenio || ''
+    } as Cliente;
 
     const tipo = data.tipoMolde || 'RECTANGULAR';
 

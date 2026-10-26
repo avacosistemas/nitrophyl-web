@@ -220,6 +220,6 @@ export class ABMPiezaMoldesComponent extends ABMPiezaBaseComponent implements On
   }
 
   displayFn(molde: Molde): string {
-    return molde && molde.nombre ? molde.nombre : '';
+    return molde ? (molde.codigo || molde.nombre || '') : '';
   }
 }

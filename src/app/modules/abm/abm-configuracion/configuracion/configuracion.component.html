@@ -70,7 +70,7 @@
           <mat-autocomplete #clienteAuto="matAutocomplete" [displayWith]="displayClienteFn" autoActiveFirstOption>
             <mat-option *ngIf="!form.controls['cliente'].value" [value]="0">Todos</mat-option>
             <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-              {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+              {{ cliente.nombre }}
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>

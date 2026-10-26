@@ -14,7 +14,7 @@ export interface Molde {
   ancho?: number;
   profundidad?: number;
   diametro?: number;
-  
+
   troquel?: string | null;
   idTroquel?: number | null;
 

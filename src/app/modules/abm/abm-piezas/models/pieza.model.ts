@@ -177,6 +177,7 @@ export interface Plano {
 export interface Molde {
     id: number;
     nombre: string;
+    codigo?: string;
     troquel?: string | null;
     idTroquel?: number | null;
 }
