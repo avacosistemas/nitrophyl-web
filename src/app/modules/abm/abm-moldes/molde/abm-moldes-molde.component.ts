@@ -425,15 +425,12 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
     }
 
     const isPropio = this.moldeForm.get('propio').value;
-    let client: Cliente = null;
+    const clientValue = this.moldeForm.get('client').value;
+    const client: Cliente = clientValue && typeof clientValue !== 'string' ? clientValue : null;
 
-    if (!isPropio) {
-      const clientValue = this.moldeForm.get('client').value;
-      if (!clientValue || typeof clientValue === 'string') {
-        this.notificationService.showError('Por favor, seleccione un propietario válido.');
-        return;
-      }
-      client = clientValue;
+    if (!isPropio && !client) {
+      this.notificationService.showError('Por favor, seleccione un propietario válido.');
+      return;
     }
 
     const selectedTiposPieza = this.moldeForm.value.piezaTipos
@@ -472,8 +469,8 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
       piezaTipos: selectedTiposPieza,
 
       propio: isPropio,
-      idClienteDuenio: isPropio ? null : client.id,
-      clienteDuenio: isPropio ? null : client.nombre,
+      idClienteDuenio: client?.id ?? null,
+      clienteDuenio: client?.nombre ?? null,
 
       tipoMolde: tipoMolde,
       alto: alto,

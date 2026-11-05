@@ -223,8 +223,9 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
     }
 
     const isPropio = this.moldeForm.get('propio')?.value;
-    const selectedClient = this.moldeForm.get('client')?.value;
-    if (!isPropio && (!selectedClient || typeof selectedClient === 'string')) {
+    const clientValue = this.moldeForm.get('client')?.value;
+    const selectedClient = clientValue && typeof clientValue !== 'string' ? clientValue : null;
+    if (!isPropio && !selectedClient) {
       this.notificationService.showError('Por favor, seleccione un cliente de la lista.');
       return;
     }
@@ -260,8 +261,8 @@ export class ABMMoldesCrear implements OnInit, OnDestroy {
       piezaTipos: selectedTiposPieza,
 
       propio: isPropio,
-      idClienteDuenio: isPropio ? null : selectedClient.id,
-      clienteDuenio: isPropio ? null : selectedClient.nombre,
+      idClienteDuenio: selectedClient?.id ?? null,
+      clienteDuenio: selectedClient?.nombre ?? null,
 
       tipoMolde: tipoMolde,
       alto: alto,
