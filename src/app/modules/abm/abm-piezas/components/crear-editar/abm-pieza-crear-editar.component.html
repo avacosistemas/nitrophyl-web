@@ -88,7 +88,7 @@
                                 </button>
                                 <mat-autocomplete #autoMolde="matAutocomplete" [displayWith]="displayMolde">
                                     <mat-option *ngFor="let molde of filteredMoldes$ | async" [value]="molde">
-                                        {{ molde.nombre }}
+                                        {{ molde.codigo || molde.nombre }}
                                     </mat-option>
                                 </mat-autocomplete>
                                 <mat-error *ngIf="piezaForm.get('idMolde').hasError('required')">El molde es
@@ -174,7 +174,7 @@
                         <mat-form-field appearance="outline" class="form-field w-full">
                             <mat-label>Cliente</mat-label>
                             <input type="text" matInput formControlName="idCliente" required #clienteInput
-                                placeholder="Buscar cliente por nombre o código..." [matAutocomplete]="autoCliente">
+                                placeholder="Buscar cliente por nombre..." [matAutocomplete]="autoCliente">
                             <button mat-icon-button matSuffix
                                 *ngIf="piezaForm.get('idCliente')?.value && mode !== 'view'"
                                 (click)="piezaForm.get('idCliente').setValue(null); $event.stopPropagation()">
@@ -182,7 +182,7 @@
                             </button>
                             <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayCliente">
                                 <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                                    {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                                    {{ cliente.nombre }}
                                 </mat-option>
                             </mat-autocomplete>
                             <mat-error *ngIf="piezaForm.get('idCliente').hasError('required')">El cliente es

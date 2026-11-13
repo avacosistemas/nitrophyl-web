@@ -1,6 +1,6 @@
 .lista-permisos {
-    max-height: 13rem;
-    overflow-y: scroll; 
+    height: 100%;
+    overflow-y: auto;
     overflow-x: hidden;
 }
 
@@ -11,4 +11,8 @@
 .buttons-grid button {
     flex-shrink: 0;
     margin-left: 5px;
+}
+
+::ng-deep .content-scroll {
+    overflow-y: hidden !important;
 }

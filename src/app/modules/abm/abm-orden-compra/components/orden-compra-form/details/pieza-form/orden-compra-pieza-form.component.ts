@@ -61,13 +61,14 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
     private setupObservers(): void {
         this.filteredPiezas$ = combineLatest([
             this.piezaForm.get('pieza')!.valueChanges.pipe(startWith('')),
-            this.piezaForm.get('soloDelCliente')!.valueChanges.pipe(startWith(true))
+            this.piezaForm.get('soloDelCliente')!.valueChanges.pipe(startWith(true)),
+            this.form.get('cliente')!.valueChanges.pipe(startWith(this.form.get('cliente')!.value))
         ]).pipe(
             debounceTime(300),
-            switchMap(([val, solo]) => {
+            switchMap(([val, solo, cliente]) => {
                 const term = typeof val === 'string' ? val : '';
-                const clienteId = this.form.get('cliente')!.value?.id;
-                return this._service.getPiezasCombo(solo ? clienteId : null, term).pipe(
+                const clienteId = cliente?.id || null;
+                return this._service.getPiezasCombo(clienteId, term, solo).pipe(
                     map(res => res.data || [])
                 );
             })
@@ -346,7 +347,11 @@ export class OrdenCompraPiezaFormComponent implements OnInit, OnDestroy {
         }
     }
 
-    displayFn(i: any): string { return i ? (i.nombre || i.denominacion) : ''; }
+    displayFn(i: any): string {
+        if (!i) return '';
+        const base = `${i.codigo || ''} - ${i.denominacion || i.nombre || ''}${i.formula ? ` (${i.formula})` : ''}`;
+        return i.codigoCliente ? `${base} - ${i.codigoCliente}` : base;
+    }
     get precioUnitarioActual(): number { 
         const val = this.piezaForm.get('cotizacionValor')!.value;
         return this.piezaCotizacionInfo?.tieneCotizacion && !this.piezaForm.get('actualizarCotizacion')!.value ? 

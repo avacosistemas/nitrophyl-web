@@ -27,15 +27,14 @@ export class EntregasListComponent implements OnInit, AfterViewInit, OnDestroy {
     searchForm: FormGroup;
     dataSource = new MatTableDataSource<IEntregaGrillaItem>([]);
     displayedColumns: string[] = [
-        'cantidad',
+        'numeroOT',
         'fecha',
+        'cliente',
+        'pieza',
+        'cantidad',
         'lotes',
         'operario',
-        'numeroOT',
-        'pieza',
-        'cliente',
-        'comprobante',
-        'idOrdenFabricacion'
+        'comprobante'
     ];
 
     isLoading = false;

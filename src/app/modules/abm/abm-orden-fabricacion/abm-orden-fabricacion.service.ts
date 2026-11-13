@@ -49,9 +49,10 @@ export class AbmOrdenFabricacionService {
 
     getPiezas(idCliente?: number | null, soloDelCliente: boolean = true, nombre?: string): Observable<any> {
         let params = new HttpParams();
-        if (soloDelCliente && idCliente) {
+        if (idCliente) {
             params = params.set('idCliente', idCliente.toString());
         }
+        params = params.set('soloDelCliente', soloDelCliente.toString());
         if (nombre) {
             params = params.set('nombre', nombre);
         }

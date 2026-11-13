@@ -1,8 +1,3 @@
-.lista-perfiles {
-    max-height: 13rem;
-    overflow-y: scroll; 
-    overflow-x: hidden;
-}
 
 .buttons-grid {
     flex-direction: row;
@@ -11,4 +6,10 @@
 .buttons-grid button {
     flex-shrink: 0;
     margin-left: 5px;
+}
+
+.lista-perfiles { height: 100%; overflow-y: auto; overflow-x: hidden; }
+
+::ng-deep .content-scroll {
+    overflow-y: hidden !important;
 }

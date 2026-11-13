@@ -23,7 +23,7 @@ import { NotificationService } from "app/shared/services/notification.service";
 export class ABMCrearPerfil implements OnInit, OnDestroy {
   component = "Create";
   roles: Array<Rol> = [];
-  displayedColumns: string[] = ['select', 'code', 'description']
+  displayedColumns: string[] = ['select', 'description']
   createPerfilForm: FormGroup;
   formDisabled: boolean = false;
   selected: Array<number> = [];
@@ -208,12 +208,12 @@ export class ABMCrearPerfil implements OnInit, OnDestroy {
 
   search(value: string) {
     let filter = value.toLowerCase();
-    return this.permisosDisponibles.filter(option => option.code.toLowerCase().startsWith(filter));
+    return this.permisosDisponibles.filter(option => option.code.toLowerCase().includes(filter));
   }
 
   searchIncluidos(value: string) {
     let filter = value.toLowerCase();
-    return this.permisosIncluidos.filter(option => option.code.toLowerCase().startsWith(filter));
+    return this.permisosIncluidos.filter(option => option.code.toLowerCase().includes(filter));
   }
 
   isAllSelected(id: number) {

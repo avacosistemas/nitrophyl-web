@@ -30,6 +30,19 @@ export interface Cliente {
     labelCombo?: string;
 }
 
+export interface ClienteCombo {
+    id: number;
+    codigo?: string;
+    nombre: string;
+    razonSocial?: string;
+}
+
+export interface ResponseClientesCombo {
+    status: string;
+    data: ClienteCombo[];
+    total?: number;
+}
+
 export interface Contacto {
     id: number;
     idCliente: number;

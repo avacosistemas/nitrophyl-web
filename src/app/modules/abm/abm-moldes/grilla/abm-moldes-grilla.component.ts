@@ -6,9 +6,9 @@ import { Router } from "@angular/router";
 import { PageEvent } from "@angular/material/paginator";
 import { ABMPiezaService } from "app/modules/abm/abm-piezas/abm-piezas.service";
 import { ClientesService } from "app/modules/abm/abm-clientes/clientes.service";
-import { Cliente } from "app/modules/abm/abm-clientes/cliente.model";
+import { Cliente, ClienteCombo } from "app/modules/abm/abm-clientes/cliente.model";
 import { Observable, of } from "rxjs";
-import { map, startWith } from "rxjs/operators";
+import { catchError, debounceTime, map, startWith, switchMap } from "rxjs/operators";
 import { Sort } from '@angular/material/sort';
 import { TableDataService } from 'app/shared/services/table-data.service';
 
@@ -26,8 +26,7 @@ export class ABMMoldesGrillaComponent implements OnInit {
   panelOpenState: boolean = false;
   searchForm: FormGroup;
   tiposPieza: { id: number; nombre: string }[] = [];
-  clientes: Cliente[] = [];
-  filteredClientes$: Observable<Cliente[]>;
+  filteredClientes$: Observable<ClienteCombo[]>;
 
   totalReg: number = 0;
   pageSize: number = 50;
@@ -64,7 +63,7 @@ export class ABMMoldesGrillaComponent implements OnInit {
   ngOnInit(): void {
     this.inicializar();
     this.cargarTiposPieza();
-    this.cargarClientes();
+    this.setupClienteFilter();
   }
 
   ngAfterViewInit() {
@@ -97,28 +96,14 @@ export class ABMMoldesGrillaComponent implements OnInit {
     });
   }
 
-  cargarClientes(): void {
-    this.clientesService.getClientes().subscribe(response => {
-      this.clientes = response.data || [];
-      this.setupClienteFilter();
-    });
-  }
-
   setupClienteFilter(): void {
     this.filteredClientes$ = this.searchForm.get('idCliente').valueChanges.pipe(
       startWith(''),
-      map(value => this._filterClientes(value))
-    );
-  }
-
-  private _filterClientes(value: string | Cliente): Cliente[] {
-    const filterValue = (typeof value === 'string' ? value : (value?.nombre || '')).toLowerCase();
-    if (!filterValue) {
-      return this.clientes;
-    }
-    return this.clientes.filter(cliente =>
-      cliente.nombre.toLowerCase().includes(filterValue) ||
-      (cliente.codigo && cliente.codigo.toLowerCase().includes(filterValue))
+      debounceTime(250),
+      switchMap(value => this.clientesService.getClientesAutocomplete(typeof value === 'string' ? value : '').pipe(
+        map(response => response.data || []),
+        catchError(() => of([]))
+      ))
     );
   }
 
@@ -187,7 +172,7 @@ export class ABMMoldesGrillaComponent implements OnInit {
   }
 
   displayCliente(cliente: Cliente): string {
-    return cliente && cliente.nombre ? cliente.nombre : '';
+    return cliente ? cliente.nombre || '' : '';
   }
 
   clearClienteInput(): void {

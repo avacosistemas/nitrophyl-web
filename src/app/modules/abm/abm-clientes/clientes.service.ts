@@ -2,8 +2,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'environments/environment';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import {
   Cliente,
+  ResponseClientesCombo,
   Contacto,
   Domicilio,
   ResponseCliente,
@@ -24,7 +26,39 @@ export class ClientesService {
   }
 
   public getClientes(): Observable<ResponseClientes> {
-    return this.http.get<ResponseClientes>(`${environment.server}clientes/`);
+    return this.http.get<ResponseClientes>(`${environment.server}clientes/`).pipe(
+      map(response => ({
+        ...response,
+        data: (response.data || []).slice().sort((a, b) =>
+          (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' })
+        )
+      }))
+    );
+  }
+
+  public getClientesAutocomplete(busquedaRapida: string = ''): Observable<ResponseClientesCombo> {
+    let params = new HttpParams()
+      .set('page', '0')
+      .set('pageSize', '25')
+      .set('asc', 'true')
+      .set('idx', 'nombre');
+    if (busquedaRapida.trim()) {
+      params = params.set('busquedaRapida', busquedaRapida.trim());
+    }
+
+    return this.http.get<ResponseClientesCombo>(`${environment.server}clientes/autocomplete`, { params }).pipe(
+      map(response => ({
+        ...response,
+        data: (response.data || []).map((item: any) => ({
+          id: Number(item.codigo),
+          codigo: item.codigo,
+          nombre: item.nombre,
+          razonSocial: ''
+        })).sort((a, b) =>
+          (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' })
+        )
+      }))
+    );
   }
 
   public createCliente(cliente: Cliente): Observable<any> {

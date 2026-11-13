@@ -5,9 +5,10 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { Subject, merge, of, Observable } from 'rxjs';
-import { startWith, switchMap, map, catchError, takeUntil } from 'rxjs/operators';
+import { startWith, switchMap, map, catchError, takeUntil, debounceTime } from 'rxjs/operators';
 import { IOrdenFabricacion, IOrdenFabricacionPieza } from '../../models/orden-fabricacion.interface';
 import { AbmOrdenFabricacionService } from '../../abm-orden-fabricacion.service';
+import { AbmOrdenCompraService } from 'app/modules/abm/abm-orden-compra/abm-orden-compra.service';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { AbmSectorFabricaService } from 'app/modules/abm/abm-sector-fabrica/abm-sector-fabrica.service';
@@ -40,6 +41,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     @ViewChild('maquinaInput', { read: MatAutocompleteTrigger }) maquinaAutocompleteTrigger!: MatAutocompleteTrigger;
 
     isLoading = true;
+    private piezaInputFocused = false;
     dataSource = new MatTableDataSource<IOrdenFabricacion>([]);
     displayedColumns: string[] = [
         'select', 'comprobanteOC', 'ocFecha', 'cliente', 'pieza', 'formula',
@@ -63,6 +65,7 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
 
     constructor(
         private _ordenFabricacionService: AbmOrdenFabricacionService,
+        private _ordenCompraService: AbmOrdenCompraService,
         private _clientesService: ClientesService,
         private _sectorFabricaService: AbmSectorFabricaService,
         private _maquinaFabricaService: AbmMaquinaFabricaService,
@@ -244,25 +247,34 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
     }
 
     loadPiezas(): void {
-        this._ordenFabricacionService.getPiezas(null, false).pipe(takeUntil(this._destroying$)).subscribe({
-            next: (res) => {
-                this.piezas = res?.data || [];
-                this.filteredPiezas$ = this.searchForm.get('pieza')!.valueChanges.pipe(
-                    startWith(''),
-                    map(value => this._filterPiezas(value))
+        this.filteredPiezas$ = this.searchForm.get('pieza')!.valueChanges.pipe(
+            startWith(''),
+            debounceTime(300),
+            switchMap(value => {
+                const term = typeof value === 'string' ? value : '';
+                return this._ordenCompraService.getPiezasCombo(null, term, false).pipe(
+                    map(res => {
+                        const piezas = res?.data || [];
+                        if (this.piezaInputFocused && typeof value === 'string') {
+                            setTimeout(() => this.piezaAutocompleteTrigger?.openPanel());
+                        }
+                        return piezas;
+                    }),
+                    catchError(() => of([]))
                 );
-            },
-            error: () => this._notificationService.showError('Error al cargar piezas.')
-        });
+            }),
+            takeUntil(this._destroying$)
+        );
     }
 
     private _filterPiezas(value: string | any): any[] {
         const filterValue = (typeof value === 'string' ? value : (value?.denominacion || '')).toLowerCase();
-        return this.piezas.filter(p => p.denominacion.toLowerCase().includes(filterValue) || p.codigo?.toLowerCase().includes(filterValue));
+        return this.piezas.filter(p => p.denominacion.toLowerCase().includes(filterValue) || p.codigo?.toLowerCase().includes(filterValue) || p.codigoCliente?.toLowerCase().includes(filterValue));
     }
 
     displayFnPieza(pieza: any): string {
-        return pieza?.denominacion || '';
+        if (!pieza) return '';
+        return pieza.codigoCliente ? `${pieza.denominacion} - ${pieza.codigoCliente}` : pieza.denominacion || '';
     }
 
     clearPiezaSelection(): void {
@@ -273,6 +285,16 @@ export class OrdenFabricacionListComponent implements OnInit, AfterViewInit, OnD
                 this.piezaAutocompleteTrigger.openPanel();
             }
         }, 50);
+    }
+
+    openPiezaPanel(): void {
+        if (typeof this.searchForm.get('pieza')!.value !== 'string') return;
+        this.piezaInputFocused = true;
+        setTimeout(() => this.piezaAutocompleteTrigger?.openPanel());
+    }
+
+    onPiezaBlur(): void {
+        this.piezaInputFocused = false;
     }
 
     loadSectores(): void {

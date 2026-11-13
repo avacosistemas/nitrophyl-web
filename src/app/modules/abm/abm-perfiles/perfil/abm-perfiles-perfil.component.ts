@@ -25,7 +25,7 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
     component = "Perfil";
     mode: string;
     roles: Array<Rol> = [];
-    displayedColumns: string[] = ['select', 'code', 'description']
+    displayedColumns: string[] = ['select',  'description'] //'code',
     createPerfilForm: FormGroup;
     formDisabled: boolean = false;
     data: Perfil;
@@ -234,12 +234,12 @@ export class ABMPerfilesPerfil implements OnInit, OnDestroy {
 
     search(value: string) {
         let filter = value.toLowerCase();
-        return this.permisosDisponibles.filter(option => option.code.toLowerCase().startsWith(filter));
+        return this.permisosDisponibles.filter(option => option.description.toLowerCase().includes(filter));
     }
 
     searchIncluidos(value: string) {
         let filter = value.toLowerCase();
-        return this.permisosIncluidos.filter(option => option.code.toLowerCase().startsWith(filter));
+        return this.permisosIncluidos.filter(option => option.description.toLowerCase().includes(filter));
     }
 
     isAllSelected(id: number) {

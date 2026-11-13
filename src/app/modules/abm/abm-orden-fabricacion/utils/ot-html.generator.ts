@@ -390,11 +390,6 @@ export function generarHtmlOT(data: OTData): string {
                         </div>
                     </div>
                     <div class="h-row">
-                        <div class="h-field"><span class="h-lbl">INSUMOS:</span>
-                            <div class="h-val">${cabecera.insumos || ''}</div>
-                        </div>
-                    </div>
-                    <div class="h-row">
                         <div class="h-field"><span class="h-lbl">OBSERVACIONES:</span>
                             <div class="h-val">${cabecera.observaciones || ''}</div>
                         </div>
@@ -441,11 +436,6 @@ export function generarHtmlOT(data: OTData): string {
                         </div>
                         <div class="h-field"><span class="h-lbl">EMAIL:</span>
                             <div class="h-val">${cabecera.emailCliente || ''}</div>
-                        </div>
-                    </div>
-                    <div class="h-row">
-                        <div class="h-field"><span class="h-lbl">INSUMOS:</span>
-                            <div class="h-val">${cabecera.insumos || ''}</div>
                         </div>
                     </div>
                     <div class="h-row">

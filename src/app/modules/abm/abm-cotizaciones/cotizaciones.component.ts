@@ -36,8 +36,9 @@ export class CotizacionesComponent implements AfterContentChecked {
 
     private openCreateModal(): void {
         const dialogRef = this.dialog.open(CotizacionModalComponent, {
-            width: '80vw',
+            width: '53.33vw',
             disableClose: true,
+            autoFocus: false,
         });
 
         dialogRef.afterClosed().subscribe(result => {

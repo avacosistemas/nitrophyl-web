@@ -18,13 +18,19 @@
 
           <mat-form-field class="w-full" appearance="outline">
             <mat-label>Código </mat-label>
-            <input id="code" matInput [formControlName]="'code'" placeholder="Código">
+            <input id="code" matInput [formControlName]="'code'" placeholder="Código" maxlength="35">
             <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('required')">
               El código es requerido
             </mat-error>
             <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('maxlength')">
-              Máximo 30 caracteres
+              Máximo 35 caracteres
             </mat-error>
+            <mat-error class="mb-1" *ngIf="moldeForm.get('code').hasError('codigoExistente')">
+              Ya existe un molde con este código
+            </mat-error>
+            <mat-hint *ngIf="existingMoldCodes$ | async as existingCodes">
+              <ng-container *ngIf="existingCodes.length">Códigos similares existentes: {{ existingCodes.join(', ') }}</ng-container>
+            </mat-hint>
           </mat-form-field>
 
           <mat-form-field class="w-full" appearance="outline">
@@ -58,9 +64,13 @@
 
           <mat-form-field class="w-full" appearance="outline">
             <mat-label>Cliente</mat-label>
-            <mat-select formControlName="client" placeholder="Seleccione un cliente">
-              <mat-option *ngFor="let client of clients$" [value]="client.id">{{ client.nombre }}</mat-option>
-            </mat-select>
+            <input type="text" matInput formControlName="client" placeholder="Buscar por nombre o razón social"
+              [matAutocomplete]="autoCliente">
+            <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayClient">
+              <mat-option *ngFor="let client of filteredClients$ | async" [value]="client">
+                {{ client.nombre }}
+              </mat-option>
+            </mat-autocomplete>
             <mat-error class="mb-1" *ngIf="moldeForm.get('client').hasError('required')">
               El cliente es requerido
             </mat-error>

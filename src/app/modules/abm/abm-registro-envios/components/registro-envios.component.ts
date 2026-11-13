@@ -130,7 +130,9 @@ export class RegistroEnviosComponent implements OnInit, AfterViewInit, OnDestroy
   loadAutocompleteData(): void {
     this.clientsService.getClientes().subscribe({
       next: (res: ResponseClientes) => {
-        this.allClients = res.data || [];
+        this.allClients = (res.data || []).sort((a, b) =>
+          (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' })
+        );
         this.filteredClients$ = this.searchForm.get('cliente').valueChanges.pipe(
           startWith(''),
           map(value => this._filterClients(value))
@@ -208,6 +210,8 @@ export class RegistroEnviosComponent implements OnInit, AfterViewInit, OnDestroy
     return this.allClients.filter(client =>
       client.nombre.toLowerCase().includes(filterValue) ||
       (client.codigo && client.codigo.toLowerCase().includes(filterValue))
+    ).sort((a, b) =>
+      (a.nombre || '').localeCompare(b.nombre || '', 'es', { sensitivity: 'base' })
     );
   }
 

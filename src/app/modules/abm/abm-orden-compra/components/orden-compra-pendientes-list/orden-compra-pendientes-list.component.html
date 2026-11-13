@@ -26,7 +26,7 @@
                         </button>
                         <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayFnCliente">
                             <mat-option *ngFor="let cliente of filteredClientes$ | async" [value]="cliente">
-                                {{ cliente.codigo ? cliente.codigo + ' - ' : '' }}{{ cliente.nombre }}
+                                {{ cliente.nombre }}
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>

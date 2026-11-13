@@ -91,7 +91,11 @@ export class OrdenCompraHeaderComponent implements OnInit, OnDestroy {
     }
 
     loadClientes(): void {
-        this._clientesService.getClientes().subscribe(res => this.clientes = res.data || []);
+        this._clientesService.getClientes().subscribe(res => {
+            this.clientes = res.data || [];
+            const clienteControl = this.form.get('cliente');
+            clienteControl.setValue(clienteControl.value || '', { emitEvent: true });
+        });
     }
 
     loadTransportes(): void {
@@ -134,6 +138,10 @@ export class OrdenCompraHeaderComponent implements OnInit, OnDestroy {
 
     clearClientSelection(): void {
         this.form.get('cliente').setValue('');
+    }
+
+    openClientPanel(): void {
+        setTimeout(() => this.clienteAutocompleteTrigger?.openPanel());
     }
 
     displayFn(i: any): string {

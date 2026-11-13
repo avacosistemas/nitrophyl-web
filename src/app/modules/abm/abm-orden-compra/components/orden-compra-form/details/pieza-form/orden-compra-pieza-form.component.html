@@ -21,6 +21,7 @@
                                 <span class="font-bold">{{p.codigo}}</span> - <span
                                     class="text-secondary">{{p.denominacion}}</span>
                                     <span class="text-secondary"> ({{p.formula}})</span>
+                                    <span *ngIf="p.codigoCliente" class="text-secondary"> - {{p.codigoCliente}}</span>
                             </mat-option>
                         </mat-autocomplete>
                     </mat-form-field>
