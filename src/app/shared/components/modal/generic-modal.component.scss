@@ -42,13 +42,13 @@
     }
 
     .modal-content {
-        padding: 16px;
+        max-height: calc(85vh - 130px);
+        overflow-y: auto;
     }
 
     .modal-actions {
-        display: flex;
-        justify-content: flex-end;
-        padding: 4px;
+        padding-top: 4px;
+        padding-bottom: 16px;
     }
 
     mat-icon {

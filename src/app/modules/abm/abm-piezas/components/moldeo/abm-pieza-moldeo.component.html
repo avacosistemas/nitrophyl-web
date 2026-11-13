@@ -112,11 +112,15 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-2 mt-4">
+            <div class="flex flex-wrap gap-2 mt-4" cdkDropList cdkDropListOrientation="horizontal"
+                (cdkDropListDropped)="dropBombeo($event)" [cdkDropListDisabled]="mode === 'view'">
                 <mat-chip-list aria-label="Bombeos">
                     <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" (removed)="quitarBombeo(i)"
                         [removable]="mode !== 'view'" class="bg-gray-200"
-                        [matTooltip]="getObservacionesBombeo(bombeo.tipo)">
+                        [class.cursor-move]="mode !== 'view'"
+                        [matTooltip]="getObservacionesBombeo(bombeo.tipo)"
+                        cdkDrag [cdkDragDisabled]="mode === 'view'">
+                        <mat-icon *ngIf="mode !== 'view'" class="mr-1 text-gray-500 drag-cursor" style="font-size: 18px; width: 18px; height: 18px;" cdkDragHandle>drag_indicator</mat-icon>
                         {{ bombeo.cantidad }} {{ getLabelBombeo(bombeo.tipo) }}
                         <ng-container *ngIf="bombeo.presion">
                             a {{ bombeo.presion }} kg/cm2

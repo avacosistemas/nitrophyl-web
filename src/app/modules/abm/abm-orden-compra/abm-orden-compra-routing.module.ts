@@ -4,6 +4,7 @@ import { ABMOrdenCompraComponent } from './abm-orden-compra.component';
 import { OrdenCompraListComponent } from './components/orden-compra-list/orden-compra-list.component';
 import { OrdenCompraFormComponent } from './components/orden-compra-form/orden-compra-form.component';
 import { OrdenCompraPendientesListComponent } from './components/orden-compra-pendientes-list/orden-compra-pendientes-list.component';
+import { OrdenCompraGestionItemsComponent } from './components/orden-compra-gestion/orden-compra-gestion-items.component';
 import { PermissionGuard } from 'app/core/auth/guards/permission.guard';
 
 const routes: Route[] = [
@@ -26,7 +27,10 @@ const routes: Route[] = [
                     { path: 'list', component: OrdenCompraListComponent },
                     { path: 'create', component: OrdenCompraFormComponent },
                     { path: 'edit/:id', component: OrdenCompraFormComponent },
-                    { path: 'view/:id', component: OrdenCompraFormComponent }
+                    { path: 'view/:id', component: OrdenCompraFormComponent },
+                    { path: 'cancelar-items/:id', component: OrdenCompraGestionItemsComponent },
+                    { path: 'asignar-stock/:id', component: OrdenCompraGestionItemsComponent },
+                    { path: 'cambiar-cantidades/:id', component: OrdenCompraGestionItemsComponent }
                 ]
             }
         ],

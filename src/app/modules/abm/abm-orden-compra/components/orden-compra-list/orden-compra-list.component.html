@@ -99,6 +99,14 @@
                             (click)="editOrdenCompra(element)">
                             <mat-icon class="text-primary" svgIcon="heroicons_outline:pencil"></mat-icon>
                         </button>
+                        <button mat-icon-button matTooltip="Asignar Stock"
+                            (click)="asignarStock(element)">
+                            <mat-icon class="text-blue-600" svgIcon="heroicons_outline:cube"></mat-icon>
+                        </button>
+                        <button mat-icon-button matTooltip="Cambiar Cantidades"
+                            (click)="cambiarCantidades(element)">
+                            <mat-icon class="text-amber-600" svgIcon="heroicons_outline:adjustments"></mat-icon>
+                        </button>
                         <button mat-icon-button matTooltip="Cancelar Orden de Compra"
                             (click)="cancelOrdenCompra(element)">
                             <mat-icon class="text-warn" svgIcon="heroicons_outline:x-circle"></mat-icon>

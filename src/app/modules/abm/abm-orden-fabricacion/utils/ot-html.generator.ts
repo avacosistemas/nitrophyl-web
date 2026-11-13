@@ -25,6 +25,7 @@ export interface OTEntrega {
     fecha: string;
     cantidad: number;
     lote: string;
+    fabrico?: string;
 }
 
 export interface OTItem {
@@ -87,9 +88,10 @@ function renderEntregasTableRows(entregas?: OTEntrega[]): string {
                 <td style="text-align: center; font-size: 10px; font-weight: bold;">${ent.fecha || ''}</td>
                 <td style="text-align: center; font-size: 10px; font-weight: bold;">${ent.cantidad ?? ''}</td>
                 <td style="text-align: center; font-size: 10px; font-weight: bold;">${ent.lote || ''}</td>
+                <td style="text-align: center; font-size: 10px; font-weight: bold;">${ent.fabrico || ''}</td>
             </tr>`);
         } else {
-            rows.push(`<tr><td></td><td></td><td></td></tr>`);
+            rows.push(`<tr><td></td><td></td><td></td><td></td></tr>`);
         }
     }
     return rows.join('');
@@ -129,14 +131,13 @@ export function generarHtmlOT(data: OTData): string {
                         <div class="pill-box">${item.hp || ''}</div>
                     </div>
                     <div class="vertical-sep print-bg"></div>
-                    <div class="fabrico-group"><span class="lbl">FABRICÓ</span>
-                        <div class="line">${item.fabrico || ''}</div>
+                    <div class="matriz-group"><span class="lbl">MATRIZ</span>
+                        <div class="line">${item.matriz || ''}${item.ubicacion ? ` (${item.ubicacion})` : ''}</div>
                     </div>
                 </div>
                 <div class="item-body">
                     <div class="item-left">
                         <div class="data-row">
-                            <div class="d-field" style="flex: 3;"><span class="lbl">MATRIZ:</span><span class="val">${item.matriz || ''}${item.ubicacion ? ` (${item.ubicacion})` : ''}</span></div>
                             ${item.troquel ? `<div class="d-field" style="flex: 2;"><span class="lbl">TROQUEL:</span><span class="val">${item.troquel}</span></div>` : ''}
                             <div class="d-field" style="flex: 1;"><span class="lbl">PLANO/REV:</span><span class="val">${item.plano_rev || ''}</span></div>
                         </div>
@@ -153,7 +154,7 @@ export function generarHtmlOT(data: OTData): string {
                             <div class="d-field"><span class="lbl">INSUMOS:</span><span class="val">${item.insumos}</span></div>
                         </div>` : ''}
                         <div class="obs-container">
-                            <div class="obs-box" style="background-color: #fff; min-height: 45px; font-weight: normal;">Obs: ${item.observaciones_item != null ? item.observaciones_item : ""} </div>
+                            <div class="obs-box" style="background-color: #fff; min-height: 28px; font-weight: normal;">Obs: ${item.observaciones_item != null ? item.observaciones_item : ""} </div>
                         </div>
                     </div>
                     <div class="item-right">
@@ -162,9 +163,10 @@ export function generarHtmlOT(data: OTData): string {
                             <table class="entregas-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 40%;">Fecha</th>
-                                        <th style="width: 25%;">Cant.</th>
-                                        <th style="width: 35%;">Lote</th>
+                                        <th style="width: 25%;">Fecha</th>
+                                        <th style="width: 15%;">Cant.</th>
+                                        <th style="width: 24%;">Lote</th>
+                                        <th style="width: 36%;">Fabricó</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -252,9 +254,10 @@ export function generarHtmlOT(data: OTData): string {
                             <table class="entregas-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 40%;">Fecha</th>
-                                        <th style="width: 25%;">Cant.</th>
-                                        <th style="width: 35%;">Lote</th>
+                                        <th style="width: 25%;">Fecha</th>
+                                        <th style="width: 15%;">Cant.</th>
+                                        <th style="width: 24%;">Lote</th>
+                                        <th style="width: 36%;">Fabricó</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -309,31 +312,31 @@ export function generarHtmlOT(data: OTData): string {
         .badge-cant { background-color: #fff; border: 2px solid #000; border-radius: 4px; padding: 4px 8px; line-height: 1; }
         .badge-cant span { font-size: 13px; font-weight: normal; vertical-align: middle; }
         .badge-cant-value { font-size: 16px !important; font-weight: bold !important; vertical-align: middle; }
-        .item-subhead { display: flex; align-items: center; padding: 10px 12px; border-bottom: 2px solid #000; gap: 10px; }
+        .item-subhead { display: flex; align-items: center; padding: 6px 12px; border-bottom: 2px solid #000; gap: 10px; }
         .pill-group { display: flex; flex-direction: column; gap: 2px; }
         .pill-group .lbl { font-size: 10px; letter-spacing: 1px; }
-        .pill-box { border-bottom: 1px solid #000; padding: 3px 0px; font-size: 14px; font-weight: bold; min-width: 90px; min-height: 16px; }
+        .pill-box { border-bottom: 1px solid #000; padding: 2px 0px; font-size: 13px; font-weight: bold; min-width: 90px; min-height: 16px; }
         .vertical-sep { height: 20px; width: 1px; background-color: #000; margin: 0 5px; }
-        .fabrico-group { flex: 1; display: flex; align-items: flex-end; }
-        .fabrico-group .lbl { font-size: 10px; margin-right: 6px; padding-bottom: 2px; letter-spacing: 1px; }
-        .fabrico-group .line { border-bottom: 1px solid #000; flex: 1; height: 20px; font-size: 17px; }
+        .matriz-group { flex: 1; display: flex; align-items: flex-end; }
+        .matriz-group .lbl { font-size: 10px; margin-right: 6px; padding-bottom: 2px; letter-spacing: 1px; }
+        .matriz-group .line { border-bottom: 1px solid #000; flex: 1; height: 18px; font-size: 14px; font-weight: bold; }
         .item-body { display: flex; }
-        .item-left { flex: 1; display: flex; flex-direction: column; padding: 10px; padding-top: 15px; border-right: 1px solid #000; }
-        .data-row { display: flex; gap: 15px; margin-bottom: 5px; }
-        .d-field { display: flex; align-items: flex-end; margin-bottom: 6px; flex: 1; }
+        .item-left { flex: 1; display: flex; flex-direction: column; padding: 6px 10px; border-right: 1px solid #000; }
+        .data-row { display: flex; gap: 15px; margin-bottom: 3px; }
+        .d-field { display: flex; align-items: flex-end; margin-bottom: 3px; flex: 1; }
         .d-field.narrow { flex: 0 0 120px; }
-        .d-field.stacked { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .d-field.stacked { display: flex; flex-direction: column; gap: 2px; margin-bottom: 6px; }
         .d-field.stacked:last-child { margin-bottom: 0; }
-        .d-field.stacked .lbl { font-size: 10px; padding-bottom: 2px; }
-        .d-field.stacked .val { border-bottom: 1px solid #000; font-size: 12px; font-weight: bold; min-height: 16px; padding-bottom: 2px; width: 100%; }
+        .d-field.stacked .lbl { font-size: 10px; padding-bottom: 1px; }
+        .d-field.stacked .val { border-bottom: 1px solid #000; font-size: 12px; font-weight: bold; min-height: 14px; padding-bottom: 1px; width: 100%; }
         .d-field .lbl { font-size: 10px; margin-right: 6px; white-space: nowrap; }
-        .d-field .val { font-size: 12px; font-weight: bold; border-bottom: 1px solid #000; flex: 1; min-height: 14px; padding-bottom: 2px; }
-        .fields-grid { display: flex; gap: 12px; margin-bottom: 12px; }
+        .d-field .val { font-size: 12px; font-weight: bold; border-bottom: 1px solid #000; flex: 1; min-height: 14px; padding-bottom: 1px; }
+        .fields-grid { display: flex; gap: 12px; margin-bottom: 8px; }
         .fields-col-left { width: 90px; flex-shrink: 0; display: flex; flex-direction: column; justify-content: flex-start; border-right: 1px dashed #ccc; padding-right: 10px; }
         .fields-col-right { flex: 1; display: flex; flex-direction: column; }
-        .obs-container { display: flex; gap: 6px; }
-        .obs-box { flex: 1; border: 1px solid #000; padding: 4px 6px; font-size: 12px; font-weight: bold; }
-        .item-right { width: 210px; display: flex; flex-direction: column; }
+        .obs-container { display: flex; gap: 6px; margin-top: 3px; }
+        .obs-box { flex: 1; border: 1px solid #000; padding: 3px 5px; font-size: 11px; font-weight: bold; }
+        .item-right { width: 280px; display: flex; flex-direction: column; }
         .entregas-title { background-color: #e6e6e6; text-align: center; font-size: 10px; font-weight: bold; padding: 4px 0; border-bottom: 1px solid #000; }
         .entregas-table-wrap { flex: 1; display: flex; flex-direction: column; }
         .entregas-table { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; }

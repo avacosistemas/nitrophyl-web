@@ -1,6 +1,6 @@
 <div class="generic-modal">
     <div class="modal-title" mat-dialog-title>
-        <div class="px-1.5 py-1 title-bar">
+        <div class="title-bar">
             <div class="title-content">
 
                 <mat-icon *ngIf="data.icon" [ngClass]="{
@@ -47,7 +47,7 @@
         <div #customComponentContainer></div>
     </div>
 
-    <div mat-dialog-actions class="flex shrink-0 items-center gap-2 flex-row-reverse">
+    <div mat-dialog-actions class="flex shrink-0 items-center gap-2 flex-row-reverse modal-actions">
         <button mat-flat-button (click)="onConfirm()" *ngIf="data.showConfirmButton" [color]="data.type === 'success' ? 'primary' :
                        data.type === 'warning' ? 'warn' : null"
             [disabled]="data.customComponent && !customComponentInstance?.getValue()"

@@ -210,6 +210,7 @@ export interface Bombeo {
     tipo: string;
     cantidad: number;
     presion: number;
+    posicion?: number;
 }
 
 export interface Insumo {

@@ -1,0 +1,31 @@
+<div class="flex flex-col gap-3 py-1">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
+        <button type="button"
+            (click)="selectAction('cancelar_total')"
+            class="group text-left p-4 rounded-2xl border-2 border-red-200 bg-red-50/60 hover:bg-red-100/70 hover:border-red-400 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-xs">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 group-hover:scale-105 transition-transform shrink-0">
+                    <mat-icon svgIcon="heroicons_outline:ban" class="icon-size-5 text-red-600"></mat-icon>
+                </div>
+                <span class="font-bold text-sm text-red-700">Cancelar Total</span>
+            </div>
+            <p class="text-xs text-red-600/90 leading-tight">
+                Cancela la orden completa con todas sus entregas
+            </p>
+        </button>
+
+        <button type="button"
+            (click)="selectAction('cancelar_items')"
+            class="group text-left p-4 rounded-2xl border-2 border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all duration-200 cursor-pointer flex flex-col justify-between shadow-xs">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-105 transition-transform shrink-0">
+                    <mat-icon svgIcon="heroicons_outline:view-list" class="icon-size-5 text-primary"></mat-icon>
+                </div>
+                <span class="font-bold text-sm text-primary">Cancelar Ítems</span>
+            </div>
+            <p class="text-xs text-gray-600 leading-tight">
+                Gestionar y dar de baja ítems o entregas individuales
+            </p>
+        </button>
+    </div>
+</div>
