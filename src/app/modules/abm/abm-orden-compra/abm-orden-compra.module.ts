@@ -36,6 +36,11 @@ import { OrdenCompraPendientesListComponent } from './components/orden-compra-pe
 import { OrdenCompraPiezaFormComponent } from './components/orden-compra-form/details/pieza-form/orden-compra-pieza-form.component';
 import { OrdenCompraPiezasListComponent } from './components/orden-compra-form/details/piezas-list/orden-compra-piezas-list.component';
 import { OrdenCompraPiezaEditModalComponent } from './components/orden-compra-form/details/piezas-list/edit-modal/orden-compra-pieza-edit-modal.component';
+import { OrdenCompraCancelChoiceModalComponent } from './components/orden-compra-list/modals/orden-compra-cancel-choice-modal/orden-compra-cancel-choice-modal.component';
+import { OrdenCompraCancelTotalModalComponent } from './components/orden-compra-list/modals/orden-compra-cancel-total-modal/orden-compra-cancel-total-modal.component';
+import { OrdenCompraGestionItemsComponent } from './components/orden-compra-gestion/orden-compra-gestion-items.component';
+import { AsignarStockModalComponent } from './components/orden-compra-gestion/modals/asignar-stock-modal/asignar-stock-modal.component';
+import { CambiarCantidadesModalComponent } from './components/orden-compra-gestion/modals/cambiar-cantidades-modal/cambiar-cantidades-modal.component';
 import { MatTabsModule } from '@angular/material/tabs';
 
 export const MY_DATE_FORMATS = {
@@ -61,7 +66,12 @@ export const MY_DATE_FORMATS = {
         OrdenCompraPendientesListComponent,
         OrdenCompraPiezaFormComponent,
         OrdenCompraPiezasListComponent,
-        OrdenCompraPiezaEditModalComponent
+        OrdenCompraPiezaEditModalComponent,
+        OrdenCompraCancelChoiceModalComponent,
+        OrdenCompraCancelTotalModalComponent,
+        OrdenCompraGestionItemsComponent,
+        AsignarStockModalComponent,
+        CambiarCantidadesModalComponent
     ],
     imports: [
         CommonModule,

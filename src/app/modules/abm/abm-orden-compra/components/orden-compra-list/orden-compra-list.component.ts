@@ -18,6 +18,8 @@ import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { MatAutocompleteTrigger } from '@angular/material/autocomplete';
 import moment from 'moment';
 import { OrdenCompraCancelModalComponent } from '../orden-compra-cancel-modal/orden-compra-cancel-modal.component';
+import { OrdenCompraCancelChoiceModalComponent } from './modals/orden-compra-cancel-choice-modal/orden-compra-cancel-choice-modal.component';
+import { OrdenCompraCancelTotalModalComponent } from './modals/orden-compra-cancel-total-modal/orden-compra-cancel-total-modal.component';
 import { TableDataService } from 'app/shared/services/table-data.service';
 
 @Component({
@@ -194,20 +196,27 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
         });
     }
 
+    asignarStock(element: IOrdenCompra): void {
+        this._router.navigate(['/orden-compra/asignar-stock', element.id]);
+    }
+
+    cambiarCantidades(element: IOrdenCompra): void {
+        this._router.navigate(['/orden-compra/cambiar-cantidades', element.id]);
+    }
+
     cancelOrdenCompra(element: IOrdenCompra): void {
         const dialogRef = this.dialog.open(GenericModalComponent, {
-            width: '400px',
+            width: '520px',
             autoFocus: false,
             data: {
-                title: 'Cancelar Orden',
-                message: `¿Está seguro de que desea cancelar la orden <strong>${element.comprobante}</strong>?`,
+                title: 'Opciones de Cancelación',
+                message: `Seleccione la modalidad de cancelación para la orden <strong>${element.comprobante}</strong>:`,
                 icon: 'x-circle',
                 type: 'warning',
-                showConfirmButton: true,
-                confirmButtonText: 'Confirmar',
+                showConfirmButton: false,
                 showCloseButton: true,
-                cancelButtonText: 'Volver',
-                customComponent: OrdenCompraCancelModalComponent,
+                cancelButtonText: 'Cerrar',
+                customComponent: OrdenCompraCancelChoiceModalComponent,
                 componentData: {
                     comprobante: element.comprobante,
                     id: element.id
@@ -215,10 +224,40 @@ export class OrdenCompraListComponent implements OnInit, AfterViewInit, OnDestro
             }
         });
 
-        dialogRef.afterClosed().subscribe(observaciones => {
-            if (observaciones) {
+        dialogRef.afterClosed().subscribe(choice => {
+            if (choice === 'cancelar_total') {
+                this.abrirModalCancelarTotal(element);
+            } else if (choice === 'cancelar_items') {
+                this._router.navigate(['/orden-compra/cancelar-items', element.id]);
+            }
+        });
+    }
+
+    private abrirModalCancelarTotal(element: IOrdenCompra): void {
+        const dialogRef = this.dialog.open(GenericModalComponent, {
+            width: '460px',
+            autoFocus: false,
+            data: {
+                title: 'Confirmar Cancelación Total',
+                message: `¿Está seguro de que desea cancelar la orden <strong>${element.comprobante}</strong> por completo?`,
+                icon: 'x-circle',
+                type: 'warning',
+                showConfirmButton: true,
+                confirmButtonText: 'Confirmar Cancelación',
+                showCloseButton: true,
+                cancelButtonText: 'Volver',
+                customComponent: OrdenCompraCancelTotalModalComponent,
+                componentData: {
+                    comprobante: element.comprobante,
+                    id: element.id
+                }
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(motivo => {
+            if (motivo) {
                 this.isLoading = true;
-                this._ordenCompraService.cancelOrdenCompra(element.id, observaciones).subscribe({
+                this._ordenCompraService.cancelOrdenCompra(element.id, motivo).subscribe({
                     next: () => {
                         this._notificationService.showSuccess('Orden cancelada correctamente.');
                         this.search();

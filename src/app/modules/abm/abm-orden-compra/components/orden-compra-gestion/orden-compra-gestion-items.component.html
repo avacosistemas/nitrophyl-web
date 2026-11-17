@@ -1,0 +1,118 @@
+<div class="p-6 sm:p-10 w-full flex flex-col gap-6 animate-in">
+    <div *ngIf="mode === 'cancelar-items'" class="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-center gap-3 text-sm text-red-700 shadow-xs">
+        <mat-icon svgIcon="heroicons_outline:exclamation" class="text-red-500 shrink-0 icon-size-6"></mat-icon>
+        <span><strong>Modo Cancelación:</strong> Puede cancelar ítems completos o entregas individuales. Esta acción es destructiva y requerirá el motivo de cancelación.</span>
+    </div>
+    <div *ngIf="mode === 'asignar-stock'" class="p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-center gap-3 text-sm text-blue-700 shadow-xs">
+        <mat-icon svgIcon="heroicons_outline:cube" class="text-blue-500 shrink-0 icon-size-6"></mat-icon>
+        <span><strong>Modo Asignar Stock:</strong> Seleccione un ítem con el botón "Asignar Stock" para distribuir lotes y cantidades disponibles.</span>
+    </div>
+    <div *ngIf="mode === 'cambiar-cantidades'" class="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center gap-3 text-sm text-amber-800 shadow-xs">
+        <mat-icon svgIcon="heroicons_outline:adjustments" class="text-amber-600 shrink-0 icon-size-6"></mat-icon>
+        <span><strong>Modo Cambiar Cantidades:</strong> Seleccione una entrega para aumentar o disminuir la cantidad solicitada ingresando el motivo de cambio.</span>
+    </div>
+
+    <div *ngIf="isLoading" class="flex flex-col items-center justify-center p-16">
+        <mat-progress-spinner mode="indeterminate" color="primary" diameter="50"></mat-progress-spinner>
+        <p class="mt-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Cargando ítems de la orden...</p>
+    </div>
+
+    <div *ngIf="!isLoading" class="flex flex-col gap-4">
+        <div *ngFor="let grupo of piezasAgregadas; let i = index"
+            class="group relative bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl border border-gray-200 overflow-hidden flex flex-col md:flex-row items-stretch">
+
+            <div class="flex flex-col w-full">
+                <div class="flex flex-col md:flex-row">
+                    <div class="flex flex-1 flex-col gap-2 p-6">
+                        <div class="flex items-start justify-between gap-4">
+                            <span class="text-base font-bold text-primary px-2 py-0.5 uppercase flex-1">
+                                {{ grupo.denominacion }}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-[100px_1fr] px-2 border-b pb-2">
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">Cant. Solicitada</span>
+                            <span class="text-[10px] font-bold text-gray-500 uppercase">Fecha Entrega</span>
+                        </div>
+
+                        <div class="space-y-1">
+                            <div *ngFor="let batch of grupo.batches; let bi = index"
+                                class="grid grid-cols-[100px_1fr] items-center hover:bg-gray-50 p-2 rounded-xl transition-colors">
+
+                                <div class="flex items-center px-2">
+                                    <span class="font-black text-lg text-gray-800">{{ batch.cantidadSolicitada }}</span>
+                                </div>
+
+                                <div class="flex items-center justify-between gap-4 px-2">
+                                    <span class="font-bold text-sm text-gray-600 flex-1">{{ batch.fechaEntrega }}</span>
+
+                                    <div class="flex items-center gap-1">
+                                        <button *ngIf="mode === 'cancelar-items'" mat-icon-button
+                                            (click)="cancelarEntrega(grupo, bi)"
+                                            class="text-red-600 hover:bg-red-50 rounded-full"
+                                            matTooltip="Cancelar entrega individual">
+                                            <mat-icon svgIcon="heroicons_outline:trash" class="text-red-500 icon-size-5"></mat-icon>
+                                        </button>
+
+                                        <button *ngIf="mode === 'cambiar-cantidades'" mat-stroked-button
+                                            (click)="cambiarCantidadEntrega(grupo, batch)"
+                                            class="text-xs"
+                                            color="primary">
+                                            <mat-icon svgIcon="heroicons_outline:pencil" class="mr-1 icon-size-4"></mat-icon>
+                                            Cambiar Cantidad
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full md:w-64 bg-gray-50/70 border-t md:border-t-0 md:border-l border-gray-200 flex flex-col p-6 justify-between">
+                        <div>
+                            <div class="flex items-center justify-end w-full gap-2 mb-3">
+                                <button *ngIf="mode === 'cancelar-items'" mat-stroked-button color="warn"
+                                    (click)="cancelarPiezaCompleta(grupo, i)"
+                                    matTooltip="Cancelar ítem completo con todas sus entregas">
+                                    <mat-icon svgIcon="heroicons_outline:ban" class="mr-1 icon-size-4"></mat-icon>
+                                    Cancelar Ítem
+                                </button>
+
+                                <button *ngIf="mode === 'asignar-stock'" mat-flat-button color="primary"
+                                    (click)="asignarStockItem(grupo)">
+                                    <mat-icon svgIcon="heroicons_outline:cube" class="mr-1 icon-size-4"></mat-icon>
+                                    Asignar Stock
+                                </button>
+                            </div>
+
+                            <div class="flex flex-col gap-1 text-xs">
+                                <span class="font-bold text-gray-500 uppercase tracking-widest text-[10px]">Precio Unitario</span>
+                                <span class="text-base font-black text-gray-800">{{ formatCurrency(grupo.precio) }}</span>
+                                <span *ngIf="grupo.fechaCotizacion" class="text-[11px] text-gray-500 mt-1">
+                                    Cotiz.: <strong>{{ grupo.fechaCotizacion }}</strong>
+                                </span>
+                                <span *ngIf="grupo.descuento" class="text-green-700 font-bold text-xs mt-0.5">
+                                    Descuento: {{ grupo.descuento }}%
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-gray-200 pt-2 mt-3 flex justify-between items-center text-xs">
+                            <span class="text-gray-500 font-semibold">Total Piezas:</span>
+                            <span class="font-black text-gray-800 text-sm">{{ getTotalQuantity(grupo) }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div *ngIf="grupo.observacion" class="text-xs text-gray-600 bg-gray-50 p-2.5 px-6 border-t border-gray-200">
+                    <strong class="font-bold text-gray-500 uppercase tracking-wider text-[10px]">Obs:</strong> {{ grupo.observacion }}
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="piezasAgregadas.length === 0"
+            class="flex flex-col items-center justify-center p-12 bg-white rounded-3xl border-2 border-dashed border-gray-300">
+            <mat-icon class="icon-size-16 text-gray-300 mb-2" svgIcon="heroicons_outline:shopping-bag"></mat-icon>
+            <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">No hay ítems en esta orden</p>
+        </div>
+    </div>
+</div>

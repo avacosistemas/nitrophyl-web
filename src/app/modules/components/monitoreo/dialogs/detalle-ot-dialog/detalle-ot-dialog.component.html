@@ -39,10 +39,10 @@
 
                 <ng-container matColumnDef="drag">
                     <th mat-header-cell *matHeaderCellDef
-                        class="bg-slate-50 pl-4 pr-1 py-2.5 border-b border-gray-200 font-bold text-slate-800 w-16 text-left">
+                        class="bg-slate-50 pl-4 pr-1 py-2.5 border-b border-gray-200 font-bold text-slate-800 w-20 text-left">
                         No.</th>
                     <td mat-cell *matCellDef="let element; let i = index"
-                        class="w-16 pl-4 pr-1 py-2.5 border-b border-gray-100 text-left">
+                        class="w-20 pl-4 pr-1 py-2.5 border-b border-gray-100 text-left">
                         <mat-icon class="drag-cursor text-xl text-gray-500">reorder</mat-icon>
                         <span class="vertical-align-super font-bold text-gray-700 text-base">{{ element.posicion || (i +
                             1) }}</span>

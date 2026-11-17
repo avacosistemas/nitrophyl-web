@@ -8,9 +8,10 @@ import {
   ValidationErrors,
 } from '@angular/forms';
 import { ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { map, Observable, startWith, Subscription } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
+import { TableFilterStateService } from 'app/shared/services/table-filter-state.service';
 
 // * Services.
 import { AssayService } from 'app/modules/abm/abm-assays/assay.service';
@@ -151,7 +152,9 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     private formBuilder: FormBuilder,
     private cdref: ChangeDetectorRef,
     private lotUpdateService: LotUpdateService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private route: ActivatedRoute,
+    private filterStateService: TableFilterStateService
   ) {
     this.dateAdapter.setLocale('es');
   }
@@ -161,6 +164,35 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       this.search();
     });
     this.setForm();
+
+    const queryParams = this.filterStateService.getQueryParams(this.route);
+    if (queryParams && Object.keys(queryParams).length > 0) {
+      if (queryParams['nroLote']) {
+        this.formFilter.controls['nroLote'].setValue(queryParams['nroLote']);
+      }
+      if (queryParams['estado']) {
+        this.formFilter.controls['estado'].setValue(queryParams['estado']);
+      }
+      if (queryParams['fechaDesde']) {
+        this.formFilter.controls['fechaDesde'].setValue(moment(queryParams['fechaDesde']));
+      }
+      if (queryParams['fechaHasta']) {
+        this.formFilter.controls['fechaHasta'].setValue(moment(queryParams['fechaHasta']));
+      }
+      if (queryParams['idFormula']) {
+        const idFormula = Number(queryParams['idFormula']);
+        const labelFormula = queryParams['idFormula_label'] || '';
+        this.formFilter.controls['idFormula'].setValue({ id: idFormula, nombre: labelFormula });
+      }
+      if (queryParams['page']) {
+        this.pageIndex = Number(queryParams['page']);
+      }
+      if (queryParams['pageSize']) {
+        this.pageSize = Number(queryParams['pageSize']);
+      }
+      this.panelOpenState = true;
+    }
+
     this.formulaService
       .get()
       .pipe(
@@ -170,6 +202,15 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       )
       .subscribe((formulas: IFormula[]) => {
         this.formulas = formulas;
+
+        const currentFormulaVal = this.formFilter.controls['idFormula'].value;
+        if (currentFormulaVal?.id && !currentFormulaVal?.nombre) {
+          const match = this.formulas.find(f => f.id === currentFormulaVal.id);
+          if (match) {
+            this.formFilter.controls['idFormula'].setValue(match);
+          }
+        }
+
         this.formulas$ = this.formFilter.controls['idFormula'].valueChanges.pipe(
           startWith(''),
           map((value: string | IFormula) => {
@@ -182,6 +223,16 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
         );
       });
 
+    const dateT: string = this._dPipe.transform(
+      this.formFilter.controls['fechaDesde']?.value,
+      'dd/MM/yyyy'
+    );
+
+    const dateF: string = this._dPipe.transform(
+      this.formFilter.controls['fechaHasta']?.value,
+      'dd/MM/yyyy'
+    );
+
     const estadoFind = this.estados.find((value) => {
       if (value.value === this.formFilter.controls['estado'].value) {
         return true;
@@ -189,19 +240,22 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       return false;
     });
 
+    const sortActive = queryParams['sortActive'] || 'nroLote';
+    const sortAsc = queryParams['sortDirection'] ? queryParams['sortDirection'] === 'asc' : false;
+
     this.lots$ = this.lotService
       .getByFilter(
         this.formFilter.controls['idFormula'].value != null
           ? this.formFilter.controls['idFormula'].value.id
           : null,
         this.formFilter.controls['nroLote'].value,
-        null,
-        null,
+        dateT || null,
+        dateF || null,
         estadoFind != null ? estadoFind.idEstado : null,
         this.pageSize,
         this.pageIndex,
-        'nroLote',
-        true
+        sortActive,
+        sortAsc
       )
       .pipe(map((res: ILotsResponse) => res.data));
     this.lots$.subscribe((value) => {
@@ -214,13 +268,13 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
           ? this.formFilter.controls['idFormula'].value.id
           : null,
         this.formFilter.controls['nroLote'].value,
-        null,
-        null,
+        dateT || null,
+        dateF || null,
         estadoFind != null ? estadoFind.idEstado : null,
         this.pageSize,
         this.pageIndex,
-        'nroLote',
-        true
+        sortActive,
+        sortAsc
       )
       .pipe(map((res: IResponse<number>) => res.data));
     lotsCount$.subscribe(value => (this.totalRecords = value));
@@ -235,7 +289,15 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dataSource.sort = this.sort;
     this.dataSource.paginator = this.paginator;
 
-    this.sort.sort({ id: 'nroLote', start: 'desc' } as MatSortable);
+    const queryParams = this.filterStateService.getQueryParams(this.route);
+    if (queryParams['sortActive']) {
+      this.sort.sort({
+        id: queryParams['sortActive'],
+        start: (queryParams['sortDirection'] as any) || 'desc'
+      } as MatSortable);
+    } else {
+      this.sort.sort({ id: 'nroLote', start: 'desc' } as MatSortable);
+    }
     this.dataSource.sort = this.sort;
     this.cdref.detectChanges();
   }
@@ -330,6 +392,16 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   sortData(sort: Sort): void {
+    this.filterStateService.syncToUrl(
+      this.route,
+      this.formFilter.value,
+      {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize,
+        sortActive: sort.active,
+        sortDirection: sort.direction
+      }
+    );
     const dateT: string = this._dPipe.transform(
       this.formFilter.controls['fechaDesde'].value,
       'dd/MM/yyyy'
@@ -448,6 +520,16 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
   pageChangeEvent(event: PageEvent): void {
     this.pageIndex = event.pageIndex;
     this.pageSize = event.pageSize;
+    this.filterStateService.syncToUrl(
+      this.route,
+      this.formFilter.value,
+      {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize,
+        sortActive: this.sort?.active,
+        sortDirection: this.sort?.direction
+      }
+    );
     this.getPagedData();
   }
 
@@ -459,6 +541,7 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
       { idEstado: 'APROBADO', value: 'Aprobado' },
       { idEstado: 'APROBADO_OBSERVADO', value: 'Aprobado con observaciones' },
     ];
+    this.filterStateService.clearUrl(this.route);
   }
 
   public delete(lote: ILot): void {
@@ -525,6 +608,17 @@ export class LotsComponent implements OnInit, AfterViewInit, OnDestroy {
     );
 
     this.pageIndex = 0;
+
+    this.filterStateService.syncToUrl(
+      this.route,
+      this.formFilter.value,
+      {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize,
+        sortActive: this.sort?.active,
+        sortDirection: this.sort?.direction
+      }
+    );
 
     this.lots$ = this.lotService
       .getByFilter(

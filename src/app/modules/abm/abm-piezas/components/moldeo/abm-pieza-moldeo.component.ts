@@ -4,11 +4,12 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ABMPiezaService } from '../../abm-piezas.service';
 import { ABMPiezaBaseComponent } from '../abm-pieza-base.component';
-import { Prensa, Bombeo, Moldeo, PiezaProceso } from '../../models/pieza.model';
+import { Prensa, Bombeo, PiezaProceso } from '../../models/pieza.model';
 import { Observable, of, Subject, merge } from 'rxjs';
 import { NotificationService } from 'app/shared/services/notification.service';
 import { MatDialog } from '@angular/material/dialog';
-import { startWith, map, switchMap, debounceTime, catchError, filter } from 'rxjs/operators';
+import { startWith, map, switchMap, debounceTime, catchError } from 'rxjs/operators';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
     selector: 'app-abm-pieza-moldeo',
@@ -134,7 +135,9 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
         this.prensasAgregadas = data.prensas || [];
         this.actualizarFormularioPrensas();
 
-        this.bombeosAgregados = data.bombeos || [];
+        const bombeos = (data.bombeos || []).slice();
+        bombeos.sort((a, b) => (a.posicion ?? 0) - (b.posicion ?? 0));
+        this.bombeosAgregados = bombeos;
         this.actualizarFormularioBombeos();
     }
 
@@ -221,7 +224,8 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
             this.bombeosAgregados.push({
                 cantidad: this.cantidadCtrl.value,
                 tipo: this.tipoCtrl.value,
-                presion: this.presionCtrl.value
+                presion: this.presionCtrl.value,
+                posicion: this.bombeosAgregados.length + 1
             });
             this.cantidadCtrl.reset(); this.tipoCtrl.reset(); this.presionCtrl.reset();
             this.actualizarFormularioBombeos();
@@ -233,8 +237,24 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
 
     quitarBombeo(index: number): void {
         this.bombeosAgregados.splice(index, 1);
+        this.actualizarPosicionesBombeo();
         this.actualizarFormularioBombeos();
         this.moldeoForm.markAsDirty();
+    }
+
+    dropBombeo(event: CdkDragDrop<Bombeo[]>): void {
+        if (event.previousIndex !== event.currentIndex) {
+            moveItemInArray(this.bombeosAgregados, event.previousIndex, event.currentIndex);
+            this.actualizarPosicionesBombeo();
+            this.actualizarFormularioBombeos();
+            this.moldeoForm.markAsDirty();
+        }
+    }
+
+    private actualizarPosicionesBombeo(): void {
+        this.bombeosAgregados.forEach((bombeo, index) => {
+            bombeo.posicion = index + 1;
+        });
     }
 
     actualizarFormularioBombeos() {
@@ -244,7 +264,8 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
             bombeosFormArray.push(this.fb.group({
                 cantidad: [bombeo.cantidad],
                 tipo: [bombeo.tipo],
-                presion: [bombeo.presion]
+                presion: [bombeo.presion],
+                posicion: [bombeo.posicion]
             }));
         });
     }
@@ -269,7 +290,13 @@ export class ABMPiezaMoldeoComponent extends ABMPiezaBaseComponent implements On
             vulcanizacionTemperaturaMax: formValues.vulcanizacionTemperaturaMaxima,
             vulcanizacionTemperaturaMin: formValues.vulcanizacionTemperaturaMinima,
             vulcanizacionTiempo: formValues.vulcanizacionTiempo,
-            bombeos: this.bombeosAgregados.map(b => ({ cantidad: b.cantidad, presion: b.presion, tipo: b.tipo }))
+            bombeos: this.bombeosAgregados.map((b, index) => ({
+                id: b.id,
+                cantidad: b.cantidad,
+                presion: b.presion,
+                tipo: b.tipo,
+                posicion: b.posicion ?? (index + 1)
+            }))
         };
 
         this.abmPiezaService.updateMoldeo(this.piezaId, dto).subscribe({
