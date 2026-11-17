@@ -10,10 +10,10 @@ export interface Molde {
   propio: boolean;
   cantidadBocas?: number;
   tipoMolde?: string; 
-  alto?: number;
-  ancho?: number;
-  profundidad?: number;
-  diametro?: number;
+  alto?: number | null;
+  ancho?: number | null;
+  profundidad?: number | null;
+  diametro?: number | null;
 
   troquel?: string | null;
   idTroquel?: number | null;

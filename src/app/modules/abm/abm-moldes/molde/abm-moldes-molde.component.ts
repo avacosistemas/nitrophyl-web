@@ -442,18 +442,20 @@ export class ABMMoldesMolde implements OnInit, OnDestroy {
 
     const tipoMolde = this.moldeForm.get('tipoMolde').value;
     const alto = this.moldeForm.get('alto').value;
-    let ancho = 0;
-    let profundidad = 0;
-    let diametro = 0;
+    let ancho: number | null = null;
+    let profundidad: number | null = null;
+    let diametro: number | null = null;
+
+    const parseDimension = (value: number | string | null): number | null => {
+      if (value === null || value === '') return null;
+      return parseFloat(value.toString().replace(',', '.'));
+    };
 
     if (tipoMolde === 'RECTANGULAR') {
-      ancho = this.moldeForm.get('ancho').value;
-      ancho = parseFloat(ancho.toString().replace(',', '.'));
-      profundidad = this.moldeForm.get('profundidad').value;
-      profundidad = parseFloat(profundidad.toString().replace(',', '.'));
+      ancho = parseDimension(this.moldeForm.get('ancho').value);
+      profundidad = parseDimension(this.moldeForm.get('profundidad').value);
     } else {
-      diametro = this.moldeForm.get('diametro').value;
-      diametro = parseFloat(diametro.toString().replace(',', '.'));
+      diametro = parseDimension(this.moldeForm.get('diametro').value);
     }
 
     let model: Molde = {

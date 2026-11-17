@@ -36,7 +36,7 @@
             </button>
             <mat-autocomplete #autoPieza="matAutocomplete" [displayWith]="displayFn">
                 <mat-option *ngFor="let pieza of filteredPiezas$ | async" [value]="pieza">
-                    {{ pieza.denominacion }}
+                    {{ displayFn(pieza) }}
                 </mat-option>
             </mat-autocomplete>
             <mat-error *ngIf="form.get('pieza').hasError('required')">La pieza es requerida.</mat-error>

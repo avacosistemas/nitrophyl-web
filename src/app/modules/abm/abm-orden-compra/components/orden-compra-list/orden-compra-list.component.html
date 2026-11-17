@@ -99,10 +99,10 @@
                             (click)="editOrdenCompra(element)">
                             <mat-icon class="text-primary" svgIcon="heroicons_outline:pencil"></mat-icon>
                         </button>
-                        <button mat-icon-button matTooltip="Cancelar Orden de Compra"
+                        <!-- <button mat-icon-button matTooltip="Cancelar Orden de Compra"
                             (click)="cancelOrdenCompra(element)">
                             <mat-icon class="text-warn" svgIcon="heroicons_outline:x-circle"></mat-icon>
-                        </button>
+                        </button> -->
                     </ng-container>
                     <button *ngIf="element.estado === 'INGRESADA' || element.estado === 'CANCELADA'" 
                         mat-icon-button matTooltip="Eliminar Orden de Compra"
