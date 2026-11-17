@@ -1,8 +1,8 @@
 import { Component, OnInit, ViewChild, OnDestroy, AfterViewInit, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, MatSortable } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from 'app/shared/services/notification.service';
@@ -20,6 +20,7 @@ import { Cliente } from 'app/modules/abm/abm-clientes/cliente.model';
 import { ClientesService } from 'app/modules/abm/abm-clientes/clientes.service';
 import { ABMPiezaClonarModalComponent } from './modal-clonar/abm-pieza-clonar-modal.component';
 import { TableDataService } from 'app/shared/services/table-data.service';
+import { TableFilterStateService } from 'app/shared/services/table-filter-state.service';
 
 @Component({
   selector: 'app-abm-piezas-grilla',
@@ -43,6 +44,7 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   dataSource = new MatTableDataSource<Pieza>([]);
   totalReg: number = 0;
   isLoading = true;
+  panelOpenState: boolean = false;
 
   tiposPieza: { id: number; nombre: string }[] = [];
   formulasFail: boolean = false;
@@ -70,7 +72,9 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     private _materials: MaterialsService,
     private _clientesService: ClientesService,
     private _notificationService: NotificationService,
-    private tableDataService: TableDataService
+    private tableDataService: TableDataService,
+    private route: ActivatedRoute,
+    private filterStateService: TableFilterStateService
   ) {
     this.searchForm = this.formBuilder.group({
       nombre: [null],
@@ -83,6 +87,53 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   ngOnInit(): void {
+    const queryParams = this.filterStateService.getQueryParams(this.route);
+    if (queryParams && Object.keys(queryParams).length > 0) {
+      if (queryParams['nombre']) {
+        this.searchForm.controls['nombre'].setValue(queryParams['nombre']);
+      }
+      if (queryParams['soloVigentes'] !== undefined && queryParams['soloVigentes'] !== null && queryParams['soloVigentes'] !== '') {
+        const vigentesVal = queryParams['soloVigentes'] === 'true' ? true : (queryParams['soloVigentes'] === 'false' ? false : '');
+        this.searchForm.controls['soloVigentes'].setValue(vigentesVal);
+        this.soloVigentes.setValue(vigentesVal as any);
+      }
+      if (queryParams['tiposPieza']) {
+        const tipos = Array.isArray(queryParams['tiposPieza'])
+          ? queryParams['tiposPieza'].map((t: any) => Number(t))
+          : String(queryParams['tiposPieza']).split(',').map(t => Number(t.trim())).filter(t => !isNaN(t));
+        this.searchForm.controls['tiposPieza'].setValue(tipos);
+      }
+      if (queryParams['idFormula']) {
+        this.searchForm.controls['idFormula'].setValue({
+          id: Number(queryParams['idFormula']),
+          nombre: queryParams['idFormula_label'] || ''
+        });
+      }
+      if (queryParams['idMaterial']) {
+        this.searchForm.controls['idMaterial'].setValue({
+          id: Number(queryParams['idMaterial']),
+          nombre: queryParams['idMaterial_label'] || ''
+        });
+      }
+      if (queryParams['idCliente']) {
+        this.searchForm.controls['idCliente'].setValue({
+          id: Number(queryParams['idCliente']),
+          nombre: queryParams['idCliente_label'] || ''
+        });
+      }
+
+      if (
+        queryParams['nombre'] ||
+        queryParams['soloVigentes'] !== undefined ||
+        queryParams['tiposPieza'] ||
+        queryParams['idFormula'] ||
+        queryParams['idMaterial'] ||
+        queryParams['idCliente']
+      ) {
+        this.panelOpenState = true;
+      }
+    }
+
     this.loadAutocompleteData();
     this.loadClientesDropdown();
   }
@@ -91,6 +142,20 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     if (!this.paginator || !this.sort) {
       this.isLoading = false;
       return;
+    }
+
+    const queryParams = this.filterStateService.getQueryParams(this.route);
+    if (queryParams['page']) {
+      this.paginator.pageIndex = Number(queryParams['page']);
+    }
+    if (queryParams['pageSize']) {
+      this.paginator.pageSize = Number(queryParams['pageSize']);
+    }
+    if (queryParams['sortActive']) {
+      this.sort.sort({
+        id: queryParams['sortActive'],
+        start: (queryParams['sortDirection'] as any) || 'asc'
+      } as MatSortable);
     }
 
     this.dataSource.sort = this.sort;
@@ -104,7 +169,19 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
     merge(this.sort.sortChange, this.paginator.page)
       .pipe(
         startWith({}),
-        tap(() => this.isLoading = true),
+        tap(() => {
+          this.isLoading = true;
+          this.filterStateService.syncToUrl(
+            this.route,
+            this.searchForm.value,
+            {
+              pageIndex: this.paginator?.pageIndex || 0,
+              pageSize: this.paginator?.pageSize || 15,
+              sortActive: this.sort?.active,
+              sortDirection: this.sort?.direction
+            }
+          );
+        }),
         switchMap(() => {
           const params = this.buildRequestParams();
           return this.abmPiezaService.getPiezas(params).pipe(
@@ -183,6 +260,11 @@ export class ABMPiezasGrillaComponent implements OnInit, AfterViewInit, OnDestro
       soloVigentes: ''
     });
     this.soloVigentes.setValue('');
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
+    this.filterStateService.clearUrl(this.route);
+    this.refreshGrid();
   }
 
   abrirModalClonar(pieza: Pieza): void {

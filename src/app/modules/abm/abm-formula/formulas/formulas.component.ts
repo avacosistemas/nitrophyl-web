@@ -1,18 +1,18 @@
 import { AfterViewInit, Component, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { catchError, forkJoin, of } from 'rxjs';
+import { ActivatedRoute } from '@angular/router';
+import { catchError,  of } from 'rxjs';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 
 // * Services.
 import { FormulasService } from 'app/modules/abm/abm-formula/formulas.service';
 import { MaterialsService } from 'app/modules/abm/abm-formula/materials.service';
 import { TableDataService } from 'app/shared/services/table-data.service';
+import { TableFilterStateService } from 'app/shared/services/table-filter-state.service';
 
 // * Interfaces.
 import {
   IFormula,
-  IFormulasResponse,
 } from 'app/modules/abm/abm-formula/formula.interface';
-import { IMaterialsResponse } from 'app/modules/abm/abm-formula/material.interface';
 
 // * Forms.
 import { FormBuilder, FormGroup } from '@angular/forms';
@@ -65,12 +65,33 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     private formBuilder: FormBuilder,
     private dialog: MatDialog,
     private tableDataService: TableDataService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private filterStateService: TableFilterStateService
   ) {
     this.setForm();
   }
 
   public ngOnInit(): void {
+    const queryParams = this.filterStateService.getQueryParams(this.route);
+    if (queryParams && Object.keys(queryParams).length > 0) {
+      if (queryParams['name']) {
+        this.form.controls['name'].setValue(queryParams['name']);
+      }
+      if (queryParams['material']) {
+        this.form.controls['material'].setValue(Number(queryParams['material']));
+      }
+      if (queryParams['page']) {
+        this.pageIndex = Number(queryParams['page']);
+      }
+      if (queryParams['pageSize']) {
+        this.pageSize = Number(queryParams['pageSize']);
+      }
+      if (queryParams['name'] || queryParams['material']) {
+        this.panelOpenState = true;
+      }
+    }
+
     this.loadMaterials();
     this.getPagedData();
   }
@@ -119,17 +140,38 @@ export class FormulasComponent implements OnInit, AfterViewInit {
     if (this.paginator) {
       this.paginator.pageIndex = 0;
     }
+    this.filterStateService.syncToUrl(
+      this.route,
+      this.form.value,
+      {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize
+      }
+    );
     this.getPagedData();
   }
 
   public clearFilters(): void {
     this.form.reset({ name: null, material: null, norma: null });
-    this.search();
+    this.pageIndex = 0;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
+    this.filterStateService.clearUrl(this.route);
+    this.getPagedData();
   }
 
   public pageChangeEvent(event: PageEvent): void {
     this.pageSize = event.pageSize;
     this.pageIndex = event.pageIndex;
+    this.filterStateService.syncToUrl(
+      this.route,
+      this.form.value,
+      {
+        pageIndex: this.pageIndex,
+        pageSize: this.pageSize
+      }
+    );
     this.getPagedData();
   }
 
