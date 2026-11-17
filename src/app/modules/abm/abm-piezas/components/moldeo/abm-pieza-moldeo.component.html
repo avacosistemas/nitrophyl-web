@@ -117,7 +117,6 @@
                 <mat-chip-list aria-label="Bombeos">
                     <mat-chip *ngFor="let bombeo of bombeosAgregados; let i = index" (removed)="quitarBombeo(i)"
                         [removable]="mode !== 'view'" class="bg-gray-200"
-                        [class.cursor-move]="mode !== 'view'"
                         [matTooltip]="getObservacionesBombeo(bombeo.tipo)"
                         cdkDrag [cdkDragDisabled]="mode === 'view'">
                         <mat-icon *ngIf="mode !== 'view'" class="mr-1 text-gray-500 drag-cursor" style="font-size: 18px; width: 18px; height: 18px;" cdkDragHandle>drag_indicator</mat-icon>

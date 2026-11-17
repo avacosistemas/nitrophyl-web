@@ -32,7 +32,7 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
 
     isLoading = true;
     dataSource = new MatTableDataSource<ICotizacion>([]);
-    displayedColumns: string[] = ['pieza', 'material', 'cliente', 'valor', 'fecha', 'observaciones'];
+    displayedColumns: string[] = ['codigoPieza', 'material', 'pieza', 'cliente', 'valor', 'fecha', 'observaciones'];
     totalReg: number = 0;
 
     searchForm: FormGroup;
@@ -182,7 +182,10 @@ export class CotizacionesListComponent implements OnInit, AfterViewInit, OnDestr
             return item.nombre;
         }
         if (item.denominacion) {
-            return item.codigo ? `${item.codigo} - ${item.denominacion}` : item.denominacion;
+            const denominacion = item.formula
+                ? `${item.denominacion} (${item.formula})`
+                : item.denominacion;
+            return item.codigo ? `${item.codigo} - ${denominacion}` : denominacion;
         }
         return '';
     }
