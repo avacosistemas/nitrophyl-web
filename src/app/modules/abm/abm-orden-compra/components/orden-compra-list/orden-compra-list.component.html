@@ -99,7 +99,7 @@
                             (click)="editOrdenCompra(element)">
                             <mat-icon class="text-primary" svgIcon="heroicons_outline:pencil"></mat-icon>
                         </button>
-                        <button mat-icon-button matTooltip="Asignar Stock"
+                        <!-- <button mat-icon-button matTooltip="Asignar Stock"
                             (click)="asignarStock(element)">
                             <mat-icon class="text-blue-600" svgIcon="heroicons_outline:cube"></mat-icon>
                         </button>
@@ -110,13 +110,13 @@
                         <button mat-icon-button matTooltip="Cancelar Orden de Compra"
                             (click)="cancelOrdenCompra(element)">
                             <mat-icon class="text-warn" svgIcon="heroicons_outline:x-circle"></mat-icon>
-                        </button>
+                        </button> -->
                     </ng-container>
-                    <button *ngIf="element.estado === 'INGRESADA' || element.estado === 'CANCELADA'" 
+                    <!-- <button *ngIf="element.estado === 'INGRESADA' || element.estado === 'CANCELADA'" 
                         mat-icon-button matTooltip="Eliminar Orden de Compra"
                         (click)="deleteOrdenCompra(element)">
                         <mat-icon class="text-red-500" svgIcon="heroicons_outline:trash"></mat-icon>
-                    </button>
+                    </button> -->
                 </td>
             </ng-container>
 
